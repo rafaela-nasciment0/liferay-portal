@@ -21,9 +21,9 @@ PortletURL portletURL = PortletURLBuilder.createRenderURL(
 	renderResponse
 ).setMVCRenderCommandName(
 	"/announcements/view"
-).setParameter(
-	"tabs1", announcementsRequestHelper.getTabs1()
-).build();
+).setTabs1(
+	announcementsRequestHelper.getTabs1()
+).buildPortletURL();
 %>
 
 <c:if test="<%= announcementsDisplayContext.isTabs1Visible() %>">

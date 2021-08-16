@@ -2610,25 +2610,25 @@ public class KaleoNotificationPersistenceImpl
 		ServiceContext serviceContext =
 			ServiceContextThreadLocal.getServiceContext();
 
-		Date now = new Date();
+		Date date = new Date();
 
 		if (isNew && (kaleoNotification.getCreateDate() == null)) {
 			if (serviceContext == null) {
-				kaleoNotification.setCreateDate(now);
+				kaleoNotification.setCreateDate(date);
 			}
 			else {
 				kaleoNotification.setCreateDate(
-					serviceContext.getCreateDate(now));
+					serviceContext.getCreateDate(date));
 			}
 		}
 
 		if (!kaleoNotificationModelImpl.hasSetModifiedDate()) {
 			if (serviceContext == null) {
-				kaleoNotification.setModifiedDate(now);
+				kaleoNotification.setModifiedDate(date);
 			}
 			else {
 				kaleoNotification.setModifiedDate(
-					serviceContext.getModifiedDate(now));
+					serviceContext.getModifiedDate(date));
 			}
 		}
 
@@ -3140,6 +3140,13 @@ public class KaleoNotificationPersistenceImpl
 						kaleoNotificationModelImpl.getColumnBitmask(columnName);
 				}
 
+				if (finderPath.isBaseModelResult() &&
+					(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION ==
+						finderPath.getCacheName())) {
+
+					finderPathColumnBitmask |= _ORDER_BY_COLUMNS_BITMASK;
+				}
+
 				_finderPathColumnBitmasksCache.put(
 					finderPath, finderPathColumnBitmask);
 			}
@@ -3162,7 +3169,7 @@ public class KaleoNotificationPersistenceImpl
 			return KaleoNotificationTable.INSTANCE.getTableName();
 		}
 
-		private Object[] _getValue(
+		private static Object[] _getValue(
 			KaleoNotificationModelImpl kaleoNotificationModelImpl,
 			String[] columnNames, boolean original) {
 
@@ -3185,8 +3192,16 @@ public class KaleoNotificationPersistenceImpl
 			return arguments;
 		}
 
-		private static Map<FinderPath, Long> _finderPathColumnBitmasksCache =
-			new ConcurrentHashMap<>();
+		private static final Map<FinderPath, Long>
+			_finderPathColumnBitmasksCache = new ConcurrentHashMap<>();
+
+		private static final long _ORDER_BY_COLUMNS_BITMASK;
+
+		static {
+			long orderByColumnsBitmask = 0;
+
+			_ORDER_BY_COLUMNS_BITMASK = orderByColumnsBitmask;
+		}
 
 	}
 

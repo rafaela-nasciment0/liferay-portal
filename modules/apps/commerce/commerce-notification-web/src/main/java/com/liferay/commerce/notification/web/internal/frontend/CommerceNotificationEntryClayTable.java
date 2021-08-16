@@ -115,10 +115,10 @@ public class CommerceNotificationEntryClayTable
 				PortletRequest.ACTION_PHASE)
 		).setActionName(
 			"/commerce_channels/edit_commerce_notification_queue_entry"
+		).setCMD(
+			"resend"
 		).setRedirect(
 			redirect
-		).setParameter(
-			Constants.CMD, "resend"
 		).setParameter(
 			"commerceNotificationQueueEntryId",
 			() -> {
@@ -126,7 +126,7 @@ public class CommerceNotificationEntryClayTable
 
 				return notificationEntry.getNotificationEntryId();
 			}
-		).build();
+		).buildPortletURL();
 
 		return DropdownItemListBuilder.add(
 			dropdownItem -> {

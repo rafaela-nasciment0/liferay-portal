@@ -1,5 +1,6 @@
 create index IX_923BD178 on Address (companyId, classNameId, classPK, mailing);
 create index IX_9226DBB4 on Address (companyId, classNameId, classPK, primary_);
+create index IX_58D4EA4C on Address (companyId, classNameId, classPK, typeId);
 create index IX_CBAD282F on Address (companyId, externalReferenceCode[$COLUMN_LENGTH:75$]);
 create index IX_5A2093E7 on Address (countryId);
 create index IX_C8E3E87D on Address (regionId);
@@ -110,6 +111,7 @@ create index IX_9D2F5B3B on DLFileEntry (custom2ImageId, ctCollectionId);
 create index IX_C0A6F645 on DLFileEntry (fileEntryTypeId, ctCollectionId);
 create index IX_F951AC2E on DLFileEntry (folderId, name[$COLUMN_LENGTH:255$], ctCollectionId);
 create index IX_60830094 on DLFileEntry (groupId, ctCollectionId);
+create index IX_273362A5 on DLFileEntry (groupId, externalReferenceCode[$COLUMN_LENGTH:75$], ctCollectionId);
 create index IX_BAF654E5 on DLFileEntry (groupId, fileEntryTypeId);
 create index IX_95A2D1F1 on DLFileEntry (groupId, folderId, ctCollectionId);
 create index IX_D8883586 on DLFileEntry (groupId, folderId, fileEntryTypeId, ctCollectionId);
@@ -255,6 +257,7 @@ create index IX_52D89564 on Layout (groupId, privateLayout, parentLayoutId, ctCo
 create index IX_1E4451FD on Layout (groupId, privateLayout, parentLayoutId, hidden_, ctCollectionId);
 create index IX_989E917C on Layout (groupId, privateLayout, parentLayoutId, priority, ctCollectionId);
 create index IX_18D0C537 on Layout (groupId, privateLayout, sourcePrototypeLayoutUuid[$COLUMN_LENGTH:75$], ctCollectionId);
+create index IX_A73CEAE7 on Layout (groupId, privateLayout, status, ctCollectionId);
 create index IX_A1FC5430 on Layout (groupId, privateLayout, type_[$COLUMN_LENGTH:75$], ctCollectionId);
 create index IX_94E0E2D9 on Layout (groupId, type_[$COLUMN_LENGTH:75$], ctCollectionId);
 create index IX_E7B06BDB on Layout (iconImageId, ctCollectionId);
@@ -306,7 +309,7 @@ create unique index IX_5FF18552 on LayoutSetBranch (groupId, privateLayout, name
 create index IX_9178FC71 on LayoutSetPrototype (companyId, active_);
 create index IX_D9FFCA84 on LayoutSetPrototype (uuid_[$COLUMN_LENGTH:75$], companyId);
 
-create index IX_77729718 on ListType (name[$COLUMN_LENGTH:75$], type_[$COLUMN_LENGTH:75$]);
+create unique index IX_77729718 on ListType (name[$COLUMN_LENGTH:75$], type_[$COLUMN_LENGTH:75$]);
 create index IX_2932DD37 on ListType (type_[$COLUMN_LENGTH:75$]);
 
 create index IX_C28C72EC on MembershipRequest (groupId, statusId);

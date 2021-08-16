@@ -1,0 +1,207 @@
+definition {
+
+	macro assertDataInDateField {
+		if (!(isSet(index))) {
+			var index = "1";
+		}
+
+		AssertTextEquals.assertValue(
+			index = "${index}",
+			key_fieldLabel = "${fieldLabel}",
+			locator1 = "DataEngineRenderer#DATE_INPUT_INDEXED",
+			value1 = "${value}");
+	}
+
+	macro assertDataInGridField {
+		if (!(isSet(fieldIndex))) {
+			var fieldIndex = "1";
+		}
+
+		var column = ${column} + 1;
+
+		AssertChecked.assertCheckedNotVisible(
+			fieldIndex = "${fieldIndex}",
+			key_column = "${column}",
+			key_fieldLabel = "${fieldLabel}",
+			key_row = "${row}",
+			locator1 = "DataEngineRenderer#GRID_OPTION_INDEXED");
+	}
+
+	macro assertDataInMultipleSelectionField {
+		if (!(isSet(fieldIndex))) {
+			var fieldIndex = "1";
+		}
+
+		if (!(isSet(optionIndex))) {
+			var optionIndex = "1";
+		}
+
+		AssertChecked.assertCheckedNotVisible(
+			fieldIndex = "${fieldIndex}",
+			key_fieldLabel = "${fieldLabel}",
+			key_optionValue = "${optionValue}",
+			locator1 = "DataEngineRenderer#MULTIPLE_SELECTION_OPTION_INDEXED",
+			optionIndex = "${optionIndex}");
+	}
+
+	macro assertDataInSelectFromListField {
+		if (!(isSet(index))) {
+			var index = "1";
+		}
+
+		AssertTextEquals(
+			index = "${index}",
+			key_fieldLabel = "${fieldLabel}",
+			locator1 = "DataEngineRenderer#SELECT_FROM_LIST_SELECTED_OPTION_INDEXED",
+			value1 = "${optionValue}");
+	}
+
+	macro assertDataInSingleSelectionField {
+		if (!(isSet(fieldIndex))) {
+			var fieldIndex = "1";
+		}
+
+		if (!(isSet(optionIndex))) {
+			var optionIndex = "1";
+		}
+
+		AssertChecked.assertCheckedNotVisible(
+			fieldIndex = "${fieldIndex}",
+			key_fieldLabel = "${fieldLabel}",
+			key_optionValue = "${optionValue}",
+			locator1 = "DataEngineRenderer#SINGLE_SELECTION_OPTION_INDEXED",
+			optionIndex = "${optionIndex}");
+	}
+
+	macro assertDataInTextField {
+		if (!(isSet(index))) {
+			var index = "1";
+		}
+
+		AssertTextEquals.assertValue(
+			index = "${index}",
+			key_fieldLabel = "${fieldLabel}",
+			locator1 = "DataEngineRenderer#TEXT_INPUT_INDEXED",
+			value1 = "${value}");
+	}
+
+	macro assertMultipleSelectionOptionIsUnchecked {
+		if (!(isSet(fieldIndex))) {
+			var fieldIndex = "1";
+		}
+
+		if (!(isSet(optionIndex))) {
+			var optionIndex = "1";
+		}
+
+		AssertNotChecked.assertNotCheckedNotVisible(
+			fieldIndex = "${fieldIndex}",
+			key_fieldLabel = "${fieldLabel}",
+			key_optionValue = "${optionValue}",
+			locator1 = "DataEngineRenderer#MULTIPLE_SELECTION_OPTION_INDEXED",
+			optionIndex = "${optionIndex}");
+	}
+
+	macro inputDataInDateField {
+		if (!(isSet(index))) {
+			var index = "1";
+		}
+
+		Type(
+			index = "${index}",
+			key_fieldLabel = "${fieldLabel}",
+			locator1 = "DataEngineRenderer#DATE_INPUT_INDEXED",
+			value1 = "${value}");
+	}
+
+	macro inputDataInGridField {
+		if (!(isSet(fieldIndex))) {
+			var fieldIndex = "1";
+		}
+
+		var column = ${column} + 1;
+
+		Check.checkNotVisible(
+			fieldIndex = "${fieldIndex}",
+			key_column = "${column}",
+			key_fieldLabel = "${fieldLabel}",
+			key_row = "${row}",
+			locator1 = "DataEngineRenderer#GRID_OPTION_INDEXED");
+	}
+
+	macro inputDataInMultipleSelectionField {
+		if (!(isSet(fieldIndex))) {
+			var fieldIndex = "1";
+		}
+
+		if (!(isSet(optionIndex))) {
+			var optionIndex = "1";
+		}
+
+		Click.clickAtNotVisible(
+			fieldIndex = "${fieldIndex}",
+			key_fieldLabel = "${fieldLabel}",
+			key_optionValue = "${optionValue}",
+			locator1 = "DataEngineRenderer#MULTIPLE_SELECTION_OPTION_INDEXED",
+			optionIndex = "${optionIndex}");
+	}
+
+	macro inputDataInSelectFromListField {
+		if (!(isSet(index))) {
+			var index = "1";
+		}
+
+		Click(
+			index = "${index}",
+			key_fieldLabel = "${fieldLabel}",
+			locator1 = "DataEngineRenderer#SELECT_FROM_LIST_SELECT_OPTION_TRIGGER_INDEXED");
+
+		DropdownMenuItem.click(menuItem = "${optionValue}");
+	}
+
+	macro inputDataInSingleSelectionField {
+		if (!(isSet(fieldIndex))) {
+			var fieldIndex = "1";
+		}
+
+		if (!(isSet(optionIndex))) {
+			var optionIndex = "1";
+		}
+
+		Check.checkNotVisible(
+			fieldIndex = "${fieldIndex}",
+			key_fieldLabel = "${fieldLabel}",
+			key_optionValue = "${optionValue}",
+			locator1 = "DataEngineRenderer#SINGLE_SELECTION_OPTION_INDEXED",
+			optionIndex = "${optionIndex}");
+	}
+
+	macro inputDataInTextField {
+		if (!(isSet(index))) {
+			var index = "1";
+		}
+
+		Type(
+			index = "${index}",
+			key_fieldLabel = "${fieldLabel}",
+			locator1 = "DataEngineRenderer#TEXT_INPUT_INDEXED",
+			value1 = "${value}");
+	}
+
+	macro removeRepeatableField {
+		if (!(isSet(index))) {
+			var index = "1";
+		}
+
+		WaitForElementPresent(
+			index = "${index}",
+			key_fieldLabel = "${fieldLabel}",
+			locator1 = "DataEngineRenderer#REPEATABLE_FIELD_DELETE_BUTTON_INDEXED");
+
+		Click(
+			index = "${index}",
+			key_fieldLabel = "${fieldLabel}",
+			locator1 = "DataEngineRenderer#REPEATABLE_FIELD_DELETE_BUTTON_INDEXED");
+	}
+
+}

@@ -31,6 +31,7 @@ import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.BaseModel;
 import com.liferay.portal.kernel.model.PortalPreferenceValue;
 import com.liferay.portal.kernel.model.PortalPreferenceValueTable;
+import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
 import com.liferay.portal.kernel.service.persistence.PortalPreferenceValuePersistence;
 import com.liferay.portal.kernel.service.persistence.impl.BasePersistenceImpl;
 import com.liferay.portal.kernel.util.OrderByComparator;
@@ -3092,6 +3093,8 @@ public class PortalPreferenceValuePersistenceImpl
 		portalPreferenceValue.setNew(true);
 		portalPreferenceValue.setPrimaryKey(portalPreferenceValueId);
 
+		portalPreferenceValue.setCompanyId(CompanyThreadLocal.getCompanyId());
+
 		return portalPreferenceValue;
 	}
 
@@ -3727,6 +3730,13 @@ public class PortalPreferenceValuePersistenceImpl
 							columnName);
 				}
 
+				if (finderPath.isBaseModelResult() &&
+					(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION ==
+						finderPath.getCacheName())) {
+
+					finderPathColumnBitmask |= _ORDER_BY_COLUMNS_BITMASK;
+				}
+
 				_finderPathColumnBitmasksCache.put(
 					finderPath, finderPathColumnBitmask);
 			}
@@ -3749,7 +3759,7 @@ public class PortalPreferenceValuePersistenceImpl
 			return PortalPreferenceValueTable.INSTANCE.getTableName();
 		}
 
-		private Object[] _getValue(
+		private static Object[] _getValue(
 			PortalPreferenceValueModelImpl portalPreferenceValueModelImpl,
 			String[] columnNames, boolean original) {
 
@@ -3773,8 +3783,19 @@ public class PortalPreferenceValuePersistenceImpl
 			return arguments;
 		}
 
-		private static Map<FinderPath, Long> _finderPathColumnBitmasksCache =
-			new ConcurrentHashMap<>();
+		private static final Map<FinderPath, Long>
+			_finderPathColumnBitmasksCache = new ConcurrentHashMap<>();
+
+		private static final long _ORDER_BY_COLUMNS_BITMASK;
+
+		static {
+			long orderByColumnsBitmask = 0;
+
+			orderByColumnsBitmask |=
+				PortalPreferenceValueModelImpl.getColumnBitmask("index_");
+
+			_ORDER_BY_COLUMNS_BITMASK = orderByColumnsBitmask;
+		}
 
 	}
 

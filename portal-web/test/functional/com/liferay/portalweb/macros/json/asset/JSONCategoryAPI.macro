@@ -19,8 +19,6 @@ definition {
 		''';
 
 		var categoryId = JSONCurlUtil.post("${curl}", "$.categoryId");
-		var categoryId = StringUtil.replace("${categoryId}", "[&quot;", "");
-		var categoryId = StringUtil.replace("${categoryId}", "&quot;]", "");
 
 		return "${categoryId}";
 	}
@@ -45,6 +43,21 @@ definition {
 		com.liferay.poshi.runner.util.JSONCurlUtil.post("${curl}");
 	}
 
+	@summary = "Directly calls the JSON WS API to delete category"
+	macro _deleteCategory {
+		Variables.assertDefined(parameterList = "${categoryId}");
+
+		var portalURL = JSONCompany.getPortalURL();
+
+		var curl = '''
+			${portalURL}/api/jsonws/assetcategory/delete-category \
+				-u test@liferay.com:test \
+				-d categoryId=${categoryId}
+		''';
+
+		com.liferay.poshi.runner.util.JSONCurlUtil.post("${curl}");
+	}
+
 	@summary = "Directly calls the JSON WS API to get categoryId"
 	macro _getCategoryIdByName {
 		Variables.assertDefined(parameterList = "${groupId},${categoryName},${vocabularyId}");
@@ -63,10 +76,8 @@ definition {
 		''';
 
 		var categoryId = JSONCurlUtil.post("${curl}", "$.[?(@['titleCurrentValue'] == '${categoryName}')]['categoryId']");
-		var categoryId = StringUtil.replace("${categoryId}", "[&quot;", "");
-		var categoryId = StringUtil.replace("${categoryId}", "&quot;]", "");
 
-		if ("${categoryId}" == "[]") {
+		if ("${categoryId}" == "") {
 			fail("FAIL. Cannot find category.");
 		}
 
@@ -86,10 +97,8 @@ definition {
 		''';
 
 		var vocabularyId = JSONCurlUtil.post("${curl}", "$.[?(@['titleCurrentValue'] == '${vocabularyName}')]['vocabularyId']");
-		var vocabularyId = StringUtil.replace("${vocabularyId}", "[&quot;", "");
-		var vocabularyId = StringUtil.replace("${vocabularyId}", "&quot;]", "");
 
-		if ("${vocabularyId}" == "[]") {
+		if ("${vocabularyId}" == "") {
 			fail("FAIL. Cannot find vocabulary.");
 		}
 

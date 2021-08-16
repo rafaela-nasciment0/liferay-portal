@@ -25,11 +25,7 @@ boolean incompleteProfile = false;
 
 List<AssetTag> assetTags = AssetTagLocalServiceUtil.getTags(User.class.getName(), user2.getUserId());
 
-if (assetTags.isEmpty()) {
-	incompleteProfile = true;
-}
-
-if (Validator.isNull(user2.getComments())) {
+if (assetTags.isEmpty() || Validator.isNull(user2.getComments())) {
 	incompleteProfile = true;
 }
 %>
@@ -75,7 +71,7 @@ if (phones.isEmpty()) {
 			"screenNavigationCategoryKey", "contact"
 		).setParameter(
 			"screenNavigationEntryKey", "contact-information"
-		).build();
+		).buildPortletURL();
 		%>
 
 		<liferay-ui:icon
@@ -123,7 +119,7 @@ if (emailAddresses.isEmpty()) {
 			"screenNavigationCategoryKey", "contact"
 		).setParameter(
 			"screenNavigationEntryKey", "contact-information"
-		).build();
+		).buildPortletURL();
 		%>
 
 		<liferay-ui:icon
@@ -165,21 +161,18 @@ if (Validator.isNull(jabberSn) && Validator.isNull(skypeSn)) {
 
 <c:if test="<%= showInstantMessenger && (Validator.isNotNull(jabberSn) || Validator.isNotNull(skypeSn)) %>">
 	<div class="field-group section" data-title="<%= LanguageUtil.get(request, "instant-messenger") %>">
-
-		<%
-		PortletURL editInstantMessengerURL = PortletURLBuilder.create(
-			PortletURLFactoryUtil.create(request, PortletKeys.MY_ACCOUNT, embeddedPersonalApplicationLayout, PortletRequest.RENDER_PHASE)
-		).setParameter(
-			"screenNavigationCategoryKey", "contact"
-		).setParameter(
-			"screenNavigationEntryKey", "contact-information"
-		).build();
-		%>
-
 		<liferay-ui:icon
 			icon="pencil"
 			markupView="lexicon"
-			url="<%= editInstantMessengerURL.toString() %>"
+			url='<%=
+				PortletURLBuilder.create(
+					PortletURLFactoryUtil.create(request, PortletKeys.MY_ACCOUNT, embeddedPersonalApplicationLayout, PortletRequest.RENDER_PHASE)
+				).setParameter(
+					"screenNavigationCategoryKey", "contact"
+				).setParameter(
+					"screenNavigationEntryKey", "contact-information"
+				).buildString()
+			%>'
 		/>
 
 		<h3><liferay-ui:message key="instant-messenger" />:</h3>
@@ -220,7 +213,7 @@ if (addresses.isEmpty()) {
 			PortletURLFactoryUtil.create(request, PortletKeys.MY_ACCOUNT, embeddedPersonalApplicationLayout, PortletRequest.RENDER_PHASE)
 		).setParameter(
 			"screenNavigationCategoryKey", "contact"
-		).build();
+		).buildPortletURL();
 		%>
 
 		<liferay-ui:icon
@@ -236,12 +229,10 @@ if (addresses.isEmpty()) {
 			<%
 			for (Address address : addresses) {
 				ListType listType = address.getType();
-
-				String mailingName = LanguageUtil.get(request, listType.getName());
 			%>
 
 				<li class="<%= address.isPrimary() ? "primary" : "" %>">
-					<span class="property-type"><%= mailingName %></span><br />
+					<span class="property-type"><%= LanguageUtil.get(request, listType.getName()) %></span><br />
 
 					<liferay-text-localizer:address-display
 						address="<%= address %>"
@@ -276,7 +267,7 @@ if (websites.isEmpty()) {
 			"screenNavigationCategoryKey", "contact"
 		).setParameter(
 			"screenNavigationEntryKey", "contact-information"
-		).build();
+		).buildPortletURL();
 		%>
 
 		<liferay-ui:icon
@@ -327,7 +318,7 @@ if (Validator.isNull(facebook) && Validator.isNull(twitter)) {
 			"screenNavigationCategoryKey", "contact"
 		).setParameter(
 			"screenNavigationEntryKey", "contact-information"
-		).build();
+		).buildPortletURL();
 		%>
 
 		<liferay-ui:icon
@@ -374,7 +365,7 @@ if (Validator.isNull(contact2.getSmsSn())) {
 			"screenNavigationCategoryKey", "contact"
 		).setParameter(
 			"screenNavigationEntryKey", "contact-information"
-		).build();
+		).buildPortletURL();
 		%>
 
 		<liferay-ui:icon

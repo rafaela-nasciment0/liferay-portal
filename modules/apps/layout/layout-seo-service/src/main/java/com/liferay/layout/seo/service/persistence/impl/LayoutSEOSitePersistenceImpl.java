@@ -1988,24 +1988,24 @@ public class LayoutSEOSitePersistenceImpl
 		ServiceContext serviceContext =
 			ServiceContextThreadLocal.getServiceContext();
 
-		Date now = new Date();
+		Date date = new Date();
 
 		if (isNew && (layoutSEOSite.getCreateDate() == null)) {
 			if (serviceContext == null) {
-				layoutSEOSite.setCreateDate(now);
+				layoutSEOSite.setCreateDate(date);
 			}
 			else {
-				layoutSEOSite.setCreateDate(serviceContext.getCreateDate(now));
+				layoutSEOSite.setCreateDate(serviceContext.getCreateDate(date));
 			}
 		}
 
 		if (!layoutSEOSiteModelImpl.hasSetModifiedDate()) {
 			if (serviceContext == null) {
-				layoutSEOSite.setModifiedDate(now);
+				layoutSEOSite.setModifiedDate(date);
 			}
 			else {
 				layoutSEOSite.setModifiedDate(
-					serviceContext.getModifiedDate(now));
+					serviceContext.getModifiedDate(date));
 			}
 		}
 
@@ -2433,7 +2433,8 @@ public class LayoutSEOSitePersistenceImpl
 	public Set<String> getCTColumnNames(
 		CTColumnResolutionType ctColumnResolutionType) {
 
-		return _ctColumnNamesMap.get(ctColumnResolutionType);
+		return _ctColumnNamesMap.getOrDefault(
+			ctColumnResolutionType, Collections.emptySet());
 	}
 
 	@Override
@@ -2467,7 +2468,6 @@ public class LayoutSEOSitePersistenceImpl
 	static {
 		Set<String> ctControlColumnNames = new HashSet<String>();
 		Set<String> ctIgnoreColumnNames = new HashSet<String>();
-		Set<String> ctMergeColumnNames = new HashSet<String>();
 		Set<String> ctStrictColumnNames = new HashSet<String>();
 
 		ctControlColumnNames.add("mvccVersion");
@@ -2487,7 +2487,6 @@ public class LayoutSEOSitePersistenceImpl
 			CTColumnResolutionType.CONTROL, ctControlColumnNames);
 		_ctColumnNamesMap.put(
 			CTColumnResolutionType.IGNORE, ctIgnoreColumnNames);
-		_ctColumnNamesMap.put(CTColumnResolutionType.MERGE, ctMergeColumnNames);
 		_ctColumnNamesMap.put(
 			CTColumnResolutionType.PK,
 			Collections.singleton("layoutSEOSiteId"));
@@ -2717,7 +2716,7 @@ public class LayoutSEOSitePersistenceImpl
 			return LayoutSEOSiteTable.INSTANCE.getTableName();
 		}
 
-		private Object[] _getValue(
+		private static Object[] _getValue(
 			LayoutSEOSiteModelImpl layoutSEOSiteModelImpl, String[] columnNames,
 			boolean original) {
 
@@ -2740,8 +2739,8 @@ public class LayoutSEOSitePersistenceImpl
 			return arguments;
 		}
 
-		private static Map<FinderPath, Long> _finderPathColumnBitmasksCache =
-			new ConcurrentHashMap<>();
+		private static final Map<FinderPath, Long>
+			_finderPathColumnBitmasksCache = new ConcurrentHashMap<>();
 
 	}
 

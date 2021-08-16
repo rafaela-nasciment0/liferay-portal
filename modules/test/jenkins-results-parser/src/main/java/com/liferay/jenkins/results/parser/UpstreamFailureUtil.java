@@ -18,6 +18,7 @@ import java.io.File;
 import java.io.IOException;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.json.JSONArray;
@@ -278,13 +279,6 @@ public class UpstreamFailureUtil {
 		return JenkinsResultsParserUtil.combine(testName, ",", jobVariant);
 	}
 
-	private static int _getLastCompletedUpstreamBuildNumber(
-		TopLevelBuild topLevelBuild) {
-
-		return JenkinsAPIUtil.getLastCompletedBuildNumber(
-			topLevelBuild.getAcceptanceUpstreamJobURL());
-	}
-
 	private static int _getLastUpstreamBuildNumber(
 		TopLevelBuild topLevelBuild) {
 
@@ -348,44 +342,45 @@ public class UpstreamFailureUtil {
 	}
 
 	private static JSONObject _getUpstreamJobFailuresJSONObject(
-			String jobName, String buildNumber)
-		throws IOException {
-
-		return JenkinsResultsParserUtil.toJSONObject(
-			JenkinsResultsParserUtil.getLocalURL(
-				JenkinsResultsParserUtil.combine(
-					_URL_BASE_UPSTREAM_FAILURES_JOB, jobName, "/builds/",
-					buildNumber, "/test.results.json")),
-			false, 5000);
-	}
-
-	private static JSONObject _getUpstreamJobFailuresJSONObject(
 			TopLevelBuild topLevelBuild)
-		throws IllegalStateException, IOException {
+		throws IllegalStateException {
 
-		int buildNumber = _getLastCompletedUpstreamBuildNumber(topLevelBuild);
+		List<String> buildResultJSONURLs =
+			JenkinsResultsParserUtil.getBuildResultJsonURLs(
+				topLevelBuild.getAcceptanceUpstreamJobURL(), 20);
 
-		int oldestBuildNumber = Math.max(0, buildNumber - 20);
+		Collections.reverse(buildResultJSONURLs);
 
-		String acceptanceUpstreamJobName =
-			topLevelBuild.getAcceptanceUpstreamJobName();
+		for (String buildResultJSONURL : buildResultJSONURLs) {
+			try {
+				buildResultJSONURL = buildResultJSONURL.replace(
+					"test-1-1/userContent/jobs/",
+					"test-1-0/userContent/testResults/");
 
-		while (buildNumber > oldestBuildNumber) {
-			JSONObject jsonObject = _getUpstreamJobFailuresJSONObject(
-				acceptanceUpstreamJobName, String.valueOf(buildNumber));
+				buildResultJSONURL = buildResultJSONURL.replace(
+					"build-result.json", "test.results.json");
 
-			String sha = jsonObject.getString("SHA");
+				JSONObject jsonObject = JenkinsResultsParserUtil.toJSONObject(
+					buildResultJSONURL);
 
-			GitWorkingDirectory gitWorkingDirectory =
-				GitWorkingDirectoryFactory.newGitWorkingDirectory(
-					topLevelBuild.getBranchName(), (File)null,
-					topLevelBuild.getBaseGitRepositoryName());
+				String sha = jsonObject.getString("SHA");
 
-			if (gitWorkingDirectory.refContainsSHA("HEAD", sha)) {
-				return jsonObject;
+				GitWorkingDirectory gitWorkingDirectory =
+					GitWorkingDirectoryFactory.newGitWorkingDirectory(
+						topLevelBuild.getBranchName(), (File)null,
+						topLevelBuild.getBaseGitRepositoryName());
+
+				if (gitWorkingDirectory.refContainsSHA("HEAD", sha)) {
+					System.out.println(
+						"Downloading upstream test results from " +
+							buildResultJSONURL);
+
+					return jsonObject;
+				}
 			}
-
-			buildNumber--;
+			catch (IOException ioException) {
+				System.out.println(ioException.toString());
+			}
 		}
 
 		throw new IllegalStateException(
@@ -421,9 +416,6 @@ public class UpstreamFailureUtil {
 
 		return false;
 	}
-
-	private static final String _URL_BASE_UPSTREAM_FAILURES_JOB =
-		"https://test-1-0.liferay.com/userContent/testResults/";
 
 	private static final JSONObject _defaultUpstreamFailuresJSONObject =
 		new JSONObject("{\"SHA\":\"\",\"failedBatches\":[]}");

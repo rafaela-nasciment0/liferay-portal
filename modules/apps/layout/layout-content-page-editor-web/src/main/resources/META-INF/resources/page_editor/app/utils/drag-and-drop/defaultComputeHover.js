@@ -12,14 +12,22 @@
  * details.
  */
 
+import {CONTAINER_DISPLAY_OPTIONS} from '../../config/constants/containerDisplayOptions';
 import {LAYOUT_DATA_ITEM_TYPES} from '../../config/constants/layoutDataItemTypes';
+import isItemEmpty from '../isItemEmpty';
 import checkAllowedChild from './checkAllowedChild';
 import {DRAG_DROP_TARGET_TYPE} from './constants/dragDropTargetType';
-import {TARGET_POSITION} from './constants/targetPosition';
-import getTargetPosition from './getTargetPosition';
+import {ORIENTATIONS} from './constants/orientations';
+import {TARGET_POSITIONS} from './constants/targetPositions';
+import getDropTargetPosition from './getDropTargetPosition';
+import getTargetData from './getTargetData';
+import getTargetPositions from './getTargetPositions';
 import itemIsAncestor from './itemIsAncestor';
-import toControlsId from './toControlsId';
 import {initialDragDrop} from './useDragAndDrop';
+
+const ELEVATION_BORDER_SIZE = 15;
+const MAXIMUM_ELEVATION_STEPS = 3;
+const ORIENTATION_BORDER_SIZE = 80;
 
 export default function defaultComputeHover({
 	dispatch,
@@ -49,8 +57,14 @@ export default function defaultComputeHover({
 		});
 	}
 
-	// Apparently valid drag, calculate vertical position and
+	// Apparently valid drag, calculate position and
 	// nesting validation
+
+	const orientation = getOrientation(
+		siblingItem || targetItem,
+		monitor,
+		targetRefs
+	);
 
 	const [
 		targetPositionWithMiddle,
@@ -59,8 +73,8 @@ export default function defaultComputeHover({
 	] = getItemPosition(
 		siblingItem || targetItem,
 		monitor,
-		layoutDataRef,
-		targetRefs
+		targetRefs,
+		orientation
 	);
 
 	// Drop inside target
@@ -68,16 +82,20 @@ export default function defaultComputeHover({
 	const validDropInsideTarget = (() => {
 		const targetIsColumn =
 			targetItem.type === LAYOUT_DATA_ITEM_TYPES.column;
+		const targetIsContainerFlex = itemIsContainerFlex(targetItem);
 		const targetIsFragment =
 			targetItem.type === LAYOUT_DATA_ITEM_TYPES.fragment;
-		const targetIsEmpty =
-			layoutDataRef.current.items[targetItem.itemId]?.children.length ===
-			0;
+		const targetIsEmpty = isItemEmpty(
+			layoutDataRef.current.items[targetItem.itemId],
+			layoutDataRef.current
+		);
+		const allowedChild = checkAllowedChild(sourceItem, targetItem);
 
 		return (
-			targetPositionWithMiddle === TARGET_POSITION.MIDDLE &&
-			(targetIsEmpty || targetIsColumn) &&
-			!targetIsFragment
+			targetPositionWithMiddle === TARGET_POSITIONS.MIDDLE &&
+			(targetIsEmpty || targetIsColumn || targetIsContainerFlex) &&
+			!targetIsFragment &&
+			allowedChild
 		);
 	})();
 
@@ -85,7 +103,7 @@ export default function defaultComputeHover({
 		return dispatch({
 			dropItem: sourceItem,
 			dropTargetItem: targetItem,
-			droppable: checkAllowedChild(sourceItem, targetItem, layoutDataRef),
+			droppable: checkAllowedChild(sourceItem, targetItem),
 			elevate: null,
 			targetPositionWithMiddle,
 			targetPositionWithoutMiddle,
@@ -96,10 +114,13 @@ export default function defaultComputeHover({
 	// Valid elevation:
 	// - dropItem should be child of dropTargetItem
 	// - dropItem should be sibling of siblingItem
+	// - siblingItem should have flex parent for horizontal elevation
+	//   and no-flex parent for vertical elevation
 
 	if (
 		siblingItem &&
-		checkAllowedChild(sourceItem, targetItem, layoutDataRef)
+		checkAllowedChild(sourceItem, targetItem) &&
+		validElevation(siblingItem, orientation, layoutDataRef)
 	) {
 		return dispatch({
 			dropItem: sourceItem,
@@ -119,33 +140,40 @@ export default function defaultComputeHover({
 
 	if (elevationDepth) {
 		const getElevatedTargetItem = (sibling, maximumDepth) => {
-			const parent = layoutDataRef.current.items[sibling.parentId]
-				? {
-						...layoutDataRef.current.items[sibling.parentId],
-						collectionItemIndex: sibling.collectionItemIndex,
-				  }
-				: null;
+			let parent = layoutDataRef.current.items[sibling.parentId];
+
+			if (parent) {
+				parent = {
+					...parent,
+					collectionItemIndex: sibling.collectionItemIndex,
+					parentToControlsId: sibling.parentToControlsId,
+					toControlsId:
+						parent.type === LAYOUT_DATA_ITEM_TYPES.collection
+							? sibling.parentToControlsId
+							: sibling.toControlsId,
+				};
+			}
 
 			if (parent) {
 				const [siblingPositionWithMiddle] = getItemPosition(
 					sibling,
 					monitor,
-					layoutDataRef,
-					targetRefs
+					targetRefs,
+					orientation
 				);
 
 				const [parentPositionWithMiddle] = getItemPosition(
 					parent,
 					monitor,
-					layoutDataRef,
-					targetRefs
+					targetRefs,
+					orientation
 				);
 
 				if (
 					(siblingPositionWithMiddle === targetPositionWithMiddle ||
 						parentPositionWithMiddle ===
 							targetPositionWithMiddle) &&
-					checkAllowedChild(sourceItem, parent, layoutDataRef)
+					checkAllowedChild(sourceItem, parent)
 				) {
 					if (maximumDepth > 1) {
 						const [
@@ -187,32 +215,45 @@ export default function defaultComputeHover({
 	}
 }
 
-const ELEVATION_BORDER_SIZE = 15;
-const MAXIMUM_ELEVATION_STEPS = 3;
+function getOrientation(item, monitor, targetRefs) {
+	const targetRef = targetRefs.get(item.toControlsId(item.itemId));
+	const targetRect = targetRef.current.getBoundingClientRect();
+	const hoverMiddle = targetRect.left + targetRect.width / 2;
+	const clientOffsetX = monitor.getClientOffset().x;
 
-/**
- * Returns the cursor vertical position (extracted from provided dnd monitor)
- * relative to the given item, taking into account configured elevation steps
- * with ELEVATION_BORDER_SIZE and MAXIMUM_ELEVATION_STEPS.
- *
- * For each elevation step, a border on the top/bottom of the element is added.
- * The first elevation step (being the nearest to the element's center)
- * elevates two its first valid ancestor, the second to the next one, and all
- * the way up until MAXIMUM_ELEVATION_STEPS has been reached or there are no
- * more valid ancestors.
- */
-function getItemPosition(item, monitor, layoutDataRef, targetRefs) {
-	const targetRef = targetRefs.get(toControlsId(layoutDataRef, item));
+	const targetPosition =
+		clientOffsetX < hoverMiddle
+			? TARGET_POSITIONS.LEFT
+			: TARGET_POSITIONS.RIGHT;
+
+	const distanceFromBorder =
+		targetPosition === TARGET_POSITIONS.LEFT
+			? clientOffsetX - targetRect.left
+			: targetRect.right - clientOffsetX;
+
+	return distanceFromBorder < ORIENTATION_BORDER_SIZE
+		? ORIENTATIONS.horizontal
+		: ORIENTATIONS.vertical;
+}
+
+function getItemPosition(item, monitor, targetRefs, orientation) {
+	const targetRef = targetRefs.get(item.toControlsId(item.itemId));
 
 	if (!targetRef || !targetRef.current) {
 		return [null, null, 0];
 	}
 
-	const clientOffsetY = monitor.getClientOffset().y;
-	const hoverBoundingRect = targetRef.current.getBoundingClientRect();
+	const clientOffset =
+		orientation === ORIENTATIONS.horizontal
+			? monitor.getClientOffset().x
+			: monitor.getClientOffset().y;
+
+	const targetRect = targetRef.current.getBoundingClientRect();
+	const targetPositions = getTargetPositions(orientation);
+	const targetData = getTargetData(targetRect, orientation);
 
 	const elevationStepSize = Math.min(
-		hoverBoundingRect.height / (2 * (MAXIMUM_ELEVATION_STEPS + 1)),
+		targetData.length / (2 * (MAXIMUM_ELEVATION_STEPS + 1)),
 		ELEVATION_BORDER_SIZE
 	);
 
@@ -222,19 +263,20 @@ function getItemPosition(item, monitor, layoutDataRef, targetRefs) {
 	const [
 		targetPositionWithMiddle,
 		targetPositionWithoutMiddle,
-	] = getTargetPosition(
-		clientOffsetY,
-		hoverBoundingRect,
-		totalElevationBorderSize
+	] = getDropTargetPosition(
+		clientOffset,
+		totalElevationBorderSize,
+		targetPositions,
+		targetData
 	);
 
 	let elevationDepth = 0;
 
-	if (targetPositionWithMiddle !== TARGET_POSITION.MIDDLE) {
+	if (targetPositionWithMiddle !== TARGET_POSITIONS.MIDDLE) {
 		const distanceFromBorder =
-			targetPositionWithMiddle === TARGET_POSITION.TOP
-				? clientOffsetY - hoverBoundingRect.top
-				: hoverBoundingRect.bottom - clientOffsetY;
+			targetPositionWithMiddle === targetPositions.start
+				? clientOffset - targetData.start
+				: targetData.end - clientOffset;
 
 		elevationDepth =
 			MAXIMUM_ELEVATION_STEPS -
@@ -249,4 +291,19 @@ function getItemPosition(item, monitor, layoutDataRef, targetRefs) {
 		targetPositionWithoutMiddle,
 		elevationDepth,
 	];
+}
+
+function itemIsContainerFlex(item) {
+	return (
+		item.type === LAYOUT_DATA_ITEM_TYPES.container &&
+		item.config.contentDisplay === CONTAINER_DISPLAY_OPTIONS.flexRow
+	);
+}
+
+function validElevation(siblingItem, orientation, layoutDataRef) {
+	const targetItemParent = layoutDataRef.current.items[siblingItem.parentId];
+
+	return orientation === ORIENTATIONS.horizontal
+		? itemIsContainerFlex(targetItemParent)
+		: !itemIsContainerFlex(targetItemParent);
 }

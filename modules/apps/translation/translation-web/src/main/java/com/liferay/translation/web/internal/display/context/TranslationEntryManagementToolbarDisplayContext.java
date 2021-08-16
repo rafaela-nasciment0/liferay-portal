@@ -37,9 +37,6 @@ import com.liferay.translation.model.TranslationEntry;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.portlet.ActionRequest;
-import javax.portlet.PortletURL;
-
 import javax.servlet.http.HttpServletRequest;
 
 /**
@@ -69,15 +66,13 @@ public class TranslationEntryManagementToolbarDisplayContext
 				dropdownItem.putData(
 					"action", "deleteSelectedTranslationEntries");
 
-				PortletURL portletURL =
-					liferayPortletResponse.createActionURL();
-
-				portletURL.setParameter(
-					ActionRequest.ACTION_NAME,
-					"/translation/delete_translation_entry");
-
 				dropdownItem.putData(
-					"delete-translation-entries-url", portletURL.toString());
+					"delete-translation-entries-url",
+					PortletURLBuilder.createActionURL(
+						liferayPortletResponse
+					).setActionName(
+						"/translation/delete_translation_entry"
+					).buildString());
 
 				dropdownItem.setIcon("times-circle");
 				dropdownItem.setLabel(
@@ -89,17 +84,15 @@ public class TranslationEntryManagementToolbarDisplayContext
 
 	@Override
 	public String getClearResultsURL() {
-		PortletURL portletURL = PortletURLBuilder.create(
+		return PortletURLBuilder.create(
 			getPortletURL()
-		).setParameter(
-			"keywords", StringPool.BLANK
+		).setKeywords(
+			StringPool.BLANK
 		).setParameter(
 			"orderByCol", getOrderByCol()
 		).setParameter(
 			"orderByType", getOrderByType()
-		).build();
-
-		return portletURL.toString();
+		).buildString();
 	}
 
 	@Override
@@ -110,14 +103,14 @@ public class TranslationEntryManagementToolbarDisplayContext
 
 		return LabelItemListBuilder.add(
 			labelItem -> {
-				PortletURL removeLabelURL = PortletURLBuilder.create(
-					PortletURLUtil.clone(
-						getPortletURL(), liferayPortletResponse)
-				).setParameter(
-					"status", (String)null
-				).build();
-
-				labelItem.putData("removeLabelURL", removeLabelURL.toString());
+				labelItem.putData(
+					"removeLabelURL",
+					PortletURLBuilder.create(
+						PortletURLUtil.clone(
+							getPortletURL(), liferayPortletResponse)
+					).setParameter(
+						"status", (String)null
+					).buildString());
 
 				labelItem.setDismissible(true);
 				labelItem.setLabel(
@@ -133,15 +126,13 @@ public class TranslationEntryManagementToolbarDisplayContext
 
 	@Override
 	public String getSearchActionURL() {
-		PortletURL portletURL = PortletURLBuilder.createRenderURL(
+		return PortletURLBuilder.createRenderURL(
 			liferayPortletResponse
 		).setParameter(
 			"orderByCol", getOrderByCol()
 		).setParameter(
 			"orderByType", getOrderByType()
-		).build();
-
-		return portletURL.toString();
+		).buildString();
 	}
 
 	@Override

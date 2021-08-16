@@ -15,6 +15,7 @@
 package com.liferay.portal.service.impl;
 
 import com.liferay.petra.string.StringBundler;
+import com.liferay.portal.internal.service.util.PortalPreferencesCacheUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.log.Log;
@@ -71,9 +72,13 @@ public class PortalPreferencesLocalServiceImpl
 			defaultPreferences = PortletConstants.DEFAULT_PREFERENCES;
 		}
 
-		if (!Objects.equals(
+		if (Objects.equals(
 				PortletConstants.DEFAULT_PREFERENCES, defaultPreferences)) {
 
+			PortalPreferencesCacheUtil.put(
+				portalPreferencesId, Collections.emptyMap());
+		}
+		else {
 			PortalPreferencesImpl portalPreferencesImpl =
 				(PortalPreferencesImpl)PortletPreferencesFactoryUtil.fromXML(
 					ownerId, ownerType, defaultPreferences);
@@ -203,6 +208,9 @@ public class PortalPreferencesLocalServiceImpl
 
 			portalPreferencesModel.setOwnerId(ownerId);
 			portalPreferencesModel.setOwnerType(ownerType);
+
+			portalPreferencesModel = portalPreferencesPersistence.update(
+				portalPreferencesModel);
 		}
 		else {
 			portalPreferenceValuesMap =
@@ -215,7 +223,7 @@ public class PortalPreferencesLocalServiceImpl
 		_updatePortalPreferences(
 			portalPreferencesModel, portalPreferenceValuesMap, preferencesMap);
 
-		return portalPreferencesPersistence.update(portalPreferencesModel);
+		return portalPreferencesModel;
 	}
 
 	private void _updatePortalPreferences(
@@ -331,6 +339,9 @@ public class PortalPreferencesLocalServiceImpl
 					portalPreferenceValues.get(i));
 			}
 		}
+
+		PortalPreferencesCacheUtil.put(
+			portalPreferences.getPortalPreferencesId(), preferencesMap);
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(

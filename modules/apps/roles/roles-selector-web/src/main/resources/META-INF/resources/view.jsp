@@ -61,13 +61,13 @@ PortletURL portletURL = PortletURLBuilder.createRenderURL(
 	renderResponse
 ).setRedirect(
 	redirect
-).setParameter(
-	"tabs1", tabs1
+).setTabs1(
+	tabs1
 ).setParameter(
 	"className", className
 ).setParameter(
-	"groupId", String.valueOf(group.getGroupId())
-).build();
+	"groupId", group.getGroupId()
+).buildPortletURL();
 
 if (role != null) {
 	portletURL.setParameter("roleId", String.valueOf(roleId));
@@ -173,9 +173,9 @@ String methodName = null;
 <%
 PortletURL clearResultsURL = PortletURLBuilder.create(
 	(PortletURL)request.getAttribute("edit_roles.jsp-portletURL")
-).setParameter(
-	"keywords", StringPool.BLANK
-).build();
+).setKeywords(
+	StringPool.BLANK
+).buildPortletURL();
 
 SearchContainer<?> searchContainer = (SearchContainer<?>)request.getAttribute("liferay-ui:search:searchContainer");
 %>

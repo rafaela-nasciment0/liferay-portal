@@ -67,15 +67,13 @@ if (message != null) {
 boolean allowPingbacks = PropsValues.MESSAGE_BOARDS_PINGBACK_ENABLED && BeanParamUtil.getBoolean(message, request, "allowPingbacks", true);
 
 if (Validator.isNull(redirect)) {
-	PortletURL viewMessageURL = PortletURLBuilder.createRenderURL(
+	redirect = PortletURLBuilder.createRenderURL(
 		renderResponse
 	).setMVCRenderCommandName(
 		"/message_boards/view_message"
 	).setParameter(
-		"messageId", String.valueOf(messageId)
-	).build();
-
-	redirect = viewMessageURL.toString();
+		"messageId", messageId
+	).buildString();
 }
 
 if (curParentMessage != null) {
@@ -429,6 +427,12 @@ if (portletTitleBasedNavigation) {
 				</div>
 			</c:if>
 
+			<c:if test="<%= (message != null) && message.isApproved() && WorkflowDefinitionLinkLocalServiceUtil.hasWorkflowDefinitionLink(message.getCompanyId(), message.getGroupId(), MBMessage.class.getName()) %>">
+				<div class="alert alert-info">
+					<liferay-ui:message arguments="<%= ResourceActionsUtil.getModelResource(locale, MBMessage.class.getName()) %>" key="this-x-is-approved.-publishing-these-changes-will-cause-it-to-be-unpublished-and-go-through-the-approval-process-again" translateArguments="<%= false %>" />
+				</div>
+			</c:if>
+
 			<div class="sheet-footer">
 				<div class="btn-group">
 
@@ -445,12 +449,6 @@ if (portletTitleBasedNavigation) {
 						publishButtonLabel = "submit-for-publication";
 					}
 					%>
-
-					<c:if test="<%= (message != null) && message.isApproved() && WorkflowDefinitionLinkLocalServiceUtil.hasWorkflowDefinitionLink(message.getCompanyId(), message.getGroupId(), MBMessage.class.getName()) %>">
-						<div class="alert alert-info">
-							<liferay-ui:message arguments="<%= ResourceActionsUtil.getModelResource(locale, MBMessage.class.getName()) %>" key="this-x-is-approved.-publishing-these-changes-will-cause-it-to-be-unpublished-and-go-through-the-approval-process-again" translateArguments="<%= false %>" />
-						</div>
-					</c:if>
 
 					<div class="btn-group-item">
 						<aui:button disabled="<%= pending %>" name="publishButton" type="submit" value="<%= publishButtonLabel %>" />

@@ -123,8 +123,8 @@ public abstract class BaseSegmentResourceImpl
 	@Tags(value = {@Tag(name = "Segment")})
 	public Page<Segment> getSiteUserAccountSegmentsPage(
 			@NotNull @Parameter(hidden = true) @PathParam("siteId") Long siteId,
-			@NotNull @Parameter(hidden = true) @PathParam("userAccountId")
-				Long userAccountId)
+			@NotNull @Parameter(hidden = true) @PathParam("userAccountId") Long
+				userAccountId)
 		throws Exception {
 
 		return Page.of(Collections.emptyList());
@@ -166,7 +166,8 @@ public abstract class BaseSegmentResourceImpl
 			Map<String, Serializable> parameters, String search)
 		throws Exception {
 
-		return getSiteSegmentsPage((Long)parameters.get("siteId"), pagination);
+		return getSiteSegmentsPage(
+			Long.parseLong((String)parameters.get("siteId")), pagination);
 	}
 
 	@Override

@@ -113,10 +113,10 @@ catch (Exception exception) {
 				).setMVCRenderCommandName(
 					"/message_boards/select_category"
 				).setParameter(
-					"mbCategoryId", String.valueOf(rootTopicId)
+					"mbCategoryId", rootTopicId
 				).setWindowState(
 					LiferayWindowState.POP_UP
-				).build();
+				).buildPortletURL();
 				%>
 
 				url: '<%= selectMBCategoryURL.toString() %>',
@@ -126,5 +126,5 @@ catch (Exception exception) {
 </script>
 
 <%!
-private static Log _log = LogFactoryUtil.getLog("com_liferay_questions_web.configuarion_jsp");
+private static final Log _log = LogFactoryUtil.getLog("com_liferay_questions_web.configuarion_jsp");
 %>

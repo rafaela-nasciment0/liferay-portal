@@ -140,6 +140,19 @@ public abstract class BatchTestClassGroup extends BaseTestClassGroup {
 		return _segmentTestClassGroups;
 	}
 
+	public String getTestCasePropertiesContent() {
+		StringBuilder sb = new StringBuilder();
+
+		for (SegmentTestClassGroup segmentTestClassGroup :
+				getSegmentTestClassGroups()) {
+
+			sb.append(segmentTestClassGroup.getTestCasePropertiesContent());
+			sb.append("\n");
+		}
+
+		return sb.toString();
+	}
+
 	public static class BatchTestClass extends BaseTestClass {
 
 		protected static BatchTestClass getInstance(
@@ -482,11 +495,9 @@ public abstract class BatchTestClassGroup extends BaseTestClassGroup {
 	}
 
 	protected void setSegmentTestClassGroups() {
-		if (!_segmentTestClassGroups.isEmpty()) {
-			return;
-		}
+		if (!_segmentTestClassGroups.isEmpty() ||
+			axisTestClassGroups.isEmpty()) {
 
-		if (axisTestClassGroups.isEmpty()) {
 			return;
 		}
 
@@ -620,11 +631,9 @@ public abstract class BatchTestClassGroup extends BaseTestClassGroup {
 				File requiredModuleDir = new File(
 					modulesBaseDir, requiredModuleDirPath);
 
-				if (!requiredModuleDir.exists()) {
-					continue;
-				}
+				if (!requiredModuleDir.exists() ||
+					requiredModuleDirs.contains(requiredModuleDir)) {
 
-				if (requiredModuleDirs.contains(requiredModuleDir)) {
 					continue;
 				}
 

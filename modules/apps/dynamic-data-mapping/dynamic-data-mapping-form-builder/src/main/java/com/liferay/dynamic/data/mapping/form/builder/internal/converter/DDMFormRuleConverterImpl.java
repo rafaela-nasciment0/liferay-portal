@@ -68,9 +68,9 @@ public class DDMFormRuleConverterImpl implements SPIDDMFormRuleConverter {
 		List<SPIDDMFormRule> spiDDMFormRules,
 		SPIDDMFormRuleSerializerContext spiDDMFormRuleSerializerContext) {
 
-		Stream<SPIDDMFormRule> spiDDMFormRuleStream = spiDDMFormRules.stream();
+		Stream<SPIDDMFormRule> spiDDMFormRulesStream = spiDDMFormRules.stream();
 
-		Stream<DDMFormRule> ddmFormRuleStream = spiDDMFormRuleStream.map(
+		Stream<DDMFormRule> ddmFormRuleStream = spiDDMFormRulesStream.map(
 			formRule -> convertRule(formRule, spiDDMFormRuleSerializerContext));
 
 		return ddmFormRuleStream.collect(Collectors.toList());
@@ -81,11 +81,8 @@ public class DDMFormRuleConverterImpl implements SPIDDMFormRuleConverter {
 
 		Expression actionExpression = createExpression(actionExpressionString);
 
-		ActionExpressionVisitor actionExpressionVisitor =
-			new ActionExpressionVisitor();
-
 		return (SPIDDMFormRuleAction)actionExpression.accept(
-			actionExpressionVisitor);
+			new ActionExpressionVisitor());
 	}
 
 	protected String convertCondition(
@@ -93,20 +90,21 @@ public class DDMFormRuleConverterImpl implements SPIDDMFormRuleConverter {
 
 		String operator = spiDDMFormRuleCondition.getOperator();
 
-		String functionName = _operatorFunctionNameMap.get(operator);
-
 		List<SPIDDMFormRuleCondition.Operand> operands =
 			spiDDMFormRuleCondition.getOperands();
 
-		if (functionName == null) {
+		if (_operators.containsKey(operator)) {
 			if (operands.size() < 2) {
 				return StringPool.BLANK;
 			}
 
 			return String.format(
 				_COMPARISON_EXPRESSION_FORMAT, convertOperand(operands.get(0)),
-				_operatorMap.get(operator), convertOperand(operands.get(1)));
+				_operators.get(operator), convertOperand(operands.get(1)));
 		}
+
+		String functionName = _operatorFunctionNames.getOrDefault(
+			operator, operator);
 
 		String condition = createCondition(functionName, operands);
 
@@ -336,10 +334,10 @@ public class DDMFormRuleConverterImpl implements SPIDDMFormRuleConverter {
 	private boolean _hasNestedFunction(
 		List<SPIDDMFormRuleCondition.Operand> operands) {
 
-		Stream<SPIDDMFormRuleCondition.Operand> operandStream =
+		Stream<SPIDDMFormRuleCondition.Operand> operandsStream =
 			operands.stream();
 
-		return operandStream.anyMatch(
+		return operandsStream.anyMatch(
 			operand -> _isNestedFunction(operand.getValue()));
 	}
 
@@ -358,7 +356,7 @@ public class DDMFormRuleConverterImpl implements SPIDDMFormRuleConverter {
 
 	private static final String _NOT_EXPRESSION_FORMAT = "not(%s)";
 
-	private static final Map<String, String> _operatorFunctionNameMap =
+	private static final Map<String, String> _operatorFunctionNames =
 		HashMapBuilder.put(
 			"belongs-to", "belongsTo"
 		).put(
@@ -374,7 +372,7 @@ public class DDMFormRuleConverterImpl implements SPIDDMFormRuleConverter {
 		).put(
 			"not-is-empty", "isEmpty"
 		).build();
-	private static final Map<String, String> _operatorMap = HashMapBuilder.put(
+	private static final Map<String, String> _operators = HashMapBuilder.put(
 		"greater-than", ">"
 	).put(
 		"greater-than-equals", ">="

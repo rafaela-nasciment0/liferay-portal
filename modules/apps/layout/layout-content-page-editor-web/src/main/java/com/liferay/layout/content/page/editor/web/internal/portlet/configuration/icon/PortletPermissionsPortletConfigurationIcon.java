@@ -155,15 +155,10 @@ public class PortletPermissionsPortletConfigurationIcon
 			}
 		}
 
-		if (layout.isLayoutPrototypeLinkActive()) {
-			showPermissionsIcon = false;
-		}
+		if (layout.isLayoutPrototypeLinkActive() ||
+			layout.isTypeControlPanel() ||
+			isEmbeddedPersonalApplicationLayout(layout)) {
 
-		if (layout.isTypeControlPanel()) {
-			showPermissionsIcon = false;
-		}
-
-		if (isEmbeddedPersonalApplicationLayout(layout)) {
 			showPermissionsIcon = false;
 		}
 
@@ -203,17 +198,17 @@ public class PortletPermissionsPortletConfigurationIcon
 				PortletProvider.Action.VIEW)
 		).setMVCPath(
 			"/edit_permissions.jsp"
+		).setPortletResource(
+			portletDisplay.getId()
 		).setParameter(
-			"returnToFullPageURL",
-			ParamUtil.getString(portletRequest, "returnToFullPageURL")
-		).setParameter(
-			"portletConfiguration", Boolean.TRUE.toString()
-		).setParameter(
-			"portletResource", portletDisplay.getId()
+			"portletConfiguration", true
 		).setParameter(
 			"resourcePrimKey",
 			PortletPermissionUtil.getPrimaryKey(
 				themeDisplay.getPlid(), portletDisplay.getId())
+		).setParameter(
+			"returnToFullPageURL",
+			ParamUtil.getString(portletRequest, "returnToFullPageURL")
 		).setWindowState(
 			LiferayWindowState.POP_UP
 		).buildString();

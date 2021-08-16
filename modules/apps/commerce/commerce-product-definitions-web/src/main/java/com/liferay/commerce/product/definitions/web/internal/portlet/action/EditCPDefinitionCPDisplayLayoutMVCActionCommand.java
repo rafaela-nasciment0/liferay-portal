@@ -128,11 +128,12 @@ public class EditCPDefinitionCPDisplayLayoutMVCActionCommand
 			actionRequest, "cpDisplayLayoutId");
 
 		long classPK = ParamUtil.getLong(actionRequest, "classPK");
+
 		String layoutUuid = ParamUtil.getString(actionRequest, "layoutUuid");
 
 		if (cpDisplayLayoutId > 0) {
 			_cpDisplayLayoutService.updateCPDisplayLayout(
-				cpDisplayLayoutId, layoutUuid);
+				cpDisplayLayoutId, classPK, layoutUuid);
 		}
 		else {
 			long commerceChannelId = ParamUtil.getLong(

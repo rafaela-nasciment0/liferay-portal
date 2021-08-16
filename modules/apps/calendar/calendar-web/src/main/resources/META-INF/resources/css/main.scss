@@ -198,6 +198,10 @@
 		text-transform: capitalize;
 	}
 
+	.header-title {
+		margin-top: 1rem;
+	}
+
 	.popover.scheduler-event-recorder-popover {
 		max-width: none;
 		padding: 10px 15px 0;
@@ -446,6 +450,12 @@
 
 .col-md-4 .calendar-portlet .popover.scheduler-event-recorder-popover {
 	max-width: 232px;
+}
+
+.modal-open .modal {
+	min-height: 570px;
+	min-width: 870px;
+	overflow-y: hidden !important;
 }
 
 .portal-popup .calendar-portlet .fieldset {
@@ -887,6 +897,12 @@
 			max-width: 60%;
 			width: 60%;
 
+			&.col-md-12 {
+				flex-basis: 100%;
+				max-width: 100%;
+				width: 100%;
+			}
+
 			.scheduler-base-content .scheduler-base-hd {
 				.scheduler-base-controls {
 					width: 100%;
@@ -950,6 +966,12 @@
 			flex: 0 0 65%;
 			max-width: 65%;
 			width: 65%;
+
+			&.col-md-12 {
+				flex-basis: 100%;
+				max-width: 100%;
+				width: 100%;
+			}
 
 			.scheduler-base-content .scheduler-base-hd {
 				.scheduler-base-controls {

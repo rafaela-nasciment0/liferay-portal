@@ -1807,23 +1807,23 @@ public class ContactPersistenceImpl
 		ServiceContext serviceContext =
 			ServiceContextThreadLocal.getServiceContext();
 
-		Date now = new Date();
+		Date date = new Date();
 
 		if (isNew && (contact.getCreateDate() == null)) {
 			if (serviceContext == null) {
-				contact.setCreateDate(now);
+				contact.setCreateDate(date);
 			}
 			else {
-				contact.setCreateDate(serviceContext.getCreateDate(now));
+				contact.setCreateDate(serviceContext.getCreateDate(date));
 			}
 		}
 
 		if (!contactModelImpl.hasSetModifiedDate()) {
 			if (serviceContext == null) {
-				contact.setModifiedDate(now);
+				contact.setModifiedDate(date);
 			}
 			else {
-				contact.setModifiedDate(serviceContext.getModifiedDate(now));
+				contact.setModifiedDate(serviceContext.getModifiedDate(date));
 			}
 		}
 
@@ -2258,6 +2258,13 @@ public class ContactPersistenceImpl
 						contactModelImpl.getColumnBitmask(columnName);
 				}
 
+				if (finderPath.isBaseModelResult() &&
+					(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION ==
+						finderPath.getCacheName())) {
+
+					finderPathColumnBitmask |= _ORDER_BY_COLUMNS_BITMASK;
+				}
+
 				_finderPathColumnBitmasksCache.put(
 					finderPath, finderPathColumnBitmask);
 			}
@@ -2279,7 +2286,7 @@ public class ContactPersistenceImpl
 			return ContactTable.INSTANCE.getTableName();
 		}
 
-		private Object[] _getValue(
+		private static Object[] _getValue(
 			ContactModelImpl contactModelImpl, String[] columnNames,
 			boolean original) {
 
@@ -2300,8 +2307,16 @@ public class ContactPersistenceImpl
 			return arguments;
 		}
 
-		private static Map<FinderPath, Long> _finderPathColumnBitmasksCache =
-			new ConcurrentHashMap<>();
+		private static final Map<FinderPath, Long>
+			_finderPathColumnBitmasksCache = new ConcurrentHashMap<>();
+
+		private static final long _ORDER_BY_COLUMNS_BITMASK;
+
+		static {
+			long orderByColumnsBitmask = 0;
+
+			_ORDER_BY_COLUMNS_BITMASK = orderByColumnsBitmask;
+		}
 
 	}
 

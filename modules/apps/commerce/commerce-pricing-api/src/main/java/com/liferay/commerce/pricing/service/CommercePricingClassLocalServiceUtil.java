@@ -84,6 +84,18 @@ public class CommercePricingClassLocalServiceUtil {
 			serviceContext);
 	}
 
+	public static CommercePricingClass addOrUpdateCommercePricingClass(
+			String externalReferenceCode, long commercePricingClassId,
+			long userId, Map<java.util.Locale, String> titleMap,
+			Map<java.util.Locale, String> descriptionMap,
+			com.liferay.portal.kernel.service.ServiceContext serviceContext)
+		throws PortalException {
+
+		return getService().addOrUpdateCommercePricingClass(
+			externalReferenceCode, commercePricingClassId, userId, titleMap,
+			descriptionMap, serviceContext);
+	}
+
 	/**
 	 * Creates a new commerce pricing class with the primary key. Does not add the commerce pricing class to the database.
 	 *
@@ -160,6 +172,10 @@ public class CommercePricingClassLocalServiceUtil {
 
 	public static <T> T dslQuery(DSLQuery dslQuery) {
 		return getService().dslQuery(dslQuery);
+	}
+
+	public static int dslQueryCount(DSLQuery dslQuery) {
+		return getService().dslQueryCount(dslQuery);
 	}
 
 	public static DynamicQuery dynamicQuery() {
@@ -492,18 +508,6 @@ public class CommercePricingClassLocalServiceUtil {
 
 		return getService().updateCommercePricingClassExternalReferenceCode(
 			externalReferenceCode, commercePricingClassId);
-	}
-
-	public static CommercePricingClass upsertCommercePricingClass(
-			String externalReferenceCode, long commercePricingClassId,
-			long userId, Map<java.util.Locale, String> titleMap,
-			Map<java.util.Locale, String> descriptionMap,
-			com.liferay.portal.kernel.service.ServiceContext serviceContext)
-		throws PortalException {
-
-		return getService().upsertCommercePricingClass(
-			externalReferenceCode, commercePricingClassId, userId, titleMap,
-			descriptionMap, serviceContext);
 	}
 
 	public static CommercePricingClassLocalService getService() {

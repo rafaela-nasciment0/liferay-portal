@@ -44,6 +44,49 @@ definition {
 		}
 	}
 
+	@priority = "4"
+	test CanRemoveSiteInScope {
+		property test.name.skip.portal.instance = "RolesandpermissionsUsecase#CanRemoveSiteInScope";
+
+		var siteName = TestCase.getSiteName(siteName = "${siteName}");
+
+		JSONRole.addRegularRole(
+			roleKey = "Remove Permission Scope",
+			roleTitle = "Remove Permission Scope");
+
+		ApplicationsMenu.gotoPortlet(
+			category = "Users",
+			panel = "Control Panel",
+			portlet = "Roles");
+
+		Role.definePermissionCmdCP(
+			permissionDefinitionKey = "SITE_ADMIN_APPLICATIONS_DOCUMENTS_AND_MEDIA_RESOURCE_PERMISSIONS_DOCUMENT_VIEW_CHECKBOX",
+			permissionDefinitionValue = "View",
+			roleTitle = "Remove Permission Scope",
+			siteNameScope = "${siteName}");
+
+		Role.viewPermissionCP(
+			permissionDefinitionValue = "View",
+			permissionNavigationValue = "Documents and Media > Document",
+			siteNameScope = "${siteName}");
+
+		ApplicationsMenu.gotoPortlet(
+			category = "Users",
+			panel = "Control Panel",
+			portlet = "Roles");
+
+		Role.definePermissionCmdCP(
+			permissionDefinitionKey = "SITE_ADMIN_APPLICATIONS_DOCUMENTS_AND_MEDIA_RESOURCE_PERMISSIONS_DOCUMENT_VIEW_CHECKBOX",
+			permissionDefinitionValue = "View",
+			removeSiteScope = "${siteName}",
+			roleTitle = "Remove Permission Scope");
+
+		Role.viewPermissionCP(
+			permissionDefinitionValue = "View",
+			permissionNavigationValue = "Documents and Media > Document",
+			siteNameScope = "All Sites and Asset Libraries");
+	}
+
 	@description = "This is a use case for LPS-116055."
 	@priority = "5"
 	test ChangeScope {
@@ -64,7 +107,7 @@ definition {
 			permissionDefinitionKey = "SITE_ADMIN_APPLICATIONS_DOCUMENTS_AND_MEDIA_RESOURCE_PERMISSIONS_DOCUMENT_VIEW_CHECKBOX",
 			permissionDefinitionValue = "View",
 			roleTitle = "Permission Scope",
-			siteNameScope = "Liferay");
+			siteNameScope = "${siteName}");
 
 		Role.viewPermissionCP(
 			permissionDefinitionValue = "View",
@@ -291,6 +334,14 @@ definition {
 			assigneeType = "Sites",
 			permissionDefinitionValue = "Update Discussion",
 			permissionNavigationValue = "Web Content > Web Content Article");
+
+		Role.openRolesAdmin();
+
+		LAR.deleteCurrentAndPreviousProcess(
+			deleteFromPortlet = "true",
+			larFileName = "Roles_And_Assignees.lar");
+
+		AssertElementNotPresent(locator1 = "SitePagesExport#CURRENT_AND_PREVIOUS_STATUS");
 	}
 
 	@priority = "4"
@@ -317,7 +368,7 @@ definition {
 			permissionDefinitionKey = "SITE_ADMIN_APPLICATIONS_BOOKMARKS_RESOURCE_PERMISSIONS_BOOKMARKS_ENTRY_VIEW_CHECKBOX",
 			permissionDefinitionValue = "View",
 			roleTitle = "Group Scope Role Name",
-			siteNameScope = "Liferay");
+			siteNameScope = "${siteName}");
 
 		ProductMenu.gotoPortlet(
 			category = "Site Builder",
@@ -492,8 +543,6 @@ definition {
 	test RolesPermissionsDynamicDataLists {
 		property custom.properties = "jsonws.web.service.paths.excludes=";
 
-		var siteName = TestCase.getSiteName(siteName = "${siteName}");
-
 		JSONRole.addSiteRole(
 			roleKey = "Data Recorder Name",
 			roleTitle = "Data Recorder Name");
@@ -532,33 +581,19 @@ definition {
 			userLastName = "userln1",
 			userScreenName = "usersn1");
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Users",
-			panel = "Control Panel",
-			portlet = "Users and Organizations");
-
 		JSONUser.setFirstPassword(
 			agreeToTermsAndAnswerReminderQuery = "true",
 			requireReset = "false",
 			userEmailAddress = "userea1@liferay.com");
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Users",
-			panel = "Control Panel",
-			portlet = "Users and Organizations");
+		JSONGroup.assignUserToGroup(
+			groupName = "Guest",
+			userEmailAddress = "userea1@liferay.com");
 
-		User.editUserSiteCP(
-			siteName = "${siteName}",
-			userScreenName = "usersn1");
-
-		ApplicationsMenu.gotoPortlet(
-			category = "Users",
-			panel = "Control Panel",
-			portlet = "Users and Organizations");
-
-		User.assignSiteRoleCP(
-			siteRoleName = "Data Recorder Name",
-			userScreenName = "usersn1");
+		JSONGroup.assignGroupRoleToUser(
+			groupName = "Guest",
+			roleTitle = "Data Recorder Name",
+			userEmailAddress = "userea1@liferay.com");
 
 		JSONUser.addUser(
 			userEmailAddress = "userea2@liferay.com",
@@ -566,40 +601,28 @@ definition {
 			userLastName = "userln2",
 			userScreenName = "usersn2");
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Users",
-			panel = "Control Panel",
-			portlet = "Users and Organizations");
-
 		JSONUser.setFirstPassword(
 			agreeToTermsAndAnswerReminderQuery = "true",
 			requireReset = "false",
 			userEmailAddress = "userea2@liferay.com");
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Users",
-			panel = "Control Panel",
-			portlet = "Users and Organizations");
+		JSONGroup.assignUserToGroup(
+			groupName = "Guest",
+			userEmailAddress = "userea2@liferay.com");
 
-		User.editUserSiteCP(
-			siteName = "${siteName}",
-			userScreenName = "usersn2");
+		JSONGroup.assignGroupRoleToUser(
+			groupName = "Guest",
+			roleTitle = "Records Manager Name",
+			userEmailAddress = "userea2@liferay.com");
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Users",
-			panel = "Control Panel",
-			portlet = "Users and Organizations");
+		JSONLayout.addPublicLayout(
+			groupName = "Guest",
+			layoutName = "Dynamic Data Lists Page");
 
-		User.assignSiteRoleCP(
-			siteRoleName = "Records Manager Name",
-			userScreenName = "usersn2");
-
-		ProductMenu.gotoPortlet(
-			category = "Site Builder",
-			portlet = "Pages",
-			site = "${siteName}");
-
-		SitePages.addPublicPage(pageName = "Dynamic Data Lists Page");
+		JSONLayout.updateLayoutTemplateOfPublicLayout(
+			groupName = "Guest",
+			layoutName = "Dynamic Data Lists Page",
+			layoutTemplate = "1 Column");
 
 		Navigator.gotoPage(pageName = "Dynamic Data Lists Page");
 
@@ -618,16 +641,6 @@ definition {
 			fieldFieldLabel = "Employee",
 			fieldName = "Employee");
 
-		DynamicDataMapping.addField(
-			field = "Date",
-			fieldFieldLabel = "Start Date",
-			fieldName = "StartDate");
-
-		DynamicDataMapping.addField(
-			field = "Decimal",
-			fieldFieldLabel = "Salary",
-			fieldName = "Salary");
-
 		DDLDataDefinition.saveViaDDLDisplayPG();
 
 		DDLDataDefinition.selectViaDDLDisplayPG(ddlDataDefinitionName = "Employee Profile Data Definition");
@@ -642,16 +655,6 @@ definition {
 			ddlRecordFieldData = "Yes",
 			fieldFieldLabel = "Employee",
 			fieldName = "Employee");
-
-		DDLRecord.populateFieldDate(
-			ddlRecordFieldData = "04/01/2015",
-			fieldFieldLabel = "Start Date",
-			fieldName = "StartDate");
-
-		DDLRecord.populateFieldDecimal(
-			ddlRecordFieldData = "35000",
-			fieldFieldLabel = "Salary",
-			fieldName = "Salary");
 
 		PortletEntry.publish();
 
@@ -1348,12 +1351,12 @@ definition {
 			roleTitle = "Roles Orgrole Name",
 			userScreenName = "usersn2");
 
-		JSONLayout.addPublicLayoutByGroupName(
+		JSONLayout.addPublicLayout(
 			groupName = "Organization Name",
 			layoutName = "Blogs Page");
 
 		JSONLayout.addWidgetToPublicLayout(
-			groupName = "Organization Name LFR_ORGANIZATION",
+			groupName = "Organization Name",
 			layoutName = "Blogs Page",
 			widgetName = "Blogs");
 
@@ -1618,6 +1621,8 @@ definition {
 
 	@priority = "4"
 	test ViewAutomaticAssignedRoles {
+		property portal.acceptance = "true";
+
 		ApplicationsMenu.gotoPortlet(
 			category = "Users",
 			panel = "Control Panel",
@@ -1677,16 +1682,16 @@ definition {
 			subItemList = "General Permissions,Users,Sites,Configuration,Security,System,Marketplace");
 
 		Role.viewPermissionSubdirectory(
-			navItem = "Applications Menu",
-			subItemList = "Content,Accounts,Workflow,Communication,App Builder");
-
-		Role.viewPermissionSubdirectory(
 			navItem = "Site and Asset Library Administration",
 			subItemList = "Site Builder,Content & Data,Categorization,Recycle Bin,People,Configuration,Publishing,Applications");
 
 		Role.viewPermissionSubdirectory(
 			navItem = "User",
 			subItemList = "Notifications,My Submissions,My Workflow Tasks,Account Settings,My Organizations");
+
+		Role.viewPermissionSubdirectory(
+			navItem = "Applications Menu",
+			subItemList = "Content,Workflow,Communication,Accounts");
 	}
 
 	@priority = "4"

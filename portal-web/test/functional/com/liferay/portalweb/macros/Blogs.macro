@@ -1,7 +1,14 @@
 definition {
 
 	macro addDraft {
-		BlogsNavigator.gotoAddEntry();
+		if (isSet(siteURLKey)) {
+			BlogsNavigator.openToAddEntry(
+				layoutName = "${layoutName}",
+				siteURLKey = "${siteURLKey}");
+		}
+		else {
+			BlogsNavigator.gotoAddEntry();
+		}
 
 		BlogsEntry.addEntryContent(
 			entryContent = "${entryContent}",
@@ -83,6 +90,26 @@ definition {
 		PortletEntry.publish();
 	}
 
+	macro addEntryWithCoverImageFromDepot {
+		BlogsNavigator.openToAddEntry(siteURLKey = "${siteURLKey}");
+
+		BlogsEntry.addTitle(entryTitle = "${entryTitle}");
+
+		BlogsEntry.addEntryContent(
+			entryContent = "${entryContent}",
+			entrySubtitle = "${entrySubtitle}",
+			entryTitle = "${entryTitle}");
+
+		BlogsNavigator.gotoSelectFile();
+
+		ItemSelector.selectRepositoryImage(
+			depotName = "${depotName}",
+			imageFileName = "${imageFileName}",
+			navTab = "Documents and Media");
+
+		Button.clickPublish();
+	}
+
 	macro addEntryWithCoverImageFromDMFolders {
 		BlogsNavigator.gotoAddEntry();
 
@@ -104,6 +131,26 @@ definition {
 		Pause(locator1 = "1000");
 
 		Button.clickPublish();
+	}
+
+	macro addEntryWithCustomURL {
+		if (isSet(siteURLKey)) {
+			BlogsNavigator.openToAddEntry(siteURLKey = "${siteURLKey}");
+		}
+		else {
+			BlogsNavigator.gotoAddEntry();
+		}
+
+		BlogsEntry.addEntryContent(
+			entryContent = "${entryContent}",
+			entrySubtitle = "${entrySubtitle}",
+			entryTitle = "${entryTitle}");
+
+		Panel.expandPanel(panel = "Configuration");
+
+		BlogsEntry.addCustomURL(customURL = "${customURL}");
+
+		PortletEntry.publish();
 	}
 
 	macro addEntryWithHTML {
@@ -174,11 +221,22 @@ definition {
 
 		BlogsNavigator.gotoSelectFile();
 
-		ItemSelector.uploadFile(
-			navTab = "${navTab}",
-			uploadFileName = "${uploadFileName}");
+		if (isSet(uploadedFileName)) {
+			ItemSelector.selectBlogImage(
+				imageFileName = "${uploadedFileName}",
+				navTab = "${navTab}");
+		}
+		else {
+			ItemSelector.uploadFile(
+				navTab = "${navTab}",
+				uploadFileName = "${uploadFileName}");
+		}
 
-		Pause(locator1 = "5000");
+		Pause(locator1 = "3000");
+
+		if (isSet(captionField)) {
+			AssertElementPresent(locator1 = "BlogsEntry#ENTRY_COVER_IMAGE_CAPTION");
+		}
 
 		BlogsEntry.addEntryContent(
 			entryContent = "${entryContent}",
@@ -188,6 +246,23 @@ definition {
 		AssertVisible(
 			key_coverImageName = "${coverImageName}",
 			locator1 = "BlogsEntry#ENTRY_COVER_IMAGE_UNPUBLISHED");
+	}
+
+	macro addImageToBlogImages {
+		BlogsNavigator.openToAddEntry(siteURLKey = "${siteURLKey}");
+
+		for (var uploadFileName : list "${uploadFileNames}") {
+			if (IsElementPresent(locator1 = "BlogsEntry#ENTRY_COVER_IMAGE_SELECT_FILE")) {
+				AssertClick(
+					locator1 = "BlogsEntry#ENTRY_COVER_IMAGE_SELECT_FILE",
+					value1 = "Select File");
+			}
+			else {
+				BlogsNavigator.gotoBrowseImage();
+			}
+
+			ItemSelector.uploadFile(uploadFileName = "${uploadFileName}");
+		}
 	}
 
 	macro addViaAP {
@@ -339,8 +414,6 @@ definition {
 	macro assertNoPublishOption {
 		LexiconEntry.changeDisplayStyle(displayStyle = "list");
 
-		var key_entryTitle = "${entryTitle}";
-
 		Blogs.viewEntryTitle(entryTitle = "${entryTitle}");
 
 		Click(
@@ -398,6 +471,7 @@ definition {
 		BlogsNavigator.gotoEditPG(entryTitle = "${entryTitle}");
 
 		BlogsEntry.editEntryContent(
+			embedVideo = "${embedVideo}",
 			entryContent = "${entryContent}",
 			entryContentEdit = "${entryContentEdit}",
 			entrySubtitle = "${entrySubtitle}",
@@ -413,7 +487,16 @@ definition {
 	}
 
 	macro editEntryPG {
-		BlogsNavigator.gotoEditPG(entryTitle = "${entryTitle}");
+		if (isSet(siteURLKey)) {
+			BlogsNavigator.openToEditEntryInSite(
+				entryTitle = "${entryTitle}",
+				groupName = "${groupName}",
+				siteURLKey = "${siteURLKey}");
+		}
+
+		else {
+			BlogsNavigator.gotoEditPG(entryTitle = "${entryTitle}");
+		}
 
 		BlogsEntry.editEntryContent(
 			entryContent = "${entryContent}",
@@ -423,6 +506,14 @@ definition {
 			entryTitle = "${entryTitle}",
 			entryTitleEdit = "${entryTitleEdit}");
 
+		if (isSet(uploadFileName)) {
+			BlogsNavigator.gotoBrowseImage();
+
+			ItemSelector.uploadFile(
+				navTab = "${navTab}",
+				uploadFileName = "${uploadFileName}");
+		}
+
 		if ("${sendEmailEntryUpdated}" == "true") {
 			Panel.expandPanel(panel = "Configuration");
 
@@ -430,6 +521,24 @@ definition {
 				key_toggleSwitchLabel = "Send Email Entry Updated",
 				locator1 = "ToggleSwitch#ANY_TOGGLE_SWITCH");
 		}
+
+		PortletEntry.publish();
+	}
+
+	macro editEntryViaSearchResultDetails {
+		MouseOver(
+			locator1 = "SearchResults#ASSET_DETAILS_TITLE",
+			value1 = "${searchAssetTitle}");
+
+		Click(locator1 = "Icon#EDIT_PENCIL");
+
+		BlogsEntry.editEntryContent(
+			entryContent = "${entryContent}",
+			entryContentEdit = "${entryContentEdit}",
+			entrySubtitle = "${entrySubtitle}",
+			entrySubtitleEdit = "${entrySubtitleEdit}",
+			entryTitle = "${entryTitle}",
+			entryTitleEdit = "${entryTitleEdit}");
 
 		PortletEntry.publish();
 	}
@@ -520,13 +629,7 @@ definition {
 			VerifyElementPresent(locator1 = "Message#SUCCESS");
 		}
 
-		Navigator.openURL();
-
-		ProductMenu.gotoPortlet(
-			category = "Recycle Bin",
-			portlet = "Recycle Bin");
-
-		RecycleBin.emptyCP();
+		JSONRecycleBin.emptyRecycleBin();
 	}
 
 	macro tearDownSubscribePG {
@@ -566,7 +669,17 @@ definition {
 	}
 
 	macro viewEntryTitle {
-		LexiconList.viewListEntryTitleLink(listEntry = "${entryTitle}");
+		var key_entryTitle = "${entryTitle}";
+		var key_position = "${position}";
+
+		if (isSet(position)) {
+			LexiconList.viewListEntryTitleLinkSpecific(
+				listEntry = "${entryTitle}",
+				position = "${position}");
+		}
+		else {
+			LexiconList.viewListEntryTitleLink(listEntry = "${entryTitle}");
+		}
 	}
 
 	macro viewNoEntryCP {

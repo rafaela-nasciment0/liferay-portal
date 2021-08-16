@@ -298,7 +298,7 @@ public class ToolsUtil {
 
 		int pos = content.lastIndexOf("\nimport ");
 
-		if (pos == -1) {
+		if ((pos == -1) && !content.startsWith("import ")) {
 			afterImportsContent = content;
 		}
 		else {
@@ -716,7 +716,7 @@ public class ToolsUtil {
 			while (matcher1.find()) {
 				String lineStart = StringUtil.trimLeading(matcher1.group(1));
 
-				if (lineStart.contains("//") ||
+				if (lineStart.contains("//") || lineStart.startsWith("*") ||
 					isInsideQuotes(afterImportsContent, matcher1.start(2))) {
 
 					continue;

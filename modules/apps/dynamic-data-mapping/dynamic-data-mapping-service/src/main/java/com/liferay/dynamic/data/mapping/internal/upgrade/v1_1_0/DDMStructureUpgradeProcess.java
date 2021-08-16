@@ -72,7 +72,8 @@ public class DDMStructureUpgradeProcess extends UpgradeProcess {
 				continue;
 			}
 
-			visibilityExpression = _convertExpression(visibilityExpression);
+			visibilityExpression = _convertExpression(
+				ddmFormFieldsMap, visibilityExpression);
 
 			DDMFormRule ddmFormRule = new DDMFormRule(
 				Arrays.asList(
@@ -95,28 +96,29 @@ public class DDMStructureUpgradeProcess extends UpgradeProcess {
 		sb.append("select DDMStructure.definition, DDMStructure.structureId ");
 		sb.append("from DDMStructure");
 
-		try (PreparedStatement ps1 = connection.prepareStatement(sb.toString());
-			PreparedStatement ps2 =
+		try (PreparedStatement preparedStatement1 = connection.prepareStatement(
+				sb.toString());
+			PreparedStatement preparedStatement2 =
 				AutoBatchPreparedStatementUtil.concurrentAutoBatch(
 					connection,
 					"update DDMStructure set definition = ? where " +
 						"structureId = ?")) {
 
-			try (ResultSet rs = ps1.executeQuery()) {
-				while (rs.next()) {
-					String definition = rs.getString(1);
-					long structureId = rs.getLong(2);
+			try (ResultSet resultSet = preparedStatement1.executeQuery()) {
+				while (resultSet.next()) {
+					String definition = resultSet.getString(1);
+					long structureId = resultSet.getLong(2);
 
 					String newDefinition = updateDefinition(definition);
 
-					ps2.setString(1, newDefinition);
+					preparedStatement2.setString(1, newDefinition);
 
-					ps2.setLong(2, structureId);
+					preparedStatement2.setLong(2, structureId);
 
-					ps2.addBatch();
+					preparedStatement2.addBatch();
 				}
 
-				ps2.executeBatch();
+				preparedStatement2.executeBatch();
 			}
 		}
 	}
@@ -128,58 +130,59 @@ public class DDMStructureUpgradeProcess extends UpgradeProcess {
 		sb.append("DDMStructureVersion.structureVersionId from ");
 		sb.append("DDMStructureVersion");
 
-		try (PreparedStatement ps1 = connection.prepareStatement(sb.toString());
-			PreparedStatement ps2 =
+		try (PreparedStatement preparedStatement1 = connection.prepareStatement(
+				sb.toString());
+			PreparedStatement preparedStatement2 =
 				AutoBatchPreparedStatementUtil.concurrentAutoBatch(
 					connection,
 					"update DDMStructureVersion set definition = ? where " +
 						"structureVersionId = ?")) {
 
-			try (ResultSet rs = ps1.executeQuery()) {
-				while (rs.next()) {
-					String definition = rs.getString(1);
-					long structureVersionId = rs.getLong(2);
+			try (ResultSet resultSet = preparedStatement1.executeQuery()) {
+				while (resultSet.next()) {
+					String definition = resultSet.getString(1);
+					long structureVersionId = resultSet.getLong(2);
 
 					String newDefinition = updateDefinition(definition);
 
-					ps2.setString(1, newDefinition);
+					preparedStatement2.setString(1, newDefinition);
 
-					ps2.setLong(2, structureVersionId);
+					preparedStatement2.setLong(2, structureVersionId);
 
-					ps2.addBatch();
+					preparedStatement2.addBatch();
 				}
 
-				ps2.executeBatch();
+				preparedStatement2.executeBatch();
 			}
 		}
 	}
 
-	private String _convertExpression(String visibilityExpression) {
+	private String _convertExpression(
+		Map<String, DDMFormField> ddmFormFieldsMap,
+		String visibilityExpression) {
+
+		StringBundler sb1 = new StringBundler();
+
 		List<String> parameterValues =
 			ExpressionParameterValueExtractor.extractParameterValues(
 				visibilityExpression);
 
-		StringBundler sb1 = new StringBundler();
-
 		for (String parameterValue : parameterValues) {
-			if (Validator.isNull(parameterValue) ||
-				Validator.isNumber(parameterValue) ||
-				StringUtil.startsWith(parameterValue, StringPool.QUOTE)) {
+			String unquotedParameterValue = StringUtil.unquote(parameterValue);
 
+			if (!ddmFormFieldsMap.containsKey(unquotedParameterValue)) {
 				continue;
 			}
-
-			StringBundler sb2 = new StringBundler(5);
-
-			sb2.append("getValue(");
-			sb2.append(StringPool.APOSTROPHE);
-			sb2.append(parameterValue);
-			sb2.append(StringPool.APOSTROPHE);
-			sb2.append(")");
 
 			int index = visibilityExpression.indexOf(parameterValue);
 
 			sb1.append(visibilityExpression.substring(0, index));
+
+			StringBundler sb2 = new StringBundler(3);
+
+			sb2.append("getValue(");
+			sb2.append(StringUtil.quote(unquotedParameterValue));
+			sb2.append(")");
 
 			sb1.append(sb2.toString());
 

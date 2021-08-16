@@ -17,7 +17,7 @@ package com.liferay.layout.page.template.internal.upgrade.v2_1_0;
 import com.liferay.fragment.model.FragmentEntryLink;
 import com.liferay.fragment.service.FragmentEntryLinkLocalService;
 import com.liferay.layout.page.template.constants.LayoutPageTemplateEntryTypeConstants;
-import com.liferay.layout.page.template.internal.upgrade.v2_0_0.util.LayoutPageTemplateEntryTable;
+import com.liferay.layout.page.template.internal.upgrade.v2_1_0.util.LayoutPageTemplateEntryTable;
 import com.liferay.layout.page.template.model.LayoutPageTemplateEntry;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
@@ -75,31 +75,32 @@ public class LayoutUpgradeProcess extends UpgradeProcess {
 
 		try (LoggingTimer loggingTimer = new LoggingTimer();
 			Statement s = connection.createStatement();
-			ResultSet rs = s.executeQuery(sb.toString());
-			PreparedStatement ps = AutoBatchPreparedStatementUtil.autoBatch(
-				connection.prepareStatement(
-					"update LayoutPageTemplateEntry set plid = ? where " +
-						"layoutPageTemplateEntryId = ?"))) {
+			ResultSet resultSet = s.executeQuery(sb.toString());
+			PreparedStatement preparedStatement =
+				AutoBatchPreparedStatementUtil.autoBatch(
+					connection.prepareStatement(
+						"update LayoutPageTemplateEntry set plid = ? where " +
+							"layoutPageTemplateEntryId = ?"))) {
 
-			while (rs.next()) {
-				long userId = rs.getLong("userId");
-				long groupId = rs.getLong("groupId");
-				String name = rs.getString("name");
-				int type = rs.getInt("type_");
-				long layoutPrototypeId = rs.getLong("layoutPrototypeId");
+			while (resultSet.next()) {
+				long userId = resultSet.getLong("userId");
+				long groupId = resultSet.getLong("groupId");
+				String name = resultSet.getString("name");
+				int type = resultSet.getInt("type_");
+				long layoutPrototypeId = resultSet.getLong("layoutPrototypeId");
 
 				long plid = _getPlid(
 					userId, groupId, name, type, layoutPrototypeId,
 					serviceContext);
 
-				ps.setLong(1, plid);
+				preparedStatement.setLong(1, plid);
 
-				long layoutPageTemplateEntryId = rs.getLong(
+				long layoutPageTemplateEntryId = resultSet.getLong(
 					"layoutPageTemplateEntryId");
 
-				ps.setLong(2, layoutPageTemplateEntryId);
+				preparedStatement.setLong(2, layoutPageTemplateEntryId);
 
-				ps.addBatch();
+				preparedStatement.addBatch();
 
 				List<FragmentEntryLink> fragmentEntryLinks =
 					_fragmentEntryLinkLocalService.getFragmentEntryLinks(
@@ -130,14 +131,16 @@ public class LayoutUpgradeProcess extends UpgradeProcess {
 				}
 			}
 
-			ps.executeBatch();
+			preparedStatement.executeBatch();
 		}
 	}
 
 	protected void upgradeSchema() throws Exception {
-		alter(
-			LayoutPageTemplateEntryTable.class,
-			new AlterTableAddColumn("plid", "LONG"));
+		if (!hasColumn(LayoutPageTemplateEntryTable.TABLE_NAME, "plid")) {
+			alter(
+				LayoutPageTemplateEntryTable.class,
+				new AlterTableAddColumn("plid", "LONG"));
+		}
 	}
 
 	private long _getPlid(

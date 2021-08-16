@@ -65,6 +65,7 @@ import ${apiPackagePath}.service.persistence.${entity.name}Persistence;
 	import ${packagePath}.service.persistence.impl.constants.${portletShortName}PersistenceConstants;
 </#if>
 
+import com.liferay.petra.lang.SafeCloseable;
 import com.liferay.portal.kernel.bean.BeanReference;
 import com.liferay.portal.kernel.change.tracking.CTColumnResolutionType;
 import com.liferay.portal.kernel.configuration.Configuration;
@@ -366,16 +367,47 @@ public class ${entity.name}PersistenceImpl extends BasePersistenceImpl<${entity.
 				}
 			</#if>
 
-			if (${entityCache}.getResult(
-				<#if serviceBuilder.isVersionLTE_7_2_0()>
-					${entityCacheEnabled},
-				</#if>
-				${entity.name}Impl.class, ${entity.variableName}.getPrimaryKey()) == null) {
-				cacheResult(${entity.variableName});
-			}
-			<#if serviceBuilder.isVersionLTE_7_2_0()>
+			<#if serviceBuilder.isVersionGTE_7_4_0() && stringUtil.equals(entity.name, "Company")>
+				try (SafeCloseable safeCloseable =
+					CompanyThreadLocal.setWithSafeCloseable(${entity.variableName}.getPrimaryKey())) {
+			</#if>
+
+			<#if (cacheFields?size > 0)>
+				${entity.name} cached${entity.name} = (${entity.name})${entityCache}.getResult(
+					<#if serviceBuilder.isVersionLTE_7_2_0()>
+						${entityCacheEnabled},
+					</#if>
+					${entity.name}Impl.class, ${entity.variableName}.getPrimaryKey());
+
+				if (cached${entity.name} == null) {
+					cacheResult(${entity.variableName});
+				}
 				else {
-					${entity.variableName}.resetOriginalValues();
+					${entity.name}ModelImpl ${entity.variableName}ModelImpl = (${entity.name}ModelImpl)${entity.variableName};
+					${entity.name}ModelImpl cached${entity.name}ModelImpl = (${entity.name}ModelImpl)cached${entity.name};
+
+					<#list cacheFields as cacheField>
+						<#assign methodName = serviceBuilder.getCacheFieldMethodName(cacheField) />
+
+						${entity.variableName}ModelImpl.set${methodName}(cached${entity.name}ModelImpl.get${methodName}());
+					</#list>
+				}
+			<#else>
+				if (${entityCache}.getResult(
+					<#if serviceBuilder.isVersionLTE_7_2_0()>
+						${entityCacheEnabled},
+					</#if>
+					${entity.name}Impl.class, ${entity.variableName}.getPrimaryKey()) == null) {
+					cacheResult(${entity.variableName});
+				}
+				<#if serviceBuilder.isVersionLTE_7_2_0()>
+					else {
+						${entity.variableName}.resetOriginalValues();
+					}
+				</#if>
+			</#if>
+
+			<#if serviceBuilder.isVersionGTE_7_4_0() && stringUtil.equals(entity.name, "Company")>
 				}
 			</#if>
 		}
@@ -707,7 +739,7 @@ public class ${entity.name}PersistenceImpl extends BasePersistenceImpl<${entity.
 	public ${entity.name} updateImpl(${apiPackagePath}.model.${entity.name} ${entity.variableName}) {
 		boolean isNew = ${entity.variableName}.isNew();
 
-		<#if entity.isHierarchicalTree() || (entity.collectionEntityFinders?size != 0) || (entity.uniqueEntityFinders?size &gt; 0) || (entity.hasEntityColumn("createDate", "Date") && entity.hasEntityColumn("modifiedDate", "Date"))>
+		<#if entity.isHierarchicalTree() || (entity.collectionEntityFinders?size != 0) || (entity.uniqueEntityFinders?size &gt; 0) || entity.hasEntityColumn("createDate", "Date") || entity.hasEntityColumn("modifiedDate", "Date")>
 			if (!(${entity.variableName} instanceof ${entity.name}ModelImpl)) {
 				InvocationHandler invocationHandler = null;
 
@@ -734,23 +766,41 @@ public class ${entity.name}PersistenceImpl extends BasePersistenceImpl<${entity.
 		<#if entity.hasEntityColumn("createDate", "Date") && entity.hasEntityColumn("modifiedDate", "Date")>
 			ServiceContext serviceContext = ServiceContextThreadLocal.getServiceContext();
 
-			Date now = new Date();
+			Date date = new Date();
+		</#if>
 
+		<#if entity.hasEntityColumn("createDate", "Date")>
 			if (isNew && (${entity.variableName}.getCreateDate() == null)) {
+
+			<#if !entity.hasEntityColumn("modifiedDate", "Date")>
+				ServiceContext serviceContext = ServiceContextThreadLocal.getServiceContext();
+
+				Date date = new Date();
+			</#if>
+
 				if (serviceContext == null) {
-					${entity.variableName}.setCreateDate(now);
+					${entity.variableName}.setCreateDate(date);
 				}
 				else {
-					${entity.variableName}.setCreateDate(serviceContext.getCreateDate(now));
+					${entity.variableName}.setCreateDate(serviceContext.getCreateDate(date));
 				}
 			}
+		</#if>
 
+		<#if entity.hasEntityColumn("modifiedDate", "Date")>
 			if (!${entity.variableName}ModelImpl.hasSetModifiedDate()) {
+
+			<#if !entity.hasEntityColumn("createDate", "Date")>
+				ServiceContext serviceContext = ServiceContextThreadLocal.getServiceContext();
+
+				Date date = new Date();
+			</#if>
+
 				if (serviceContext == null) {
-					${entity.variableName}.setModifiedDate(now);
+					${entity.variableName}.setModifiedDate(date);
 				}
 				else {
-					${entity.variableName}.setModifiedDate(serviceContext.getModifiedDate(now));
+					${entity.variableName}.setModifiedDate(serviceContext.getModifiedDate(date));
 				}
 			}
 		</#if>
@@ -1954,7 +2004,7 @@ public class ${entity.name}PersistenceImpl extends BasePersistenceImpl<${entity.
 	<#if entity.isChangeTrackingEnabled()>
 		@Override
 		public Set<String> getCTColumnNames(CTColumnResolutionType ctColumnResolutionType) {
-			return _ctColumnNamesMap.get(ctColumnResolutionType);
+			return _ctColumnNamesMap.getOrDefault(ctColumnResolutionType, Collections.emptySet());
 		}
 
 		@Override
@@ -1982,28 +2032,25 @@ public class ${entity.name}PersistenceImpl extends BasePersistenceImpl<${entity.
 		private static final List<String[]> _uniqueIndexColumnNames = new ArrayList<String[]>();
 
 		static {
-			Set<String> ctControlColumnNames = new HashSet<String>();
-			Set<String> ctIgnoreColumnNames = new HashSet<String>();
-			Set<String> ctMergeColumnNames = new HashSet<String>();
-			Set<String> ctStrictColumnNames = new HashSet<String>();
-
-			<#list entity.entityColumns as entityColumn>
-				<#if entityColumn.isChangeTrackingControl()>
-					ctControlColumnNames.add("${entityColumn.DBName}");
-				<#elseif entityColumn.isChangeTrackingIgnore()>
-					ctIgnoreColumnNames.add("${entityColumn.DBName}");
-				<#elseif entityColumn.isChangeTrackingMerge()>
-					ctMergeColumnNames.add("${entityColumn.DBName}");
-				<#elseif entityColumn.isChangeTrackingStrict()>
-					ctStrictColumnNames.add("${entityColumn.DBName}");
+			<#list entity.getCTColumnResolutionTypeNames() as ctColumnResolutionTypeName>
+				<#if !stringUtil.equals(ctColumnResolutionTypeName, "Pk")>
+					Set<String> ct${ctColumnResolutionTypeName}ColumnNames = new HashSet<String>();
 				</#if>
 			</#list>
 
-			_ctColumnNamesMap.put(CTColumnResolutionType.CONTROL, ctControlColumnNames);
-			_ctColumnNamesMap.put(CTColumnResolutionType.IGNORE, ctIgnoreColumnNames);
-			_ctColumnNamesMap.put(CTColumnResolutionType.MERGE, ctMergeColumnNames);
-			_ctColumnNamesMap.put(CTColumnResolutionType.PK, Collections.singleton("${entity.PKDBName}"));
-			_ctColumnNamesMap.put(CTColumnResolutionType.STRICT, ctStrictColumnNames);
+			<#list entity.entityColumns as entityColumn>
+				<#if !stringUtil.equals(entityColumn.getCTColumnResolutionTypeName(), "Pk")>
+					ct${entityColumn.getCTColumnResolutionTypeName()}ColumnNames.add("${entityColumn.DBName}");
+				</#if>
+			</#list>
+
+			<#list entity.getCTColumnResolutionTypeNames() as ctColumnResolutionTypeName>
+				<#if stringUtil.equals(ctColumnResolutionTypeName, "Pk")>
+					_ctColumnNamesMap.put(CTColumnResolutionType.${stringUtil.toUpperCase(ctColumnResolutionTypeName)}, Collections.singleton("${entity.PKDBName}"));
+				<#else>
+					_ctColumnNamesMap.put(CTColumnResolutionType.${stringUtil.toUpperCase(ctColumnResolutionTypeName)}, ct${ctColumnResolutionTypeName}ColumnNames);
+				</#if>
+			</#list>
 
 			<#list entity.entityColumns as entityColumn>
 				<#if entityColumn.isCollection() && entityColumn.isMappingManyToMany()>
@@ -2980,6 +3027,12 @@ public class ${entity.name}PersistenceImpl extends BasePersistenceImpl<${entity.
 							finderPathColumnBitmask |= ${entity.variableName}ModelImpl.getColumnBitmask(columnName);
 						}
 
+						<#if entity.entityOrder??>
+							if (finderPath.isBaseModelResult() && (FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION == finderPath.getCacheName())) {
+								finderPathColumnBitmask |= _ORDER_BY_COLUMNS_BITMASK;
+							}
+						</#if>
+
 						_finderPathColumnBitmasksCache.put(finderPath, finderPathColumnBitmask);
 					}
 
@@ -2987,10 +3040,12 @@ public class ${entity.name}PersistenceImpl extends BasePersistenceImpl<${entity.
 						return _getValue(${entity.variableName}ModelImpl, columnNames, original);
 					}
 				<#else>
-					Object[] values = _getValue(${entity.variableName}ModelImpl, columnNames, original);
-
-					if (!checkColumn || !Arrays.equals(values, _getValue(${entity.variableName}ModelImpl, columnNames, !original))) {
-						return values;
+					if (!checkColumn || _hasModifiedColumns(${entity.variableName}ModelImpl, columnNames)
+						<#if entity.entityOrder??>
+							|| _hasModifiedColumns(${entity.variableName}ModelImpl, _ORDER_BY_COLUMNS)
+						</#if>
+					) {
+						return _getValue(${entity.variableName}ModelImpl, columnNames, original);
 					}
 				</#if>
 
@@ -3009,7 +3064,7 @@ public class ${entity.name}PersistenceImpl extends BasePersistenceImpl<${entity.
 				}
 			</#if>
 
-			private Object[] _getValue(${entity.name}ModelImpl ${entity.variableName}ModelImpl, String[] columnNames, boolean original) {
+			private static Object[] _getValue(${entity.name}ModelImpl ${entity.variableName}ModelImpl, String[] columnNames, boolean original) {
 				Object[] arguments = new Object[columnNames.length];
 
 				for (int i = 0; i < arguments.length; i ++) {
@@ -3026,8 +3081,58 @@ public class ${entity.name}PersistenceImpl extends BasePersistenceImpl<${entity.
 				return arguments;
 			}
 
-			private static Map<FinderPath, Long> _finderPathColumnBitmasksCache = new ConcurrentHashMap<>();
+			<#if columnBitmaskEnabled>
+				private static final Map<FinderPath, Long> _finderPathColumnBitmasksCache = new ConcurrentHashMap<>();
+			<#else>
+				private static boolean _hasModifiedColumns(${entity.name}ModelImpl ${entity.variableName}ModelImpl, String[] columnNames) {
+					if (columnNames.length == 0) {
+						return false;
+					}
 
+					for (String columnName : columnNames) {
+						if (!Objects.equals(${entity.variableName}ModelImpl.getColumnOriginalValue(columnName), ${entity.variableName}ModelImpl.getColumnValue(columnName))) {
+							return true;
+						}
+					}
+
+					return false;
+				}
+			</#if>
+
+			<#if entity.entityOrder??>
+				<#if columnBitmaskEnabled>
+					private static final long _ORDER_BY_COLUMNS_BITMASK;
+
+					static {
+						long orderByColumnsBitmask = 0;
+
+						<#list entity.entityOrder.entityColumns as entityColumn>
+							<#if !entity.PKEntityColumns?seq_contains(entityColumn)>
+								orderByColumnsBitmask |= ${entity.name}ModelImpl.getColumnBitmask("${entityColumn.DBName}");
+							</#if>
+						</#list>
+
+						_ORDER_BY_COLUMNS_BITMASK = orderByColumnsBitmask;
+					}
+
+				<#else>
+					private static final String[] _ORDER_BY_COLUMNS;
+
+					static {
+						List<String> orderByColumns = new ArrayList<String>();
+
+						<#if entity.entityOrder??>
+							<#list entity.entityOrder.entityColumns as entityColumn>
+								<#if !entity.PKEntityColumns?seq_contains(entityColumn)>
+									orderByColumns.add("${entityColumn.DBName}");
+								</#if>
+							</#list>
+						</#if>
+
+						_ORDER_BY_COLUMNS = orderByColumns.toArray(new String[0]);
+					}
+				</#if>
+			</#if>
 		}
 	</#if>
 }

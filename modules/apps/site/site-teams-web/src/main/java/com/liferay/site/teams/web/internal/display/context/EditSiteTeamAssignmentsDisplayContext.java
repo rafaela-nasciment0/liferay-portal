@@ -50,11 +50,11 @@ public class EditSiteTeamAssignmentsDisplayContext {
 			renderResponse
 		).setMVCPath(
 			"/edit_team_assignments.jsp"
-		).setParameter(
-			"tabs1", getTabs1()
+		).setTabs1(
+			getTabs1()
 		).setParameter(
 			"teamId", getTeamId()
-		).build();
+		).buildPortletURL();
 	}
 
 	public List<NavigationItem> getNavigationItems() {

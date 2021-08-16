@@ -12,9 +12,9 @@
  * details.
  */
 
-import {useMutation} from '@apollo/client';
 import ClayButton from '@clayui/button';
 import ClayIcon from '@clayui/icon';
+import {useMutation} from 'graphql-hooks';
 import React, {useEffect, useState} from 'react';
 
 import {
@@ -36,33 +36,15 @@ export default ({
 
 	const onCompleted = () => {
 		setSubscription(!subscription);
-		if (onSubscription) {
-			onSubscription(!subscription);
-		}
+		onSubscription?.();
 	};
 
-	const update = (proxy) => {
-		proxy.evict(`MessageBoardSection:${messageBoardSectionId}`);
-		proxy.gc();
-	};
-
-	const [subscribeSection] = useMutation(subscribeSectionQuery, {
-		onCompleted,
-		update,
-	});
-
-	const [unsubscribeSection] = useMutation(unsubscribeSectionQuery, {
-		onCompleted,
-		update,
-	});
+	const [subscribeSection] = useMutation(subscribeSectionQuery);
+	const [unsubscribeSection] = useMutation(unsubscribeSectionQuery);
 
 	const changeSubscription = () => {
-		if (subscription) {
-			unsubscribeSection({variables: {messageBoardSectionId}});
-		}
-		else {
-			subscribeSection({variables: {messageBoardSectionId}});
-		}
+		const fn = subscription ? unsubscribeSection : subscribeSection;
+		fn({variables: {messageBoardSectionId}}).then(onCompleted);
 	};
 
 	const btnTitle = subscription

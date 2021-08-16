@@ -78,7 +78,7 @@ public class CommerceAccountOrganizationRelAdminDisplayContext
 		).setRedirect(
 			commerceAccountAdminRequestHelper.getCurrentURL()
 		).setParameter(
-			"organization", organizationId
+			"organizationId", organizationId
 		).buildString();
 	}
 
@@ -110,7 +110,7 @@ public class CommerceAccountOrganizationRelAdminDisplayContext
 			super.getPortletURL()
 		).setMVCRenderCommandName(
 			"/commerce_account_admin/edit_commerce_account"
-		).build();
+		).buildPortletURL();
 	}
 
 	@Override

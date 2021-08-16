@@ -110,7 +110,7 @@ definition {
 				value1 = "${paymentMethod}");
 		}
 
-		AssertTextEquals(
+		AssertTextEquals.assertPartialText(
 			key_productName = "${productName}",
 			locator1 = "CommerceAccelerators#CHECKOUT_SUMMARY_PRODUCT_TABLE_PRODUCT",
 			value1 = "${productName}");

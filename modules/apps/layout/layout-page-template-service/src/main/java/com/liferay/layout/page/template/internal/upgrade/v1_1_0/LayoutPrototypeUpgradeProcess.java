@@ -32,9 +32,9 @@ import com.liferay.portal.kernel.util.LoggingTimer;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 
+import java.sql.Date;
 import java.sql.PreparedStatement;
 
-import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
@@ -62,7 +62,9 @@ public class LayoutPrototypeUpgradeProcess extends UpgradeProcess {
 	}
 
 	protected void upgradeLayoutPrototype() throws Exception {
-		StringBuilder sb = new StringBuilder();
+		Date date = new Date(System.currentTimeMillis());
+
+		StringBundler sb = new StringBundler(6);
 
 		sb.append("insert into LayoutPageTemplateEntry (uuid_, ");
 		sb.append("layoutPageTemplateEntryId, groupId, companyId, userId, ");
@@ -72,7 +74,7 @@ public class LayoutPrototypeUpgradeProcess extends UpgradeProcess {
 		sb.append("?, ?, ?, ?, ?, ?)");
 
 		try (LoggingTimer loggingTimer = new LoggingTimer();
-			PreparedStatement ps =
+			PreparedStatement preparedStatement =
 				AutoBatchPreparedStatementUtil.concurrentAutoBatch(
 					connection, sb.toString())) {
 
@@ -83,7 +85,6 @@ public class LayoutPrototypeUpgradeProcess extends UpgradeProcess {
 					QueryUtil.ALL_POS, QueryUtil.ALL_POS);
 
 			for (LayoutPrototype layoutPrototype : layoutPrototypes) {
-				Date createDate = layoutPrototype.getCreateDate();
 				String nameXML = layoutPrototype.getName();
 
 				Company company = _companyLocalService.getCompany(
@@ -104,31 +105,49 @@ public class LayoutPrototypeUpgradeProcess extends UpgradeProcess {
 
 					layoutPrototype.setNameMap(nameMap);
 
+					layoutPrototype =
+						_layoutPrototypeLocalService.updateLayoutPrototype(
+							layoutPrototype);
+				}
+
+				if ((layoutPrototype.getCreateDate() == null) ||
+					(layoutPrototype.getModifiedDate() == null)) {
+
+					if (layoutPrototype.getCreateDate() == null) {
+						layoutPrototype.setCreateDate(date);
+					}
+
+					if (layoutPrototype.getModifiedDate() == null) {
+						layoutPrototype.setModifiedDate(date);
+					}
+
 					_layoutPrototypeLocalService.updateLayoutPrototype(
 						layoutPrototype);
 				}
 
 				existingNames.add(name);
 
-				ps.setString(1, layoutPrototype.getUuid());
-				ps.setLong(2, increment());
-				ps.setLong(3, company.getGroupId());
-				ps.setLong(4, layoutPrototype.getCompanyId());
-				ps.setLong(5, layoutPrototype.getUserId());
-				ps.setString(6, layoutPrototype.getUserName());
-				ps.setDate(7, new java.sql.Date(createDate.getTime()));
-				ps.setDate(8, new java.sql.Date(createDate.getTime()));
-				ps.setLong(9, 0);
-				ps.setString(10, name);
-				ps.setInt(
-					11, LayoutPageTemplateEntryTypeConstants.TYPE_WIDGET_PAGE);
-				ps.setLong(12, layoutPrototype.getLayoutPrototypeId());
-				ps.setInt(13, WorkflowConstants.STATUS_APPROVED);
+				preparedStatement.setString(1, layoutPrototype.getUuid());
+				preparedStatement.setLong(2, increment());
+				preparedStatement.setLong(3, company.getGroupId());
+				preparedStatement.setLong(4, layoutPrototype.getCompanyId());
+				preparedStatement.setLong(5, layoutPrototype.getUserId());
+				preparedStatement.setString(6, layoutPrototype.getUserName());
+				preparedStatement.setDate(7, date);
+				preparedStatement.setDate(8, date);
 
-				ps.addBatch();
+				preparedStatement.setLong(9, 0);
+				preparedStatement.setString(10, name);
+				preparedStatement.setInt(
+					11, LayoutPageTemplateEntryTypeConstants.TYPE_WIDGET_PAGE);
+				preparedStatement.setLong(
+					12, layoutPrototype.getLayoutPrototypeId());
+				preparedStatement.setInt(13, WorkflowConstants.STATUS_APPROVED);
+
+				preparedStatement.addBatch();
 			}
 
-			ps.executeBatch();
+			preparedStatement.executeBatch();
 		}
 	}
 

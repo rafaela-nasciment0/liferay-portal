@@ -21,6 +21,7 @@ import com.liferay.asset.kernel.model.AssetRendererFactory;
 import com.liferay.asset.util.AssetRendererFactoryLookup;
 import com.liferay.petra.portlet.url.builder.PortletURLBuilder;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
+import com.liferay.portal.kernel.theme.PortletDisplay;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.WebKeys;
@@ -108,8 +109,18 @@ public class SearchResultContentDisplayBuilder {
 							_portal.getLiferayPortletResponse(_renderResponse))
 					).setRedirect(
 						themeDisplay.getURLCurrent()
+					).setPortletResource(
+						() -> {
+							PortletDisplay portletDisplay =
+								themeDisplay.getPortletDisplay();
+
+							return portletDisplay.getId();
+						}
 					).buildString());
 			}
+
+			searchResultContentDisplayContext.setShowExtraInfo(
+				_type.equals("document"));
 		}
 
 		return searchResultContentDisplayContext;

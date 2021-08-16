@@ -24,19 +24,19 @@ PortletURL searchURL = PortletURLBuilder.createRenderURL(
 	renderResponse
 ).setMVCRenderCommandName(
 	"/server_admin/view"
+).setTabs1(
+	tabs1
 ).setParameter(
-	"tabs1", tabs1
-).setParameter(
-	"delta", String.valueOf(delta)
-).build();
+	"delta", delta
+).buildPortletURL();
 
 PortletURL clearResultsURL = PortletURLBuilder.create(
 	PortletURLUtil.clone(searchURL, liferayPortletResponse)
-).setParameter(
-	"navigation", (String)null
-).setParameter(
-	"keywords", StringPool.BLANK
-).build();
+).setKeywords(
+	StringPool.BLANK
+).setNavigation(
+	(String)null
+).buildPortletURL();
 
 SearchContainer<Map.Entry<String, String>> loggerSearchContainer = new SearchContainer(liferayPortletRequest, searchURL, null, null);
 
@@ -63,7 +63,7 @@ PortletURL addLogCategoryURL = PortletURLBuilder.createRenderURL(
 	"/server_admin/add_log_category"
 ).setRedirect(
 	currentURL
-).build();
+).buildPortletURL();
 
 CreationMenu creationMenu =
 	new CreationMenu() {

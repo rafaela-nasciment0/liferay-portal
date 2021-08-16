@@ -184,12 +184,8 @@ public class DLFileEntryAssetRendererFactory
 				0, PortletRequest.RENDER_PHASE)
 		).setMVCRenderCommandName(
 			"/document_library/edit_file_entry"
-		).setParameter(
-			Constants.CMD, Constants.ADD
-		).setParameter(
-			"groupId", group.getGroupId()
-		).setParameter(
-			"folderId", DLFolderConstants.DEFAULT_PARENT_FOLDER_ID
+		).setCMD(
+			Constants.ADD
 		).setParameter(
 			"fileEntryTypeId",
 			() -> {
@@ -203,10 +199,14 @@ public class DLFileEntryAssetRendererFactory
 				return fileEntryTypeId;
 			}
 		).setParameter(
-			"showMountFolder", Boolean.FALSE.toString()
+			"folderId", DLFolderConstants.DEFAULT_PARENT_FOLDER_ID
 		).setParameter(
-			"showSelectFolder", Boolean.TRUE.toString()
-		).build();
+			"groupId", group.getGroupId()
+		).setParameter(
+			"showMountFolder", false
+		).setParameter(
+			"showSelectFolder", true
+		).buildPortletURL();
 	}
 
 	@Override

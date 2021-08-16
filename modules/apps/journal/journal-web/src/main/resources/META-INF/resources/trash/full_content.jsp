@@ -39,15 +39,15 @@ JournalArticleDisplay articleDisplay = (JournalArticleDisplay)request.getAttribu
 		portletURL='<%=
 			PortletURLBuilder.createRenderURL(
 				renderResponse
-			).setParameter(
-				"mvcPath", "/preview.jsp"
+			).setMVCPath(
+				"/preview.jsp"
 			).setParameter(
 				"classNameId", assetRendererFactory.getClassNameId()
 			).setParameter(
 				"classPK", JournalArticleAssetRenderer.getClassPK(article)
 			).setWindowState(
 				LiferayWindowState.POP_UP
-			).build()
+			).buildPortletURL()
 		%>'
 		total="<%= articleDisplay.getNumberOfPages() %>"
 		type="article"

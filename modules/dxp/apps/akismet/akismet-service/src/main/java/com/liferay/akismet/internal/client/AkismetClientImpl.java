@@ -20,6 +20,7 @@ import com.liferay.akismet.internal.configuration.AkismetServiceConfiguration;
 import com.liferay.akismet.model.AkismetEntry;
 import com.liferay.akismet.service.AkismetEntryLocalService;
 import com.liferay.message.boards.model.MBMessage;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.configuration.metatype.bnd.util.ConfigurableUtil;
 import com.liferay.portal.kernel.exception.PortalException;
@@ -33,7 +34,6 @@ import com.liferay.portal.kernel.servlet.HttpHeaders;
 import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.Http;
 import com.liferay.portal.kernel.util.Portal;
-import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 
@@ -66,11 +66,7 @@ public class AkismetClientImpl implements AkismetClient {
 		String userAgent = headers.get(
 			StringUtil.toLowerCase(HttpHeaders.USER_AGENT));
 
-		if (Validator.isNull(userAgent)) {
-			return false;
-		}
-
-		if (Validator.isNull(userIP)) {
+		if (Validator.isNull(userAgent) || Validator.isNull(userIP)) {
 			return false;
 		}
 

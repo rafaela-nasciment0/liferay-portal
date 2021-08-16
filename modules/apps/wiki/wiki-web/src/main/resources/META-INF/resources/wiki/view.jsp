@@ -68,7 +68,7 @@ if (Validator.isNotNull(parentTitle)) {
 		PortletURLUtil.clone(viewPageURL, renderResponse)
 	).setParameter(
 		"title", parentTitle
-	).build();
+	).buildPortletURL();
 
 	parentTitle = StringUtil.shorten(parentTitle, 20);
 }
@@ -80,14 +80,14 @@ PortletURL addPageURL = PortletURLBuilder.createRenderURL(
 ).setRedirect(
 	currentURL
 ).setParameter(
-	"nodeId", String.valueOf(node.getNodeId())
-).setParameter(
-	"title", StringPool.BLANK
-).setParameter(
 	"editTitle", "1"
 ).setParameter(
+	"nodeId", node.getNodeId()
+).setParameter(
 	"parentTitle", wikiPage.getTitle()
-).build();
+).setParameter(
+	"title", StringPool.BLANK
+).buildPortletURL();
 
 PortletURL editPageURL = PortletURLBuilder.createRenderURL(
 	renderResponse
@@ -96,10 +96,10 @@ PortletURL editPageURL = PortletURLBuilder.createRenderURL(
 ).setRedirect(
 	currentURL
 ).setParameter(
-	"nodeId", String.valueOf(node.getNodeId())
+	"nodeId", node.getNodeId()
 ).setParameter(
 	"title", title
-).build();
+).buildPortletURL();
 
 PortletURL printPageURL = PortletURLBuilder.create(
 	PortletURLUtil.clone(viewPageURL, renderResponse)
@@ -107,23 +107,23 @@ PortletURL printPageURL = PortletURLBuilder.create(
 	"viewMode", Constants.PRINT
 ).setWindowState(
 	LiferayWindowState.POP_UP
-).build();
+).buildPortletURL();
 
 PortletURL categorizedPagesURL = PortletURLBuilder.createRenderURL(
 	renderResponse
 ).setMVCRenderCommandName(
 	"/wiki/view_categorized_pages"
 ).setParameter(
-	"nodeId", String.valueOf(node.getNodeId())
-).build();
+	"nodeId", node.getNodeId()
+).buildPortletURL();
 
 PortletURL taggedPagesURL = PortletURLBuilder.createRenderURL(
 	renderResponse
 ).setMVCRenderCommandName(
 	"/wiki/view_tagged_pages"
 ).setParameter(
-	"nodeId", String.valueOf(node.getNodeId())
-).build();
+	"nodeId", node.getNodeId()
+).buildPortletURL();
 
 AssetEntry layoutAssetEntry = AssetEntryLocalServiceUtil.getEntry(WikiPage.class.getName(), wikiPage.getResourcePrimKey());
 
@@ -285,23 +285,21 @@ if (portletTitleBasedNavigation) {
 									</c:if>
 								</c:if>
 
-								<%
-								PortletURL viewPageDetailsURL = PortletURLBuilder.create(
-									PortletURLUtil.clone(viewPageURL, renderResponse)
-								).setMVCRenderCommandName(
-									"/wiki/view_page_details"
-								).setRedirect(
-									currentURL
-								).build();
-								%>
-
 								<liferay-ui:icon
 									icon="document"
 									label="<%= true %>"
 									markupView="lexicon"
 									message="details"
 									method="get"
-									url="<%= viewPageDetailsURL.toString() %>"
+									url='<%=
+										PortletURLBuilder.create(
+											PortletURLUtil.clone(viewPageURL, renderResponse)
+										).setMVCRenderCommandName(
+											"/wiki/view_page_details"
+										).setRedirect(
+											currentURL
+										).buildString()
+%>'
 								/>
 
 								<liferay-ui:icon
@@ -322,12 +320,12 @@ if (portletTitleBasedNavigation) {
 							).setMVCRenderCommandName(
 								"/wiki/view"
 							).setParameter(
+								"followRedirect", "false"
+							).setParameter(
 								"nodeName", node.getName()
 							).setParameter(
 								"title", originalPage.getTitle()
-							).setParameter(
-								"followRedirect", "false"
-							).build();
+							).buildPortletURL();
 							%>
 
 							<div class="page-redirect" onClick="location.href = '<%= originalViewPageURL.toString() %>';">
@@ -483,16 +481,14 @@ if (portletTitleBasedNavigation) {
 
 							<li class="list-group-item">
 								<h3>
-
-									<%
-									PortletURL rowURL = PortletURLBuilder.create(
+									<aui:a
+										href="<%=
+PortletURLBuilder.create(
 										PortletURLUtil.clone(viewPageURL, renderResponse)
 									).setParameter(
 										"title", childPage.getTitle()
-									).build();
-									%>
-
-									<aui:a href="<%= rowURL.toString() %>"><%= childPage.getTitle() %></aui:a>
+									).buildString() %>"><%= childPage.getTitle() %></aui:a
+									>
 								</h3>
 
 								<%

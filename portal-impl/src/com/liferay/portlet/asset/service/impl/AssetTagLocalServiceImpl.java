@@ -677,6 +677,22 @@ public class AssetTagLocalServiceImpl extends AssetTagLocalServiceBaseImpl {
 		return searchTags(searchContext);
 	}
 
+	@Override
+	public void subscribeTag(long userId, long groupId, long tagId)
+		throws PortalException {
+
+		throw new UnsupportedOperationException(
+			"This method is implemented in com.liferay.asset.tags.internal." +
+				"service.AssetTagLocalServiceWrapper");
+	}
+
+	@Override
+	public void unsubscribeTag(long userId, long tagId) throws PortalException {
+		throw new UnsupportedOperationException(
+			"This method is implemented in com.liferay.asset.tags.internal." +
+				"service.AssetTagLocalServiceWrapper");
+	}
+
 	@Indexable(type = IndexableType.REINDEX)
 	@Override
 	public AssetTag updateTag(
@@ -691,7 +707,7 @@ public class AssetTagLocalServiceImpl extends AssetTagLocalServiceBaseImpl {
 
 		name = StringUtil.toLowerCase(StringUtil.trim(name));
 
-		if (!name.equals(tag.getName()) && hasTag(tag.getGroupId(), name)) {
+		if (!name.equals(oldName) && hasTag(tag.getGroupId(), name)) {
 			throw new DuplicateTagException(
 				"A tag with the name " + name + " already exists");
 		}

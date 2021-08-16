@@ -92,25 +92,23 @@ if (layout != null) {
 				String rowHREF = StringPool.BLANK;
 
 				if (DDMTemplatePermission.contains(permissionChecker, template, ActionKeys.UPDATE)) {
-					PortletURL rowURL = PortletURLBuilder.createRenderURL(
+					rowHREF = PortletURLBuilder.createRenderURL(
 						renderResponse
 					).setMVCPath(
 						"/edit_template.jsp"
 					).setParameter(
-						"groupId", String.valueOf(template.getGroupId())
+						"classNameId", classNameId
 					).setParameter(
-						"templateId", String.valueOf(template.getTemplateId())
+						"classPK", template.getClassPK()
 					).setParameter(
-						"classNameId", String.valueOf(classNameId)
-					).setParameter(
-						"classPK", String.valueOf(template.getClassPK())
-					).setParameter(
-						"type", template.getType()
+						"groupId", template.getGroupId()
 					).setParameter(
 						"structureAvailableFields", liferayPortletResponse.getNamespace() + "getAvailableFields"
-					).build();
-
-					rowHREF = rowURL.toString();
+					).setParameter(
+						"templateId", template.getTemplateId()
+					).setParameter(
+						"type", template.getType()
+					).buildString();
 				}
 				%>
 

@@ -33,8 +33,8 @@ export default function propsTransformer({portletNamespace, ...otherProps}) {
 		openSelectionModal({
 			buttonAddLabel: Liferay.Language.get('done'),
 			multiple: true,
-			onSelect(selectedItem) {
-				if (selectedItem) {
+			onSelect: (selectedItems) => {
+				if (selectedItems.length) {
 					const form = document.getElementById(
 						`${portletNamespace}fm`
 					);
@@ -43,16 +43,32 @@ export default function propsTransformer({portletNamespace, ...otherProps}) {
 						return;
 					}
 
-					selectedItem.forEach((item) => {
-						form.appendChild(item);
-					});
+					const input = document.createElement('input');
+
+					input.name = `${portletNamespace}rowIdsRole`;
+					input.value = selectedItems.map((item) => item.value);
+
+					form.appendChild(input);
 
 					submitForm(form, itemData?.editUsersRolesURL);
 				}
 			},
-			selectEventName: `${portletNamespace}selectRole`,
 			title: Liferay.Language.get('assign-roles'),
 			url: itemData?.selectRoleURL,
+		});
+	};
+
+	const selectRoles = (itemData) => {
+		openSelectionModal({
+			onSelect: (selectedItem) => {
+				location.href = addParams(
+					`${`${portletNamespace}roleId`}=${selectedItem.id}`,
+					itemData.viewRoleURL
+				);
+			},
+			selectEventName: `${portletNamespace}selectRole`,
+			title: Liferay.Language.get('select-role'),
+			url: itemData?.selectRolesURL,
 		});
 	};
 
@@ -60,24 +76,26 @@ export default function propsTransformer({portletNamespace, ...otherProps}) {
 		openSelectionModal({
 			buttonAddLabel: Liferay.Language.get('done'),
 			multiple: true,
-			onSelect(selectedItem) {
-				if (selectedItem) {
-					const form = document.getElementById(
+			onSelect: (selectedItems) => {
+				if (selectedItems.length) {
+					const addGroupUsersFm = document.getElementById(
 						`${portletNamespace}addGroupUsersFm`
 					);
 
-					if (!form) {
+					if (!addGroupUsersFm) {
 						return;
 					}
 
-					selectedItem.forEach((item) => {
-						form.appendChild(item);
-					});
+					const input = document.createElement('input');
 
-					submitForm(form);
+					input.name = `${portletNamespace}rowIds`;
+					input.value = selectedItems.map((item) => item.value);
+
+					addGroupUsersFm.appendChild(input);
+
+					submitForm(addGroupUsersFm);
 				}
 			},
-			selectEventName: `${portletNamespace}selectUsers`,
 			title: Liferay.Util.sub(
 				Liferay.Language.get('assign-users-to-this-x'),
 				itemData?.groupTypeLabel
@@ -108,6 +126,11 @@ export default function propsTransformer({portletNamespace, ...otherProps}) {
 
 			if (data?.action === 'selectUsers') {
 				selectUsers(data);
+			}
+		},
+		onFilterDropdownItemClick(event, {item}) {
+			if (item?.data?.action === 'selectRoles') {
+				selectRoles(item?.data);
 			}
 		},
 	};

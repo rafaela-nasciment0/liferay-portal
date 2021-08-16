@@ -488,20 +488,6 @@ public abstract class BasePriceListResourceTestCase {
 
 		assertEquals(randomPriceList, postPriceList);
 		assertValid(postPriceList);
-
-		randomPriceList = randomPriceList();
-
-		assertHttpResponseStatusCode(
-			404,
-			priceListResource.getPriceListByExternalReferenceCodeHttpResponse(
-				randomPriceList.getExternalReferenceCode()));
-
-		testPostPriceList_addPriceList(randomPriceList);
-
-		assertHttpResponseStatusCode(
-			200,
-			priceListResource.getPriceListByExternalReferenceCodeHttpResponse(
-				randomPriceList.getExternalReferenceCode()));
 	}
 
 	protected PriceList testPostPriceList_addPriceList(PriceList priceList)
@@ -1099,7 +1085,7 @@ public abstract class BasePriceListResourceTestCase {
 		List<GraphQLField> graphQLFields = new ArrayList<>();
 
 		for (Field field :
-				ReflectionUtil.getDeclaredFields(
+				getDeclaredFields(
 					com.liferay.headless.commerce.admin.pricing.dto.v2_0.
 						PriceList.class)) {
 
@@ -1134,7 +1120,7 @@ public abstract class BasePriceListResourceTestCase {
 				}
 
 				List<GraphQLField> childrenGraphQLFields = getGraphQLFields(
-					ReflectionUtil.getDeclaredFields(clazz));
+					getDeclaredFields(clazz));
 
 				graphQLFields.add(
 					new GraphQLField(field.getName(), childrenGraphQLFields));
@@ -1482,6 +1468,17 @@ public abstract class BasePriceListResourceTestCase {
 		}
 
 		return false;
+	}
+
+	protected Field[] getDeclaredFields(Class clazz) throws Exception {
+		Stream<Field> stream = Stream.of(
+			ReflectionUtil.getDeclaredFields(clazz));
+
+		return stream.filter(
+			field -> !field.isSynthetic()
+		).toArray(
+			Field[]::new
+		);
 	}
 
 	protected java.util.Collection<EntityField> getEntityFields()

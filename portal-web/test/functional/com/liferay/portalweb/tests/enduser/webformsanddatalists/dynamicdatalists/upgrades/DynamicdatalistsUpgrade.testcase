@@ -4,12 +4,12 @@ definition {
 	property portal.release = "true";
 	property portal.upstream = "true";
 	property testray.component.names = "Dynamic Data Lists";
-	property testray.main.component.name = "Upgrades Forms";
+	property testray.main.component.name = "Upgrades Data Engine";
 
 	setUp {
 		SignIn.signIn();
 
-		Smoke.viewWelcomePage();
+		var portalURL = PropsUtil.get("portal.url");
 
 		ApplicationsMenu.gotoPortlet(
 			category = "Configuration",

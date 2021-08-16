@@ -174,7 +174,6 @@ public class StagingBarPortlet extends MVCPortlet {
 		LayoutBranch layoutBranch = null;
 		LayoutRevision layoutRevision = null;
 		LayoutSetBranch layoutSetBranch = null;
-		Layout liveLayout = null;
 
 		if (layout != null) {
 			layoutRevision = LayoutStagingUtil.getLayoutRevision(layout);
@@ -198,14 +197,13 @@ public class StagingBarPortlet extends MVCPortlet {
 		List<LayoutSetBranch> layoutSetBranches = null;
 		Group liveGroup = _staging.getLiveGroup(group.getGroupId());
 		String liveURL = null;
+		Layout liveLayout = null;
 		Group stagingGroup = _staging.getStagingGroup(group.getGroupId());
 		String remoteSiteURL = StringPool.BLANK;
 		String remoteURL = null;
 		String stagingURL = null;
 
 		if (themeDisplay.isShowStagingIcon()) {
-			Object originalAssetEntry = httpServletRequest.getAttribute(
-				WebKeys.LAYOUT_ASSET_ENTRY);
 			long originalScopeGroupId = themeDisplay.getScopeGroupId();
 
 			if (liveGroup != null) {
@@ -271,8 +269,12 @@ public class StagingBarPortlet extends MVCPortlet {
 				}
 			}
 
+			Object originalAssetEntry = httpServletRequest.getAttribute(
+				WebKeys.LAYOUT_ASSET_ENTRY);
+
 			httpServletRequest.setAttribute(
 				WebKeys.LAYOUT_ASSET_ENTRY, originalAssetEntry);
+
 			themeDisplay.setScopeGroupId(originalScopeGroupId);
 
 			if (group.isStagingGroup() || group.isStagedRemotely()) {
@@ -578,27 +580,27 @@ public class StagingBarPortlet extends MVCPortlet {
 					parentLayout.getPlid(), true);
 
 			if (parentHeadLayoutRevisions.isEmpty()) {
-				LayoutRevision parentLayoutsRevision =
+				LayoutRevision parentLayoutRevision =
 					_layoutRevisionLocalService.fetchLatestLayoutRevision(
 						layoutRevision.getLayoutSetBranchId(),
 						parentLayout.getPlid());
 
-				if (parentLayoutsRevision != null) {
+				if (parentLayoutRevision != null) {
 					_layoutRevisionLocalService.updateLayoutRevision(
 						serviceContext.getUserId(),
-						parentLayoutsRevision.getLayoutRevisionId(),
-						parentLayoutsRevision.getLayoutBranchId(),
-						parentLayoutsRevision.getName(),
-						parentLayoutsRevision.getTitle(),
-						parentLayoutsRevision.getDescription(),
-						parentLayoutsRevision.getKeywords(),
-						parentLayoutsRevision.getRobots(),
-						parentLayoutsRevision.getTypeSettings(),
-						parentLayoutsRevision.getIconImage(),
-						parentLayoutsRevision.getIconImageId(),
-						parentLayoutsRevision.getThemeId(),
-						parentLayoutsRevision.getColorSchemeId(),
-						parentLayoutsRevision.getCss(), serviceContext);
+						parentLayoutRevision.getLayoutRevisionId(),
+						parentLayoutRevision.getLayoutBranchId(),
+						parentLayoutRevision.getName(),
+						parentLayoutRevision.getTitle(),
+						parentLayoutRevision.getDescription(),
+						parentLayoutRevision.getKeywords(),
+						parentLayoutRevision.getRobots(),
+						parentLayoutRevision.getTypeSettings(),
+						parentLayoutRevision.getIconImage(),
+						parentLayoutRevision.getIconImageId(),
+						parentLayoutRevision.getThemeId(),
+						parentLayoutRevision.getColorSchemeId(),
+						parentLayoutRevision.getCss(), serviceContext);
 				}
 			}
 

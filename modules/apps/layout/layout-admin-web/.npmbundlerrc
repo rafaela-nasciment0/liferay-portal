@@ -1,6 +1,9 @@
 {
-    "ignore": [
-      "**/config.js",
-      "**/layout_customization_settings.js"
-    ]
+	"config": {
+		"imports": {
+			"translation-web": {
+				"/": ">=2.0.7"
+			}
+		}
+	}
 }

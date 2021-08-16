@@ -9,6 +9,10 @@ definition {
 
 		SelectFrame(value1 = "relative=top");
 
+		if (IsElementNotPresent(locator1 = "Button#REPLY")) {
+			SelectFrame(locator1 = "IFrame#MODAL_BODY");
+		}
+
 		AssertClick(
 			locator1 = "Button#REPLY",
 			value1 = "Reply");
@@ -111,7 +115,7 @@ definition {
 		SelectFrame.selectFrameNoLoading(locator1 = "CKEditor#BODY_FIELD_IFRAME_2");
 
 		if (isSet(addMention)) {
-			Type(
+			Type.sendKeys(
 				locator1 = "CKEditor#BODY",
 				value1 = "${entryCommentEdit} @${mentionsUserScreenName}");
 
@@ -168,6 +172,20 @@ definition {
 			value1 = "INFO:Comments are unavailable in staged sites.");
 	}
 
+	macro viewNoPG {
+		AssertTextEquals.assertPartialText(
+			locator1 = "Comments#ENTRY_COUNT_PANEL",
+			value1 = "0 COMMENTS");
+
+		AssertElementNotPresent(
+			key_userFullName = "${userFullName}",
+			locator1 = "Comments#USER_NAME");
+
+		AssertElementNotPresent(
+			key_entryComment = "${entryComment}",
+			locator1 = "Comments#COMMENT_BODY_SPECIFIC");
+	}
+
 	macro viewPG {
 		var key_entryComment = "${entryComment}";
 
@@ -185,15 +203,26 @@ definition {
 				value1 = "${commentCount} COMMENT");
 		}
 
-		var key_userFullName = "${userFullName}";
+		if (isSet(importedComment)) {
+			AssertTextEquals.assertPartialText(
+				key_userFullName = "${userFullName}",
+				locator1 = "Comments#USER_NAME_2",
+				value1 = "${userFullName}");
 
-		AssertTextEquals.assertPartialText(
-			locator1 = "Comments#USER_NAME",
-			value1 = "${userFullName}");
+			AssertElementPresent(locator1 = "Comments#COMMENT_BODY");
+		}
 
-		AssertTextEquals(
-			locator1 = "Comments#COMMENT_BODY_SPECIFIC",
-			value1 = "${entryComment}");
+		else {
+			var key_userFullName = "${userFullName}";
+
+			AssertTextEquals.assertPartialText(
+				locator1 = "Comments#USER_NAME",
+				value1 = "${userFullName}");
+
+			AssertTextEquals(
+				locator1 = "Comments#COMMENT_BODY_SPECIFIC",
+				value1 = "${entryComment}");
+		}
 	}
 
 	macro viewSubscribedPG {

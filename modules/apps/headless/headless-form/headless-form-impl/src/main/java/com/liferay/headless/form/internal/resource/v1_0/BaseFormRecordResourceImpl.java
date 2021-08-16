@@ -97,8 +97,8 @@ public abstract class BaseFormRecordResourceImpl
 	@Produces({"application/json", "application/xml"})
 	@Tags(value = {@Tag(name = "FormRecord")})
 	public FormRecord getFormRecord(
-			@NotNull @Parameter(hidden = true) @PathParam("formRecordId")
-				Long formRecordId)
+			@NotNull @Parameter(hidden = true) @PathParam("formRecordId") Long
+				formRecordId)
 		throws Exception {
 
 		return new FormRecord();
@@ -121,8 +121,8 @@ public abstract class BaseFormRecordResourceImpl
 	@PUT
 	@Tags(value = {@Tag(name = "FormRecord")})
 	public FormRecord putFormRecord(
-			@NotNull @Parameter(hidden = true) @PathParam("formRecordId")
-				Long formRecordId,
+			@NotNull @Parameter(hidden = true) @PathParam("formRecordId") Long
+				formRecordId,
 			FormRecord formRecord)
 		throws Exception {
 
@@ -144,8 +144,8 @@ public abstract class BaseFormRecordResourceImpl
 	@PUT
 	@Tags(value = {@Tag(name = "FormRecord")})
 	public Response putFormRecordBatch(
-			@Parameter(hidden = true) @QueryParam("callbackURL")
-				String callbackURL,
+			@Parameter(hidden = true) @QueryParam("callbackURL") String
+				callbackURL,
 			Object object)
 		throws Exception {
 
@@ -233,8 +233,8 @@ public abstract class BaseFormRecordResourceImpl
 	@Tags(value = {@Tag(name = "FormRecord")})
 	public Response postFormFormRecordBatch(
 			@NotNull @Parameter(hidden = true) @PathParam("formId") Long formId,
-			@Parameter(hidden = true) @QueryParam("callbackURL")
-				String callbackURL,
+			@Parameter(hidden = true) @QueryParam("callbackURL") String
+				callbackURL,
 			Object object)
 		throws Exception {
 
@@ -283,7 +283,7 @@ public abstract class BaseFormRecordResourceImpl
 
 		for (FormRecord formRecord : formRecords) {
 			postFormFormRecord(
-				Long.valueOf((String)parameters.get("formId")), formRecord);
+				Long.parseLong((String)parameters.get("formId")), formRecord);
 		}
 	}
 
@@ -316,7 +316,7 @@ public abstract class BaseFormRecordResourceImpl
 		throws Exception {
 
 		return getFormFormRecordsPage(
-			(Long)parameters.get("formId"), pagination);
+			Long.parseLong((String)parameters.get("formId")), pagination);
 	}
 
 	@Override
@@ -350,7 +350,7 @@ public abstract class BaseFormRecordResourceImpl
 		for (FormRecord formRecord : formRecords) {
 			putFormRecord(
 				formRecord.getId() != null ? formRecord.getId() :
-					(Long)parameters.get("formRecordId"),
+					Long.parseLong((String)parameters.get("formRecordId")),
 				formRecord);
 		}
 	}

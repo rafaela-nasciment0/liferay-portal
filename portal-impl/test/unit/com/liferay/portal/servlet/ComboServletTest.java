@@ -23,7 +23,6 @@ import com.liferay.portal.kernel.service.PortalPreferencesLocalServiceWrapper;
 import com.liferay.portal.kernel.service.PortletLocalServiceUtil;
 import com.liferay.portal.kernel.service.PortletLocalServiceWrapper;
 import com.liferay.portal.kernel.test.ReflectionTestUtil;
-import com.liferay.portal.kernel.util.HttpUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.PortletKeys;
 import com.liferay.portal.kernel.util.PropsKeys;
@@ -31,7 +30,6 @@ import com.liferay.portal.language.LanguageImpl;
 import com.liferay.portal.model.impl.PortletAppImpl;
 import com.liferay.portal.test.rule.LiferayUnitTestRule;
 import com.liferay.portal.tools.ToolDependencies;
-import com.liferay.portal.util.HttpImpl;
 import com.liferay.portal.util.PortalImpl;
 import com.liferay.portal.util.PrefsPropsUtil;
 import com.liferay.portlet.PortalPreferencesWrapper;
@@ -74,10 +72,6 @@ public class ComboServletTest extends PowerMockito {
 	@BeforeClass
 	public static void setUpClass() throws Exception {
 		ToolDependencies.wireCaches();
-
-		HttpUtil httpUtil = new HttpUtil();
-
-		httpUtil.setHttp(new HttpImpl());
 
 		PortalUtil portalUtil = new PortalUtil();
 
@@ -167,12 +161,11 @@ public class ComboServletTest extends PowerMockito {
 
 	@Test
 	public void testEmptyParameters() throws Exception {
-		MockHttpServletRequest mockHttpServletRequest =
-			new MockHttpServletRequest();
 		MockHttpServletResponse mockHttpServletResponse =
 			new MockHttpServletResponse();
 
-		_comboServlet.service(mockHttpServletRequest, mockHttpServletResponse);
+		_comboServlet.service(
+			new MockHttpServletRequest(), mockHttpServletResponse);
 
 		Assert.assertEquals(
 			HttpServletResponse.SC_NOT_FOUND,

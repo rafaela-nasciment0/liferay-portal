@@ -208,8 +208,8 @@ public class CommerceCatalogDisplayContext {
 				PortletRequest.ACTION_PHASE)
 		).setActionName(
 			"/commerce_catalogs/edit_commerce_catalog"
-		).setParameter(
-			Constants.CMD, Constants.UPDATE
+		).setCMD(
+			Constants.UPDATE
 		).setParameter(
 			"commerceCatalogId", commerceCatalog.getCommerceCatalogId()
 		).setWindowState(
@@ -224,7 +224,7 @@ public class CommerceCatalogDisplayContext {
 				PortletRequest.RENDER_PHASE)
 		).setMVCRenderCommandName(
 			"/commerce_catalogs/edit_commerce_catalog"
-		).build();
+		).buildPortletURL();
 	}
 
 	public List<HeaderActionModel> getHeaderActionModels() throws Exception {

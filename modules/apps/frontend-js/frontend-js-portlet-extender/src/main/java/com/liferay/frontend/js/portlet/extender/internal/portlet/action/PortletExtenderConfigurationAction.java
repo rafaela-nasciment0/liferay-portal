@@ -254,24 +254,24 @@ public class PortletExtenderConfigurationAction
 			PortletURLFactoryUtil.create(
 				httpServletRequest, portletDisplay.getPortletName(),
 				PortletRequest.ACTION_PHASE)
-		).setMVCPath(
-			"/edit_configuration.jsp"
 		).setActionName(
 			"editConfiguration"
+		).setMVCPath(
+			"/edit_configuration.jsp"
+		).setPortletResource(
+			portletDisplay.getPortletResource()
 		).setParameter(
 			"p_auth", AuthTokenUtil.getToken(httpServletRequest)
 		).setParameter(
-			"p_p_mode", PortletMode.VIEW.toString()
-		).setParameter(
-			"portletConfiguration", Boolean.TRUE.toString()
-		).setParameter(
-			"portletResource", portletDisplay.getPortletResource()
+			"portletConfiguration", true
 		).setParameter(
 			"previewWidth", StringPool.BLANK
 		).setParameter(
 			"returnToFullPageURL", "/"
 		).setParameter(
 			"settingsScope", "portletInstance"
+		).setPortletMode(
+			PortletMode.VIEW
 		).setWindowState(
 			LiferayWindowState.POP_UP
 		).buildString();

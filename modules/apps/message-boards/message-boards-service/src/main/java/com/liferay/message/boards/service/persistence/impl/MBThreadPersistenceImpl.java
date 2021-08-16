@@ -13494,23 +13494,23 @@ public class MBThreadPersistenceImpl
 		ServiceContext serviceContext =
 			ServiceContextThreadLocal.getServiceContext();
 
-		Date now = new Date();
+		Date date = new Date();
 
 		if (isNew && (mbThread.getCreateDate() == null)) {
 			if (serviceContext == null) {
-				mbThread.setCreateDate(now);
+				mbThread.setCreateDate(date);
 			}
 			else {
-				mbThread.setCreateDate(serviceContext.getCreateDate(now));
+				mbThread.setCreateDate(serviceContext.getCreateDate(date));
 			}
 		}
 
 		if (!mbThreadModelImpl.hasSetModifiedDate()) {
 			if (serviceContext == null) {
-				mbThread.setModifiedDate(now);
+				mbThread.setModifiedDate(date);
 			}
 			else {
-				mbThread.setModifiedDate(serviceContext.getModifiedDate(now));
+				mbThread.setModifiedDate(serviceContext.getModifiedDate(date));
 			}
 		}
 
@@ -13957,7 +13957,8 @@ public class MBThreadPersistenceImpl
 	public Set<String> getCTColumnNames(
 		CTColumnResolutionType ctColumnResolutionType) {
 
-		return _ctColumnNamesMap.get(ctColumnResolutionType);
+		return _ctColumnNamesMap.getOrDefault(
+			ctColumnResolutionType, Collections.emptySet());
 	}
 
 	@Override
@@ -13991,7 +13992,6 @@ public class MBThreadPersistenceImpl
 	static {
 		Set<String> ctControlColumnNames = new HashSet<String>();
 		Set<String> ctIgnoreColumnNames = new HashSet<String>();
-		Set<String> ctMergeColumnNames = new HashSet<String>();
 		Set<String> ctStrictColumnNames = new HashSet<String>();
 
 		ctControlColumnNames.add("mvccVersion");
@@ -14021,7 +14021,6 @@ public class MBThreadPersistenceImpl
 			CTColumnResolutionType.CONTROL, ctControlColumnNames);
 		_ctColumnNamesMap.put(
 			CTColumnResolutionType.IGNORE, ctIgnoreColumnNames);
-		_ctColumnNamesMap.put(CTColumnResolutionType.MERGE, ctMergeColumnNames);
 		_ctColumnNamesMap.put(
 			CTColumnResolutionType.PK, Collections.singleton("threadId"));
 		_ctColumnNamesMap.put(
@@ -14477,6 +14476,13 @@ public class MBThreadPersistenceImpl
 						mbThreadModelImpl.getColumnBitmask(columnName);
 				}
 
+				if (finderPath.isBaseModelResult() &&
+					(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION ==
+						finderPath.getCacheName())) {
+
+					finderPathColumnBitmask |= _ORDER_BY_COLUMNS_BITMASK;
+				}
+
 				_finderPathColumnBitmasksCache.put(
 					finderPath, finderPathColumnBitmask);
 			}
@@ -14498,7 +14504,7 @@ public class MBThreadPersistenceImpl
 			return MBThreadTable.INSTANCE.getTableName();
 		}
 
-		private Object[] _getValue(
+		private static Object[] _getValue(
 			MBThreadModelImpl mbThreadModelImpl, String[] columnNames,
 			boolean original) {
 
@@ -14519,8 +14525,21 @@ public class MBThreadPersistenceImpl
 			return arguments;
 		}
 
-		private static Map<FinderPath, Long> _finderPathColumnBitmasksCache =
-			new ConcurrentHashMap<>();
+		private static final Map<FinderPath, Long>
+			_finderPathColumnBitmasksCache = new ConcurrentHashMap<>();
+
+		private static final long _ORDER_BY_COLUMNS_BITMASK;
+
+		static {
+			long orderByColumnsBitmask = 0;
+
+			orderByColumnsBitmask |= MBThreadModelImpl.getColumnBitmask(
+				"priority");
+			orderByColumnsBitmask |= MBThreadModelImpl.getColumnBitmask(
+				"lastPostDate");
+
+			_ORDER_BY_COLUMNS_BITMASK = orderByColumnsBitmask;
+		}
 
 	}
 

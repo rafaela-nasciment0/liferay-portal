@@ -98,10 +98,10 @@ CommerceRegionsDisplayContext commerceRegionsDisplayContext = (CommerceRegionsDi
 							).setRedirect(
 								currentURL
 							).setParameter(
-								"countryId", String.valueOf(region.getCountryId())
+								"countryId", region.getCountryId()
 							).setParameter(
-								"regionId", String.valueOf(region.getRegionId())
-							).build()
+								"regionId", region.getRegionId()
+							).buildPortletURL()
 						%>'
 						property="name"
 					/>

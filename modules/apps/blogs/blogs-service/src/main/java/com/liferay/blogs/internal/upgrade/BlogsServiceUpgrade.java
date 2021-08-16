@@ -18,9 +18,9 @@ import com.liferay.blogs.internal.upgrade.v1_1_0.UpgradeClassNames;
 import com.liferay.blogs.internal.upgrade.v1_1_2.BlogsImagesUpgradeProcess;
 import com.liferay.blogs.internal.upgrade.v2_0_0.util.BlogsEntryTable;
 import com.liferay.blogs.internal.upgrade.v2_0_0.util.BlogsStatsUserTable;
+import com.liferay.blogs.internal.upgrade.v2_2_0.BlogsEntryExternalReferenceCodeUpgradeProcess;
 import com.liferay.blogs.model.BlogsEntry;
 import com.liferay.comment.upgrade.UpgradeDiscussionSubscriptionClassName;
-import com.liferay.document.library.kernel.store.Store;
 import com.liferay.friendly.url.service.FriendlyURLEntryLocalService;
 import com.liferay.message.boards.model.MBDiscussion;
 import com.liferay.petra.function.UnsafeBiFunction;
@@ -32,11 +32,12 @@ import com.liferay.portal.kernel.portletfilerepository.PortletFileRepository;
 import com.liferay.portal.kernel.service.ClassNameLocalService;
 import com.liferay.portal.kernel.service.GroupLocalService;
 import com.liferay.portal.kernel.service.ImageLocalService;
-import com.liferay.portal.kernel.upgrade.BaseUpgradeSQLServerDatetime;
+import com.liferay.portal.kernel.upgrade.BaseSQLServerDatetimeUpgradeProcess;
 import com.liferay.portal.kernel.upgrade.DummyUpgradeProcess;
 import com.liferay.portal.kernel.upgrade.DummyUpgradeStep;
-import com.liferay.portal.kernel.upgrade.UpgradeMVCCVersion;
+import com.liferay.portal.kernel.upgrade.MVCCVersionUpgradeProcess;
 import com.liferay.portal.upgrade.registry.UpgradeStepRegistrator;
+import com.liferay.portlet.documentlibrary.store.StoreFactory;
 import com.liferay.subscription.service.SubscriptionLocalService;
 
 import java.sql.Connection;
@@ -58,7 +59,8 @@ public class BlogsServiceUpgrade implements UpgradeStepRegistrator {
 		registry.register(
 			"1.0.0", "1.1.0",
 			new com.liferay.blogs.internal.upgrade.v1_1_0.
-				BlogsEntryUpgradeProcess(_friendlyURLEntryLocalService));
+				BlogsEntryUpgradeProcess(
+					_classNameLocalService, _friendlyURLEntryLocalService));
 
 		registry.register(
 			"1.1.0", "1.1.1",
@@ -79,7 +81,7 @@ public class BlogsServiceUpgrade implements UpgradeStepRegistrator {
 
 		registry.register(
 			"1.1.3", "2.0.0",
-			new BaseUpgradeSQLServerDatetime(
+			new BaseSQLServerDatetimeUpgradeProcess(
 				new Class<?>[] {
 					BlogsEntryTable.class, BlogsStatsUserTable.class
 				}));
@@ -88,7 +90,7 @@ public class BlogsServiceUpgrade implements UpgradeStepRegistrator {
 
 		registry.register(
 			"2.0.1", "2.1.0",
-			new UpgradeMVCCVersion() {
+			new MVCCVersionUpgradeProcess() {
 
 				@Override
 				protected String[] getModuleTableNames() {
@@ -103,27 +105,34 @@ public class BlogsServiceUpgrade implements UpgradeStepRegistrator {
 				BlogsEntryUpgradeProcess());
 
 		registry.register("2.1.1", "2.1.2", new DummyUpgradeStep());
+
+		registry.register(
+			"2.1.2", "2.2.0",
+			new BlogsEntryExternalReferenceCodeUpgradeProcess());
 	}
 
 	private UnsafeBiFunction<String, Connection, Boolean, Exception>
 		_getUpgradeDiscussionSubscriptionClassNameUnsafeBiFunction() {
 
 		return (className, connection) -> {
-			try (PreparedStatement ps = connection.prepareStatement(
-					SQLTransformer.transform(
-						StringBundler.concat(
-							"update Subscription set classNameId = ? where ",
-							"classNameId = ? and classPK not in (select ",
-							"groupId from Group_ where site = [$TRUE$])")))) {
+			try (PreparedStatement preparedStatement =
+					connection.prepareStatement(
+						SQLTransformer.transform(
+							StringBundler.concat(
+								"update Subscription set classNameId = ? ",
+								"where classNameId = ? and classPK not in ",
+								"(select groupId from Group_ where site = ",
+								"[$TRUE$])")))) {
 
-				ps.setLong(
+				preparedStatement.setLong(
 					1,
 					_classNameLocalService.getClassNameId(
 						MBDiscussion.class.getName() + StringPool.UNDERLINE +
 							BlogsEntry.class.getName()));
-				ps.setLong(2, _classNameLocalService.getClassNameId(className));
+				preparedStatement.setLong(
+					2, _classNameLocalService.getClassNameId(className));
 
-				ps.executeUpdate();
+				preparedStatement.executeUpdate();
 			}
 
 			return true;
@@ -148,8 +157,8 @@ public class BlogsServiceUpgrade implements UpgradeStepRegistrator {
 	@Reference
 	private PortletFileRepository _portletFileRepository;
 
-	@Reference(target = "(dl.store.upgrade=true)")
-	private Store _store;
+	@Reference(target = "(dl.store.impl.enabled=true)")
+	private StoreFactory _storeFactory;
 
 	@Reference
 	private SubscriptionLocalService _subscriptionLocalService;

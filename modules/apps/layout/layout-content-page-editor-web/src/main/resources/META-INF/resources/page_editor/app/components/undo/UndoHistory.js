@@ -15,14 +15,17 @@
 import {ClayButtonWithIcon} from '@clayui/button';
 import ClayDropDown, {Align} from '@clayui/drop-down';
 import ClayDropDownDivider from '@clayui/drop-down/lib/Divider';
-import {useEventListener, useIsMounted} from '@liferay/frontend-js-react-web';
+import {
+	ReactPortal,
+	useEventListener,
+	useIsMounted,
+} from '@liferay/frontend-js-react-web';
 import React, {useState} from 'react';
-import ReactDOM from 'react-dom';
 
 import {SELECT_SEGMENTS_EXPERIENCE} from '../../../plugins/experience/actions';
 import {UNDO_TYPES} from '../../config/constants/undoTypes';
 import {config} from '../../config/index';
-import {useDispatch, useSelector} from '../../store/index';
+import {useDispatch, useSelector} from '../../contexts/StoreContext';
 import multipleUndo from '../../thunks/multipleUndo';
 import getSegmentsExperienceName from '../../utils/getSegmentsExperienceName';
 import getActionLabel from './getActionLabel';
@@ -103,7 +106,11 @@ export default function UndoHistory() {
 				</ClayDropDown.ItemList>
 			</ClayDropDown>
 
-			{loading && ReactDOM.createPortal(<Overlay />, document.body)}
+			{loading && (
+				<ReactPortal>
+					<Overlay />
+				</ReactPortal>
+			)}
 		</>
 	);
 }

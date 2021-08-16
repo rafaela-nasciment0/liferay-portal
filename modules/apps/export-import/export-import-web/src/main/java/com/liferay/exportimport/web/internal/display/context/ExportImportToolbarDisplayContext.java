@@ -200,39 +200,37 @@ public class ExportImportToolbarDisplayContext {
 	}
 
 	public String getSortingURL() {
-		PortletURL sortingURL = PortletURLBuilder.create(
+		return PortletURLBuilder.create(
 			getRenderURL()
-		).setParameter(
-			"groupId", ParamUtil.getLong(_httpServletRequest, "groupId")
-		).setParameter(
-			"privateLayout",
-			ParamUtil.getBoolean(_httpServletRequest, "privateLayout")
+		).setNavigation(
+			ParamUtil.getString(_httpServletRequest, "navigation", "all")
 		).setParameter(
 			"displayStyle",
 			ParamUtil.getString(
 				_httpServletRequest, "displayStyle", "descriptive")
 		).setParameter(
+			"groupId", ParamUtil.getLong(_httpServletRequest, "groupId")
+		).setParameter(
 			"orderByCol", ParamUtil.getString(_httpServletRequest, "orderByCol")
-		).build();
+		).setParameter(
+			"orderByType",
+			() -> {
+				String orderByType = ParamUtil.getString(
+					_httpServletRequest, "orderByType");
 
-		String orderByType = ParamUtil.getString(
-			_httpServletRequest, "orderByType");
+				if (orderByType.equals("asc")) {
+					return "desc";
+				}
 
-		if (orderByType.equals("asc")) {
-			sortingURL.setParameter("orderByType", "desc");
-		}
-		else {
-			sortingURL.setParameter("orderByType", "asc");
-		}
-
-		sortingURL.setParameter(
-			"navigation",
-			ParamUtil.getString(_httpServletRequest, "navigation", "all"));
-		sortingURL.setParameter(
+				return "asc";
+			}
+		).setParameter(
+			"privateLayout",
+			ParamUtil.getBoolean(_httpServletRequest, "privateLayout")
+		).setParameter(
 			"searchContainerId",
-			ParamUtil.getString(_httpServletRequest, "searchContainerId"));
-
-		return sortingURL.toString();
+			ParamUtil.getString(_httpServletRequest, "searchContainerId")
+		).buildString();
 	}
 
 	public List<ViewTypeItem> getViewTypeItems() {

@@ -3876,24 +3876,24 @@ public class RedirectEntryPersistenceImpl
 		ServiceContext serviceContext =
 			ServiceContextThreadLocal.getServiceContext();
 
-		Date now = new Date();
+		Date date = new Date();
 
 		if (isNew && (redirectEntry.getCreateDate() == null)) {
 			if (serviceContext == null) {
-				redirectEntry.setCreateDate(now);
+				redirectEntry.setCreateDate(date);
 			}
 			else {
-				redirectEntry.setCreateDate(serviceContext.getCreateDate(now));
+				redirectEntry.setCreateDate(serviceContext.getCreateDate(date));
 			}
 		}
 
 		if (!redirectEntryModelImpl.hasSetModifiedDate()) {
 			if (serviceContext == null) {
-				redirectEntry.setModifiedDate(now);
+				redirectEntry.setModifiedDate(date);
 			}
 			else {
 				redirectEntry.setModifiedDate(
-					serviceContext.getModifiedDate(now));
+					serviceContext.getModifiedDate(date));
 			}
 		}
 
@@ -4493,7 +4493,7 @@ public class RedirectEntryPersistenceImpl
 			return RedirectEntryTable.INSTANCE.getTableName();
 		}
 
-		private Object[] _getValue(
+		private static Object[] _getValue(
 			RedirectEntryModelImpl redirectEntryModelImpl, String[] columnNames,
 			boolean original) {
 
@@ -4516,8 +4516,8 @@ public class RedirectEntryPersistenceImpl
 			return arguments;
 		}
 
-		private static Map<FinderPath, Long> _finderPathColumnBitmasksCache =
-			new ConcurrentHashMap<>();
+		private static final Map<FinderPath, Long>
+			_finderPathColumnBitmasksCache = new ConcurrentHashMap<>();
 
 	}
 

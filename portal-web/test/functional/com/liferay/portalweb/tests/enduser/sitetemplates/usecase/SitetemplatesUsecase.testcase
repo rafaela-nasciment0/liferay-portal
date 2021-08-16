@@ -240,7 +240,7 @@ definition {
 
 		Portlet.addPG(
 			defaultURL = "false",
-			portletName = "Hello World");
+			portletName = "IFrame");
 
 		SiteTemplates.addSitePageViaSiteTemplateCP(
 			pageName = "Page2 Name",
@@ -259,7 +259,7 @@ definition {
 			pageName = "Page1 Name",
 			siteName = "Site Name");
 
-		PermissionsInline.gotoConfigurationPG(portletName = "Hello World");
+		PermissionsInline.gotoConfigurationPG(portletName = "IFrame");
 
 		Role.removePermissionPG(
 			permissionDefinitionKey = "CONTENT_PERMISSIONS_VIEW_CHECKBOX",
@@ -282,13 +282,13 @@ definition {
 
 		Portlet.addPG(
 			defaultURL = "false",
-			portletName = "Hello World");
+			portletName = "IFrame");
 
 		Navigator.gotoSitePage(
 			pageName = "Page1 Name",
 			siteName = "Site Name");
 
-		PermissionsInline.gotoConfigurationPG(portletName = "Hello World");
+		PermissionsInline.gotoConfigurationPG(portletName = "IFrame");
 
 		Role.viewPermissionPG(
 			permissionDefinitionKey = "CONTENT_PERMISSIONS_VIEW_CHECKBOX",
@@ -328,6 +328,7 @@ definition {
 
 	@priority = "4"
 	test SitesDynamicTemplateInheritance {
+		property custom.properties = "jsonws.web.service.paths.excludes=";
 		property portal.acceptance = "true";
 
 		var siteName = TestCase.getSiteName(siteName = "${siteName}");
@@ -355,32 +356,18 @@ definition {
 			userLastName = "userln",
 			userScreenName = "usersn");
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Users",
-			panel = "Control Panel",
-			portlet = "Users and Organizations");
+		JSONUser.setFirstPassword(
+			agreeToTermsAndAnswerReminderQuery = "true",
+			requireReset = "false",
+			userEmailAddress = "userea@liferay.com");
 
-		User.editPasswordCP(
-			userEmailAddress = "userea@liferay.com",
-			userScreenName = "usersn");
+		JSONUser.addUserToSite(
+			groupName = "Guest",
+			userEmailAddress = "userea@liferay.com");
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Users",
-			panel = "Control Panel",
-			portlet = "Users and Organizations");
-
-		User.editUserSiteCP(
-			siteName = "${siteName}",
-			userScreenName = "usersn");
-
-		ApplicationsMenu.gotoPortlet(
-			category = "Users",
-			panel = "Control Panel",
-			portlet = "Users and Organizations");
-
-		User.assignRegularRoleCP(
+		JSONRole.assignRoleToUser(
 			roleTitle = "Administrator",
-			userScreenName = "usersn");
+			userEmailAddress = "userea@liferay.com");
 
 		User.firstLoginPG(
 			password = "test",
@@ -395,11 +382,6 @@ definition {
 			selectSiteTemplate = "true",
 			siteTemplateName = "Site Template Name",
 			userGroupName = "UG UserGroup Name");
-
-		ApplicationsMenu.gotoPortlet(
-			category = "Users",
-			panel = "Control Panel",
-			portlet = "User Groups");
 
 		User.firstLoginPG(
 			password = "test",
@@ -425,6 +407,8 @@ definition {
 
 		Portlet.addPG(portletName = "Documents and Media");
 
+		SiteTemplates.enableActionsOnDMInSiteTemplate();
+
 		SiteTemplatesNavigator.gotoSiteTemplatesPage(
 			pageName = "Test Page Name",
 			siteName = "${siteName}",
@@ -434,13 +418,6 @@ definition {
 			dmDocumentDescription = "DM Document Description",
 			dmDocumentFile = "Document_1.png",
 			dmDocumentTitle = "Document_1.png");
-
-		if (IsElementNotPresent(locator1 = "Portlet#PORTLET_CONTENT")) {
-			SiteTemplatesNavigator.gotoSiteTemplatesPage(
-				pageName = "Test Page Name",
-				siteName = "${siteName}",
-				siteTemplateName = "Site Template Name");
-		}
 
 		JSONUser.addUser(
 			userEmailAddress = "userea@liferay.com",

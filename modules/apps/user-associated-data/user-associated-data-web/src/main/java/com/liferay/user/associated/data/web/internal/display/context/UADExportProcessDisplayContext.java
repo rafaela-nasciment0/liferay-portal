@@ -148,6 +148,12 @@ public class UADExportProcessDisplayContext {
 				PortalUtil.getLiferayPortletResponse(portletResponse))
 		).setMVCRenderCommandName(
 			"/user_associated_data/view_uad_export_processes"
+		).setNavigation(
+			getNavigation()
+		).setParameter(
+			"orderByCol", getOrderByCol()
+		).setParameter(
+			"orderByType", getOrderByType()
 		).setParameter(
 			"p_u_i_d",
 			() -> {
@@ -156,13 +162,7 @@ public class UADExportProcessDisplayContext {
 
 				return selectedUser.getUserId();
 			}
-		).setParameter(
-			"navigation", getNavigation()
-		).setParameter(
-			"orderByCol", getOrderByCol()
-		).setParameter(
-			"orderByType", getOrderByType()
-		).build();
+		).buildPortletURL();
 	}
 
 	public SearchContainer<BackgroundTask> getSearchContainer()

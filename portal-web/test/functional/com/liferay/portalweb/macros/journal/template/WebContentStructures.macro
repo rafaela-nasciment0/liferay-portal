@@ -77,6 +77,12 @@ definition {
 			PortletEntry.inputName(name = "${structureCopyName}");
 		}
 
+		if (isSet(structureCopyLocalName)) {
+			PortletEntry.changeLocale(locale = "${locale}");
+
+			PortletEntry.inputName(name = "${structureCopyLocalName}");
+		}
+
 		if ("${copyTemplates}" == "true") {
 			Check(
 				checkboxName = "Copy Templates",
@@ -128,15 +134,35 @@ definition {
 
 		if (isSet(cancel)) {
 			Confirm.dismissAlert();
-		}
-		else {
-			AssertConfirm(value1 = "Are you sure you want to reset the default values?");
 
 			if (isSet(templateName)) {
 				Panel.expandPanel(panel = "Default Template");
 
 				AssertTextEquals(
-					locator1 = "WCEditWebContent#SELECTED_TEMPLATE",
+					inputFieldId = "ddmTemplateName",
+					locator1 = "TextInput#INPUT_ID",
+					value1 = "${templateName}");
+			}
+
+			if (isSet(assetTitle)) {
+				var key_assetTitle = "${assetTitle}";
+
+				AssertTextEquals.assertPartialText(
+					locator1 = "AssetRelatedAssets#RELATED_ASSETS_TABLE_TITLE",
+					value1 = "${assetTitle}");
+			}
+		}
+		else {
+			AssertConfirm(value1 = "Are you sure you want to reset the default values?");
+
+			Alert.viewSuccessMessage();
+
+			if (isSet(templateName)) {
+				Panel.expandPanel(panel = "Default Template");
+
+				AssertTextEquals(
+					inputFieldId = "ddmTemplateName",
+					locator1 = "TextInput#INPUT_ID",
 					value1 = "${templateName}");
 			}
 
@@ -148,10 +174,6 @@ definition {
 				AssertElementNotPresent(locator1 = "AssetRelatedAssets#RELATED_ASSETS_TABLE_SCOPE");
 				AssertElementNotPresent(locator1 = "AssetRelatedAssets#RELATED_ASSETS_TABLE_REMOVE_LINK");
 			}
-
-			Button.clickSave();
-
-			SelectFrameTop();
 		}
 	}
 

@@ -47,8 +47,8 @@ List<Folder> mountFolders = DLAppServiceUtil.getMountFolders(scopeGroupId, DLFol
 			).setMVCRenderCommandName(
 				"/document_library/search"
 			).setParameter(
-				"repositoryId", String.valueOf(repositoryId)
-			).build();
+				"repositoryId", repositoryId
+			).buildPortletURL();
 
 			long searchRepositoryId = ParamUtil.getLong(request, "searchRepositoryId");
 
@@ -71,12 +71,12 @@ List<Folder> mountFolders = DLAppServiceUtil.getMountFolders(scopeGroupId, DLFol
 			PortletURL searchFolderURL = PortletURLBuilder.create(
 				PortletURLUtil.clone(searchEverywhereURL, liferayPortletResponse)
 			).setParameter(
-				"searchRepositoryId", String.valueOf(scopeGroupId)
+				"folderId", folderId
 			).setParameter(
-				"folderId", String.valueOf(folderId)
+				"searchFolderId", folderId
 			).setParameter(
-				"searchFolderId", String.valueOf(folderId)
-			).build();
+				"searchRepositoryId", scopeGroupId
+			).buildPortletURL();
 
 			long searchFolderId = ParamUtil.getLong(request, "searchFolderId");
 			%>
@@ -112,10 +112,10 @@ List<Folder> mountFolders = DLAppServiceUtil.getMountFolders(scopeGroupId, DLFol
 				PortletURL searchRepositoryURL = PortletURLBuilder.create(
 					PortletURLUtil.clone(searchEverywhereURL, liferayPortletResponse)
 				).setParameter(
-					"repositoryId", String.valueOf(scopeGroupId)
+					"repositoryId", scopeGroupId
 				).setParameter(
-					"searchRepositoryId", String.valueOf(scopeGroupId)
-				).build();
+					"searchRepositoryId", scopeGroupId
+				).buildPortletURL();
 				%>
 
 				<clay:link

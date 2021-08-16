@@ -131,6 +131,21 @@ public class DispatchTriggerLocalServiceImpl
 	}
 
 	@Override
+	public Date fetchNextFireDate(long dispatchTriggerId) {
+		try {
+			return getNextFireDate(dispatchTriggerId);
+		}
+		catch (PortalException portalException) {
+			_log.error(
+				"Unable to resolve next fire date for dispatch trigger ID " +
+					dispatchTriggerId,
+				portalException);
+		}
+
+		return null;
+	}
+
+	@Override
 	public Date fetchPreviousFireDate(long dispatchTriggerId) {
 		DispatchTrigger dispatchTrigger =
 			dispatchTriggerPersistence.fetchByPrimaryKey(dispatchTriggerId);
@@ -204,15 +219,8 @@ public class DispatchTriggerLocalServiceImpl
 			DispatchTaskClusterMode.valueOf(
 				dispatchTrigger.getDispatchTaskClusterMode());
 
-		try {
-			return _dispatchTriggerHelper.getNextFireDate(
-				dispatchTriggerId, dispatchTaskClusterMode.getStorageType());
-		}
-		catch (SchedulerException schedulerException) {
-			_log.error(schedulerException, schedulerException);
-		}
-
-		return null;
+		return _dispatchTriggerHelper.getNextFireDate(
+			dispatchTriggerId, dispatchTaskClusterMode.getStorageType());
 	}
 
 	@Override
@@ -317,18 +325,15 @@ public class DispatchTriggerLocalServiceImpl
 
 		if (Validator.isNull(name)) {
 			throw new DispatchTriggerNameException(
-				"Dispatch trigger name is null for company ID " + companyId);
+				"Dispatch trigger name is null for company " + companyId);
 		}
 
 		DispatchTrigger dispatchTrigger = dispatchTriggerPersistence.fetchByC_N(
 			companyId, name);
 
-		if (dispatchTrigger == null) {
-			return;
-		}
-
-		if ((dispatchTriggerId > 0) &&
-			(dispatchTrigger.getDispatchTriggerId() == dispatchTriggerId)) {
+		if ((dispatchTrigger == null) ||
+			((dispatchTriggerId > 0) &&
+			 (dispatchTrigger.getDispatchTriggerId() == dispatchTriggerId))) {
 
 			return;
 		}
@@ -336,7 +341,7 @@ public class DispatchTriggerLocalServiceImpl
 		throw new DuplicateDispatchTriggerException(
 			StringBundler.concat(
 				"Dispatch trigger name \"", name,
-				"\" already exists for company ID ", companyId));
+				"\" already exists for company ", companyId));
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(

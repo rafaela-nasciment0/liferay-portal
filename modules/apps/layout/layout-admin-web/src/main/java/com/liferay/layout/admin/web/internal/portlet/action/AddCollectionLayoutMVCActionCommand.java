@@ -16,8 +16,8 @@ package com.liferay.layout.admin.web.internal.portlet.action;
 
 import com.liferay.asset.list.model.AssetListEntry;
 import com.liferay.asset.list.service.AssetListEntryLocalService;
-import com.liferay.info.list.provider.InfoListProvider;
-import com.liferay.info.list.provider.InfoListProviderTracker;
+import com.liferay.info.collection.provider.InfoCollectionProvider;
+import com.liferay.info.item.InfoItemServiceTracker;
 import com.liferay.info.list.provider.item.selector.criterion.InfoListProviderItemSelectorReturnType;
 import com.liferay.item.selector.criteria.InfoListItemSelectorReturnType;
 import com.liferay.layout.admin.constants.LayoutAdminPortletKeys;
@@ -170,7 +170,7 @@ public class AddCollectionLayoutMVCActionCommand
 		return layout;
 	}
 
-	private String _getCollectionLayoutDefinitionJSON(
+	private String _getCollectionPageElementJSON(
 		String className, String classPK) {
 
 		if (Validator.isNull(classPK)) {
@@ -193,18 +193,19 @@ public class AddCollectionLayoutMVCActionCommand
 			"COLLECTION_NAME", HtmlUtil.escape(assetListEntry.getTitle())
 		).build();
 
-		String collectionDefinition = StringUtil.read(
+		String collectionPageElementJSON = StringUtil.read(
 			AddCollectionLayoutMVCActionCommand.class,
-			"collection_definition.json");
+			"collection-page-element.json");
 
-		return StringUtil.replace(collectionDefinition, "${", "}", values);
+		return StringUtil.replace(collectionPageElementJSON, "${", "}", values);
 	}
 
-	private String _getCollectionProviderLayoutDefinition(String className) {
-		InfoListProvider<?> infoListProvider =
-			_infoListProviderTracker.getInfoListProvider(className);
+	private String _getCollectionProviderPageElementJSON(String className) {
+		InfoCollectionProvider<?> infoCollectionProvider =
+			_infoItemServiceTracker.getInfoItemService(
+				InfoCollectionProvider.class, className);
 
-		if (infoListProvider == null) {
+		if (infoCollectionProvider == null) {
 			return null;
 		}
 
@@ -212,38 +213,39 @@ public class AddCollectionLayoutMVCActionCommand
 			"CLASS_NAME", className
 		).put(
 			"COLLECTION_PROVIDER_NAME",
-			infoListProvider.getLabel(LocaleUtil.getDefault())
+			infoCollectionProvider.getLabel(LocaleUtil.getDefault())
 		).build();
 
-		String collectionDefinition = StringUtil.read(
+		String collectionProviderPageElementJSON = StringUtil.read(
 			AddCollectionLayoutMVCActionCommand.class,
-			"collection_provider_definition.json");
+			"collection-provider-page-element.json");
 
-		return StringUtil.replace(collectionDefinition, "${", "}", values);
+		return StringUtil.replace(
+			collectionProviderPageElementJSON, "${", "}", values);
 	}
 
 	private void _updateLayoutPageTemplateData(
 			Layout layout, String collectionType, String collectionPK)
 		throws Exception {
 
-		String layoutDefinitionJSON = StringPool.BLANK;
+		String pageElementJSON = StringPool.BLANK;
 
 		if (Objects.equals(
 				collectionType,
 				InfoListItemSelectorReturnType.class.getName())) {
 
-			layoutDefinitionJSON = _getCollectionLayoutDefinitionJSON(
+			pageElementJSON = _getCollectionPageElementJSON(
 				collectionType, collectionPK);
 		}
 		else if (Objects.equals(
 					collectionType,
 					InfoListProviderItemSelectorReturnType.class.getName())) {
 
-			layoutDefinitionJSON = _getCollectionProviderLayoutDefinition(
+			pageElementJSON = _getCollectionProviderPageElementJSON(
 				collectionPK);
 		}
 
-		if (Validator.isNotNull(layoutDefinitionJSON)) {
+		if (Validator.isNotNull(pageElementJSON)) {
 			LayoutPageTemplateStructure layoutPageTemplateStructure =
 				_layoutPageTemplateStructureLocalService.
 					fetchLayoutPageTemplateStructure(
@@ -255,7 +257,7 @@ public class AddCollectionLayoutMVCActionCommand
 
 			_layoutPageTemplatesImporter.importPageElement(
 				layout, layoutStructure, layoutStructure.getMainItemId(),
-				layoutDefinitionJSON, 0);
+				pageElementJSON, 0);
 		}
 	}
 
@@ -263,7 +265,7 @@ public class AddCollectionLayoutMVCActionCommand
 	private AssetListEntryLocalService _assetListEntryLocalService;
 
 	@Reference
-	private InfoListProviderTracker _infoListProviderTracker;
+	private InfoItemServiceTracker _infoItemServiceTracker;
 
 	@Reference
 	private LayoutExceptionRequestHandler _layoutExceptionRequestHandler;

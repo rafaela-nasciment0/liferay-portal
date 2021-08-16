@@ -267,13 +267,6 @@ public class OrderResourceImpl
 				commerceShippingMethod.getCommerceShippingMethodId();
 		}
 
-		CommerceCurrency commerceCurrency =
-			_commerceCurrencyService.getCommerceCurrency(
-				commerceChannel.getCompanyId(), order.getCurrencyCode());
-
-		ServiceContext serviceContext = _serviceContextHelper.getServiceContext(
-			commerceChannel.getGroupId());
-
 		CommerceAccount commerceAccount = null;
 
 		if (order.getAccountId() != null) {
@@ -294,30 +287,39 @@ public class OrderResourceImpl
 			throw new NoSuchAccountException();
 		}
 
-		CommerceOrder commerceOrder = _commerceOrderService.upsertCommerceOrder(
-			order.getExternalReferenceCode(), contextUser.getUserId(),
-			commerceChannel.getGroupId(),
-			commerceAccount.getCommerceAccountId(),
-			commerceCurrency.getCommerceCurrencyId(),
-			GetterUtil.getLong(order.getBillingAddressId()),
-			GetterUtil.getLong(order.getShippingAddressId()),
-			order.getPaymentMethod(), commerceShippingMethodId,
-			order.getShippingOption(), order.getPurchaseOrderNumber(),
-			order.getSubtotal(), order.getShippingAmount(), order.getTotal(),
-			order.getSubtotalWithTaxAmount(), order.getShippingWithTaxAmount(),
-			order.getTotalWithTaxAmount(),
-			GetterUtil.getInteger(
-				order.getPaymentStatus(),
-				CommerceOrderConstants.PAYMENT_STATUS_PENDING),
-			GetterUtil.getInteger(
-				order.getOrderStatus(),
-				CommerceOrderConstants.ORDER_STATUS_PENDING),
-			order.getAdvanceStatus(),
-			_commerceContextFactory.create(
-				contextCompany.getCompanyId(), commerceChannel.getGroupId(),
-				contextUser.getUserId(), 0,
-				commerceAccount.getCommerceAccountId()),
-			serviceContext);
+		CommerceCurrency commerceCurrency =
+			_commerceCurrencyService.getCommerceCurrency(
+				commerceChannel.getCompanyId(), order.getCurrencyCode());
+
+		ServiceContext serviceContext = _serviceContextHelper.getServiceContext(
+			commerceChannel.getGroupId());
+
+		CommerceOrder commerceOrder =
+			_commerceOrderService.addOrUpdateCommerceOrder(
+				order.getExternalReferenceCode(), contextUser.getUserId(),
+				commerceChannel.getGroupId(),
+				commerceAccount.getCommerceAccountId(),
+				commerceCurrency.getCommerceCurrencyId(),
+				GetterUtil.getLong(order.getBillingAddressId()),
+				GetterUtil.getLong(order.getShippingAddressId()),
+				order.getPaymentMethod(), commerceShippingMethodId,
+				order.getShippingOption(), order.getPurchaseOrderNumber(),
+				order.getSubtotal(), order.getShippingAmount(),
+				order.getTaxAmount(), order.getTotal(),
+				order.getSubtotalWithTaxAmount(),
+				order.getShippingWithTaxAmount(), order.getTotalWithTaxAmount(),
+				GetterUtil.getInteger(
+					order.getPaymentStatus(),
+					CommerceOrderConstants.PAYMENT_STATUS_PENDING),
+				GetterUtil.getInteger(
+					order.getOrderStatus(),
+					CommerceOrderConstants.ORDER_STATUS_PENDING),
+				order.getAdvanceStatus(),
+				_commerceContextFactory.create(
+					contextCompany.getCompanyId(), commerceChannel.getGroupId(),
+					contextUser.getUserId(), 0,
+					commerceAccount.getCommerceAccountId()),
+				serviceContext);
 
 		// Order date
 
@@ -335,10 +337,36 @@ public class OrderResourceImpl
 				orderDate.getMinute(), serviceContext);
 		}
 
-		// Printed note
+		// Requested delivery date
 
-		_commerceOrderService.updatePrintedNote(
-			commerceOrder.getCommerceOrderId(), order.getPrintedNote());
+		if (order.getRequestedDeliveryDate() != null) {
+			Calendar requestedDeliveryDateCalendar =
+				CalendarFactoryUtil.getCalendar(serviceContext.getTimeZone());
+
+			requestedDeliveryDateCalendar.setTime(
+				order.getRequestedDeliveryDate());
+
+			DateConfig requestedDeliveryDate = new DateConfig(
+				requestedDeliveryDateCalendar);
+
+			_commerceOrderService.updateInfo(
+				commerceOrder.getCommerceOrderId(),
+				GetterUtil.getString(
+					order.getPrintedNote(), commerceOrder.getPrintedNote()),
+				requestedDeliveryDate.getMonth(),
+				requestedDeliveryDate.getDay(), requestedDeliveryDate.getYear(),
+				requestedDeliveryDate.getHour(),
+				requestedDeliveryDate.getMinute(), serviceContext);
+		}
+		else {
+
+			// Printed note
+
+			_commerceOrderService.updatePrintedNote(
+				commerceOrder.getCommerceOrderId(),
+				GetterUtil.getString(
+					order.getPrintedNote(), commerceOrder.getPrintedNote()));
+		}
 
 		// Expando
 
@@ -444,7 +472,7 @@ public class OrderResourceImpl
 				commerceOrder.getCommerceOrderId());
 
 			for (OrderItem orderItem : orderItems) {
-				OrderItemUtil.upsertCommerceOrderItem(
+				OrderItemUtil.addOrUpdateCommerceOrderItem(
 					_cpInstanceService, _commerceOrderItemService,
 					_commerceOrderModelResourcePermission, orderItem,
 					commerceOrder,
@@ -462,7 +490,7 @@ public class OrderResourceImpl
 		BillingAddress billingAddress = order.getBillingAddress();
 
 		if (billingAddress != null) {
-			commerceOrder = BillingAddressUtil.upsertBillingAddress(
+			commerceOrder = BillingAddressUtil.addOrUpdateBillingAddress(
 				_commerceAddressService, _commerceOrderService, commerceOrder,
 				billingAddress, serviceContext);
 		}
@@ -472,7 +500,7 @@ public class OrderResourceImpl
 		ShippingAddress shippingAddress = order.getShippingAddress();
 
 		if (shippingAddress != null) {
-			commerceOrder = ShippingAddressUtil.upsertShippingAddress(
+			commerceOrder = ShippingAddressUtil.addOrUpdateShippingAddress(
 				_commerceAddressService, _commerceOrderService, commerceOrder,
 				shippingAddress, serviceContext);
 		}
@@ -521,6 +549,8 @@ public class OrderResourceImpl
 			(BigDecimal)GetterUtil.getNumber(
 				order.getShippingAmount(), commerceOrder.getShippingAmount()),
 			(BigDecimal)GetterUtil.getNumber(
+				order.getTaxAmount(), commerceOrder.getTaxAmount()),
+			(BigDecimal)GetterUtil.getNumber(
 				order.getTotal(), commerceOrder.getTotal()),
 			(BigDecimal)GetterUtil.getNumber(
 				order.getSubtotalWithTaxAmount(),
@@ -539,6 +569,41 @@ public class OrderResourceImpl
 				GetterUtil.getLong(
 					order.getAccountId(),
 					commerceOrder.getCommerceAccountId())));
+
+		// Requested Delivery Date
+
+		if (order.getRequestedDeliveryDate() != null) {
+			ServiceContext serviceContext =
+				_serviceContextHelper.getServiceContext(
+					commerceOrder.getGroupId());
+
+			Calendar requestedDeliveryDateCalendar =
+				CalendarFactoryUtil.getCalendar(serviceContext.getTimeZone());
+
+			requestedDeliveryDateCalendar.setTime(
+				order.getRequestedDeliveryDate());
+
+			DateConfig requestedDeliveryDate = new DateConfig(
+				requestedDeliveryDateCalendar);
+
+			_commerceOrderService.updateInfo(
+				commerceOrder.getCommerceOrderId(),
+				GetterUtil.getString(
+					order.getPrintedNote(), commerceOrder.getPrintedNote()),
+				requestedDeliveryDate.getMonth(),
+				requestedDeliveryDate.getDay(), requestedDeliveryDate.getYear(),
+				requestedDeliveryDate.getHour(),
+				requestedDeliveryDate.getMinute(), serviceContext);
+		}
+		else {
+
+			// Printed note
+
+			_commerceOrderService.updatePrintedNote(
+				commerceOrder.getCommerceOrderId(),
+				GetterUtil.getString(
+					order.getPrintedNote(), commerceOrder.getPrintedNote()));
+		}
 
 		// Expando
 

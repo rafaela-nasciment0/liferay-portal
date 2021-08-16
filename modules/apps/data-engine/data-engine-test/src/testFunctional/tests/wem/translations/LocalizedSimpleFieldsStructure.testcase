@@ -28,6 +28,67 @@ definition {
 		}
 	}
 
+	@description = "This test validates adding, editing and deleting fields on the builder"
+	@priority = "5"
+	test AddEditAndDeleteFieldsOnStructure {
+		property portal.acceptance = "true";
+
+		WebContentStructures.addCP(structureName = "WC Structure Title");
+
+		DataEngine.addFields(fieldNameList = "Text,Date,Numeric");
+
+		WebContentStructures.saveCP();
+
+		WebContentNavigator.gotoEditStructure(structureName = "WC Structure Title");
+
+		for (var fieldList : list "Text,Date,Numeric") {
+			DataEngine.editFieldLabel(
+				fieldFieldLabel = "${fieldList}",
+				fieldFieldLabelEdit = "${fieldList} edited");
+
+			DataEngine.editFieldTip(
+				fieldFieldLabel = "${fieldList} edited",
+				fieldHelp = "Help text");
+		}
+
+		WebContentStructures.saveCP();
+
+		WebContentNavigator.gotoEditStructure(structureName = "WC Structure Title");
+
+		for (var fieldList : list "Text,Date,Numeric") {
+			DataEngine.viewField(
+				fieldFieldLabel = "${fieldList} edited",
+				fieldHelp = "Help text",
+				fieldName = "${fieldList}");
+		}
+
+		WebContentStructures.saveCP();
+
+		WebContentNavigator.gotoEditStructure(structureName = "WC Structure Title");
+
+		for (var fieldList : list "Text,Date,Numeric") {
+			DataEngine.delete(fieldFieldLabel = "${fieldList} edited");
+		}
+
+		DataEngine.addField(
+			fieldFieldLabel = "Text",
+			fieldName = "Text");
+
+		WebContentStructures.saveCP();
+
+		WebContentNavigator.gotoEditStructure(structureName = "WC Structure Title");
+
+		DataEngine.viewField(
+			fieldFieldLabel = "Text",
+			fieldName = "Text");
+
+		for (var fieldList : list "Text,Date,Numeric") {
+			AssertElementNotPresent(
+				key_fieldFieldLabel = "${fieldList} edited",
+				locator1 = "DDMEditStructure#FORM_FIELD_CONTAINER_LABEL");
+		}
+	}
+
 	@description = "This test ensures that the title displayed on the structures list is the title defined on the default language."
 	@priority = "4"
 	test CheckDefaultStructureTitleDisplayedOnStructureList {
@@ -115,6 +176,170 @@ definition {
 		AssertTextEquals(
 			locator1 = "TextInput#NAME",
 			value1 = "Nome da Estrutura WC");
+	}
+
+	@description = "This test validates the creation and edition of localized fields as well as deletion of structure"
+	@priority = "5"
+	test CreateEditAndDeleteLocalizedStructure {
+		property portal.acceptance = "true";
+
+		WebContentStructures.addCP(structureName = "WC Structure Title");
+
+		DataEngine.addFields(fieldNameList = "Text,Date,Numeric");
+
+		WebContentStructures.saveCP();
+
+		WebContentNavigator.gotoEditStructure(structureName = "WC Structure Title");
+
+		for (var language : list "pt-BR,ca-ES,zh-CN,fr-FR") {
+			PortletEntry.changeLocale(locale = "${language}");
+
+			WebContentStructures.addName(structureName = "WC Structure Title - ${language}");
+
+			DataEngine.editFieldLabel(
+				fieldFieldLabel = "Text",
+				fieldFieldLabelEdit = "Text - ${language}");
+
+			DataEngine.editFieldLabel(
+				fieldFieldLabel = "Date",
+				fieldFieldLabelEdit = "Date - ${language}");
+
+			DataEngine.editFieldLabel(
+				fieldFieldLabel = "Numeric",
+				fieldFieldLabelEdit = "Numeric - ${language}");
+		}
+
+		WebContentStructures.saveCP();
+
+		WebContentNavigator.gotoEditStructure(structureName = "WC Structure Title");
+
+		DataEngine.viewField(
+			fieldFieldLabel = "Text",
+			fieldName = "Text");
+
+		DataEngine.viewField(
+			fieldFieldLabel = "Date",
+			fieldName = "Date");
+
+		DataEngine.viewField(
+			fieldFieldLabel = "Numeric",
+			fieldName = "Numeric");
+
+		for (var language : list "pt-BR,ca-ES,zh-CN,fr-FR") {
+			PortletEntry.changeLocale(locale = "${language}");
+
+			DataEngine.viewField(
+				fieldFieldLabel = "Text - ${language}",
+				fieldName = "Text");
+
+			DataEngine.viewField(
+				fieldFieldLabel = "Date - ${language}",
+				fieldName = "Date");
+
+			DataEngine.viewField(
+				fieldFieldLabel = "Numeric - ${language}",
+				fieldName = "Numeric");
+		}
+
+		PortletEntry.changeLocale(locale = "en-US");
+
+		DataEngine.editFieldLabel(
+			fieldFieldLabel = "Text",
+			fieldFieldLabelEdit = "Edited Text");
+
+		DataEngine.editFieldLabel(
+			fieldFieldLabel = "Date",
+			fieldFieldLabelEdit = "Edited Date");
+
+		DataEngine.editFieldLabel(
+			fieldFieldLabel = "Numeric",
+			fieldFieldLabelEdit = "Edited Numeric");
+
+		WebContentStructures.saveCP();
+
+		WebContentNavigator.gotoEditStructure(structureName = "WC Structure Title");
+
+		DataEngine.viewField(
+			fieldFieldLabel = "Edited Text",
+			fieldName = "Text");
+
+		DataEngine.viewField(
+			fieldFieldLabel = "Edited Date",
+			fieldName = "Date");
+
+		DataEngine.viewField(
+			fieldFieldLabel = "Edited Numeric",
+			fieldName = "Numeric");
+
+		PortletEntry.changeLocale(locale = "pt-BR");
+
+		DataEngine.viewField(
+			fieldFieldLabel = "Text - pt-BR",
+			fieldName = "Text");
+
+		DataEngine.viewField(
+			fieldFieldLabel = "Date - pt-BR",
+			fieldName = "Date");
+
+		DataEngine.viewField(
+			fieldFieldLabel = "Numeric - pt-BR",
+			fieldName = "Numeric");
+
+		for (var language : list "pt-BR,ca-ES,zh-CN,fr-FR") {
+			PortletEntry.changeLocale(locale = "${language}");
+
+			DataEngine.editFieldLabel(
+				fieldFieldLabel = "Text - ${language}",
+				fieldFieldLabelEdit = "Edited Text - ${language}");
+
+			DataEngine.editFieldLabel(
+				fieldFieldLabel = "Date - ${language}",
+				fieldFieldLabelEdit = "Edited Date - ${language}");
+
+			DataEngine.editFieldLabel(
+				fieldFieldLabel = "Numeric - ${language}",
+				fieldFieldLabelEdit = "Edited Numeric - ${language}");
+		}
+
+		WebContentStructures.saveCP();
+
+		WebContentNavigator.gotoEditStructure(structureName = "WC Structure Title");
+
+		DataEngine.viewField(
+			fieldFieldLabel = "Edited Text",
+			fieldName = "Text");
+
+		DataEngine.viewField(
+			fieldFieldLabel = "Edited Date",
+			fieldName = "Date");
+
+		DataEngine.viewField(
+			fieldFieldLabel = "Edited Numeric",
+			fieldName = "Numeric");
+
+		for (var language : list "pt-BR,ca-ES,zh-CN,fr-FR") {
+			PortletEntry.changeLocale(locale = "${language}");
+
+			DataEngine.viewField(
+				fieldFieldLabel = "Edited Text - ${language}",
+				fieldName = "Text");
+
+			DataEngine.viewField(
+				fieldFieldLabel = "Edited Date - ${language}",
+				fieldName = "Date");
+
+			DataEngine.viewField(
+				fieldFieldLabel = "Edited Numeric - ${language}",
+				fieldName = "Numeric");
+		}
+
+		WebContentStructures.saveCP();
+
+		WebContentStructures.deleteCP(structureName = "WC Structure Title");
+
+		AssertElementNotPresent(
+			key_ddlDataDefinitionName = "WC Structure Title",
+			locator1 = "DDMSelectStructure#DDM_STRUCTURE_TABLE_NAME_LINK");
 	}
 
 	@description = "This test ensures the default title is carried to a locale, until it gets translated."
@@ -214,7 +439,7 @@ definition {
 
 		AssertTextEquals(
 			locator1 = "TextInput#NAME",
-			value1 = "Nome da Estrutura WC");
+			value1 = "Título da Estrutura WC");
 	}
 
 	@description = "This test ensures that the translation of a field labels are carried when duplicating the field."
@@ -255,24 +480,217 @@ definition {
 			fieldName = "Text");
 	}
 
-	@description = "This test ensures that the translations for all fields in a structure persists for each field."
+	@description = "This test validates the creation and edition of localized fields as well as deletion of structure in different instance language"
 	@priority = "5"
-	test TranslateStructureWithAllFields {
-		property portal.acceptance = "false";
+	test EditAndDeleteWithDifferentInstanceLanguage {
+		property portal.acceptance = "true";
+
+		ApplicationsMenu.gotoPortlet(
+			category = "Configuration",
+			panel = "Control Panel",
+			portlet = "Instance Settings");
+
+		SystemSettings.gotoConfiguration(
+			configurationCategory = "Localization",
+			configurationName = "Language",
+			configurationScope = "Virtual Instance Scope");
+
+		PortalSettings.configureCurrentLanguagesCP(defaultPortalLanguage = "Portuguese (Brazil)");
+
+		WebContentNavigator.openWebContentAdmin(siteURLKey = "test-site-name");
 
 		ProductMenu.gotoPortlet(
 			category = "Content & Data",
 			portlet = "Web Content");
 
-		NavItem.click(navItem = "Structures");
+		NavItem.gotoStructures();
 
-		LexiconEntry.gotoAdd();
+		WebContentStructures.addCP(structureName = "WC Structure Title");
 
-		PortletEntry.inputName(name = "Structure Title");
+		AssertElementPresent(
+			key_locale = "pt-BR",
+			locator1 = "Translation#CURRENT_LOCALE");
+
+		DataEngine.addFields(fieldNameList = "Text,Date,Numeric");
+
+		WebContentStructures.saveCP();
+
+		WebContentNavigator.gotoEditStructure(structureName = "WC Structure Title");
+
+		for (var language : list "en-US,ca-ES,zh-CN,fr-FR") {
+			PortletEntry.changeLocale(locale = "${language}");
+
+			WebContentStructures.addName(structureName = "WC Structure Title - ${language}");
+
+			DataEngine.editFieldLabel(
+				fieldFieldLabel = "Text",
+				fieldFieldLabelEdit = "Text - ${language}");
+
+			DataEngine.editFieldLabel(
+				fieldFieldLabel = "Date",
+				fieldFieldLabelEdit = "Date - ${language}");
+
+			DataEngine.editFieldLabel(
+				fieldFieldLabel = "Numeric",
+				fieldFieldLabelEdit = "Numeric - ${language}");
+		}
+
+		WebContentStructures.saveCP();
+
+		WebContentNavigator.gotoEditStructure(structureName = "WC Structure Title - en-US");
+
+		DataEngine.viewField(
+			fieldFieldLabel = "Text",
+			fieldName = "Text");
+
+		DataEngine.viewField(
+			fieldFieldLabel = "Date",
+			fieldName = "Date");
+
+		DataEngine.viewField(
+			fieldFieldLabel = "Numeric",
+			fieldName = "Numeric");
+
+		for (var language : list "en-US,ca-ES,zh-CN,fr-FR") {
+			PortletEntry.changeLocale(locale = "${language}");
+
+			DataEngine.viewField(
+				fieldFieldLabel = "Text - ${language}",
+				fieldName = "Text");
+
+			DataEngine.viewField(
+				fieldFieldLabel = "Date - ${language}",
+				fieldName = "Date");
+
+			DataEngine.viewField(
+				fieldFieldLabel = "Numeric - ${language}",
+				fieldName = "Numeric");
+		}
+
+		PortletEntry.changeLocale(locale = "pt-BR");
+
+		DataEngine.editFieldLabel(
+			fieldFieldLabel = "Text",
+			fieldFieldLabelEdit = "Edited Text");
+
+		DataEngine.editFieldLabel(
+			fieldFieldLabel = "Date",
+			fieldFieldLabelEdit = "Edited Date");
+
+		DataEngine.editFieldLabel(
+			fieldFieldLabel = "Numeric",
+			fieldFieldLabelEdit = "Edited Numeric");
+
+		WebContentStructures.saveCP();
+
+		WebContentNavigator.gotoEditStructure(structureName = "WC Structure Title - en-US");
+
+		DataEngine.viewField(
+			fieldFieldLabel = "Edited Text",
+			fieldName = "Text");
+
+		DataEngine.viewField(
+			fieldFieldLabel = "Edited Date",
+			fieldName = "Date");
+
+		DataEngine.viewField(
+			fieldFieldLabel = "Edited Numeric",
+			fieldName = "Numeric");
+
+		PortletEntry.changeLocale(locale = "en-US");
+
+		DataEngine.viewField(
+			fieldFieldLabel = "Text - en-US",
+			fieldName = "Text");
+
+		DataEngine.viewField(
+			fieldFieldLabel = "Date - en-US",
+			fieldName = "Date");
+
+		DataEngine.viewField(
+			fieldFieldLabel = "Numeric - en-US",
+			fieldName = "Numeric");
+
+		for (var language : list "en-US,ca-ES,zh-CN,fr-FR") {
+			PortletEntry.changeLocale(locale = "${language}");
+
+			DataEngine.editFieldLabel(
+				fieldFieldLabel = "Text - ${language}",
+				fieldFieldLabelEdit = "Edited Text - ${language}");
+
+			DataEngine.editFieldLabel(
+				fieldFieldLabel = "Date - ${language}",
+				fieldFieldLabelEdit = "Edited Date - ${language}");
+
+			DataEngine.editFieldLabel(
+				fieldFieldLabel = "Numeric - ${language}",
+				fieldFieldLabelEdit = "Edited Numeric - ${language}");
+		}
+
+		WebContentStructures.saveCP();
+
+		WebContentNavigator.gotoEditStructure(structureName = "WC Structure Title - en-US");
+
+		DataEngine.viewField(
+			fieldFieldLabel = "Edited Text",
+			fieldName = "Text");
+
+		DataEngine.viewField(
+			fieldFieldLabel = "Edited Date",
+			fieldName = "Date");
+
+		DataEngine.viewField(
+			fieldFieldLabel = "Edited Numeric",
+			fieldName = "Numeric");
+
+		for (var language : list "en-US,ca-ES,zh-CN,fr-FR") {
+			PortletEntry.changeLocale(locale = "${language}");
+
+			DataEngine.viewField(
+				fieldFieldLabel = "Edited Text - ${language}",
+				fieldName = "Text");
+
+			DataEngine.viewField(
+				fieldFieldLabel = "Edited Date - ${language}",
+				fieldName = "Date");
+
+			DataEngine.viewField(
+				fieldFieldLabel = "Edited Numeric - ${language}",
+				fieldName = "Numeric");
+		}
+
+		WebContentStructures.saveCP();
+
+		WebContentStructures.deleteCP(structureName = "WC Structure Title - en-US");
+
+		AssertElementNotPresent(
+			key_ddlDataDefinitionName = "WC Structure Title - en-US",
+			locator1 = "DDMSelectStructure#DDM_STRUCTURE_TABLE_NAME_LINK");
+
+		ApplicationsMenu.gotoPortlet(
+			category = "Configuration",
+			panel = "Control Panel",
+			portlet = "Instance Settings");
+
+		SystemSettings.gotoConfiguration(
+			configurationCategory = "Localization",
+			configurationName = "Language",
+			configurationScope = "Virtual Instance Scope");
+
+		PortalSettings.configureCurrentLanguagesCP(defaultPortalLanguage = "English (United States)");
+	}
+
+	@description = "This test ensures that the translations for all fields in a structure persists for each field."
+	@priority = "5"
+	test TranslateStructureWithAllFields {
+		property portal.acceptance = "true";
+
+		WebContentStructures.addCP(structureName = "WC Structure Title");
 
 		DataEngine.addFields(fieldNameList = "Web Content,Date,Rich Text,Single Selection,Grid,Select from List,Numeric,Link to Page,Image,Upload,Color,Text,Multiple Selection,Geolocation,Separator");
 
 		var index = "1";
+
 		for (var optionValue : list "Value 1,Value 2") {
 			DataEngine.addFieldOption(
 				fieldFieldLabel = "Multiple Selection",
@@ -283,7 +701,7 @@ definition {
 
 		PortletEntry.changeLocale(locale = "pt-BR");
 
-		WebContentStructures.addName(structureName = "Testando");
+		WebContentStructures.addName(structureName = "WC Título da Estrutura");
 
 		FormViewBuilder.editFieldLabel(
 			fieldLabel = "Text",
@@ -347,9 +765,7 @@ definition {
 
 		WebContentStructures.saveCP();
 
-		LexiconEntry.gotoEntryMenuItem(
-			menuItem = "Edit",
-			rowEntry = "Structure Title");
+		WebContentNavigator.gotoEditStructure(structureName = "WC Structure Title");
 
 		PortletEntry.changeLocale(locale = "pt-BR");
 

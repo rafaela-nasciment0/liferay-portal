@@ -34,7 +34,9 @@ import com.liferay.portal.kernel.repository.model.Folder;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.PortletKeys;
 
+import java.util.Collections;
 import java.util.Locale;
+import java.util.Set;
 
 import javax.portlet.PortletException;
 import javax.portlet.PortletURL;
@@ -71,6 +73,20 @@ public class BlogsItemSelectorViewDisplayContext {
 
 	public Folder fetchAttachmentsFolder(long userId, long groupId) {
 		return _blogsEntryLocalService.fetchAttachmentsFolder(userId, groupId);
+	}
+
+	public Set<String> getAllowedCreationMenuUIItemKeys() {
+		return Collections.emptySet();
+	}
+
+	public PortletURL getEditImageURL(
+		LiferayPortletResponse liferayPortletResponse) {
+
+		return PortletURLBuilder.createActionURL(
+			liferayPortletResponse, PortletKeys.BLOGS
+		).setActionName(
+			"/blogs/image_editor"
+		).buildPortletURL();
 	}
 
 	public String[] getImageExtensions() throws ConfigurationException {
@@ -111,7 +127,7 @@ public class BlogsItemSelectorViewDisplayContext {
 			PortletURLUtil.clone(_portletURL, liferayPortletResponse)
 		).setParameter(
 			"selectedTab", getTitle(httpServletRequest.getLocale())
-		).build();
+		).buildPortletURL();
 	}
 
 	public String getTitle(Locale locale) {
@@ -125,7 +141,7 @@ public class BlogsItemSelectorViewDisplayContext {
 			liferayPortletResponse, PortletKeys.BLOGS
 		).setActionName(
 			"/blogs/upload_image"
-		).build();
+		).buildPortletURL();
 	}
 
 	public boolean isSearch() {

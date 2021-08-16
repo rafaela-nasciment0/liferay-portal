@@ -3279,24 +3279,24 @@ public class RatingsEntryPersistenceImpl
 		ServiceContext serviceContext =
 			ServiceContextThreadLocal.getServiceContext();
 
-		Date now = new Date();
+		Date date = new Date();
 
 		if (isNew && (ratingsEntry.getCreateDate() == null)) {
 			if (serviceContext == null) {
-				ratingsEntry.setCreateDate(now);
+				ratingsEntry.setCreateDate(date);
 			}
 			else {
-				ratingsEntry.setCreateDate(serviceContext.getCreateDate(now));
+				ratingsEntry.setCreateDate(serviceContext.getCreateDate(date));
 			}
 		}
 
 		if (!ratingsEntryModelImpl.hasSetModifiedDate()) {
 			if (serviceContext == null) {
-				ratingsEntry.setModifiedDate(now);
+				ratingsEntry.setModifiedDate(date);
 			}
 			else {
 				ratingsEntry.setModifiedDate(
-					serviceContext.getModifiedDate(now));
+					serviceContext.getModifiedDate(date));
 			}
 		}
 
@@ -3721,7 +3721,8 @@ public class RatingsEntryPersistenceImpl
 	public Set<String> getCTColumnNames(
 		CTColumnResolutionType ctColumnResolutionType) {
 
-		return _ctColumnNamesMap.get(ctColumnResolutionType);
+		return _ctColumnNamesMap.getOrDefault(
+			ctColumnResolutionType, Collections.emptySet());
 	}
 
 	@Override
@@ -3755,7 +3756,6 @@ public class RatingsEntryPersistenceImpl
 	static {
 		Set<String> ctControlColumnNames = new HashSet<String>();
 		Set<String> ctIgnoreColumnNames = new HashSet<String>();
-		Set<String> ctMergeColumnNames = new HashSet<String>();
 		Set<String> ctStrictColumnNames = new HashSet<String>();
 
 		ctControlColumnNames.add("mvccVersion");
@@ -3774,7 +3774,6 @@ public class RatingsEntryPersistenceImpl
 			CTColumnResolutionType.CONTROL, ctControlColumnNames);
 		_ctColumnNamesMap.put(
 			CTColumnResolutionType.IGNORE, ctIgnoreColumnNames);
-		_ctColumnNamesMap.put(CTColumnResolutionType.MERGE, ctMergeColumnNames);
 		_ctColumnNamesMap.put(
 			CTColumnResolutionType.PK, Collections.singleton("entryId"));
 		_ctColumnNamesMap.put(
@@ -4023,7 +4022,7 @@ public class RatingsEntryPersistenceImpl
 			return RatingsEntryTable.INSTANCE.getTableName();
 		}
 
-		private Object[] _getValue(
+		private static Object[] _getValue(
 			RatingsEntryModelImpl ratingsEntryModelImpl, String[] columnNames,
 			boolean original) {
 
@@ -4045,8 +4044,8 @@ public class RatingsEntryPersistenceImpl
 			return arguments;
 		}
 
-		private static Map<FinderPath, Long> _finderPathColumnBitmasksCache =
-			new ConcurrentHashMap<>();
+		private static final Map<FinderPath, Long>
+			_finderPathColumnBitmasksCache = new ConcurrentHashMap<>();
 
 	}
 

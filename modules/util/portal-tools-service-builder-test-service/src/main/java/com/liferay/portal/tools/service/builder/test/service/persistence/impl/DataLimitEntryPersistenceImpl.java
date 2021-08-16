@@ -298,24 +298,25 @@ public class DataLimitEntryPersistenceImpl
 		ServiceContext serviceContext =
 			ServiceContextThreadLocal.getServiceContext();
 
-		Date now = new Date();
+		Date date = new Date();
 
 		if (isNew && (dataLimitEntry.getCreateDate() == null)) {
 			if (serviceContext == null) {
-				dataLimitEntry.setCreateDate(now);
+				dataLimitEntry.setCreateDate(date);
 			}
 			else {
-				dataLimitEntry.setCreateDate(serviceContext.getCreateDate(now));
+				dataLimitEntry.setCreateDate(
+					serviceContext.getCreateDate(date));
 			}
 		}
 
 		if (!dataLimitEntryModelImpl.hasSetModifiedDate()) {
 			if (serviceContext == null) {
-				dataLimitEntry.setModifiedDate(now);
+				dataLimitEntry.setModifiedDate(date);
 			}
 			else {
 				dataLimitEntry.setModifiedDate(
-					serviceContext.getModifiedDate(now));
+					serviceContext.getModifiedDate(date));
 			}
 		}
 
@@ -723,7 +724,7 @@ public class DataLimitEntryPersistenceImpl
 			return DataLimitEntryTable.INSTANCE.getTableName();
 		}
 
-		private Object[] _getValue(
+		private static Object[] _getValue(
 			DataLimitEntryModelImpl dataLimitEntryModelImpl,
 			String[] columnNames, boolean original) {
 
@@ -746,8 +747,8 @@ public class DataLimitEntryPersistenceImpl
 			return arguments;
 		}
 
-		private static Map<FinderPath, Long> _finderPathColumnBitmasksCache =
-			new ConcurrentHashMap<>();
+		private static final Map<FinderPath, Long>
+			_finderPathColumnBitmasksCache = new ConcurrentHashMap<>();
 
 	}
 

@@ -130,8 +130,8 @@ public class CommercePricingClassDisplayContext
 				PortletRequest.ACTION_PHASE)
 		).setActionName(
 			"/commerce_pricing_classes/edit_commerce_pricing_class"
-		).setParameter(
-			Constants.CMD, Constants.UPDATE
+		).setCMD(
+			Constants.UPDATE
 		).setParameter(
 			"commercePricingClassId",
 			commercePricingClass.getCommercePricingClassId()
@@ -148,7 +148,7 @@ public class CommercePricingClassDisplayContext
 				PortletRequest.RENDER_PHASE)
 		).setMVCRenderCommandName(
 			"/commerce_pricing_classes/edit_commerce_pricing_class"
-		).build();
+		).buildPortletURL();
 	}
 
 	public List<HeaderActionModel> getHeaderActionModels() throws Exception {

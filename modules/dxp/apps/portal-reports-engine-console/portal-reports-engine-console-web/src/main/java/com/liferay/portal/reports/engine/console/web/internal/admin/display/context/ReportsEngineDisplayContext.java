@@ -88,8 +88,8 @@ public class ReportsEngineDisplayContext {
 	public String getClearResultsURL() {
 		return PortletURLBuilder.create(
 			getPortletURL()
-		).setParameter(
-			"keywords", StringPool.BLANK
+		).setKeywords(
+			StringPool.BLANK
 		).buildString();
 	}
 
@@ -214,20 +214,22 @@ public class ReportsEngineDisplayContext {
 	}
 
 	public PortletURL getPortletURL() {
-		PortletURL portletURL = PortletURLBuilder.createRenderURL(
+		return PortletURLBuilder.createRenderURL(
 			_liferayPortletResponse
-		).setParameter(
-			"tabs1", _getTabs1()
-		).build();
+		).setNavigation(
+			() -> {
+				String navigation = ParamUtil.getString(
+					_httpServletRequest, "navigation");
 
-		String navigation = ParamUtil.getString(
-			_httpServletRequest, "navigation");
+				if (Validator.isNotNull(navigation)) {
+					return _getNavigation();
+				}
 
-		if (Validator.isNotNull(navigation)) {
-			portletURL.setParameter("navigation", _getNavigation());
-		}
-
-		return portletURL;
+				return null;
+			}
+		).setTabs1(
+			_getTabs1()
+		).buildPortletURL();
 	}
 
 	public SearchContainer<?> getSearchContainer() throws PortalException {
@@ -263,8 +265,8 @@ public class ReportsEngineDisplayContext {
 	public String getSortingURL() {
 		return PortletURLBuilder.createRenderURL(
 			_reportsEngineRequestHelper.getLiferayPortletResponse()
-		).setParameter(
-			"tabs1", _getTabs1()
+		).setTabs1(
+			_getTabs1()
 		).setParameter(
 			"orderByCol", _getOrderByCol()
 		).setParameter(

@@ -63,6 +63,7 @@ import java.util.List;
 
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
@@ -83,6 +84,11 @@ public class AccountRoleLocalServiceTest {
 	@Rule
 	public static final LiferayIntegrationTestRule liferayIntegrationTestRule =
 		new LiferayIntegrationTestRule();
+
+	@BeforeClass
+	public static void setUpClass() throws Exception {
+		_company = CompanyTestUtil.addCompany();
+	}
 
 	@Before
 	public void setUp() throws Exception {
@@ -108,8 +114,8 @@ public class AccountRoleLocalServiceTest {
 			_accountEntry1.getAccountEntryId(), name);
 
 		Assert.assertEquals(
-			1L,
-			(long)_accountRoleLocalService.dslQuery(
+			1,
+			_accountRoleLocalService.dslQueryCount(
 				DSLQueryFactoryUtil.countDistinct(
 					AccountRoleTable.INSTANCE.accountRoleId
 				).from(
@@ -427,9 +433,7 @@ public class AccountRoleLocalServiceTest {
 			TestPropsValues.getUserId(),
 			AccountConstants.ACCOUNT_ENTRY_ID_DEFAULT, keyword, null, null);
 
-		Company companyB = CompanyTestUtil.addCompany();
-
-		User adminUserB = UserTestUtil.getAdminUser(companyB.getCompanyId());
+		User adminUserB = UserTestUtil.getAdminUser(_company.getCompanyId());
 
 		AccountRole accountRoleB = _accountRoleLocalService.addAccountRole(
 			adminUserB.getUserId(), AccountConstants.ACCOUNT_ENTRY_ID_DEFAULT,
@@ -557,6 +561,8 @@ public class AccountRoleLocalServiceTest {
 			ArrayUtil.contains(
 				_getRoleIds(_users.get(0)), accountRole.getRoleId()));
 	}
+
+	private static Company _company;
 
 	@DeleteAfterTestRun
 	private AccountEntry _accountEntry1;

@@ -31,10 +31,6 @@ if (distributionScopeArray.length == 2) {
 	classPK = GetterUtil.getLong(distributionScopeArray[1]);
 }
 
-if ((classNameId == 0) && (classPK == 0) && !PortalPermissionUtil.contains(permissionChecker, ActionKeys.ADD_GENERAL_ANNOUNCEMENTS)) {
-	throw new PrincipalException.MustHavePermission(permissionChecker, ActionKeys.ADD_GENERAL_ANNOUNCEMENTS);
-}
-
 SearchContainer<AnnouncementsEntry> announcementsEntriesSearchContainer = new SearchContainer(renderRequest, null, null, SearchContainer.DEFAULT_CUR_PARAM, SearchContainer.DEFAULT_DELTA, currentURLObj, null, "no-entries-were-found");
 
 announcementsEntriesSearchContainer.setRowChecker(new AnnouncementsEntryChecker(liferayPortletRequest, liferayPortletResponse));
@@ -128,8 +124,8 @@ AnnouncementsAdminViewManagementToolbarDisplayContext announcementsAdminViewMana
 						).setRedirect(
 							currentURL
 						).setParameter(
-							"entryId", String.valueOf(entry.getEntryId())
-						).build()
+							"entryId", entry.getEntryId()
+						).buildPortletURL()
 					%>'
 					name="title"
 					value="<%= HtmlUtil.escape(entry.getTitle()) %>"

@@ -62,22 +62,22 @@ public class ViewAccountRoleAssigneesManagementToolbarDisplayContext
 
 				dropdownItem.putData("action", "removeUsers");
 
-				PortletURL removeUsersURL = PortletURLBuilder.createActionURL(
-					liferayPortletResponse
-				).setActionName(
-					"/account_admin/remove_account_role_users"
-				).setRedirect(
-					currentURLObj.toString()
-				).setParameter(
-					"accountEntryId",
-					ParamUtil.getString(httpServletRequest, "accountEntryId")
-				).setParameter(
-					"accountRoleId",
-					ParamUtil.getString(httpServletRequest, "accountRoleId")
-				).build();
-
 				dropdownItem.putData(
-					"removeUsersURL", removeUsersURL.toString());
+					"removeUsersURL",
+					PortletURLBuilder.createActionURL(
+						liferayPortletResponse
+					).setActionName(
+						"/account_admin/remove_account_role_users"
+					).setRedirect(
+						currentURLObj
+					).setParameter(
+						"accountEntryId",
+						ParamUtil.getString(
+							httpServletRequest, "accountEntryId")
+					).setParameter(
+						"accountRoleId",
+						ParamUtil.getString(httpServletRequest, "accountRoleId")
+					).buildString());
 
 				dropdownItem.setIcon("times-circle");
 				dropdownItem.setLabel(
@@ -92,10 +92,10 @@ public class ViewAccountRoleAssigneesManagementToolbarDisplayContext
 	public String getClearResultsURL() {
 		return PortletURLBuilder.create(
 			getPortletURL()
-		).setParameter(
-			"navigation", (String)null
-		).setParameter(
-			"keywords", StringPool.BLANK
+		).setKeywords(
+			StringPool.BLANK
+		).setNavigation(
+			(String)null
 		).buildString();
 	}
 

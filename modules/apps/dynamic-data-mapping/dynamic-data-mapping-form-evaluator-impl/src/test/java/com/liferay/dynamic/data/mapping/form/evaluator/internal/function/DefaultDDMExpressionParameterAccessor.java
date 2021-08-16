@@ -15,6 +15,7 @@
 package com.liferay.dynamic.data.mapping.form.evaluator.internal.function;
 
 import com.liferay.dynamic.data.mapping.expression.DDMExpressionParameterAccessor;
+import com.liferay.petra.string.StringPool;
 
 import java.util.Locale;
 import java.util.function.Supplier;
@@ -31,6 +32,11 @@ public class DefaultDDMExpressionParameterAccessor
 	}
 
 	@Override
+	public String getGooglePlacesAPIKey() {
+		return _getGooglePlacesAPIKeySupplier.get();
+	}
+
+	@Override
 	public long getGroupId() {
 		return _getGroupIdSupplier.get();
 	}
@@ -38,6 +44,11 @@ public class DefaultDDMExpressionParameterAccessor
 	@Override
 	public Locale getLocale() {
 		return _getLocaleSupplier.get();
+	}
+
+	@Override
+	public String getTimeZoneId() {
+		return _getTimeZoneIdSupplier.get();
 	}
 
 	@Override
@@ -49,8 +60,16 @@ public class DefaultDDMExpressionParameterAccessor
 		_getCompanyIdSupplier = supplier;
 	}
 
+	protected void setGetGooglePlacesAPIKeySupplier(Supplier<String> supplier) {
+		_getGooglePlacesAPIKeySupplier = supplier;
+	}
+
 	protected void setGetGroupIdSupplier(Supplier<Long> supplier) {
 		_getGroupIdSupplier = supplier;
+	}
+
+	protected void setGetLocaleSupplier(Supplier<Locale> supplier) {
+		_getLocaleSupplier = supplier;
 	}
 
 	protected void setGetUserIdSupplier(Supplier<Long> supplier) {
@@ -58,9 +77,11 @@ public class DefaultDDMExpressionParameterAccessor
 	}
 
 	private Supplier<Long> _getCompanyIdSupplier = () -> 0L;
+	private Supplier<String> _getGooglePlacesAPIKeySupplier =
+		() -> StringPool.BLANK;
 	private Supplier<Long> _getGroupIdSupplier = () -> 0L;
-	private final Supplier<Locale> _getLocaleSupplier = () -> new Locale(
-		"pt", "BR");
+	private Supplier<Locale> _getLocaleSupplier = () -> new Locale("pt", "BR");
+	private final Supplier<String> _getTimeZoneIdSupplier = () -> "UTC";
 	private Supplier<Long> _getUserIdSupplier = () -> 0L;
 
 }

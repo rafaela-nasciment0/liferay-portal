@@ -48,13 +48,18 @@ create table AccountGroup (
 	modifiedDate DATE null,
 	defaultAccountGroup BOOLEAN,
 	description VARCHAR(75) null,
-	name VARCHAR(75) null
+	name VARCHAR(75) null,
+	type_ VARCHAR(75) null
 );
 
 create table AccountGroupRel (
 	mvccVersion LONG default 0 not null,
 	accountGroupRelId LONG not null primary key,
 	companyId LONG,
+	userId LONG,
+	userName VARCHAR(75) null,
+	createDate DATE null,
+	modifiedDate DATE null,
 	accountGroupId LONG,
 	classNameId LONG,
 	classPK LONG

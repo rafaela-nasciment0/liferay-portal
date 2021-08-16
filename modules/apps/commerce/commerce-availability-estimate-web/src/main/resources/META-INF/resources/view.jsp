@@ -97,8 +97,8 @@ CommerceAvailabilityEstimateDisplayContext commerceAvailabilityEstimateDisplayCo
 							).setRedirect(
 								currentURL
 							).setParameter(
-								"commerceAvailabilityEstimateId", String.valueOf(commerceAvailabilityEstimate.getCommerceAvailabilityEstimateId())
-							).build()
+								"commerceAvailabilityEstimateId", commerceAvailabilityEstimate.getCommerceAvailabilityEstimateId()
+							).buildPortletURL()
 						%>'
 						name="title"
 						value="<%= HtmlUtil.escape(commerceAvailabilityEstimate.getTitle(languageId)) %>"

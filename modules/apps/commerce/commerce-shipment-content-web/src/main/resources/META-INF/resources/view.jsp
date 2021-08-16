@@ -39,8 +39,8 @@ CommerceShipmentContentDisplayContext commerceShipmentContentDisplayContext = (C
 		).setRedirect(
 			currentURL
 		).setParameter(
-			"commerceShipmentId", String.valueOf(commerceShipment.getCommerceShipmentId())
-		).build();
+			"commerceShipmentId", commerceShipment.getCommerceShipmentId()
+		).buildPortletURL();
 		%>
 
 		<liferay-ui:search-container-column-text
@@ -52,7 +52,7 @@ CommerceShipmentContentDisplayContext commerceShipmentContentDisplayContext = (C
 
 		<liferay-ui:search-container-column-text
 			name="customer-name"
-			value="<%= commerceShipmentContentDisplayContext.getCommerceShipmentAccountName(commerceShipment) %>"
+			value="<%= HtmlUtil.escape(commerceShipmentContentDisplayContext.getCommerceShipmentAccountName(commerceShipment)) %>"
 		/>
 
 		<liferay-ui:search-container-column-text

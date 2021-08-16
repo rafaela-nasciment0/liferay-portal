@@ -130,6 +130,7 @@ definition {
 	}
 
 	@priority = "4"
+	@refactorneeded
 	test CheckinDocument {
 		property test.name.skip.portal.instance = "SharepointREST#CheckinDocument";
 
@@ -175,6 +176,7 @@ definition {
 	}
 
 	@priority = "4"
+	@refactorneeded
 	test DeleteDocumentInSubfolder {
 		property test.name.skip.portal.instance = "SharepointREST#DeleteDocumentInSubfolder";
 
@@ -218,12 +220,13 @@ definition {
 
 		DMDocument.cannotViewCP(dmDocumentTitle = "Document_2.doc");
 
-		DMDocument.viewDefaultCP();
+		DMDocument.viewDefault();
 
 		DMRepository.cleanRepository(dmFolderName = "DM Folder3 Name");
 	}
 
 	@priority = "4"
+	@refactorneeded
 	test DeleteSubfolder {
 		property test.name.skip.portal.instance = "SharepointREST#DeleteSubfolder";
 
@@ -247,6 +250,7 @@ definition {
 	}
 
 	@priority = "4"
+	@refactorneeded
 	test EditDocumentFile {
 		property test.name.skip.portal.instance = "SharepointREST#EditDocumentFile";
 
@@ -298,6 +302,7 @@ definition {
 	}
 
 	@priority = "4"
+	@refactorneeded
 	test MoveCheckedoutDocumentToFolder {
 		property test.name.skip.portal.instance = "SharepointREST#MoveCheckedoutDocumentToFolder";
 
@@ -358,6 +363,7 @@ definition {
 	}
 
 	@priority = "4"
+	@refactorneeded
 	test MoveDocumentToHome {
 		property test.name.skip.portal.instance = "SharepointREST#MoveDocumentToHome";
 
@@ -385,6 +391,7 @@ definition {
 	}
 
 	@priority = "4"
+	@refactorneeded
 	test SearchDocumentViaHome {
 		property test.name.skip.portal.instance = "SharepointREST#SearchDocumentViaHome";
 
@@ -406,6 +413,7 @@ definition {
 	}
 
 	@priority = "4"
+	@refactorneeded
 	test ViewDocumentAsGuest {
 		property test.name.skip.portal.instance = "SharepointREST#ViewDocumentAsGuest";
 
@@ -426,6 +434,10 @@ definition {
 		Navigator.gotoPage(pageName = "Documents and Media Page");
 
 		Portlet.addPG(portletName = "Documents and Media");
+
+		DMDocument.enableActionsMenuOnPortlet();
+
+		Navigator.gotoPage(pageName = "Documents and Media Page");
 
 		DMRepository.cleanRepository(dmDocumentTitle = "Document_1.doc");
 
@@ -467,6 +479,7 @@ definition {
 	}
 
 	@priority = "4"
+	@refactorneeded
 	test ViewEditedCheckedoutDocument {
 		property test.name.skip.portal.instance = "SharepointREST#ViewEditedCheckedoutDocument";
 
@@ -510,6 +523,7 @@ definition {
 	}
 
 	@priority = "4"
+	@refactorneeded
 	test ViewOriginalFileExtensionAfterUnsuccessfulExtensionChange {
 		property test.name.skip.portal.instance = "SharepointREST#ViewOriginalFileExtensionAfterUnsuccessfulExtensionChange";
 
@@ -545,6 +559,7 @@ definition {
 	}
 
 	@priority = "4"
+	@refactorneeded
 	test ViewOriginalFileExtensionAfterUnsuccessfulExtensionRemoval {
 		property test.name.skip.portal.instance = "SharepointREST#ViewOriginalFileExtensionAfterUnsuccessfulExtensionRemoval";
 
@@ -581,6 +596,7 @@ definition {
 
 	@description = "This test ensures that repositories can be added both on site admin and on a content page."
 	@priority = "4"
+	@refactorneeded
 	test ViewRepository {
 		property test.name.skip.portal.instance = "SharepointREST#ViewRepository";
 

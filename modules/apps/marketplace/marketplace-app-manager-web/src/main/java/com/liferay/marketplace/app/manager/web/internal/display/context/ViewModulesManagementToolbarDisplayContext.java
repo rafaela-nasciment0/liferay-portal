@@ -106,10 +106,10 @@ public class ViewModulesManagementToolbarDisplayContext
 		).setParameter(
 			"app", getApp()
 		).setParameter(
-			"state", getState()
-		).setParameter(
 			"orderByType", getOrderByType()
-		).build();
+		).setParameter(
+			"state", getState()
+		).buildPortletURL();
 
 		if (_searchContainer != null) {
 			portletURL.setParameter(

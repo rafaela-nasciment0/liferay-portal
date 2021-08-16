@@ -182,6 +182,45 @@ public class DefaultDLEditFileEntryDisplayContext
 	}
 
 	@Override
+	public boolean isNeverExpire() throws PortalException {
+		if (_neverExpire != null) {
+			return _neverExpire;
+		}
+
+		_neverExpire = ParamUtil.getBoolean(
+			_httpServletRequest, "neverExpire", true);
+
+		if (((_fileEntry != null) &&
+			 (_fileEntry.getExpirationDate() != null)) ||
+			((_fileVersion != null) &&
+			 (_fileVersion.getExpirationDate() != null))) {
+
+			_neverExpire = false;
+		}
+
+		return _neverExpire;
+	}
+
+	@Override
+	public boolean isNeverReview() throws PortalException {
+		if (_neverReview != null) {
+			return _neverReview;
+		}
+
+		_neverReview = ParamUtil.getBoolean(
+			_httpServletRequest, "neverReview", true);
+
+		if (((_fileEntry != null) && (_fileEntry.getReviewDate() != null)) ||
+			((_fileVersion != null) &&
+			 (_fileVersion.getReviewDate() != null))) {
+
+			_neverReview = false;
+		}
+
+		return _neverReview;
+	}
+
+	@Override
 	public boolean isPermissionsVisible() {
 		long repositoryId = ParamUtil.getLong(
 			_dlRequestHelper.getRequest(), "repositoryId");
@@ -243,6 +282,7 @@ public class DefaultDLEditFileEntryDisplayContext
 		StorageEngine storageEngine) {
 
 		try {
+			_httpServletRequest = httpServletRequest;
 			_dlValidator = dlValidator;
 			_fileEntry = fileEntry;
 			_storageEngine = storageEngine;
@@ -319,6 +359,9 @@ public class DefaultDLEditFileEntryDisplayContext
 	private final FileVersion _fileVersion;
 	private final FileVersionDisplayContextHelper
 		_fileVersionDisplayContextHelper;
+	private HttpServletRequest _httpServletRequest;
+	private Boolean _neverExpire;
+	private Boolean _neverReview;
 	private final boolean _showSelectFolder;
 	private final StorageEngine _storageEngine;
 

@@ -129,29 +129,26 @@ renderResponse.setTitle(title);
 											<liferay-ui:search-container-column-text
 												align="right"
 											>
-
-												<%
-												PortletURL editURL = PortletURLBuilder.create(
-													PortletProviderUtil.getPortletURL(request, Role.class.getName(), PortletProvider.Action.MANAGE)
-												).setRedirect(
-													currentURL
-												).setParameter(
-													Constants.CMD, "edit"
-												).setParameter(
-													"tabs1", "roles"
-												).setParameter(
-													"roleId", String.valueOf(role.getRoleId())
-												).setParameter(
-													"portletResource", String.valueOf(portlet.getPortletId())
-												).build();
-												%>
-
 												<liferay-ui:icon
 													icon="pencil"
 													label="<%= true %>"
 													markupView="lexicon"
 													message="change"
-													url="<%= editURL.toString() %>"
+													url='<%=
+														PortletURLBuilder.create(
+															PortletProviderUtil.getPortletURL(request, Role.class.getName(), PortletProvider.Action.MANAGE)
+														).setCMD(
+															"edit"
+														).setRedirect(
+															currentURL
+														).setPortletResource(
+															portlet.getPortletId()
+														).setTabs1(
+															"roles"
+														).setParameter(
+															"roleId", role.getRoleId()
+														).buildString()
+													%>'
 												/>
 											</liferay-ui:search-container-column-text>
 										</liferay-ui:search-container-row>
@@ -191,27 +188,24 @@ renderResponse.setTitle(title);
 											<liferay-ui:search-container-column-text
 												align="right"
 											>
-
-												<%
-												PortletURL editURL = PortletURLBuilder.create(
-													PortletProviderUtil.getPortletURL(request, Role.class.getName(), PortletProvider.Action.MANAGE)
-												).setParameter(
-													Constants.CMD, "edit"
-												).setParameter(
-													"tabs1", "roles"
-												).setParameter(
-													"roleId", String.valueOf(role.getRoleId())
-												).setParameter(
-													"portletResource", String.valueOf(portlet.getPortletId())
-												).build();
-												%>
-
 												<liferay-ui:icon
 													icon="pencil"
 													label="<%= true %>"
 													markupView="lexicon"
 													message="change"
-													url="<%= editURL.toString() %>"
+													url='<%=
+														PortletURLBuilder.create(
+															PortletProviderUtil.getPortletURL(request, Role.class.getName(), PortletProvider.Action.MANAGE)
+														).setCMD(
+															"edit"
+														).setPortletResource(
+															portlet.getPortletId()
+														).setTabs1(
+															"roles"
+														).setParameter(
+															"roleId", role.getRoleId()
+														).buildString()
+													%>'
 												/>
 											</liferay-ui:search-container-column-text>
 										</liferay-ui:search-container-row>

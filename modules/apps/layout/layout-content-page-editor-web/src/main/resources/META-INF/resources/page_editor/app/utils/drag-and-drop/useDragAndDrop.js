@@ -24,14 +24,17 @@ import React, {
 import {useDrag, useDrop} from 'react-dnd';
 import {getEmptyImage} from 'react-dnd-html5-backend';
 
-import {useCollectionItemIndex} from '../../components/CollectionItemContext';
-import {useSelectItem} from '../../components/Controls';
 import {LAYOUT_DATA_ITEM_TYPES} from '../../config/constants/layoutDataItemTypes';
-import {useSelector} from '../../store/index';
+import {
+	useCollectionItemIndex,
+	useParentToControlsId,
+	useToControlsId,
+} from '../../contexts/CollectionItemContext';
+import {useSelectItem} from '../../contexts/ControlsContext';
+import {useSelector} from '../../contexts/StoreContext';
 import {DRAG_DROP_TARGET_TYPE} from './constants/dragDropTargetType';
-import {TARGET_POSITION} from './constants/targetPosition';
+import {TARGET_POSITIONS} from './constants/targetPositions';
 import defaultComputeHover from './defaultComputeHover';
-import toControlsId from './toControlsId';
 
 export const initialDragDrop = {
 	dispatch: null,
@@ -95,9 +98,9 @@ const DragAndDropContext = React.createContext(initialDragDrop);
 export const NotDraggableArea = ({children}) => (
 	<div
 		draggable
-		onDragStart={(e) => {
-			e.preventDefault();
-			e.stopPropagation();
+		onDragStart={(event) => {
+			event.preventDefault();
+			event.stopPropagation();
 		}}
 	>
 		{children}
@@ -188,6 +191,9 @@ export function useDropClear() {
 
 export function useDropTarget(_targetItem, computeHover = defaultComputeHover) {
 	const collectionItemIndex = useCollectionItemIndex();
+	const toControlsId = useToControlsId();
+	const parentToControlsId = useParentToControlsId();
+
 	const {dispatch, layoutDataRef, state, targetRefs} = useContext(
 		DragAndDropContext
 	);
@@ -197,15 +203,17 @@ export function useDropTarget(_targetItem, computeHover = defaultComputeHover) {
 		() => ({
 			..._targetItem,
 			collectionItemIndex,
+			parentToControlsId,
+			toControlsId,
 		}),
-		[_targetItem, collectionItemIndex]
+		[_targetItem, collectionItemIndex, toControlsId, parentToControlsId]
 	);
 
 	const isOverTarget =
 		state.dropTargetItem &&
 		targetItem &&
-		toControlsId(layoutDataRef, state.dropTargetItem) ===
-			toControlsId(layoutDataRef, targetItem);
+		state.dropTargetItem.toControlsId(state.dropTargetItem.itemId) ===
+			targetItem.toControlsId(targetItem.itemId);
 
 	const [, setDropTargetRef] = useDrop({
 		accept: Object.values(LAYOUT_DATA_ITEM_TYPES),
@@ -220,19 +228,20 @@ export function useDropTarget(_targetItem, computeHover = defaultComputeHover) {
 				sourceItem: getSourceItem(),
 				targetItem,
 				targetRefs,
+				toControlsId,
 			});
 		},
 	});
 
 	useEffect(() => {
-		const itemId = toControlsId(layoutDataRef, targetItem);
+		const itemId = toControlsId(targetItem.itemId);
 
 		targetRefs.set(itemId, targetRef);
 
 		return () => {
 			targetRefs.delete(itemId);
 		};
-	}, [layoutDataRef, targetItem, targetRef, targetRefs]);
+	}, [layoutDataRef, targetItem, targetRef, targetRefs, toControlsId]);
 
 	const setTargetRef = useCallback(
 		(element) => {
@@ -244,7 +253,6 @@ export function useDropTarget(_targetItem, computeHover = defaultComputeHover) {
 	);
 
 	return {
-		canDropOverTarget: state.droppable,
 		isOverTarget,
 		sourceItem: state.dropItem,
 		targetPosition: state.targetPositionWithMiddle,
@@ -329,7 +337,10 @@ function getSiblingPosition(state, parentItem) {
 		state.dropTargetItem.itemId
 	);
 
-	if (state.targetPositionWithoutMiddle === TARGET_POSITION.BOTTOM) {
+	if (
+		state.targetPositionWithoutMiddle === TARGET_POSITIONS.BOTTOM ||
+		state.targetPositionWithoutMiddle === TARGET_POSITIONS.RIGHT
+	) {
 		return siblingPosition + 1;
 	}
 	else if (

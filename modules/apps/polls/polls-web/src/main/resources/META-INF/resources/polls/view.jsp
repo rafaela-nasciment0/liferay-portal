@@ -47,8 +47,8 @@
 				).setRedirect(
 					currentURL
 				).setParameter(
-					"questionId", String.valueOf(question.getQuestionId())
-				).build();
+					"questionId", question.getQuestionId()
+				).buildPortletURL();
 				%>
 
 				<liferay-ui:search-container-column-text

@@ -71,7 +71,7 @@ definition {
 
 		Button.clickSave();
 
-		if ("${depot}" == "Duplicate") {
+		if ("${duplicate}" == "true") {
 			AssertTextEquals(
 				locator1 = "Message#ERROR_FORM_FIELD_REQUIRED",
 				value1 = "Please enter a unique name.");
@@ -543,7 +543,7 @@ definition {
 
 		Button.clickSave();
 
-		if ("${depot}" == "Duplicate") {
+		if ("${duplicate}" == "true") {
 			AssertTextEquals.assertPartialText(
 				locator1 = "Message#ERROR",
 				value1 = "Please enter a unique name.");
@@ -575,7 +575,7 @@ definition {
 
 		DepotNavigator.gotoDepotPortlet(
 			depotName = "${depotName}",
-			portlet = "Settings");
+			portlet = "Asset Library Settings");
 
 		var depotID = selenium.getElementValue("//input[contains(@id,'assetLibraryId')]");
 
@@ -602,9 +602,11 @@ definition {
 
 	macro remoteStagingSetUp {
 		if (isSet(remotePort)) {
-			User.loginPG(
-				nodePort = "${remotePort}",
+			User.logoutPG();
+
+			User.firstLoginUI(
 				password = "test",
+				specificURL = "http://localhost:${remotePort}",
 				userEmailAddress = "test@liferay.com");
 		}
 		else {
@@ -638,6 +640,30 @@ definition {
 			depotName = "${depotName}",
 			remotePort = "${remotePort}",
 			remoteStaging = "true");
+	}
+
+	macro remoteStagingSetUpViaJson {
+		if (!(isSet(remotePort))) {
+			var remotePort = "8080";
+		}
+
+		JSONDepot.addDepot(
+			depotDescription = "This is the description of a remote depot",
+			depotName = "Remote Depot",
+			portalURL = "http://localhost:${remotePort}");
+
+		var remoteGroupId = JSONGroupSetter.setGroupId(
+			groupName = "Remote Depot",
+			portalURL = "http://localhost:${remotePort}",
+			site = "${site}");
+
+		JSONStaging.enableRemoteStaging(
+			branchingPrivate = "${branchingPrivate}",
+			branchingPublic = "${branchingPublic}",
+			groupName = "${groupName}",
+			remoteGroupId = "${remoteGroupId}",
+			remotePort = "${remotePort}",
+			site = "${site}");
 	}
 
 	macro removeMember {
@@ -874,7 +900,7 @@ definition {
 			key_language = "${defaultDepotLanguage}",
 			locator1 = "Checkbox#DEPOT_DEFAULT_LANGUAGE_CHECKBOX_DISABLED");
 
-		Click(locator1 = "Icon#TIMES");
+		Click(locator1 = "Modal#CLOSE_BUTTON");
 	}
 
 	macro viewDefaultLanguagesConfiguration {
@@ -977,21 +1003,11 @@ definition {
 			localizationName3 = "${localizationName3}",
 			localizationName4 = "${localizationName4}");
 
-		Click(
-			key_portletName = "JournalPortlet_Menu",
-			locator1 = "Button#LANGUAGE_DROPDOWN");
-
-		Depot.view4LanguagesOrder(
-			localizationName1 = "${localizationName1}",
-			localizationName2 = "${localizationName2}",
-			localizationName3 = "${localizationName3}",
-			localizationName4 = "${localizationName4}");
-
 		Panel.expandPanel(panel = "Basic Information");
 
 		Click(
-			key_fieldName = "Summary",
-			locator1 = "Button#LOCALIZATION");
+			key_portletName = "JournalPortlet_description",
+			locator1 = "Button#LANGUAGE_DROPDOWN");
 
 		Depot.view4LanguagesOrder(
 			localizationName1 = "${localizationName1}",
@@ -1021,9 +1037,22 @@ definition {
 			card = "${userFirstName} ${userLastName}",
 			cardSubtitle = "${userScreenName}");
 
-		AssertVisible(
-			key_card = "${userFirstName} ${userLastName}",
-			locator1 = "Card#CARD_ELLIPSIS");
+		if (isSet(viewOnly)) {
+			Click.waitForMenuToggleJSClick(
+				key_card = "${userScreenName}",
+				locator1 = "Card#CARD_ELLIPSIS");
+
+			for (var item : list "Remove Membership,Assign Roles") {
+				AssertElementNotPresent(
+					key_menuItem = "${item}",
+					locator1 = "MenuItem#ANY_MENU_ITEM");
+			}
+		}
+		else {
+			AssertVisible(
+				key_card = "${userFirstName} ${userLastName}",
+				locator1 = "Card#CARD_ELLIPSIS");
+		}
 	}
 
 	macro viewMemberOrganization {

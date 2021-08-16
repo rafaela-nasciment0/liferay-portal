@@ -35,7 +35,6 @@ import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
-import com.liferay.portal.kernel.test.rule.DataGuard;
 import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
 import com.liferay.portal.kernel.test.util.CompanyTestUtil;
 import com.liferay.portal.kernel.test.util.GroupTestUtil;
@@ -47,12 +46,11 @@ import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.test.rule.PermissionCheckerMethodTestRule;
 
-import java.util.List;
-
 import org.frutilla.FrutillaRule;
 
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
@@ -61,7 +59,6 @@ import org.junit.runner.RunWith;
 /**
  * @author Alessio Antonio Rendina
  */
-@DataGuard(scope = DataGuard.Scope.METHOD)
 @RunWith(Arquillian.class)
 public class CPDisplayLayoutLocalServiceTest {
 
@@ -72,12 +69,15 @@ public class CPDisplayLayoutLocalServiceTest {
 			new LiferayIntegrationTestRule(),
 			PermissionCheckerMethodTestRule.INSTANCE);
 
-	@Before
-	public void setUp() throws Exception {
+	@BeforeClass
+	public static void setUpClass() throws Exception {
 		_company = CompanyTestUtil.addCompany();
 
 		_user = UserTestUtil.addUser(_company);
+	}
 
+	@Before
+	public void setUp() throws Exception {
 		_group1 = GroupTestUtil.addGroup(
 			_company.getCompanyId(), _user.getUserId(), 0);
 
@@ -102,11 +102,8 @@ public class CPDisplayLayoutLocalServiceTest {
 			CommerceChannelConstants.CHANNEL_TYPE_SITE, null, StringPool.BLANK,
 			_serviceContext);
 
-		List<AssetVocabulary> companyAssetVocabularies =
-			AssetVocabularyLocalServiceUtil.getCompanyVocabularies(
-				_company.getCompanyId());
-
-		_assetVocabulary = companyAssetVocabularies.get(0);
+		_assetVocabulary = AssetVocabularyLocalServiceUtil.addDefaultVocabulary(
+			_group1.getGroupId());
 
 		_commerceCatalog = CommerceCatalogLocalServiceUtil.addCommerceCatalog(
 			null, RandomTestUtil.randomString(), RandomTestUtil.randomString(),
@@ -177,6 +174,9 @@ public class CPDisplayLayoutLocalServiceTest {
 	@Rule
 	public FrutillaRule frutillaRule = new FrutillaRule();
 
+	private static Company _company;
+	private static User _user;
+
 	@DeleteAfterTestRun
 	private AssetVocabulary _assetVocabulary;
 
@@ -187,10 +187,6 @@ public class CPDisplayLayoutLocalServiceTest {
 	private CommerceChannel _commerceChannel1;
 
 	private CommerceChannel _commerceChannel2;
-
-	@DeleteAfterTestRun
-	private Company _company;
-
 	private CPDefinition _cpDefinition;
 
 	@Inject
@@ -206,8 +202,5 @@ public class CPDisplayLayoutLocalServiceTest {
 	private Group _group3;
 
 	private ServiceContext _serviceContext;
-
-	@DeleteAfterTestRun
-	private User _user;
 
 }

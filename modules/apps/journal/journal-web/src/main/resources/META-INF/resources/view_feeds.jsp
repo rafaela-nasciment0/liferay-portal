@@ -57,19 +57,17 @@ renderResponse.setTitle(LanguageUtil.get(request, "feeds"));
 			String editURL = StringPool.BLANK;
 
 			if (JournalFeedPermission.contains(permissionChecker, feed, ActionKeys.UPDATE)) {
-				PortletURL editFeedURL = PortletURLBuilder.createRenderURL(
+				editURL = PortletURLBuilder.createRenderURL(
 					liferayPortletResponse
 				).setMVCPath(
 					"/edit_feed.jsp"
 				).setRedirect(
 					currentURL
 				).setParameter(
-					"groupId", String.valueOf(feed.getGroupId())
-				).setParameter(
 					"feedId", feed.getFeedId()
-				).build();
-
-				editURL = editFeedURL.toString();
+				).setParameter(
+					"groupId", feed.getGroupId()
+				).buildString();
 			}
 
 			row.setData(

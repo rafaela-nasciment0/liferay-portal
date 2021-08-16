@@ -103,8 +103,8 @@ CommerceCurrenciesDisplayContext commerceCurrenciesDisplayContext = (CommerceCur
 						).setRedirect(
 							currentURL
 						).setParameter(
-							"commerceCurrencyId", String.valueOf(commerceCurrency.getCommerceCurrencyId())
-						).build()
+							"commerceCurrencyId", commerceCurrency.getCommerceCurrencyId()
+						).buildPortletURL()
 					%>'
 					name="name"
 					value="<%= HtmlUtil.escape(commerceCurrency.getName(locale)) %>"

@@ -38,6 +38,7 @@ import com.liferay.layout.util.structure.LayoutStructure;
 import com.liferay.layout.util.structure.LayoutStructureItem;
 import com.liferay.layout.util.structure.RowStyledLayoutStructureItem;
 import com.liferay.petra.string.CharPool;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
@@ -69,7 +70,7 @@ import com.liferay.portal.kernel.test.util.ServiceContextTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.util.FileUtil;
 import com.liferay.portal.kernel.util.HashMapBuilder;
-import com.liferay.portal.kernel.util.HashMapDictionary;
+import com.liferay.portal.kernel.util.HashMapDictionaryBuilder;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.PortletKeys;
 import com.liferay.portal.kernel.util.StringUtil;
@@ -179,6 +180,10 @@ public class LayoutPageTemplatesImporterTest {
 			2, collectionStyledLayoutStructureItem.getNumberOfColumns());
 		Assert.assertEquals(
 			4, collectionStyledLayoutStructureItem.getNumberOfItems());
+		Assert.assertEquals(
+			1, collectionStyledLayoutStructureItem.getNumberOfItemsPerPage());
+		Assert.assertEquals(
+			"simple", collectionStyledLayoutStructureItem.getPaginationType());
 	}
 
 	@Test
@@ -211,13 +216,13 @@ public class LayoutPageTemplatesImporterTest {
 			6, rowStyledLayoutStructureItem.getNumberOfColumns());
 		Assert.assertFalse(rowStyledLayoutStructureItem.isGutters());
 
-		List<String> rowChildrenItemsIds =
+		List<String> rowChildrenItemIds =
 			rowStyledLayoutStructureItem.getChildrenItemIds();
 
 		Assert.assertEquals(
-			rowChildrenItemsIds.toString(), 6, rowChildrenItemsIds.size());
+			rowChildrenItemIds.toString(), 6, rowChildrenItemIds.size());
 
-		for (String rowChildItemId : rowChildrenItemsIds) {
+		for (String rowChildItemId : rowChildrenItemIds) {
 			LayoutStructureItem childLayoutStructureItem =
 				layoutStructure.getLayoutStructureItem(rowChildItemId);
 
@@ -263,13 +268,14 @@ public class LayoutPageTemplatesImporterTest {
 		Assert.assertEquals(
 			"fluid", containerStyledLayoutStructureItem.getContainerType());
 		Assert.assertEquals(
-			0, containerStyledLayoutStructureItem.getMarginRight());
+			StringPool.BLANK,
+			containerStyledLayoutStructureItem.getMarginRight());
 		Assert.assertEquals(
-			5, containerStyledLayoutStructureItem.getPaddingBottom());
+			"5", containerStyledLayoutStructureItem.getPaddingBottom());
 		Assert.assertEquals(
-			5, containerStyledLayoutStructureItem.getPaddingLeft());
+			"5", containerStyledLayoutStructureItem.getPaddingLeft());
 		Assert.assertEquals(
-			5, containerStyledLayoutStructureItem.getPaddingTop());
+			"5", containerStyledLayoutStructureItem.getPaddingTop());
 		Assert.assertEquals(
 			"fluid", containerStyledLayoutStructureItem.getWidthType());
 
@@ -652,7 +658,7 @@ public class LayoutPageTemplatesImporterTest {
 
 		ZipWriter zipWriter = ZipWriterFactoryUtil.getZipWriter();
 
-		StringBuilder sb = new StringBuilder(3);
+		StringBundler sb = new StringBundler(3);
 
 		sb.append(_LAYOUT_PATE_TEMPLATES_PATH + type);
 		sb.append(StringPool.FORWARD_SLASH + _ROOT_FOLDER);
@@ -881,12 +887,11 @@ public class LayoutPageTemplatesImporterTest {
 			_bundleContext.registerService(
 				Portlet.class,
 				new LayoutPageTemplatesImporterTest.TestPortlet(),
-				new HashMapDictionary<String, String>() {
-					{
-						put("com.liferay.portlet.instanceable", "true");
-						put("javax.portlet.name", portletId);
-					}
-				}));
+				HashMapDictionaryBuilder.put(
+					"com.liferay.portlet.instanceable", "true"
+				).put(
+					"javax.portlet.name", portletId
+				).build()));
 	}
 
 	private void _validateHTMLFragmentEntryLinkEditableValues(

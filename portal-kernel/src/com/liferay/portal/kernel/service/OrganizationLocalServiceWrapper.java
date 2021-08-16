@@ -179,6 +179,15 @@ public class OrganizationLocalServiceWrapper
 	}
 
 	@Override
+	public void addUserOrganizationByEmailAddress(
+			String emailAddress, long organizationId)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		_organizationLocalService.addUserOrganizationByEmailAddress(
+			emailAddress, organizationId);
+	}
+
+	@Override
 	public void addUserOrganizations(
 		long userId, java.util.List<Organization> organizations) {
 
@@ -321,6 +330,15 @@ public class OrganizationLocalServiceWrapper
 	}
 
 	@Override
+	public void deleteUserOrganizationByEmailAddress(
+			String emailAddress, long organizationId)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		_organizationLocalService.deleteUserOrganizationByEmailAddress(
+			emailAddress, organizationId);
+	}
+
+	@Override
 	public void deleteUserOrganizations(
 		long userId, java.util.List<Organization> organizations) {
 
@@ -337,6 +355,13 @@ public class OrganizationLocalServiceWrapper
 	@Override
 	public <T> T dslQuery(com.liferay.petra.sql.dsl.query.DSLQuery dslQuery) {
 		return _organizationLocalService.dslQuery(dslQuery);
+	}
+
+	@Override
+	public int dslQueryCount(
+		com.liferay.petra.sql.dsl.query.DSLQuery dslQuery) {
+
+		return _organizationLocalService.dslQueryCount(dslQuery);
 	}
 
 	@Override

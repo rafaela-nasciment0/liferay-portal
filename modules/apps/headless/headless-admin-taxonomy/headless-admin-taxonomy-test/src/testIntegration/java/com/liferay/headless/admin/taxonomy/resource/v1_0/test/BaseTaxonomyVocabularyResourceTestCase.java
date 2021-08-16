@@ -28,6 +28,7 @@ import com.liferay.headless.admin.taxonomy.client.dto.v1_0.TaxonomyVocabulary;
 import com.liferay.headless.admin.taxonomy.client.http.HttpInvoker;
 import com.liferay.headless.admin.taxonomy.client.pagination.Page;
 import com.liferay.headless.admin.taxonomy.client.pagination.Pagination;
+import com.liferay.headless.admin.taxonomy.client.permission.Permission;
 import com.liferay.headless.admin.taxonomy.client.resource.v1_0.TaxonomyVocabularyResource;
 import com.liferay.headless.admin.taxonomy.client.serdes.v1_0.TaxonomyVocabularySerDes;
 import com.liferay.petra.function.UnsafeTriConsumer;
@@ -42,10 +43,12 @@ import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Company;
 import com.liferay.portal.kernel.model.Group;
+import com.liferay.portal.kernel.model.role.RoleConstants;
 import com.liferay.portal.kernel.service.CompanyLocalServiceUtil;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.test.util.GroupTestUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
+import com.liferay.portal.kernel.test.util.RoleTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.DateFormatFactoryUtil;
@@ -586,6 +589,74 @@ public abstract class BaseTaxonomyVocabularyResourceTestCase {
 	}
 
 	@Test
+	public void testGetAssetLibraryTaxonomyVocabularyPermissionsPage()
+		throws Exception {
+
+		Page<Permission> page =
+			taxonomyVocabularyResource.
+				getAssetLibraryTaxonomyVocabularyPermissionsPage(
+					testDepotEntry.getDepotEntryId(), RoleConstants.GUEST);
+
+		Assert.assertNotNull(page);
+	}
+
+	protected TaxonomyVocabulary
+			testGetAssetLibraryTaxonomyVocabularyPermissionsPage_addTaxonomyVocabulary()
+		throws Exception {
+
+		return testPostAssetLibraryTaxonomyVocabulary_addTaxonomyVocabulary(
+			randomTaxonomyVocabulary());
+	}
+
+	@Test
+	public void testPutAssetLibraryTaxonomyVocabularyPermission()
+		throws Exception {
+
+		@SuppressWarnings("PMD.UnusedLocalVariable")
+		TaxonomyVocabulary taxonomyVocabulary =
+			testPutAssetLibraryTaxonomyVocabularyPermission_addTaxonomyVocabulary();
+
+		com.liferay.portal.kernel.model.Role role = RoleTestUtil.addRole(
+			RoleConstants.TYPE_REGULAR);
+
+		assertHttpResponseStatusCode(
+			200,
+			taxonomyVocabularyResource.
+				putAssetLibraryTaxonomyVocabularyPermissionHttpResponse(
+					testDepotEntry.getDepotEntryId(),
+					new Permission[] {
+						new Permission() {
+							{
+								setActionIds(new String[] {"PERMISSIONS"});
+								setRoleName(role.getName());
+							}
+						}
+					}));
+
+		assertHttpResponseStatusCode(
+			404,
+			taxonomyVocabularyResource.
+				putAssetLibraryTaxonomyVocabularyPermissionHttpResponse(
+					testDepotEntry.getDepotEntryId(),
+					new Permission[] {
+						new Permission() {
+							{
+								setActionIds(new String[] {"-"});
+								setRoleName("-");
+							}
+						}
+					}));
+	}
+
+	protected TaxonomyVocabulary
+			testPutAssetLibraryTaxonomyVocabularyPermission_addTaxonomyVocabulary()
+		throws Exception {
+
+		return taxonomyVocabularyResource.postAssetLibraryTaxonomyVocabulary(
+			testDepotEntry.getDepotEntryId(), randomTaxonomyVocabulary());
+	}
+
+	@Test
 	public void testGetSiteTaxonomyVocabulariesPage() throws Exception {
 		Page<TaxonomyVocabulary> page =
 			taxonomyVocabularyResource.getSiteTaxonomyVocabulariesPage(
@@ -990,6 +1061,71 @@ public abstract class BaseTaxonomyVocabularyResourceTestCase {
 	}
 
 	@Test
+	public void testGetSiteTaxonomyVocabularyPermissionsPage()
+		throws Exception {
+
+		Page<Permission> page =
+			taxonomyVocabularyResource.getSiteTaxonomyVocabularyPermissionsPage(
+				testGroup.getGroupId(), RoleConstants.GUEST);
+
+		Assert.assertNotNull(page);
+	}
+
+	protected TaxonomyVocabulary
+			testGetSiteTaxonomyVocabularyPermissionsPage_addTaxonomyVocabulary()
+		throws Exception {
+
+		return testPostSiteTaxonomyVocabulary_addTaxonomyVocabulary(
+			randomTaxonomyVocabulary());
+	}
+
+	@Test
+	public void testPutSiteTaxonomyVocabularyPermission() throws Exception {
+		@SuppressWarnings("PMD.UnusedLocalVariable")
+		TaxonomyVocabulary taxonomyVocabulary =
+			testPutSiteTaxonomyVocabularyPermission_addTaxonomyVocabulary();
+
+		com.liferay.portal.kernel.model.Role role = RoleTestUtil.addRole(
+			RoleConstants.TYPE_REGULAR);
+
+		assertHttpResponseStatusCode(
+			200,
+			taxonomyVocabularyResource.
+				putSiteTaxonomyVocabularyPermissionHttpResponse(
+					taxonomyVocabulary.getSiteId(),
+					new Permission[] {
+						new Permission() {
+							{
+								setActionIds(new String[] {"PERMISSIONS"});
+								setRoleName(role.getName());
+							}
+						}
+					}));
+
+		assertHttpResponseStatusCode(
+			404,
+			taxonomyVocabularyResource.
+				putSiteTaxonomyVocabularyPermissionHttpResponse(
+					taxonomyVocabulary.getSiteId(),
+					new Permission[] {
+						new Permission() {
+							{
+								setActionIds(new String[] {"-"});
+								setRoleName("-");
+							}
+						}
+					}));
+	}
+
+	protected TaxonomyVocabulary
+			testPutSiteTaxonomyVocabularyPermission_addTaxonomyVocabulary()
+		throws Exception {
+
+		return taxonomyVocabularyResource.postSiteTaxonomyVocabulary(
+			testGroup.getGroupId(), randomTaxonomyVocabulary());
+	}
+
+	@Test
 	public void testDeleteTaxonomyVocabulary() throws Exception {
 		@SuppressWarnings("PMD.UnusedLocalVariable")
 		TaxonomyVocabulary taxonomyVocabulary =
@@ -1187,6 +1323,72 @@ public abstract class BaseTaxonomyVocabularyResourceTestCase {
 			testGroup.getGroupId(), randomTaxonomyVocabulary());
 	}
 
+	@Test
+	public void testGetTaxonomyVocabularyPermissionsPage() throws Exception {
+		TaxonomyVocabulary postTaxonomyVocabulary =
+			testGetTaxonomyVocabularyPermissionsPage_addTaxonomyVocabulary();
+
+		Page<Permission> page =
+			taxonomyVocabularyResource.getTaxonomyVocabularyPermissionsPage(
+				postTaxonomyVocabulary.getId(), RoleConstants.GUEST);
+
+		Assert.assertNotNull(page);
+	}
+
+	protected TaxonomyVocabulary
+			testGetTaxonomyVocabularyPermissionsPage_addTaxonomyVocabulary()
+		throws Exception {
+
+		return testPostSiteTaxonomyVocabulary_addTaxonomyVocabulary(
+			randomTaxonomyVocabulary());
+	}
+
+	@Test
+	public void testPutTaxonomyVocabularyPermission() throws Exception {
+		@SuppressWarnings("PMD.UnusedLocalVariable")
+		TaxonomyVocabulary taxonomyVocabulary =
+			testPutTaxonomyVocabularyPermission_addTaxonomyVocabulary();
+
+		com.liferay.portal.kernel.model.Role role = RoleTestUtil.addRole(
+			RoleConstants.TYPE_REGULAR);
+
+		assertHttpResponseStatusCode(
+			200,
+			taxonomyVocabularyResource.
+				putTaxonomyVocabularyPermissionHttpResponse(
+					taxonomyVocabulary.getId(),
+					new Permission[] {
+						new Permission() {
+							{
+								setActionIds(new String[] {"VIEW"});
+								setRoleName(role.getName());
+							}
+						}
+					}));
+
+		assertHttpResponseStatusCode(
+			404,
+			taxonomyVocabularyResource.
+				putTaxonomyVocabularyPermissionHttpResponse(
+					0L,
+					new Permission[] {
+						new Permission() {
+							{
+								setActionIds(new String[] {"-"});
+								setRoleName("-");
+							}
+						}
+					}));
+	}
+
+	protected TaxonomyVocabulary
+			testPutTaxonomyVocabularyPermission_addTaxonomyVocabulary()
+		throws Exception {
+
+		return taxonomyVocabularyResource.postSiteTaxonomyVocabulary(
+			testGroup.getGroupId(), randomTaxonomyVocabulary());
+	}
+
 	@Rule
 	public SearchTestRule searchTestRule = new SearchTestRule();
 
@@ -1205,10 +1407,7 @@ public abstract class BaseTaxonomyVocabularyResourceTestCase {
 
 				Class<?> clazz = object.getClass();
 
-				for (Field field :
-						ReflectionUtil.getDeclaredFields(
-							clazz.getSuperclass())) {
-
+				for (Field field : getDeclaredFields(clazz.getSuperclass())) {
 					arraySB.append(field.getName());
 					arraySB.append(": ");
 
@@ -1254,9 +1453,7 @@ public abstract class BaseTaxonomyVocabularyResourceTestCase {
 
 		StringBuilder sb = new StringBuilder("{");
 
-		for (Field field :
-				ReflectionUtil.getDeclaredFields(TaxonomyVocabulary.class)) {
-
+		for (Field field : getDeclaredFields(TaxonomyVocabulary.class)) {
 			if (!ArrayUtil.contains(
 					getAdditionalAssertFieldNames(), field.getName())) {
 
@@ -1518,7 +1715,7 @@ public abstract class BaseTaxonomyVocabularyResourceTestCase {
 		graphQLFields.add(new GraphQLField("siteId"));
 
 		for (Field field :
-				ReflectionUtil.getDeclaredFields(
+				getDeclaredFields(
 					com.liferay.headless.admin.taxonomy.dto.v1_0.
 						TaxonomyVocabulary.class)) {
 
@@ -1553,7 +1750,7 @@ public abstract class BaseTaxonomyVocabularyResourceTestCase {
 				}
 
 				List<GraphQLField> childrenGraphQLFields = getGraphQLFields(
-					ReflectionUtil.getDeclaredFields(clazz));
+					getDeclaredFields(clazz));
 
 				graphQLFields.add(
 					new GraphQLField(field.getName(), childrenGraphQLFields));
@@ -1757,6 +1954,17 @@ public abstract class BaseTaxonomyVocabularyResourceTestCase {
 		}
 
 		return false;
+	}
+
+	protected Field[] getDeclaredFields(Class clazz) throws Exception {
+		Stream<Field> stream = Stream.of(
+			ReflectionUtil.getDeclaredFields(clazz));
+
+		return stream.filter(
+			field -> !field.isSynthetic()
+		).toArray(
+			Field[]::new
+		);
 	}
 
 	protected java.util.Collection<EntityField> getEntityFields()

@@ -65,10 +65,10 @@ if (portletTitleBasedNavigation) {
 	).setRedirect(
 		currentURL
 	).setParameter(
-		"nodeId", String.valueOf(nodeId)
+		"nodeId", nodeId
 	).setParameter(
 		"title", title
-	).build();
+	).buildPortletURL();
 
 	PortletURL searchURL = PortletURLBuilder.createRenderURL(
 		renderResponse
@@ -76,11 +76,11 @@ if (portletTitleBasedNavigation) {
 		"/wiki/search"
 	).setRedirect(
 		currentURL
+	).setKeywords(
+		title
 	).setParameter(
-		"nodeId", String.valueOf(nodeId)
-	).setParameter(
-		"keywords", title
-	).build();
+		"nodeId", nodeId
+	).buildPortletURL();
 	%>
 
 	<div <%= portletTitleBasedNavigation ? "class=\"container-fluid container-fluid-max-xl container-form-lg\"" : StringPool.BLANK %>>

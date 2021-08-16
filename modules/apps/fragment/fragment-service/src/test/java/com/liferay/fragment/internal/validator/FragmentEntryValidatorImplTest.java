@@ -15,8 +15,6 @@
 package com.liferay.fragment.internal.validator;
 
 import com.liferay.fragment.exception.FragmentEntryConfigurationException;
-import com.liferay.portal.json.JSONFactoryImpl;
-import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.util.FileUtil;
@@ -25,7 +23,6 @@ import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.language.LanguageImpl;
 import com.liferay.portal.test.rule.LiferayUnitTestRule;
 import com.liferay.registry.BasicRegistryImpl;
-import com.liferay.registry.Registry;
 import com.liferay.registry.RegistryUtil;
 
 import org.hamcrest.core.StringContains;
@@ -53,9 +50,7 @@ public class FragmentEntryValidatorImplTest {
 
 		languageUtil.setLanguage(new LanguageImpl());
 
-		Registry registry = new BasicRegistryImpl();
-
-		RegistryUtil.setRegistry(registry);
+		RegistryUtil.setRegistry(new BasicRegistryImpl());
 
 		_classLoader = PortalClassLoaderUtil.getClassLoader();
 
@@ -72,10 +67,6 @@ public class FragmentEntryValidatorImplTest {
 	@Before
 	public void setUp() {
 		_fragmentEntryValidatorImpl = new FragmentEntryValidatorImpl();
-
-		JSONFactoryUtil jsonFactoryUtil = new JSONFactoryUtil();
-
-		jsonFactoryUtil.setJSONFactory(new JSONFactoryImpl());
 	}
 
 	@Test
@@ -535,8 +526,8 @@ public class FragmentEntryValidatorImplTest {
 
 		_fragmentEntryValidatorImpl.validateConfiguration(
 			_read(
-				"configuration_valid_field_checkbox_defaultvalue_string_" +
-					"true.json"));
+				"configuration_valid_field_checkbox_defaultvalue_string_true." +
+					"json"));
 	}
 
 	@Test
@@ -605,8 +596,8 @@ public class FragmentEntryValidatorImplTest {
 
 		_fragmentEntryValidatorImpl.validateConfiguration(
 			_read(
-				"configuration_valid_field_itemselector_typeoptions_" +
-					"required.json"));
+				"configuration_valid_field_itemselector_typeoptions_required." +
+					"json"));
 	}
 
 	@Test

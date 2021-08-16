@@ -2,11 +2,13 @@
 <head>
 <title>CKEditor</title>
 </head>
+
 <body>
-<table cellpadding="1" cellspacing="1" border="1">
+<table border="1" cellpadding="1" cellspacing="1">
 <thead>
 <tr><td rowspan="1" colspan="3">CKEditor</td></tr>
 </thead>
+
 <tbody>
 <tr>
 	<td>ANY_BODY_FIELD_IFRAME_WEB_CONTENT_ARTICLE</td>
@@ -56,6 +58,16 @@
 <tr>
 	<td>BODY_TEXT</td>
 	<td>//body[contains(@class,'cke_editable') and contains(.,'${key_text}')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>BODY_TEXT_HREF</td>
+	<td>//body//a[normalize-space(text()) = '${key_text}' and contains(@href, '${key_href}')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>FIELD_LABEL_IFRAME</td>
+	<td>//label[contains(.,'${key_fieldLabel}')]//following-sibling::div//div[contains(@id,'cke')]/iframe</td>
 	<td></td>
 </tr>
 <tr>

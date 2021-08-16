@@ -93,41 +93,60 @@ public class JournalManagementToolbarDisplayContext
 
 	@Override
 	public List<DropdownItem> getActionDropdownItems() {
-		return DropdownItemListBuilder.add(
-			dropdownItem -> {
-				dropdownItem.putData("action", "deleteEntries");
-
-				boolean trashEnabled = _trashHelper.isTrashEnabled(
-					_themeDisplay.getScopeGroupId());
-
-				dropdownItem.setIcon(trashEnabled ? "trash" : "times-circle");
-
-				String label = "delete";
-
-				if (trashEnabled) {
-					label = "recycle-bin";
-				}
-
-				dropdownItem.setLabel(
-					LanguageUtil.get(httpServletRequest, label));
-
-				dropdownItem.setQuickAction(true);
+		return DropdownItemListBuilder.addGroup(
+			dropdownGroupItem -> {
+				dropdownGroupItem.setDropdownItems(
+					DropdownItemListBuilder.add(
+						dropdownItem -> {
+							dropdownItem.putData("action", "expireEntries");
+							dropdownItem.setIcon("time");
+							dropdownItem.setLabel(
+								LanguageUtil.get(httpServletRequest, "expire"));
+							dropdownItem.setQuickAction(true);
+						}
+					).build());
+				dropdownGroupItem.setSeparator(true);
 			}
-		).add(
-			dropdownItem -> {
-				dropdownItem.putData("action", "expireEntries");
-				dropdownItem.setIcon("time");
-				dropdownItem.setLabel(
-					LanguageUtil.get(httpServletRequest, "expire"));
-				dropdownItem.setQuickAction(true);
+		).addGroup(
+			dropdownGroupItem -> {
+				dropdownGroupItem.setDropdownItems(
+					DropdownItemListBuilder.add(
+						dropdownItem -> {
+							dropdownItem.putData("action", "moveEntries");
+							dropdownItem.setIcon("move-folder");
+							dropdownItem.setLabel(
+								LanguageUtil.get(httpServletRequest, "move"));
+							dropdownItem.setQuickAction(true);
+						}
+					).build());
+				dropdownGroupItem.setSeparator(true);
 			}
-		).add(
-			dropdownItem -> {
-				dropdownItem.putData("action", "moveEntries");
-				dropdownItem.setIcon("move-folder");
-				dropdownItem.setLabel(
-					LanguageUtil.get(httpServletRequest, "move"));
-				dropdownItem.setQuickAction(true);
+		).addGroup(
+			dropdownGroupItem -> {
+				dropdownGroupItem.setDropdownItems(
+					DropdownItemListBuilder.add(
+						dropdownItem -> {
+							dropdownItem.putData("action", "deleteEntries");
+
+							boolean trashEnabled = _trashHelper.isTrashEnabled(
+								_themeDisplay.getScopeGroupId());
+
+							dropdownItem.setIcon(
+								trashEnabled ? "trash" : "times-circle");
+
+							String label = "delete";
+
+							if (trashEnabled) {
+								label = "recycle-bin";
+							}
+
+							dropdownItem.setLabel(
+								LanguageUtil.get(httpServletRequest, label));
+
+							dropdownItem.setQuickAction(true);
+						}
+					).build());
+				dropdownGroupItem.setSeparator(true);
 			}
 		).build();
 	}
@@ -142,9 +161,9 @@ public class JournalManagementToolbarDisplayContext
 			).setRedirect(
 				_themeDisplay.getURLCurrent()
 			).setParameter(
-				"groupId", _themeDisplay.getScopeGroupId()
-			).setParameter(
 				"folderId", _journalDisplayContext.getFolderId()
+			).setParameter(
+				"groupId", _themeDisplay.getScopeGroupId()
 			).buildString()
 		).put(
 			"moveArticlesAndFoldersURL",
@@ -173,10 +192,10 @@ public class JournalManagementToolbarDisplayContext
 			).setMVCPath(
 				"/view_more_menu_items.jsp"
 			).setParameter(
-				"folderId", _journalDisplayContext.getFolderId()
-			).setParameter(
 				"eventName",
 				liferayPortletResponse.getNamespace() + "selectAddMenuItem"
+			).setParameter(
+				"folderId", _journalDisplayContext.getFolderId()
 			).setWindowState(
 				LiferayWindowState.POP_UP
 			).buildString()
@@ -196,8 +215,8 @@ public class JournalManagementToolbarDisplayContext
 			"viewDDMStructureArticlesURL",
 			PortletURLBuilder.createRenderURL(
 				liferayPortletResponse
-			).setParameter(
-				"navigation", "structure"
+			).setNavigation(
+				"structure"
 			).setParameter(
 				"folderId", JournalFolderConstants.DEFAULT_PARENT_FOLDER_ID
 			).buildString()
@@ -208,12 +227,12 @@ public class JournalManagementToolbarDisplayContext
 	public String getClearResultsURL() {
 		return PortletURLBuilder.create(
 			getPortletURL()
-		).setParameter(
-			"navigation", StringPool.BLANK
+		).setKeywords(
+			StringPool.BLANK
+		).setNavigation(
+			StringPool.BLANK
 		).setParameter(
 			"ddmStructureKey", StringPool.BLANK
-		).setParameter(
-			"keywords", StringPool.BLANK
 		).setParameter(
 			"orderByCol", StringPool.BLANK
 		).setParameter(
@@ -279,8 +298,8 @@ public class JournalManagementToolbarDisplayContext
 					PortletURLBuilder.create(
 						PortletURLUtil.clone(
 							currentURLObj, liferayPortletResponse)
-					).setParameter(
-						"navigation", (String)null
+					).setNavigation(
+						(String)null
 					).buildString());
 
 				labelItem.setCloseable(true);
@@ -303,8 +322,8 @@ public class JournalManagementToolbarDisplayContext
 					PortletURLBuilder.create(
 						PortletURLUtil.clone(
 							currentURLObj, liferayPortletResponse)
-					).setParameter(
-						"navigation", (String)null
+					).setNavigation(
+						(String)null
 					).buildString());
 
 				labelItem.setCloseable(true);
@@ -320,8 +339,8 @@ public class JournalManagementToolbarDisplayContext
 					PortletURLBuilder.create(
 						PortletURLUtil.clone(
 							currentURLObj, liferayPortletResponse)
-					).setParameter(
-						"navigation", (String)null
+					).setNavigation(
+						(String)null
 					).buildString());
 
 				labelItem.setCloseable(true);
@@ -391,15 +410,8 @@ public class JournalManagementToolbarDisplayContext
 
 	@Override
 	public Boolean isDisabled() {
-		if (getItemsTotal() > 0) {
-			return false;
-		}
-
-		if (_journalDisplayContext.isSearch()) {
-			return false;
-		}
-
-		if (!_journalDisplayContext.isNavigationHome() ||
+		if ((getItemsTotal() > 0) || _journalDisplayContext.isSearch() ||
+			!_journalDisplayContext.isNavigationHome() ||
 			(_journalDisplayContext.getStatus() !=
 				WorkflowConstants.STATUS_ANY)) {
 
@@ -445,15 +457,14 @@ public class JournalManagementToolbarDisplayContext
 
 	@Override
 	protected List<DropdownItem> getFilterNavigationDropdownItems() {
-		PortletURL portletURL = PortletURLBuilder.create(
-			getPortletURL()
-		).setParameter(
-			"keywords", StringPool.BLANK
-		).build();
-
 		List<DropdownItem> filterNavigationDropdownItems = getDropdownItems(
-			getNavigationEntriesMap(), portletURL, getNavigationParam(),
-			getNavigation());
+			getNavigationEntriesMap(),
+			PortletURLBuilder.create(
+				getPortletURL()
+			).setKeywords(
+				StringPool.BLANK
+			).buildPortletURL(),
+			getNavigationParam(), getNavigation());
 
 		DropdownItem dropdownItem = new DropdownItem();
 
@@ -527,13 +538,15 @@ public class JournalManagementToolbarDisplayContext
 							).setRedirect(
 								PortalUtil.getCurrentURL(httpServletRequest)
 							).setParameter(
-								"groupId", _themeDisplay.getScopeGroupId()
+								"ddmStructureKey",
+								ddmStructure.getStructureKey()
 							).setParameter(
 								"folderId", _journalDisplayContext.getFolderId()
 							).setParameter(
-								"ddmStructureKey",
-								ddmStructure.getStructureKey()
-							).build();
+								"groupId", _themeDisplay.getScopeGroupId()
+							).setParameter(
+								"showSelectFolder", false
+							).buildPortletURL();
 
 						UnsafeConsumer<DropdownItem, Exception> unsafeConsumer =
 							dropdownItem -> {

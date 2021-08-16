@@ -18,8 +18,36 @@ import React, {useRef} from 'react';
 import {useDragLayer} from 'react-dnd';
 
 import {ITEM_ACTIVATION_ORIGINS} from '../config/constants/itemActivationOrigins';
+import {LAYOUT_DATA_ITEM_TYPES} from '../config/constants/layoutDataItemTypes';
+import {useSelector} from '../contexts/StoreContext';
+import {useWidgets} from '../contexts/WidgetsContext';
 import selectLanguageId from '../selectors/selectLanguageId';
-import {useSelector} from '../store/index';
+import getWidget from '../utils/getWidget';
+
+function getItemIcon(item, fragmentEntryLinks, fragments, widgets) {
+	const fragmentEntries = fragments.flatMap(
+		(collection) => collection.fragmentEntries
+	);
+
+	if (item.type === LAYOUT_DATA_ITEM_TYPES.fragment) {
+		const fragmentEntryLink =
+			fragmentEntryLinks[item.config.fragmentEntryLinkId];
+
+		if (fragmentEntryLink.portletId) {
+			const widget = getWidget(widgets, fragmentEntryLink.portletId);
+
+			return widget.instanceable ? 'square-hole-multi' : 'square-hole';
+		}
+
+		return fragmentEntries.find(
+			(fragment) =>
+				fragment.fragmentEntryKey === fragmentEntryLink.fragmentEntryKey
+		).icon;
+	}
+
+	return fragmentEntries.find((fragment) => fragment.type === item.type)
+		?.icon;
+}
 
 const getItemStyles = (currentOffset, ref, rtl) => {
 	if (!currentOffset || !ref.current) {
@@ -45,7 +73,11 @@ const getItemStyles = (currentOffset, ref, rtl) => {
 export default function DragPreview() {
 	const ref = useRef();
 
+	const fragmentEntryLinks = useSelector((state) => state.fragmentEntryLinks);
+	const fragments = useSelector((state) => state.fragments);
 	const languageId = useSelector(selectLanguageId);
+	const layoutData = useSelector((state) => state.layoutData);
+	const widgets = useWidgets();
 
 	const {currentOffset, isDragging, item} = useDragLayer((monitor) => ({
 		currentOffset: monitor.getClientOffset(),
@@ -57,12 +89,18 @@ export default function DragPreview() {
 		return null;
 	}
 
+	const layoutDataItem = layoutData.items[item?.id];
+
+	const icon =
+		item?.icon ||
+		getItemIcon(layoutDataItem, fragmentEntryLinks, fragments, widgets);
+
 	return (
 		<div className="page-editor__drag-preview">
 			<div
 				className={classNames('page-editor__drag-preview__content', {
 					'page-editor__drag-preview__content__treeview':
-						item?.origin === ITEM_ACTIVATION_ORIGINS.structureTree,
+						item?.origin === ITEM_ACTIVATION_ORIGINS.sidebar,
 				})}
 				ref={ref}
 				style={getItemStyles(
@@ -71,8 +109,14 @@ export default function DragPreview() {
 					Liferay.Language.direction[languageId] === 'rtl'
 				)}
 			>
-				{item?.icon && <ClayIcon symbol={item.icon} />}
-				{item?.name ? item.name : Liferay.Language.get('element')}
+				{icon && (
+					<div className="align-items-center d-flex h-100">
+						<ClayIcon className="mt-0" symbol={icon} />
+					</div>
+				)}
+				<span className="ml-3 text-truncate">
+					{item?.name ? item.name : Liferay.Language.get('element')}
+				</span>
 			</div>
 		</div>
 	);

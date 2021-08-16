@@ -148,13 +148,12 @@ public class ViewSharedAssetsDisplayContext {
 			navigationItem -> {
 				navigationItem.setActive(_isIncoming());
 
-				PortletURL sharedWithMeURL = PortletURLBuilder.createRenderURL(
-					_liferayPortletResponse
-				).setParameter(
-					"incoming", Boolean.TRUE.toString()
-				).build();
-
-				navigationItem.setHref(sharedWithMeURL);
+				navigationItem.setHref(
+					PortletURLBuilder.createRenderURL(
+						_liferayPortletResponse
+					).setParameter(
+						"incoming", true
+					).buildPortletURL());
 
 				navigationItem.setLabel(
 					LanguageUtil.get(_httpServletRequest, "shared-with-me"));
@@ -163,13 +162,12 @@ public class ViewSharedAssetsDisplayContext {
 			navigationItem -> {
 				navigationItem.setActive(!_isIncoming());
 
-				PortletURL sharedByMeURL = PortletURLBuilder.createRenderURL(
-					_liferayPortletResponse
-				).setParameter(
-					"incoming", Boolean.FALSE.toString()
-				).build();
-
-				navigationItem.setHref(sharedByMeURL);
+				navigationItem.setHref(
+					PortletURLBuilder.createRenderURL(
+						_liferayPortletResponse
+					).setParameter(
+						"incoming", false
+					).buildPortletURL());
 
 				navigationItem.setLabel(
 					LanguageUtil.get(_httpServletRequest, "shared-by-me"));
@@ -265,7 +263,7 @@ public class ViewSharedAssetsDisplayContext {
 
 				return "asc";
 			}
-		).build();
+		).buildPortletURL();
 	}
 
 	public String getTitle(SharingEntry sharingEntry) {
@@ -283,11 +281,9 @@ public class ViewSharedAssetsDisplayContext {
 		SharingEntryInterpreter sharingEntryInterpreter =
 			_sharingEntryInterpreterFunction.apply(sharingEntry);
 
-		if (sharingEntryInterpreter == null) {
-			return false;
-		}
+		if ((sharingEntryInterpreter == null) ||
+			!sharingEntryInterpreter.isVisible(sharingEntry)) {
 
-		if (!sharingEntryInterpreter.isVisible(sharingEntry)) {
 			return false;
 		}
 
@@ -392,14 +388,13 @@ public class ViewSharedAssetsDisplayContext {
 			dropdownItem -> {
 				dropdownItem.setActive(Validator.isNull(className));
 
-				PortletURL viewAllClassNamesURL = PortletURLBuilder.create(
-					PortletURLUtil.clone(
-						_currentURLObj, _liferayPortletResponse)
-				).setParameter(
-					"className", (String)null
-				).build();
-
-				dropdownItem.setHref(viewAllClassNamesURL);
+				dropdownItem.setHref(
+					PortletURLBuilder.create(
+						PortletURLUtil.clone(
+							_currentURLObj, _liferayPortletResponse)
+					).setParameter(
+						"className", (String)null
+					).buildPortletURL());
 
 				dropdownItem.setLabel(
 					LanguageUtil.get(_httpServletRequest, "all"));

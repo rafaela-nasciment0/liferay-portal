@@ -544,23 +544,23 @@ public class ReleasePersistenceImpl
 		ServiceContext serviceContext =
 			ServiceContextThreadLocal.getServiceContext();
 
-		Date now = new Date();
+		Date date = new Date();
 
 		if (isNew && (release.getCreateDate() == null)) {
 			if (serviceContext == null) {
-				release.setCreateDate(now);
+				release.setCreateDate(date);
 			}
 			else {
-				release.setCreateDate(serviceContext.getCreateDate(now));
+				release.setCreateDate(serviceContext.getCreateDate(date));
 			}
 		}
 
 		if (!releaseModelImpl.hasSetModifiedDate()) {
 			if (serviceContext == null) {
-				release.setModifiedDate(now);
+				release.setModifiedDate(date);
 			}
 			else {
-				release.setModifiedDate(serviceContext.getModifiedDate(now));
+				release.setModifiedDate(serviceContext.getModifiedDate(date));
 			}
 		}
 
@@ -981,7 +981,7 @@ public class ReleasePersistenceImpl
 			return ReleaseTable.INSTANCE.getTableName();
 		}
 
-		private Object[] _getValue(
+		private static Object[] _getValue(
 			ReleaseModelImpl releaseModelImpl, String[] columnNames,
 			boolean original) {
 
@@ -1002,8 +1002,8 @@ public class ReleasePersistenceImpl
 			return arguments;
 		}
 
-		private static Map<FinderPath, Long> _finderPathColumnBitmasksCache =
-			new ConcurrentHashMap<>();
+		private static final Map<FinderPath, Long>
+			_finderPathColumnBitmasksCache = new ConcurrentHashMap<>();
 
 	}
 

@@ -149,6 +149,10 @@ public interface AccountEntryUserRelLocalService
 			long accountEntryUserRelId)
 		throws PortalException;
 
+	public void deleteAccountEntryUserRelByEmailAddress(
+			long accountEntryId, String emailAddress)
+		throws PortalException;
+
 	public void deleteAccountEntryUserRels(
 			long accountEntryId, long[] accountUserIds)
 		throws PortalException;
@@ -166,6 +170,9 @@ public interface AccountEntryUserRelLocalService
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public <T> T dslQuery(DSLQuery dslQuery);
+
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public int dslQueryCount(DSLQuery dslQuery);
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public DynamicQuery dynamicQuery();

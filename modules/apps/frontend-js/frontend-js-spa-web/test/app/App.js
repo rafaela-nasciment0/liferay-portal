@@ -52,7 +52,6 @@ describe('App', function () {
 
 		jest.resetAllMocks();
 
-		jest.spyOn(console, 'log').mockImplementation(() => {});
 		jest.spyOn(window, 'scrollTo').mockImplementation((top, left) => {
 			window.history.state.scrollTop = top;
 			window.history.state.scrollLeft = left;
@@ -439,11 +438,11 @@ describe('App', function () {
 
 		const callback = () => {
 
-			//this.app.clearScreensCache();
+			// this.app.clearScreensCache();
 
 			expect(Object.keys(this.app.screens)).toHaveLength(1);
 
-			//event.dispose();
+			// event.dispose();
 
 			done();
 		};
@@ -2130,7 +2129,7 @@ describe('App', function () {
 							done();
 						});
 
-						//pendingNavigate.cancel();
+						// pendingNavigate.cancel();
 
 					}
 				});

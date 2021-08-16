@@ -24,7 +24,7 @@ import {InstanceListContext} from '../../InstanceListPageProvider.es';
 import {ModalContext} from '../ModalProvider.es';
 import UpdateDueDateStep from './UpdateDueDateStep.es';
 
-const SingleUpdateDueDateModal = () => {
+export default function SingleUpdateDueDateModal() {
 	const [errorToast, setErrorToast] = useState(false);
 	const [retry, setRetry] = useState(0);
 	const [sendingPost, setSendingPost] = useState(false);
@@ -102,12 +102,12 @@ const SingleUpdateDueDateModal = () => {
 
 		if (selectedInstance?.id && visibleModal === 'updateDueDate') {
 			return [
-				fetchData().catch((err) => {
+				fetchData().catch((error) => {
 					setErrorToast(
 						Liferay.Language.get('your-request-has-failed')
 					);
 
-					return Promise.reject(err);
+					return Promise.reject(error);
 				}),
 			];
 		}
@@ -178,6 +178,4 @@ const SingleUpdateDueDateModal = () => {
 			</PromisesResolver>
 		</>
 	);
-};
-
-export default SingleUpdateDueDateModal;
+}

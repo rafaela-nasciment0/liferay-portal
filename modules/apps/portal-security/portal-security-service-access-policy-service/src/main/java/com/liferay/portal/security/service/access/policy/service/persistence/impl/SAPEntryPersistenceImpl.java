@@ -4353,23 +4353,23 @@ public class SAPEntryPersistenceImpl
 		ServiceContext serviceContext =
 			ServiceContextThreadLocal.getServiceContext();
 
-		Date now = new Date();
+		Date date = new Date();
 
 		if (isNew && (sapEntry.getCreateDate() == null)) {
 			if (serviceContext == null) {
-				sapEntry.setCreateDate(now);
+				sapEntry.setCreateDate(date);
 			}
 			else {
-				sapEntry.setCreateDate(serviceContext.getCreateDate(now));
+				sapEntry.setCreateDate(serviceContext.getCreateDate(date));
 			}
 		}
 
 		if (!sapEntryModelImpl.hasSetModifiedDate()) {
 			if (serviceContext == null) {
-				sapEntry.setModifiedDate(now);
+				sapEntry.setModifiedDate(date);
 			}
 			else {
-				sapEntry.setModifiedDate(serviceContext.getModifiedDate(now));
+				sapEntry.setModifiedDate(serviceContext.getModifiedDate(date));
 			}
 		}
 
@@ -4924,7 +4924,7 @@ public class SAPEntryPersistenceImpl
 			return SAPEntryTable.INSTANCE.getTableName();
 		}
 
-		private Object[] _getValue(
+		private static Object[] _getValue(
 			SAPEntryModelImpl sapEntryModelImpl, String[] columnNames,
 			boolean original) {
 
@@ -4945,8 +4945,8 @@ public class SAPEntryPersistenceImpl
 			return arguments;
 		}
 
-		private static Map<FinderPath, Long> _finderPathColumnBitmasksCache =
-			new ConcurrentHashMap<>();
+		private static final Map<FinderPath, Long>
+			_finderPathColumnBitmasksCache = new ConcurrentHashMap<>();
 
 	}
 

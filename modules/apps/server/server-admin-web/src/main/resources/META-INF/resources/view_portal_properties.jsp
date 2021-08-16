@@ -26,23 +26,23 @@ PortletURL serverURL = PortletURLBuilder.createRenderURL(
 	renderResponse
 ).setMVCRenderCommandName(
 	"/server_admin/view"
+).setTabs1(
+	tabs1
 ).setParameter(
-	"tabs1", tabs1
-).setParameter(
-	"delta", String.valueOf(delta)
+	"delta", delta
 ).setParameter(
 	"screenNavigationCategoryKey", screenNavigationCategoryKey
 ).setParameter(
 	"screenNavigationEntryKey", screenNavigationEntryKey
-).build();
+).buildPortletURL();
 
 PortletURL clearResultsURL = PortletURLBuilder.create(
 	PortletURLUtil.clone(serverURL, liferayPortletResponse)
-).setParameter(
-	"navigation", (String)null
-).setParameter(
-	"keywords", StringPool.BLANK
-).build();
+).setKeywords(
+	StringPool.BLANK
+).setNavigation(
+	(String)null
+).buildPortletURL();
 
 Map<String, String> filteredProperties = new TreeMap<String, String>();
 

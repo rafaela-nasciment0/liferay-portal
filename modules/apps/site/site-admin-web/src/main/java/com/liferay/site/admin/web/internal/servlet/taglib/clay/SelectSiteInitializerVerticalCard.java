@@ -58,15 +58,15 @@ public class SelectSiteInitializerVerticalCard implements VerticalCard {
 			"data-add-site-url",
 			() -> PortletURLBuilder.createActionURL(
 				_renderResponse
-			).setMVCPath(
-				"/select_layout_set_prototype_entry.jsp"
 			).setActionName(
 				"/site_admin/add_group"
+			).setMVCPath(
+				"/select_layout_set_prototype_entry.jsp"
+			).setParameter(
+				"creationType", _siteInitializerItem.getType()
 			).setParameter(
 				"parentGroupId",
 				ParamUtil.getLong(_httpServletRequest, "parentGroupId")
-			).setParameter(
-				"creationType", _siteInitializerItem.getType()
 			).setParameter(
 				"siteInitializerKey",
 				_siteInitializerItem.getSiteInitializerKey()
@@ -96,11 +96,9 @@ public class SelectSiteInitializerVerticalCard implements VerticalCard {
 
 	@Override
 	public String getImageSrc() {
-		if (_siteInitializerItem.isCreationTypeSiteTemplate()) {
-			return null;
-		}
+		if (_siteInitializerItem.isCreationTypeSiteTemplate() ||
+			Validator.isNull(_siteInitializerItem.getIcon())) {
 
-		if (Validator.isNull(_siteInitializerItem.getIcon())) {
 			return null;
 		}
 

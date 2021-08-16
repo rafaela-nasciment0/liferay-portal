@@ -36,10 +36,12 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.ResourceBundle;
 
 import javax.portlet.PortletResponse;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.jsp.JspException;
 import javax.servlet.jsp.JspWriter;
 
@@ -57,7 +59,7 @@ public class ManagementToolbarTag extends BaseContainerTag {
 
 		if ((searchValue == null) && (searchInputName != null)) {
 			String searchValueParamValue = ParamUtil.getString(
-				request, searchInputName);
+				getRequest(), searchInputName);
 
 			if (!searchValueParamValue.equals(StringPool.BLANK)) {
 				setSearchValue(searchValueParamValue);
@@ -179,8 +181,11 @@ public class ManagementToolbarTag extends BaseContainerTag {
 			return _managementToolbarDisplayContext.getNamespace();
 		}
 
-		PortletResponse portletResponse = (PortletResponse)request.getAttribute(
-			JavaConstants.JAVAX_PORTLET_RESPONSE);
+		HttpServletRequest httpServletRequest = getRequest();
+
+		PortletResponse portletResponse =
+			(PortletResponse)httpServletRequest.getAttribute(
+				JavaConstants.JAVAX_PORTLET_RESPONSE);
 
 		if (portletResponse != null) {
 			_namespace = portletResponse.getNamespace();
@@ -826,7 +831,13 @@ public class ManagementToolbarTag extends BaseContainerTag {
 
 			linkTag.setCssClass("nav-link nav-link-monospaced");
 			linkTag.setDisplayType("unstyled");
-			linkTag.setIcon("order-arrow");
+
+			if (Objects.equals(getSortingOrder(), "desc")) {
+				linkTag.setIcon("order-list-down");
+			}
+			else {
+				linkTag.setIcon("order-list-up");
+			}
 
 			linkTag.doTag(pageContext);
 
@@ -927,7 +938,7 @@ public class ManagementToolbarTag extends BaseContainerTag {
 
 			if (searchValue != null) {
 				jspWriter.write(" value=\"");
-				jspWriter.write(searchValue);
+				jspWriter.write(HtmlUtil.escapeAttribute(searchValue));
 				jspWriter.write("\"");
 			}
 

@@ -47,7 +47,7 @@ import com.liferay.change.tracking.spi.display.CTDisplayRenderer;
 import com.liferay.change.tracking.spi.resolver.ConstraintResolver;
 import com.liferay.osgi.service.tracker.collections.map.ServiceTrackerMap;
 import com.liferay.osgi.service.tracker.collections.map.ServiceTrackerMapFactory;
-import com.liferay.petra.lang.SafeClosable;
+import com.liferay.petra.lang.SafeCloseable;
 import com.liferay.petra.string.CharPool;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
@@ -60,9 +60,11 @@ import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.ClassName;
+import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.ModelHintsUtil;
 import com.liferay.portal.kernel.model.ResourceConstants;
 import com.liferay.portal.kernel.service.ClassNameLocalService;
+import com.liferay.portal.kernel.service.GroupLocalService;
 import com.liferay.portal.kernel.service.ResourceLocalService;
 import com.liferay.portal.kernel.service.change.tracking.CTService;
 import com.liferay.portal.kernel.util.OrderByComparator;
@@ -182,8 +184,8 @@ public class CTCollectionLocalServiceImpl
 			ctConflictChecker.addCTEntry(ctEntry);
 		}
 
-		try (SafeClosable safeClosable =
-				CTCollectionThreadLocal.setCTCollectionId(
+		try (SafeCloseable safeCloseable =
+				CTCollectionThreadLocal.setCTCollectionIdWithSafeCloseable(
 					ctCollection.getCtCollectionId())) {
 
 			for (Map.Entry<Long, CTConflictChecker<?>> entry :
@@ -266,9 +268,6 @@ public class CTCollectionLocalServiceImpl
 				ctAutoResolutionInfo.getModelClassNameId(),
 				key -> new ArrayList<>());
 
-			ClassName className = _classNameLocalService.getClassName(
-				ctAutoResolutionInfo.getModelClassNameId());
-
 			if (Objects.equals(
 					ctAutoResolutionInfo.getConflictIdentifier(),
 					ModificationConflictInfo.class.getName())) {
@@ -286,6 +285,9 @@ public class CTCollectionLocalServiceImpl
 				List<String> uniqueIndexes = StringUtil.split(
 					ctAutoResolutionInfo.getConflictIdentifier(),
 					CharPool.COMMA);
+
+				ClassName className = _classNameLocalService.getClassName(
+					ctAutoResolutionInfo.getModelClassNameId());
 
 				ConstraintResolver<?> constraintResolver =
 					_constraintResolverServiceTrackerMap.getService(
@@ -399,6 +401,9 @@ public class CTCollectionLocalServiceImpl
 		_ctAutoResolutionInfoPersistence.removeByCTCollectionId(
 			ctCollection.getCtCollectionId());
 
+		ctCommentPersistence.removeByCTCollectionId(
+			ctCollection.getCtCollectionId());
+
 		for (CTEntry ctEntry : ctEntries) {
 			ctEntryPersistence.remove(ctEntry);
 		}
@@ -414,6 +419,15 @@ public class CTCollectionLocalServiceImpl
 
 		for (CTProcess ctProcess : ctProcesses) {
 			_ctProcessLocalService.deleteCTProcess(ctProcess);
+		}
+
+		Group group = _groupLocalService.fetchGroup(
+			ctCollection.getCompanyId(),
+			_classNameLocalService.getClassNameId(CTCollection.class),
+			ctCollection.getCtCollectionId());
+
+		if (group != null) {
+			_groupLocalService.deleteGroup(group);
 		}
 
 		_resourceLocalService.deleteResource(
@@ -534,14 +548,11 @@ public class CTCollectionLocalServiceImpl
 					CTEntry ctEntry = ctEntryPersistence.fetchByC_MCNI_MCPK(
 						ctCollectionId, backtraceClassNameId, backtraceClassPK);
 
-					if (ctEntry == null) {
-						break;
-					}
-
-					if ((ctEntry.getChangeType() !=
+					if ((ctEntry == null) ||
+						((ctEntry.getChangeType() !=
 							CTConstants.CT_CHANGE_TYPE_DELETION) &&
-						_tableReferenceDefinitionManager.isChildModelOptional(
-							previousModelClassNameId, backtraceClassNameId)) {
+						 _tableReferenceDefinitionManager.isChildModelOptional(
+							 previousModelClassNameId, backtraceClassNameId))) {
 
 						break;
 					}
@@ -860,6 +871,9 @@ public class CTCollectionLocalServiceImpl
 
 	@Reference
 	private CTServiceRegistry _ctServiceRegistry;
+
+	@Reference
+	private GroupLocalService _groupLocalService;
 
 	@Reference
 	private ResourceLocalService _resourceLocalService;

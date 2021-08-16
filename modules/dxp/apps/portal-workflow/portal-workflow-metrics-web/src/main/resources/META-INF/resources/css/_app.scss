@@ -4,6 +4,10 @@ $font-weight-semi-bold: 600;
 	margin-top: 0 !important;
 	padding-top: 0;
 
+	.alert {
+		margin-top: 1.5rem;
+	}
+
 	.alert-container {
 		height: auto;
 		margin-left: auto;
@@ -53,8 +57,8 @@ $font-weight-semi-bold: 600;
 	}
 }
 
-.control-menu-level-1-nav .dropdown-menu-header .dropdown-item {
-	color: #6b6c7e;
+.container-nav {
+	margin-top: 30px;
 }
 
 .font-weight-semi-bold {
@@ -68,6 +72,10 @@ $font-weight-semi-bold: 600;
 
 .management-bar .navbar-text {
 	color: #6b6c7e;
+}
+
+.nav-underline .nav-link:focus {
+	box-shadow: none;
 }
 
 .step-of-bar {
@@ -100,6 +108,12 @@ $font-weight-semi-bold: 600;
 	}
 }
 
+.modal-content {
+	.modal-body {
+		max-height: 80vh;
+	}
+}
+
 .modal-metrics-content {
 	background-color: #f1f2f5;
 
@@ -116,14 +130,6 @@ $font-weight-semi-bold: 600;
 
 .modal-open .modal {
 	overflow: auto !important;
-}
-
-.dropdown-item {
-	cursor: pointer;
-
-	&.active {
-		font-weight: normal;
-	}
 }
 
 .custom-time-select {
@@ -207,5 +213,27 @@ $font-weight-semi-bold: 600;
 
 	.table-hover tbody tr:hover {
 		background-color: #fff;
+	}
+}
+
+.workflow-tooltip {
+	svg {
+		color: #a7a9bc;
+		font-size: 16px;
+	}
+
+	&:hover svg {
+		color: #272833;
+	}
+}
+
+@media screen and (max-width: 530px) {
+	.panel .tabs-panel-header .autofit-row .management-bar {
+		.navbar-nav {
+			flex-direction: column;
+			li {
+				margin-bottom: 8px;
+			}
+		}
 	}
 }

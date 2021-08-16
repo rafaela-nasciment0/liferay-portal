@@ -14,6 +14,7 @@
 
 package com.liferay.site.admin.web.internal.servlet.taglib.util;
 
+import com.liferay.configuration.admin.constants.ConfigurationAdminPortletKeys;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItem;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItemListBuilder;
 import com.liferay.petra.function.UnsafeConsumer;
@@ -32,7 +33,6 @@ import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.WebKeys;
-import com.liferay.site.admin.web.internal.constants.SiteAdminPortletKeys;
 import com.liferay.site.admin.web.internal.display.context.SiteAdminDisplayContext;
 import com.liferay.sites.kernel.util.SitesUtil;
 
@@ -257,8 +257,9 @@ public class SiteActionDropdownItemsProvider {
 		_getViewSiteSettingsActionUnsafeConsumer() {
 
 		PortletURL viewSiteSettingsURL = PortalUtil.getControlPanelPortletURL(
-			_httpServletRequest, _group, SiteAdminPortletKeys.SITE_SETTINGS, 0,
-			0, PortletRequest.RENDER_PHASE);
+			_httpServletRequest, _group,
+			ConfigurationAdminPortletKeys.SITE_SETTINGS, 0, 0,
+			PortletRequest.RENDER_PHASE);
 
 		return dropdownItem -> {
 			dropdownItem.setHref(viewSiteSettingsURL);
@@ -271,18 +272,12 @@ public class SiteActionDropdownItemsProvider {
 	}
 
 	private boolean _hasDeleteGroupPermission() throws PortalException {
-		if (_group.isCompany()) {
-			return false;
-		}
-
-		if (!GroupPermissionUtil.contains(
+		if (_group.isCompany() ||
+			!GroupPermissionUtil.contains(
 				_themeDisplay.getPermissionChecker(), _group,
-				ActionKeys.DELETE)) {
+				ActionKeys.DELETE) ||
+			PortalUtil.isSystemGroup(_group.getGroupKey())) {
 
-			return false;
-		}
-
-		if (PortalUtil.isSystemGroup(_group.getGroupKey())) {
 			return false;
 		}
 
@@ -304,23 +299,16 @@ public class SiteActionDropdownItemsProvider {
 		List<String> userGroupNames = SitesUtil.getUserGroupNames(
 			_group, _themeDisplay.getUser());
 
-		if (!userGroupNames.isEmpty()) {
-			return false;
-		}
-
-		if ((_group.getType() != GroupConstants.TYPE_SITE_OPEN) &&
-			(_group.getType() != GroupConstants.TYPE_SITE_RESTRICTED)) {
+		if (!userGroupNames.isEmpty() ||
+			((_group.getType() != GroupConstants.TYPE_SITE_OPEN) &&
+			 (_group.getType() != GroupConstants.TYPE_SITE_RESTRICTED))) {
 
 			return false;
 		}
 
 		if (!GroupLocalServiceUtil.hasUserGroup(
-				_themeDisplay.getUserId(), _group.getGroupId())) {
-
-			return false;
-		}
-
-		if (SiteMembershipPolicyUtil.isMembershipRequired(
+				_themeDisplay.getUserId(), _group.getGroupId()) ||
+			SiteMembershipPolicyUtil.isMembershipRequired(
 				_themeDisplay.getUserId(), _group.getGroupId())) {
 
 			return false;

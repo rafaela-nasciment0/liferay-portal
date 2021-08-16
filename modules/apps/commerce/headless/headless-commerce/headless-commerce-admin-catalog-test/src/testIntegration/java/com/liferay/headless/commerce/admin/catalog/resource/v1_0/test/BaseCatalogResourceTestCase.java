@@ -692,20 +692,6 @@ public abstract class BaseCatalogResourceTestCase {
 
 		assertEquals(randomCatalog, postCatalog);
 		assertValid(postCatalog);
-
-		randomCatalog = randomCatalog();
-
-		assertHttpResponseStatusCode(
-			404,
-			catalogResource.getCatalogByExternalReferenceCodeHttpResponse(
-				randomCatalog.getExternalReferenceCode()));
-
-		testPostCatalog_addCatalog(randomCatalog);
-
-		assertHttpResponseStatusCode(
-			200,
-			catalogResource.getCatalogByExternalReferenceCodeHttpResponse(
-				randomCatalog.getExternalReferenceCode()));
 	}
 
 	protected Catalog testPostCatalog_addCatalog(Catalog catalog)
@@ -999,7 +985,7 @@ public abstract class BaseCatalogResourceTestCase {
 		List<GraphQLField> graphQLFields = new ArrayList<>();
 
 		for (Field field :
-				ReflectionUtil.getDeclaredFields(
+				getDeclaredFields(
 					com.liferay.headless.commerce.admin.catalog.dto.v1_0.
 						Catalog.class)) {
 
@@ -1034,7 +1020,7 @@ public abstract class BaseCatalogResourceTestCase {
 				}
 
 				List<GraphQLField> childrenGraphQLFields = getGraphQLFields(
-					ReflectionUtil.getDeclaredFields(clazz));
+					getDeclaredFields(clazz));
 
 				graphQLFields.add(
 					new GraphQLField(field.getName(), childrenGraphQLFields));
@@ -1164,6 +1150,17 @@ public abstract class BaseCatalogResourceTestCase {
 		}
 
 		return false;
+	}
+
+	protected Field[] getDeclaredFields(Class clazz) throws Exception {
+		Stream<Field> stream = Stream.of(
+			ReflectionUtil.getDeclaredFields(clazz));
+
+		return stream.filter(
+			field -> !field.isSynthetic()
+		).toArray(
+			Field[]::new
+		);
 	}
 
 	protected java.util.Collection<EntityField> getEntityFields()

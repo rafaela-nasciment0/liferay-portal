@@ -55,17 +55,15 @@ AssetListManagementToolbarDisplayContext assetListManagementToolbarDisplayContex
 					String editURL = StringPool.BLANK;
 
 					if (AssetListEntryPermission.contains(permissionChecker, assetListEntry, ActionKeys.UPDATE) || AssetListEntryPermission.contains(permissionChecker, assetListEntry, ActionKeys.VIEW)) {
-						PortletURL editAssetListEntryURL = PortletURLBuilder.createRenderURL(
+						editURL = PortletURLBuilder.createRenderURL(
 							liferayPortletResponse
 						).setMVCPath(
 							"/edit_asset_list_entry.jsp"
 						).setRedirect(
 							currentURL
 						).setParameter(
-							"assetListEntryId", String.valueOf(assetListEntry.getAssetListEntryId())
-						).build();
-
-						editURL = editAssetListEntryURL.toString();
+							"assetListEntryId", assetListEntry.getAssetListEntryId()
+						).buildString();
 					}
 
 					row.setData(
@@ -152,8 +150,3 @@ AssetListManagementToolbarDisplayContext assetListManagementToolbarDisplayContex
 		</c:otherwise>
 	</c:choose>
 </aui:form>
-
-<liferay-frontend:component
-	componentId="<%= assetListManagementToolbarDisplayContext.getDefaultEventHandler() %>"
-	module="js/ManagementToolbarDefaultEventHandler.es"
-/>

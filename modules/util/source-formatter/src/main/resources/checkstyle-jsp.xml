@@ -167,7 +167,7 @@
 			<message key="end.character.invalid" value="When appending multiple literal strings, only the last literal string can end with ''{0}''" />
 			<message key="line.break.incorrect" value="Avoid using line break when appending multiple literal strings" />
 			<message key="literal.string.combine" value="Combine the literal strings ''{0}'' and ''{1}''" />
-			<message key="literal.string.move" value="Add the string ''{0}'' to the previous literal string" />
+			<message key="literal.string.move" value="Add the string ''{0}'' to the {1} literal string" />
 			<message key="plus.incorrect" value="Incorrect use of ''+'' inside StringBundler" />
 			<message key="start.character.invalid" value="When appending multiple literal strings, only the first literal string can start with ''{0}''" />
 		</module>
@@ -198,12 +198,18 @@
 			<message key="concat.avoid.too.many" value="Avoid chaining on method 'concat'. Use StringBundler when there are more than 3 parts" />
 			<message key="response.unsorted" value="Method calls between ''Response.status'' and ''Response.build'' should be sorted" />
 		</module>
+		<module name="com.liferay.source.formatter.checkstyle.checks.CompanyIterationCheck">
+			<property name="category" value="Bug Prevention" />
+			<property name="description" value="Checks that `CompanyLocalService.forEachCompany` or `CompanyLocalService.forEachCompanyId` is used when iterating over companies" />
+			<property name="enabled" value="false" />
+			<message key="company.local.service.use" value="Use ''CompanyLocalService.{0}'' when iterating over ''{1}''" />
+		</module>
 		<module name="com.liferay.source.formatter.checkstyle.checks.ConcatCheck">
 			<property name="category" value="Performance" />
 			<property name="description" value="Checks for correct use of `StringBundler.concat`." />
 			<message key="end.character.invalid" value="When concatenating multiple literal strings, only the last literal string can end with ''{0}''" />
 			<message key="literal.string.combine" value="Combine the literal strings ''{0}'' and ''{1}''" />
-			<message key="literal.string.move" value="Add the string ''{0}'' to the previous literal string" />
+			<message key="literal.string.move" value="Add the string ''{0}'' to the {1} literal string" />
 			<message key="plus.incorrect" value="Do not use ''+'' inside ''StringBundler.concat''" />
 			<message key="start.character.invalid" value="When concatenating multiple literal strings, only the first literal string can start with ''{0}''" />
 			<message key="string.combine" value="Combine the literal string ''{0}'' with ''{1}''" />
@@ -275,7 +281,7 @@
 		<module name="com.liferay.source.formatter.checkstyle.checks.MapBuilderCheck">
 			<property name="category" value="Miscellaneous" />
 			<property name="description" value="Checks that `ConcurrentHashMapBuilder`, `HashMapBuilder`, `LinkedHashMapBuilder` or `TreeMapBuilder` is used when possible." />
-			<property name="enabled" value="false" />
+			<property name="enforceBuilderNames" value="" />
 			<message key="builder.include" value="Include method call ''{0}'' ({1}) in ''{2}'' ({3})" />
 			<message key="builder.use" value="Use ''{0}'' ({1}, {2})" />
 			<message key="builder.use.instead" value="Use ''{0}'' instead of new instance of ''{1}''" />
@@ -345,9 +351,21 @@
 			<property name="description" value="Performs several checks to statements where `+` is used for concatenation." />
 			<message key="end.character.invalid" value="When concatenating multiple literal strings using '+', only the last literal string can end with ''{0}''" />
 			<message key="literal.string.combine" value="Combine the literal strings ''{0}'' and ''{1}''" />
-			<message key="literal.string.move" value="Add the string ''{0}'' to the previous literal string" />
+			<message key="literal.string.move" value="Add the string ''{0}'' to the {1} literal string" />
 			<message key="start.character.invalid" value="When concatenating multiple literal strings using '+', only the first literal string can start with ''{0}''" />
 			<message key="string.combine" value="Combine the literal string ''{0}'' with ''{1}''" />
+		</module>
+		<module name="com.liferay.source.formatter.checkstyle.checks.PortletURLBuilderCheck">
+			<property name="category" value="Miscellaneous" />
+			<property name="description" value="Checks that `PortletURLBuilder` is used when possible." />
+			<property name="enforceBuilderNames" value="" />
+			<message key="builder.include" value="Include method call ''{0}'' ({1}) in ''{2}'' ({3})" />
+			<message key="builder.inline.1" value="Inline variable definition ''{0}'' ({1}) inside ''{2}'' ({3})" />
+			<message key="builder.inline.2" value="Inline variable definition ''{0}'' ({1}) and dependent statements ({2}) inside ''{3}'' ({4})" />
+			<message key="builder.use" value="Use ''{0}'' ({1}, {2})" />
+			<message key="builder.use.instead" value="Use ''{0}'' instead of new instance of ''{1}''" />
+			<message key="keyword.reserved" value="Do not use ''{0}'' to set parameter ''{1}'', use ''{2}'' instead" />
+			<message key="string.cast.unneeded" value="No need to cast parameter to ''String'' when passing to method ''{0}''" />
 		</module>
 		<module name="com.liferay.source.formatter.checkstyle.checks.SemiColonCheck">
 			<property name="category" value="Styling" />

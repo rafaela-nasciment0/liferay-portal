@@ -63,11 +63,11 @@ WikiURLHelper wikiURLHelper = new WikiURLHelper(wikiRequestHelper, renderRespons
 				"/wiki/search"
 			).setRedirect(
 				redirect
+			).setKeywords(
+				keywords
 			).setParameter(
-				"nodeId", String.valueOf(nodeId)
-			).setParameter(
-				"keywords", keywords
-			).build()
+				"nodeId", nodeId
+			).buildPortletURL()
 		%>'
 	>
 
@@ -132,10 +132,10 @@ WikiURLHelper wikiURLHelper = new WikiURLHelper(wikiRequestHelper, renderRespons
 			).setRedirect(
 				currentURL
 			).setParameter(
-				"nodeId", String.valueOf(node.getNodeId())
+				"nodeId", node.getNodeId()
 			).setParameter(
 				"title", title
-			).build();
+			).buildPortletURL();
 
 			WikiEngineRenderer wikiEngineRenderer = (WikiEngineRenderer)request.getAttribute(WikiWebKeys.WIKI_ENGINE_RENDERER);
 

@@ -294,11 +294,6 @@ public class JavaSourceProcessorTest extends BaseSourceProcessorTestCase {
 	}
 
 	@Test
-	public void testLPS28266() throws Exception {
-		test("LPS28266.testjava", "Use rs.getInt(1) for count");
-	}
-
-	@Test
 	public void testMissingAuthor() throws Exception {
 		test("MissingAuthor.testjava", "Missing author", 20);
 	}
@@ -334,7 +329,6 @@ public class JavaSourceProcessorTest extends BaseSourceProcessorTestCase {
 				"Missing diamond operator '<>' for type 'CopyOnWriteArraySet'",
 				"Missing generic types '<Position, String>' for type 'EnumMap'",
 				"Missing diamond operator '<>' for type 'HashMap'",
-				"Missing generic types '<String, String>' for type 'HashMap'",
 				"Missing diamond operator '<>' for type 'HashSet'",
 				"Missing diamond operator '<>' for type 'Hashtable'",
 				"Missing diamond operator '<>' for type 'IdentityHashMap'",
@@ -345,14 +339,10 @@ public class JavaSourceProcessorTest extends BaseSourceProcessorTestCase {
 				"Missing diamond operator '<>' for type 'TreeMap'",
 				"Missing diamond operator '<>' for type 'TreeSet'",
 				"Missing diamond operator '<>' for type 'Vector'",
-				"Missing generic types '<Map<String, String>>' for type " +
-					"'ArrayList'",
-				"Missing generic types '<String, String>' for type 'HashMap'",
-				"Missing generic types '<String, String>' for type 'HashMap'"
 			},
 			new Integer[] {
-				45, 47, 53, 55, 57, 59, 61, 68, 70, 76, 78, 80, 83, 85, 87, 89,
-				91, 93, 95, 97, 99, 110
+				45, 47, 53, 55, 57, 59, 61, 68, 70, 72, 74, 77, 79, 81, 83, 85,
+				87, 89
 			});
 	}
 
@@ -386,6 +376,12 @@ public class JavaSourceProcessorTest extends BaseSourceProcessorTestCase {
 	@Test
 	public void testRedundantCommas() throws Exception {
 		test("RedundantCommas.testjava");
+	}
+
+	@Test
+	public void testResultCountSet() throws Exception {
+		test(
+			"ResultSetCount.testjava", "Use resultSet.getInt(1) for count", 35);
 	}
 
 	@Test
@@ -446,6 +442,20 @@ public class JavaSourceProcessorTest extends BaseSourceProcessorTestCase {
 	@Test
 	public void testTruncateLongLines() throws Exception {
 		test("TruncateLongLines.testjava");
+	}
+
+	@Test
+	public void testUnnecessaryMethodCalls() throws Exception {
+		test(
+			"UnnecessaryMethodCalls.testjava",
+			new String[] {
+				"Use 'webCachePool' instead of calling method '_getWebCachePool'",
+				"Use 'webCachePool' instead of calling method '_getWebCachePool'",
+				"Use 'this.name' instead of calling method '_getName'",
+				"Use 'webCachePool' instead of calling method '_getWebCachePool'",
+				"Use 'webCachePool_1' instead of calling method 'getWebCachePool'"
+			},
+			new Integer[] {35, 43, 47, 53, 79});
 	}
 
 	@Test

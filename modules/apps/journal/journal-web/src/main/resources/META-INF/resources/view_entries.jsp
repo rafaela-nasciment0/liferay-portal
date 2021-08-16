@@ -70,25 +70,23 @@ Map<String, Object> componentContext = journalDisplayContext.getComponentContext
 				String editURL = StringPool.BLANK;
 
 				if (JournalArticlePermission.contains(permissionChecker, curArticle, ActionKeys.UPDATE)) {
-					PortletURL editArticleURL = PortletURLBuilder.createRenderURL(
+					editURL = PortletURLBuilder.createRenderURL(
 						liferayPortletResponse
 					).setMVCPath(
 						"/edit_article.jsp"
 					).setRedirect(
 						currentURL
 					).setParameter(
-						"referringPortletResource", referringPortletResource
-					).setParameter(
-						"groupId", String.valueOf(curArticle.getGroupId())
-					).setParameter(
-						"folderId", String.valueOf(curArticle.getFolderId())
-					).setParameter(
 						"articleId", curArticle.getArticleId()
 					).setParameter(
-						"version", String.valueOf(curArticle.getVersion())
-					).build();
-
-					editURL = editArticleURL.toString();
+						"folderId", curArticle.getFolderId()
+					).setParameter(
+						"groupId", curArticle.getGroupId()
+					).setParameter(
+						"referringPortletResource", referringPortletResource
+					).setParameter(
+						"version", curArticle.getVersion()
+					).buildString();
 				}
 				%>
 
@@ -287,12 +285,12 @@ Map<String, Object> componentContext = journalDisplayContext.getComponentContext
 				PortletURL rowURL = PortletURLBuilder.createRenderURL(
 					liferayPortletResponse
 				).setParameter(
-					"groupId", String.valueOf(curFolder.getGroupId())
-				).setParameter(
-					"folderId", String.valueOf(curFolder.getFolderId())
-				).setParameter(
 					"displayStyle", journalDisplayContext.getDisplayStyle()
-				).build();
+				).setParameter(
+					"folderId", curFolder.getFolderId()
+				).setParameter(
+					"groupId", curFolder.getGroupId()
+				).buildPortletURL();
 				%>
 
 				<c:choose>

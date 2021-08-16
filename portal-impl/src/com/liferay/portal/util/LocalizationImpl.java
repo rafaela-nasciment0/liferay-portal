@@ -222,11 +222,8 @@ public class LocalizationImpl implements Localization {
 		String defaultValue) {
 
 		if (!Validator.isXml(xml)) {
-			if (useDefault) {
-				return xml;
-			}
-
-			if (requestedLanguageId.equals(
+			if (useDefault ||
+				requestedLanguageId.equals(
 					LocaleUtil.toLanguageId(LocaleUtil.getSiteDefault()))) {
 
 				return xml;
@@ -1006,9 +1003,6 @@ public class LocalizationImpl implements Localization {
 			if ((availableLocales != null) &&
 				availableLocales.contains(requestedLanguageId)) {
 
-				availableLocales = StringUtil.removeFromList(
-					availableLocales, requestedLanguageId);
-
 				UnsyncStringWriter unsyncStringWriter =
 					new UnsyncStringWriter();
 
@@ -1022,8 +1016,12 @@ public class LocalizationImpl implements Localization {
 				xmlStreamWriter.writeStartElement(_ROOT);
 
 				if (localized) {
+					availableLocales = StringUtil.removeFromList(
+						availableLocales, requestedLanguageId);
+
 					xmlStreamWriter.writeAttribute(
 						_AVAILABLE_LOCALES, availableLocales);
+
 					xmlStreamWriter.writeAttribute(
 						_DEFAULT_LOCALE, defaultLanguageId);
 				}

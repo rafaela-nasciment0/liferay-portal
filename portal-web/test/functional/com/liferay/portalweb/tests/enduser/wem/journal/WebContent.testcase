@@ -224,19 +224,11 @@ definition {
 
 		NavItem.gotoTemplates();
 
-		WebContentTemplates.gotoTemplateEllipsisItem(
-			item = "Edit",
-			templateName = "Basic Web Content");
-
-		PortletEntry.inputName(name = "Basic Web Content Edit");
-
-		PortletEntry.inputDescription(description = "Basic Web Content Description");
-
-		for (var templateFieldName : list "Date,Image") {
-			WebContentTemplates.inputTemplateAddScreenFields(templateFieldNames = "${templateFieldName}");
-		}
-
-		WebContentStructures.saveCP();
+		WebContentTemplates.modifyTemplate(
+			templateDescription = "Basic Web Content Description",
+			templateFieldNames = "Date,Image",
+			templateName = "Basic Web Content Edit",
+			templatePreviousName = "Basic Web Content");
 
 		WebContentNavigator.openWebContentAdmin(siteURLKey = "global");
 
@@ -712,7 +704,7 @@ definition {
 		}
 	}
 
-	@description = "This is a test for LPS-90066. A user can preview a scheduled Web Content article through the 'View Usages' screen."
+	@description = "This is a test for LPS-90066 and LPS-127728. A user can preview a scheduled web content via View Usage. The warning message should have link in Web Content Display."
 	@priority = "5"
 	test PreviewScheduledWebContentInWCD {
 		property portal.acceptance = "true";
@@ -726,7 +718,9 @@ definition {
 				webContentContent = "WC WebContent Content",
 				webContentTitle = "WC WebContent Title");
 
-			WebContent.editDisplayDate(displayDate = "01/01/2100");
+			WebContent.editDisplayDate(
+				displayDate = "01/01/2100",
+				displayTime = "01:01 AM");
 
 			PortletEntry.publish();
 		}
@@ -746,6 +740,22 @@ definition {
 				siteName = "Test Site Name");
 
 			WebContentDisplayPortlet.selectWebContent(webContentTitle = "WC WebContent Title");
+
+			IFrame.closeFrame();
+		}
+
+		task ("View the warning message shown in Web Content Display") {
+			Alert.viewWarningSpecific(warningMessage = "WC WebContent Title is scheduled and will be displayed on 1/1/00 1:01 AM.");
+		}
+
+		task ("Access to web content editor via warning message link") {
+			Click(
+				key_warningMessage = "WC WebContent Title is scheduled and will be displayed on 1/1/00 1:01 AM.",
+				locator1 = "Message#WARNING_SPECIFIC");
+
+			WebContent.viewCP(
+				webContentContent = "WC WebContent Content",
+				webContentTitle = "WC WebContent Title");
 		}
 
 		task ("View the usages of the Web Content article") {
@@ -827,6 +837,63 @@ definition {
 			searchQuery = "WC2 WebContent2 Title2",
 			webContentFolder = "Home",
 			webContentTitle = "WC WebContent Title");
+	}
+
+	@description = "This is a use case for LPS-98669. Ignoring until LPS-127335 is fixed"
+	@ignore = "true"
+	@priority = "4"
+	test SelectLinkToPagePage {
+		for (var pageName : list "P1,P2,P3,P4,P5,P6,P7,P8,P9,P10,P11,P12") {
+			JSONLayout.addPublicLayout(
+				groupName = "Guest",
+				layoutName = "${pageName}");
+		}
+
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			portlet = "Web Content");
+
+		NavItem.gotoStructures();
+
+		WebContentStructures.addCP(
+			structureDescription = "Test Structure Description",
+			structureName = "Test Structure");
+
+		DataEngine.addField(
+			fieldFieldLabel = "Link to Page",
+			fieldName = "Link to Page");
+
+		WebContentStructures.saveCP(structureName = "Test Structure");
+
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			portlet = "Web Content");
+
+		NavItem.gotoTemplates();
+
+		WebContentTemplates.addCP(
+			structureName = "Test Structure",
+			templateDescription = "Test Template Description",
+			templateFieldNames = "Link to Page",
+			templateName = "Test Template");
+
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			portlet = "Web Content");
+
+		WebContentNavigator.gotoAddWithStructureCP(structureName = "Test Structure");
+
+		WebContent.addWithStructureCP(
+			structureName = "Test Structure",
+			templateName = "Test Template",
+			webContentLinkToPage = "P11",
+			webContentTitle = "WC Title");
+
+		PortletEntry.publish();
+
+		WebContent.viewWithStructureCP(
+			webContentLinkToPage = "P11",
+			webContentTitle = "WC Title");
 	}
 
 	@priority = "4"
@@ -920,6 +987,51 @@ definition {
 			userFirstLast = "userfn userln",
 			webContentContent = "WC WebContent Content Edit",
 			webContentTitle = "WC WebContent Title Edit");
+	}
+
+	@description = "This is a use case for LPS-80445. View the categorization settings after delete the category of web content."
+	@priority = "5"
+	test ViewCategorizationSettingsAfterDeleteCategoryOfWebContent {
+		property portal.acceptance = "true";
+
+		task ("Add a vocabulary") {
+			JSONCategory.addVocabulary(
+				groupName = "Test Site Name",
+				title = "Vocabulary Name");
+		}
+
+		task ("Add a category") {
+			var categoryId = JSONCategory.addCategory(
+				groupName = "Test Site Name",
+				title = "Category Name",
+				vocabularyName = "Vocabulary Name");
+		}
+
+		task ("Add a web content with the category") {
+			JSONWebcontent.addWebContent(
+				assetCategoryIds = "${categoryId}",
+				content = "Web Content Content",
+				groupName = "Test Site Name",
+				title = "Web Content Title");
+		}
+
+		task ("Delete the vocabulary") {
+			Category.openCategoriesAdmin(siteURLKey = "test-site-name");
+
+			Vocabulary.deleteByMenuCP(vocabularyName = "Vocabulary Name");
+		}
+
+		task ("View the categorization settings") {
+			WebContentNavigator.openWebContentAdmin(siteURLKey = "test-site-name");
+
+			WebContentNavigator.gotoEditCP(webContentTitle = "Web Content Title");
+
+			Panel.expandPanel(panel = "Categorization");
+
+			AssertElementNotPresent(locator1 = "AssetCategorization#VOCABULARY");
+
+			AssertConsoleTextNotPresent(value1 = "java.lang.NullPointerException");
+		}
 	}
 
 	@priority = "4"

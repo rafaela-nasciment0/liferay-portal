@@ -116,6 +116,8 @@ definition {
 			siteName = "Moon Rocks 101",
 			siteType = "Blank");
 
+		Navigator.gotoBack();
+
 		Site.selectPageType(
 			selectPrivatePages = "true",
 			siteTemplate = "Digital Class Room");
@@ -127,6 +129,8 @@ definition {
 			parentSiteName = "College of Agricultural Science",
 			siteName = "Moon Rocks 202",
 			siteType = "Blank");
+
+		Navigator.gotoBack();
 
 		Site.selectPageType(
 			checkPrivatePagesPropagation = "true",
@@ -272,10 +276,6 @@ definition {
 		Navigator.openSpecificURL(url = "${baseURL}/web/organization-name-2");
 
 		Page.viewInactiveRequestMessage(resource = "site");
-
-		User.firstLoginPG(
-			password = "test",
-			userEmailAddress = "test@liferay.com");
 	}
 
 	@priority = "3"
@@ -443,18 +443,14 @@ definition {
 			siteName = "${siteName}",
 			userScreenName = "usersn");
 
-		User.firstLoginPG(
-			password = "test",
+		User.firstLoginUI(
+			specificURL = "http://www.able.com:8080/test-private-page",
 			userEmailAddress = "userea@liferay.com",
-			virtualHostsURL = "http://www.able.com:8080/test-private-page");
+			userPassword = "test");
 
 		Navigator.openSpecificURL(url = "http://www.able.com:8080/test-private-page");
 
 		AssertLocation(value1 = "http://www.able.com:8080/test-private-page");
-
-		User.firstLoginPG(
-			password = "test",
-			userEmailAddress = "test@liferay.com");
 	}
 
 	@priority = "3"
@@ -479,9 +475,13 @@ definition {
 
 		PortalSettings.editConfigurationAuthenticationGeneral(enableRequireStrangers = "true");
 
-		PortalSettings.editConfigurationUsersEmailNotificationsCP();
+		PortalSettings.editConfigurationUsersEmailNotificationsCP(
+			configurationName = "Account Created Notification",
+			notificationsBody = "[$USER_PASSWORD$]");
 
-		PortalSettings.editConfigurationUsersEmailVerificationNotificationsCP();
+		PortalSettings.editConfigurationUsersEmailNotificationsCP(
+			configurationName = "Email Verification Notification",
+			notificationsBody = "[$EMAIL_VERIFICATION_CODE$]");
 
 		JSONGroup.addGroup(groupName = "Site Name");
 
@@ -557,16 +557,23 @@ definition {
 			emailVerification = "${emailVerification}",
 			userEmailAddress = PropsUtil.get("email.address.3"));
 
-		User.firstLoginPG(
-			password = "test",
-			userEmailAddress = "test@liferay.com");
+		User.firstLoginUI(specificURL = "http://www.able.com:8080/");
 
-		PortalSettings.gotoConfiguration(
+		ApplicationsMenu.gotoPortlet(
+			category = "Configuration",
+			panel = "Control Panel",
+			portlet = "Instance Settings");
+
+		SystemSettings.gotoConfiguration(
 			configurationCategory = "Email",
 			configurationName = "Email Verification Notification",
 			configurationScope = "Virtual Instance Scope");
 
-		PortalSettings.editConfigurationUsersEmailVerificationNotificationsCP(emailVerificationURL = "true");
+		Type.typeCKEditor(
+			locator1 = "CKEditor#BODY_FIELD",
+			value1 = "[$EMAIL_VERIFICATION_URL$]");
+
+		PortletEntry.save();
 
 		Navigator.openSpecificURL(url = "http://www.baker.com:8080/");
 
@@ -745,10 +752,6 @@ definition {
 		Navigator.openSpecificURL(url = "${baseURL}/web/site1-name");
 
 		Page.viewInactiveRequestMessage(resource = "site");
-
-		User.firstLoginPG(
-			password = "test",
-			userEmailAddress = "test@liferay.com");
 	}
 
 	@priority = "4"
@@ -768,6 +771,10 @@ definition {
 			siteDetails = "true",
 			siteName = "World Cup - Russia 2018");
 
+		ProductMenu.gotoPortlet(
+			category = "Configuration",
+			portlet = "Site Settings");
+
 		for (var tagName : list "World Cup,Russia,2018") {
 			Tag.addViaSiteCP(tagName = "${tagName}");
 		}
@@ -777,6 +784,8 @@ definition {
 			privateVirtualHosts = "true",
 			publicPageVirtualHostURL = "www.able.com",
 			publicVirtualHosts = "true");
+
+		Navigator.gotoBack();
 
 		Site.editFriendlyURLCP(siteFriendlyURLEdit = "/russia2018");
 
@@ -870,17 +879,21 @@ definition {
 			siteRoleName = "Site Administrator",
 			userScreenName = "usersn");
 
-		User.firstLoginPG(
-			password = "test",
-			samlEnabled = "true",
-			userEmailAddress = "userea@liferay.com",
-			virtualHostsURL = "www.baker.com:8080/group/russia2018");
+		User.logoutPG();
 
-		Navigator.openSpecificURL(url = "http://www.baker.com:8080/group/russia2018");
+		User.viewLoggedOutPG();
+
+		User.firstLoginUI(
+			password = "test",
+			specificURL = "http://www.baker.com:8080/group/russia2018",
+			userEmailAddress = "userea@liferay.com");
 
 		Page.viewSpecificPG(pageNameList = "Accomodations,Maps");
 
-		Navigator.openSpecificURL(url = "${portalURL}/web/russia2018");
+		User.firstLoginUI(
+			password = "test",
+			specificURL = "${portalURL}/web/russia2018",
+			userEmailAddress = "userea@liferay.com");
 
 		ProductMenu.gotoPortlet(
 			category = "Publishing",
@@ -1070,6 +1083,61 @@ definition {
 		AssertHTMLSourceTextNotPresent(value1 = "${actualScript}");
 
 		AssertHTMLSourceTextPresent(value1 = "${escapedScript}");
+	}
+
+	@description = "This is a test for LPS-102711. The changes of site scope configuration in Instance Settings should be applied to the site."
+	@priority = "4"
+	test ViewChangesOfSiteScopeConfigurationDefinedInInstanceSettings {
+		task ("Add a new site") {
+			JSONGroup.addGroup(groupName = "Test Site Name");
+		}
+
+		task ("Navigate to Site Settings admin in new site") {
+			Site.openSiteSettingsAdmin(siteURLKey = "Test Site Name");
+		}
+
+		task ("Navigate to Message Boards configuration") {
+			Click(
+				key_itemName = "Message Boards",
+				locator1 = "ListGroupItem#ITEM_TEXT");
+		}
+
+		task ("View the checkbox of Message Boards is unchecked") {
+			AssertNotChecked.assertNotCheckedNotVisible(
+				checkboxName = "Enable Message Boards Moderation",
+				locator1 = "Checkbox#ANY_CHECKBOX");
+		}
+
+		task ("Navigate to Message Boards configuration in Instance Settings") {
+			PortalSettings.gotoConfiguration(
+				configurationCategory = "Message Boards",
+				configurationName = "Message Boards Moderation Workflow",
+				configurationScope = "Site Scope");
+		}
+
+		task ("Check the Enable Message Boards Moderation") {
+			Check.checkNotVisible(
+				checkboxName = "Enable Message Boards Moderation",
+				locator1 = "Checkbox#ANY_CHECKBOX");
+
+			SystemSettings.saveConfiguration();
+		}
+
+		task ("Navigate to Site Settings admin in new site") {
+			Site.openSiteSettingsAdmin(siteURLKey = "Test Site Name");
+		}
+
+		task ("Navigate to Message Boards configuration") {
+			Click(
+				key_itemName = "Message Boards",
+				locator1 = "ListGroupItem#ITEM_TEXT");
+		}
+
+		task ("View the checkbox of Message Boards is checked") {
+			AssertChecked.assertCheckedNotVisible(
+				checkboxName = "Enable Message Boards Moderation",
+				locator1 = "Checkbox#ANY_CHECKBOX");
+		}
 	}
 
 	@description = "This ensures that the custom site logo can be viewed in cards and list views."

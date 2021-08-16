@@ -1,0 +1,36 @@
+<html>
+<head>
+<title>ObjectAdmin</title>
+</head>
+
+<body>
+<table border="1" cellpadding="1" cellspacing="1">
+<thead>
+<tr><td rowspan="1" colspan="3">ObjectAdmin</td></tr>
+</thead>
+
+<tbody>
+	<tr>
+		<td>ADD_CUSTOM_OBJECT</td>
+		<td>//li[@class='nav-item navbar-breakpoint-d-none']/../li[(@class='nav-item')]</td>
+		<td></td>
+	</tr>
+	<tr>
+		<td>SAVE_CUSTOM_OBJECT</td>
+		<td>//button[contains(text(),'Save')]</td>
+		<td></td>
+	</tr>
+	<tr>
+		<td>NAME_CUSTOM_OBJECT</td>
+		<td>//input[@id='objectDefinitionName']</td>
+		<td></td>
+	</tr>
+	<tr>
+		<td>VIEW_OBJECT</td>
+		<td>//div[(@class='table-list-title') and contains (.,'${key_name}')]/../../div[contains(text(),'${key_system}')]</td>
+		<td></td>
+	</tr>
+</tbody>
+</table>
+</body>
+</html>

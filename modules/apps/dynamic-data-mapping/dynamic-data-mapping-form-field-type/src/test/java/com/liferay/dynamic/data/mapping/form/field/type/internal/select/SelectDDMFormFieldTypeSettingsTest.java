@@ -17,8 +17,11 @@ package com.liferay.dynamic.data.mapping.form.field.type.internal.select;
 import com.liferay.dynamic.data.mapping.form.field.type.BaseDDMFormFieldTypeSettingsTestCase;
 import com.liferay.dynamic.data.mapping.model.DDMForm;
 import com.liferay.dynamic.data.mapping.model.DDMFormField;
+import com.liferay.dynamic.data.mapping.model.DDMFormLayout;
 import com.liferay.dynamic.data.mapping.model.DDMFormRule;
+import com.liferay.dynamic.data.mapping.test.util.DDMFormLayoutTestUtil;
 import com.liferay.dynamic.data.mapping.util.DDMFormFactory;
+import com.liferay.dynamic.data.mapping.util.DDMFormLayoutFactory;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.language.Language;
 import com.liferay.portal.kernel.language.LanguageUtil;
@@ -113,6 +116,11 @@ public class SelectDDMFormFieldTypeSettingsTest
 		Assert.assertNotNull(indexTypeDDMFormField.getLabel());
 		Assert.assertEquals("radio", indexTypeDDMFormField.getType());
 
+		DDMFormField requiredErrorMessage = ddmFormFieldsMap.get(
+			"requiredErrorMessage");
+
+		Assert.assertNotNull(requiredErrorMessage);
+
 		List<DDMFormRule> ddmFormRules = ddmForm.getDDMFormRules();
 
 		Assert.assertEquals(ddmFormRules.toString(), 3, ddmFormRules.size());
@@ -142,52 +150,43 @@ public class SelectDDMFormFieldTypeSettingsTest
 		actions = ddmFormRule1.getActions();
 
 		Assert.assertEquals(actions.toString(), 10, actions.size());
-		Assert.assertTrue(
-			actions.toString(),
-			actions.contains(
-				"setMultiple('predefinedValue', getValue('multiple'))"));
-		Assert.assertTrue(
-			actions.toString(),
-			actions.contains(
-				"setOptions('predefinedValue', getValue('options'))"));
-		Assert.assertTrue(
-			actions.toString(),
-			actions.contains(
-				"setRequired('ddmDataProviderInstanceId', contains(getValue(" +
-					"'dataSourceType'), \"data-provider\"))"));
-		Assert.assertTrue(
-			actions.toString(),
-			actions.contains(
-				"setRequired('ddmDataProviderInstanceOutput', contains(" +
-					"getValue('dataSourceType'), \"data-provider\"))"));
-		Assert.assertTrue(
-			actions.toString(),
-			actions.contains(
-				"setRequired('options', contains(getValue('dataSourceType'), " +
-					"\"manual\"))"));
-		Assert.assertTrue(
-			actions.toString(),
-			actions.contains(
-				"setVisible('ddmDataProviderInstanceId', contains(getValue(" +
-					"'dataSourceType'), \"data-provider\"))"));
-		Assert.assertTrue(
-			actions.toString(),
-			actions.contains(
-				"setVisible('ddmDataProviderInstanceOutput', contains(" +
-					"getValue('dataSourceType'), \"data-provider\"))"));
-		Assert.assertTrue(
-			actions.toString(),
-			actions.contains(
-				"setVisible('options', contains(getValue('dataSourceType'), " +
-					"\"manual\"))"));
-		Assert.assertTrue(
-			actions.toString(),
-			actions.contains(
-				"setVisible('predefinedValue', " +
-					"contains(getValue('dataSourceType'), \"manual\"))"));
-		Assert.assertTrue(
-			actions.toString(),
-			actions.contains("setVisible('validation', false)"));
+		Assert.assertEquals(
+			"setMultiple('predefinedValue', getValue('multiple'))",
+			actions.get(0));
+		Assert.assertEquals(
+			"setOptions('predefinedValue', getValue('options'))",
+			actions.get(1));
+		Assert.assertEquals(
+			"setRequired('ddmDataProviderInstanceId', contains(getValue(" +
+				"'dataSourceType'), \"data-provider\"))",
+			actions.get(2));
+		Assert.assertEquals(
+			"setRequired('ddmDataProviderInstanceOutput', contains(" +
+				"getValue('dataSourceType'), \"data-provider\"))",
+			actions.get(3));
+		Assert.assertEquals(
+			"setRequired('options', contains(getValue('dataSourceType'), " +
+				"\"manual\") OR isEmpty(getValue('dataSourceType')))",
+			actions.get(4));
+		Assert.assertEquals(
+			"setVisible('ddmDataProviderInstanceId', contains(getValue(" +
+				"'dataSourceType'), \"data-provider\"))",
+			actions.get(5));
+		Assert.assertEquals(
+			"setVisible('ddmDataProviderInstanceOutput', contains(" +
+				"getValue('dataSourceType'), \"data-provider\"))",
+			actions.get(6));
+		Assert.assertEquals(
+			"setVisible('options', contains(getValue('dataSourceType'), " +
+				"\"manual\") OR isEmpty(getValue('dataSourceType')))",
+			actions.get(7));
+		Assert.assertEquals(
+			"setVisible('predefinedValue', " +
+				"contains(getValue('dataSourceType'), \"manual\"))",
+			actions.get(8));
+		Assert.assertEquals(
+			"setVisible('requiredErrorMessage', getValue('required'))",
+			actions.get(9));
 
 		DDMFormRule ddmFormRule3 = ddmFormRules.get(2);
 
@@ -202,6 +201,24 @@ public class SelectDDMFormFieldTypeSettingsTest
 			"setValue('ddmDataProviderInstanceId', '')", actions.get(0));
 		Assert.assertEquals(
 			"setValue('ddmDataProviderInstanceOutput', '')", actions.get(1));
+	}
+
+	@Test
+	public void testCreateSelectDDMFormFieldTypeSettingsDDMFormLayout() {
+		assertDDMFormLayout(
+			DDMFormLayoutFactory.create(SelectDDMFormFieldTypeSettings.class),
+			DDMFormLayoutTestUtil.createDDMFormLayout(
+				DDMFormLayout.TABBED_MODE,
+				DDMFormLayoutTestUtil.createDDMFormLayoutPage(
+					"label", "tip", "required", "requiredErrorMessage",
+					"dataSourceType", "options", "ddmDataProviderInstanceId",
+					"ddmDataProviderInstanceOutput"),
+				DDMFormLayoutTestUtil.createDDMFormLayoutPage(
+					"name", "fieldReference", "predefinedValue",
+					"objectFieldName", "visibilityExpression", "fieldNamespace",
+					"indexType", "labelAtStructureLevel", "localizable",
+					"nativeField", "readOnly", "dataType", "type", "showLabel",
+					"repeatable", "multiple", "alphabeticalOrder")));
 	}
 
 	@Override

@@ -6388,24 +6388,25 @@ public class DLFileShortcutPersistenceImpl
 		ServiceContext serviceContext =
 			ServiceContextThreadLocal.getServiceContext();
 
-		Date now = new Date();
+		Date date = new Date();
 
 		if (isNew && (dlFileShortcut.getCreateDate() == null)) {
 			if (serviceContext == null) {
-				dlFileShortcut.setCreateDate(now);
+				dlFileShortcut.setCreateDate(date);
 			}
 			else {
-				dlFileShortcut.setCreateDate(serviceContext.getCreateDate(now));
+				dlFileShortcut.setCreateDate(
+					serviceContext.getCreateDate(date));
 			}
 		}
 
 		if (!dlFileShortcutModelImpl.hasSetModifiedDate()) {
 			if (serviceContext == null) {
-				dlFileShortcut.setModifiedDate(now);
+				dlFileShortcut.setModifiedDate(date);
 			}
 			else {
 				dlFileShortcut.setModifiedDate(
-					serviceContext.getModifiedDate(now));
+					serviceContext.getModifiedDate(date));
 			}
 		}
 
@@ -6833,7 +6834,8 @@ public class DLFileShortcutPersistenceImpl
 	public Set<String> getCTColumnNames(
 		CTColumnResolutionType ctColumnResolutionType) {
 
-		return _ctColumnNamesMap.get(ctColumnResolutionType);
+		return _ctColumnNamesMap.getOrDefault(
+			ctColumnResolutionType, Collections.emptySet());
 	}
 
 	@Override
@@ -6867,7 +6869,6 @@ public class DLFileShortcutPersistenceImpl
 	static {
 		Set<String> ctControlColumnNames = new HashSet<String>();
 		Set<String> ctIgnoreColumnNames = new HashSet<String>();
-		Set<String> ctMergeColumnNames = new HashSet<String>();
 		Set<String> ctStrictColumnNames = new HashSet<String>();
 
 		ctControlColumnNames.add("mvccVersion");
@@ -6894,7 +6895,6 @@ public class DLFileShortcutPersistenceImpl
 			CTColumnResolutionType.CONTROL, ctControlColumnNames);
 		_ctColumnNamesMap.put(
 			CTColumnResolutionType.IGNORE, ctIgnoreColumnNames);
-		_ctColumnNamesMap.put(CTColumnResolutionType.MERGE, ctMergeColumnNames);
 		_ctColumnNamesMap.put(
 			CTColumnResolutionType.PK, Collections.singleton("fileShortcutId"));
 		_ctColumnNamesMap.put(
@@ -7217,7 +7217,7 @@ public class DLFileShortcutPersistenceImpl
 			return DLFileShortcutTable.INSTANCE.getTableName();
 		}
 
-		private Object[] _getValue(
+		private static Object[] _getValue(
 			DLFileShortcutModelImpl dlFileShortcutModelImpl,
 			String[] columnNames, boolean original) {
 
@@ -7240,8 +7240,8 @@ public class DLFileShortcutPersistenceImpl
 			return arguments;
 		}
 
-		private static Map<FinderPath, Long> _finderPathColumnBitmasksCache =
-			new ConcurrentHashMap<>();
+		private static final Map<FinderPath, Long>
+			_finderPathColumnBitmasksCache = new ConcurrentHashMap<>();
 
 	}
 

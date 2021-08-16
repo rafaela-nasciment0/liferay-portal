@@ -32,6 +32,7 @@ definition {
 
 	@description = "This ensures that the user can perform operations to memberships with all permissions."
 	@priority = "5"
+	@refactorneeded
 	test AccessMembershipWithAllPermissions {
 		property custom.properties = "jsonws.web.service.paths.excludes=";
 
@@ -117,6 +118,7 @@ definition {
 
 	@description = "This ensures that the user can only view memberships with view permissions."
 	@priority = "5"
+	@refactorneeded
 	test AccessMembershipWithViewOnlyPermissions {
 		property custom.properties = "jsonws.web.service.paths.excludes=";
 
@@ -151,46 +153,26 @@ definition {
 			resourceName = "com_liferay_site_memberships_web_portlet_SiteMembershipsPortlet",
 			roleTitle = "Depot Regrole Name");
 
-		DepotNavigator.openDepotAdmin();
-
-		DepotNavigator.gotoDepotPortlet(
+		JSONUser.addUserToDepot(
 			depotName = "Test Depot Name",
-			portlet = "Memberships");
-
-		Depot.assignUserAsMember(
-			depotName = "Test Depot Name",
-			userFirstName = "userfn1",
-			userLastName = "userln1",
-			userScreenName = "usersn1");
+			userEmailAddress = "userea1@liferay.com");
 
 		User.logoutAndLoginPG(
 			userLoginEmailAddress = "userea1@liferay.com",
 			userLoginFullName = "userfn1 userln1");
 
-		DepotNavigator.openDepotAdmin();
-
-		DepotNavigator.gotoDepotPortlet(
-			depotName = "Test Depot Name",
-			portlet = "Memberships");
+		DepotNavigator.openDepotMembershipsAdmin(depotName = "Test Depot Name");
 
 		Depot.viewMember(
 			userFirstName = "userfn1",
 			userLastName = "userln1",
-			userScreenName = "usersn1");
-
-		Click.waitForMenuToggleJSClick(
-			key_card = "usersn1",
-			locator1 = "Card#CARD_ELLIPSIS");
-
-		for (var item : list "Remove Membership,Assign Roles") {
-			AssertElementNotPresent(
-				key_menuItem = "${item}",
-				locator1 = "MenuItem#ANY_MENU_ITEM");
-		}
+			userScreenName = "usersn1",
+			viewOnly = "true");
 	}
 
 	@description = "This ensures that the user can only add web content to the depot that has permissions set."
 	@priority = "5"
+	@refactorneeded
 	test AddWebContentPermissionWithinDepot {
 		property custom.properties = "jsonws.web.service.paths.excludes=";
 
@@ -280,6 +262,7 @@ definition {
 
 	@description = "This ensures that user can perform CRUD operations to depots with all permissions."
 	@priority = "5"
+	@refactorneeded
 	test ConfigureRoleWithAllPermissions {
 		property custom.properties = "jsonws.web.service.paths.excludes=";
 
@@ -329,7 +312,7 @@ definition {
 
 		DepotNavigator.gotoEdit(depotName = "Test Depot Name");
 
-		DepotNavigator.gotoLanguages(depotName = "Test Depot Name");
+		DepotNavigator.openDepotLanguages(depotName = "Test Depot Name");
 
 		DepotNavigator.openDepotAdmin();
 
@@ -355,6 +338,7 @@ definition {
 
 	@description = "This ensures that the user can only view depots with view permissions."
 	@priority = "5"
+	@refactorneeded
 	test ConfigureRoleWithViewOnly {
 		property custom.properties = "jsonws.web.service.paths.excludes=";
 
@@ -405,6 +389,7 @@ definition {
 
 	@description = "This test covers LPS-120011. This ensures that no asset libraries be returned when a user without view permission searches the asset library."
 	@priority = "4"
+	@refactorneeded
 	test SearchDepotWithoutViewPermissions {
 		property custom.properties = "jsonws.web.service.paths.excludes=";
 
@@ -471,6 +456,7 @@ definition {
 
 	@description = "This ensures that able to select and deselect specific asset libraries scope from Collections permissions."
 	@priority = "5"
+	@refactorneeded
 	test SelectAndDeselectScopeFromCollectionsPermissions {
 		JSONRole.addRegularRole(roleTitle = "Depot Regrole Name");
 
@@ -509,6 +495,7 @@ definition {
 
 	@description = "This ensures that able to select and deselect specific asset libraries scope from DM permissions."
 	@priority = "5"
+	@refactorneeded
 	test SelectAndDeselectScopeFromDMPermissions {
 		JSONRole.addRegularRole(roleTitle = "Depot Regrole Name");
 
@@ -547,6 +534,7 @@ definition {
 
 	@description = "This ensures that able to select and deselect specific asset libraries scope from WC permissions."
 	@priority = "5"
+	@refactorneeded
 	test SelectAndDeselectScopeFromWCPermissions {
 		JSONRole.addRegularRole(roleTitle = "Depot Regrole Name");
 
@@ -585,6 +573,7 @@ definition {
 
 	@description = "This ensures that a document from depot cannot be accessed through Blogs on a connected site when a user doesn't have permissions."
 	@priority = "5"
+	@refactorneeded
 	test ValidateDocumentCannotBeSelectedWithoutPermissions {
 		property custom.properties = "jsonws.web.service.paths.excludes=";
 
@@ -681,21 +670,15 @@ definition {
 			addOrRemoveViewPermission = "Remove",
 			roleList = "Guest,User");
 
-		DepotNavigator.openDepotAdmin();
-
-		DepotNavigator.gotoEdit(depotName = "Test Depot Name");
-
-		DepotNavigator.gotoSites(depotName = "Test Depot Name");
-
-		Depot.connectSite(siteList = "Site Name");
+		JSONDepot.connectSite(
+			depotName = "Test Depot Name",
+			groupName = "Site Name");
 
 		User.logoutAndLoginPG(
 			userLoginEmailAddress = "userea@liferay.com",
 			userLoginFullName = "userfn userln");
 
-		BlogsNavigator.openBlogsAdmin(siteURLKey = "site-name");
-
-		BlogsNavigator.gotoAddEntry();
+		BlogsNavigator.openToAddEntry(siteURLKey = "site-name");
 
 		BlogsNavigator.gotoSelectFile();
 
@@ -706,8 +689,117 @@ definition {
 			noViewPermission = "true");
 	}
 
+	@description = "This ensures that the permissions scope can be applied correctly for the depot."
+	@priority = "5"
+	@refactorneeded
+	test ValidatePermissionsScope {
+		property custom.properties = "jsonws.web.service.paths.excludes=";
+
+		JSONDepot.addDepot(
+			depotDescription = "This is the description of a depot",
+			depotName = "Test Depot Name2");
+
+		JSONUser.addUser(
+			userEmailAddress = "userea@liferay.com",
+			userFirstName = "userfn",
+			userLastName = "userln",
+			userScreenName = "usersn");
+
+		JSONUser.setFirstPassword(
+			agreeToTermsAndAnswerReminderQuery = "true",
+			requireReset = "false",
+			userEmailAddress = "userea@liferay.com");
+
+		JSONRole.addRegularRole(roleTitle = "Depot Regrole Name");
+
+		JSONRole.assignRoleToUser(
+			roleTitle = "Depot Regrole Name",
+			userEmailAddress = "userea@liferay.com");
+
+		Permissions.definePermissionViaJSONAPI(
+			resourceAction = "VIEW_CONTROL_PANEL",
+			resourceName = "90",
+			roleTitle = "Depot Regrole Name");
+
+		Permissions.definePermissionViaJSONAPI(
+			resourceAction = "ACCESS_IN_CONTROL_PANEL",
+			resourceName = "com_liferay_depot_web_portlet_DepotAdminPortlet",
+			roleTitle = "Depot Regrole Name");
+
+		for (var resourceAction : list "VIEW,VIEW_SITE_ADMINISTRATION") {
+			Permissions.definePermissionViaJSONAPI(
+				resourceAction = "VIEW",
+				resourceName = "com.liferay.depot.model.DepotEntry",
+				roleTitle = "Depot Regrole Name");
+		}
+
+		Role.openRolesAdmin();
+
+		Role.definePermissionCmdCP(
+			assetLibrariesScope = "true",
+			permissionDefinitionKey = "SITE_ADMIN_CONTENT_DOCUMENTS_AND_MEDIA_GENERAL_PERMISSIONS_ACCESS_IN_SITE_ADMINISTRATION_CHECKBOX",
+			permissionDefinitionValue = "Access in Site and Asset Library Administration",
+			roleTitle = "Depot Regrole Name",
+			siteNameScope = "Test Depot Name");
+
+		User.logoutAndLoginPG(
+			userLoginEmailAddress = "userea@liferay.com",
+			userLoginFullName = "userfn userln");
+
+		DepotNavigator.openDepotDashboard(depotName = "Test Depot Name");
+
+		AssertTextEquals(
+			key_card = "Documents and Media",
+			locator1 = "Card#CARD_TITLE",
+			value1 = "Documents and Media");
+
+		DepotNavigator.openDepotDashboard(depotName = "Test Depot Name2");
+
+		AssertTextEquals(
+			locator1 = "Message#INFO",
+			value1 = "Info:You do not have access to any applications in this asset library.");
+
+		User.logoutAndLoginPG(
+			userLoginEmailAddress = "test@liferay.com",
+			userLoginFullName = "Test Test");
+
+		Role.openRolesAdmin();
+
+		Role.definePermissionCmdCP(
+			permissionDefinitionKey = "SITE_ADMIN_CONTENT_DOCUMENTS_AND_MEDIA_GENERAL_PERMISSIONS_ACCESS_IN_SITE_ADMINISTRATION_CHECKBOX",
+			removeSiteScope = "Test Depot Name",
+			roleTitle = "Depot Regrole Name");
+
+		Role.openRolesAdmin();
+
+		Role.definePermissionCmdCP(
+			assetLibrariesScope = "true",
+			permissionDefinitionKey = "SITE_ADMIN_CONTENT_DOCUMENTS_AND_MEDIA_GENERAL_PERMISSIONS_ACCESS_IN_SITE_ADMINISTRATION_CHECKBOX",
+			permissionDefinitionValue = "Access in Site and Asset Library Administration",
+			roleTitle = "Depot Regrole Name",
+			siteNameScope = "Test Depot Name2");
+
+		User.logoutAndLoginPG(
+			userLoginEmailAddress = "userea@liferay.com",
+			userLoginFullName = "userfn userln");
+
+		DepotNavigator.openDepotDashboard(depotName = "Test Depot Name");
+
+		AssertTextEquals(
+			locator1 = "Message#INFO",
+			value1 = "Info:You do not have access to any applications in this asset library.");
+
+		DepotNavigator.openDepotDashboard(depotName = "Test Depot Name2");
+
+		AssertTextEquals(
+			key_card = "Documents and Media",
+			locator1 = "Card#CARD_TITLE",
+			value1 = "Documents and Media");
+	}
+
 	@description = "This test covers LPS-119994. It ensures that the user with access application permission can view the depot dashboard."
 	@priority = "4"
+	@refactorneeded
 	test ViewDashBoardWithAccessApplicationPermissions {
 		property custom.properties = "jsonws.web.service.paths.excludes=";
 
@@ -775,6 +867,7 @@ definition {
 
 	@description = "This ensures that the user can view documents on site and library with all sites and libraries scope view permissions."
 	@priority = "5"
+	@refactorneeded
 	test ViewDocumentOnSiteAndLibrary {
 		property custom.properties = "jsonws.web.service.paths.excludes=";
 
@@ -861,6 +954,38 @@ definition {
 		DMNavigator.gotoDocumentCP(dmDocumentTitle = "Depot DM Document Title");
 
 		DMDocument.viewCP(dmDocumentTitle = "Depot DM Document Title");
+	}
+
+	@description = "This ensures that the unsupported application can not select a depot as the scope of the permission."
+	@priority = "5"
+	@refactorneeded
+	test ViewScopeFromUnsupportedApplicationPermissions {
+		JSONRole.addRegularRole(roleTitle = "Depot Regrole Name");
+
+		Role.openRolesAdmin();
+
+		RoleNavigator.gotoDefineRolePermissions(
+			permissionNavigationKey = "SITE_ADMIN_CONTENT_BLOGS",
+			portlet = "Blogs",
+			roleTitle = "Depot Regrole Name");
+
+		AssertClick(
+			locator1 = "RolesPermissions#SITE_ADMIN_CONTENT_BLOGS_RESOURCE_PERMISSIONS_BLOGS_ENTRY_VIEW_CHANGE_LINK",
+			value1 = "Change");
+
+		SelectFrame(locator1 = "RolesPermissionsSelectSite#SELECT_SITE_IFRAME");
+
+		AssertVisible(
+			locator1 = "NavBar#RECENT",
+			value1 = "Recent");
+
+		AssertVisible(
+			locator1 = "NavBar#MY_SITES",
+			value1 = "My Sites");
+
+		AssertElementNotPresent(
+			locator1 = "NavBar#ASSET_LIBRARIES",
+			value1 = "Asset Libraries");
 	}
 
 }

@@ -118,12 +118,6 @@ public class FragmentCollectionResourcesManagementToolbarDisplayContext
 	}
 
 	@Override
-	public String getDefaultEventHandler() {
-		return "FRAGMENT_COLLECTION_RESOURCES_MANAGEMENT_TOOLBAR_DEFAULT_" +
-			"EVENT_HANDLER";
-	}
-
-	@Override
 	public String getSortingURL() {
 		return null;
 	}
@@ -142,15 +136,14 @@ public class FragmentCollectionResourcesManagementToolbarDisplayContext
 	}
 
 	private String _getItemSelectorURL() {
-		PortletURL uploadURL = PortletURLBuilder.createActionURL(
-			liferayPortletResponse
-		).setActionName(
-			"/fragment/upload_fragment_collection_resource"
-		).build();
-
 		ItemSelectorCriterion itemSelectorCriterion =
 			new UploadItemSelectorCriterion(
-				FragmentPortletKeys.FRAGMENT, uploadURL.toString(),
+				FragmentPortletKeys.FRAGMENT,
+				PortletURLBuilder.createActionURL(
+					liferayPortletResponse
+				).setActionName(
+					"/fragment/upload_fragment_collection_resource"
+				).buildString(),
 				LanguageUtil.get(_themeDisplay.getLocale(), "resources"),
 				UploadServletRequestConfigurationHelperUtil.getMaxSize(),
 				_fragmentPortletConfiguration.thumbnailExtensions());

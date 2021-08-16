@@ -21,7 +21,6 @@ import com.liferay.petra.function.UnsafeFunction;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.model.GroupedModel;
 import com.liferay.portal.kernel.model.ResourceAction;
-import com.liferay.portal.kernel.model.ResourceConstants;
 import com.liferay.portal.kernel.search.Sort;
 import com.liferay.portal.kernel.search.filter.Filter;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
@@ -30,6 +29,8 @@ import com.liferay.portal.kernel.service.GroupLocalService;
 import com.liferay.portal.kernel.service.ResourceActionLocalService;
 import com.liferay.portal.kernel.service.ResourcePermissionLocalService;
 import com.liferay.portal.kernel.service.RoleLocalService;
+import com.liferay.portal.kernel.util.GetterUtil;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
@@ -114,12 +115,12 @@ public abstract class BaseStructuredContentResourceImpl
 	@Produces({"application/json", "application/xml"})
 	@Tags(value = {@Tag(name = "StructuredContent")})
 	public Page<StructuredContent> getAssetLibraryStructuredContentsPage(
-			@NotNull @Parameter(hidden = true) @PathParam("assetLibraryId")
-				Long assetLibraryId,
+			@NotNull @Parameter(hidden = true) @PathParam("assetLibraryId") Long
+				assetLibraryId,
 			@Parameter(hidden = true) @QueryParam("flatten") Boolean flatten,
 			@Parameter(hidden = true) @QueryParam("search") String search,
-			@Context
-				com.liferay.portal.vulcan.aggregation.Aggregation aggregation,
+			@Context com.liferay.portal.vulcan.aggregation.Aggregation
+				aggregation,
 			@Context Filter filter, @Context Pagination pagination,
 			@Context Sort[] sorts)
 		throws Exception {
@@ -130,7 +131,7 @@ public abstract class BaseStructuredContentResourceImpl
 	/**
 	 * Invoke this method with the command line:
 	 *
-	 * curl -X 'POST' 'http://localhost:8080/o/headless-delivery/v1.0/asset-libraries/{assetLibraryId}/structured-contents' -d $'{"contentFields": ___, "contentStructureId": ___, "customFields": ___, "datePublished": ___, "description": ___, "description_i18n": ___, "friendlyUrlPath": ___, "friendlyUrlPath_i18n": ___, "keywords": ___, "taxonomyCategoryIds": ___, "title": ___, "title_i18n": ___, "viewableBy": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
+	 * curl -X 'POST' 'http://localhost:8080/o/headless-delivery/v1.0/asset-libraries/{assetLibraryId}/structured-contents' -d $'{"contentFields": ___, "contentStructureId": ___, "customFields": ___, "datePublished": ___, "description": ___, "description_i18n": ___, "externalReferenceCode": ___, "friendlyUrlPath": ___, "friendlyUrlPath_i18n": ___, "keywords": ___, "taxonomyCategoryIds": ___, "title": ___, "title_i18n": ___, "viewableBy": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
 	 */
 	@Consumes({"application/json", "application/xml"})
 	@Override
@@ -142,8 +143,8 @@ public abstract class BaseStructuredContentResourceImpl
 	@Produces({"application/json", "application/xml"})
 	@Tags(value = {@Tag(name = "StructuredContent")})
 	public StructuredContent postAssetLibraryStructuredContent(
-			@NotNull @Parameter(hidden = true) @PathParam("assetLibraryId")
-				Long assetLibraryId,
+			@NotNull @Parameter(hidden = true) @PathParam("assetLibraryId") Long
+				assetLibraryId,
 			StructuredContent structuredContent)
 		throws Exception {
 
@@ -168,10 +169,10 @@ public abstract class BaseStructuredContentResourceImpl
 	@Produces("application/json")
 	@Tags(value = {@Tag(name = "StructuredContent")})
 	public Response postAssetLibraryStructuredContentBatch(
-			@NotNull @Parameter(hidden = true) @PathParam("assetLibraryId")
-				Long assetLibraryId,
-			@Parameter(hidden = true) @QueryParam("callbackURL")
-				String callbackURL,
+			@NotNull @Parameter(hidden = true) @PathParam("assetLibraryId") Long
+				assetLibraryId,
+			@Parameter(hidden = true) @QueryParam("callbackURL") String
+				callbackURL,
 			Object object)
 		throws Exception {
 
@@ -189,6 +190,104 @@ public abstract class BaseStructuredContentResourceImpl
 			vulcanBatchEngineImportTaskResource.postImportTask(
 				StructuredContent.class.getName(), callbackURL, null, object)
 		).build();
+	}
+
+	/**
+	 * Invoke this method with the command line:
+	 *
+	 * curl -X 'GET' 'http://localhost:8080/o/headless-delivery/v1.0/asset-libraries/{assetLibraryId}/structured-contents/permissions'  -u 'test@liferay.com:test'
+	 */
+	@GET
+	@Override
+	@Parameters(
+		value = {
+			@Parameter(in = ParameterIn.PATH, name = "assetLibraryId"),
+			@Parameter(in = ParameterIn.QUERY, name = "roleNames")
+		}
+	)
+	@Path("/asset-libraries/{assetLibraryId}/structured-contents/permissions")
+	@Produces({"application/json", "application/xml"})
+	@Tags(value = {@Tag(name = "StructuredContent")})
+	public Page<com.liferay.portal.vulcan.permission.Permission>
+			getAssetLibraryStructuredContentPermissionsPage(
+				@NotNull @Parameter(hidden = true) @PathParam("assetLibraryId")
+					Long assetLibraryId,
+				@Parameter(hidden = true) @QueryParam("roleNames") String
+					roleNames)
+		throws Exception {
+
+		String portletName = getPermissionCheckerPortletName(assetLibraryId);
+
+		PermissionUtil.checkPermission(
+			ActionKeys.PERMISSIONS, groupLocalService, portletName,
+			assetLibraryId, assetLibraryId);
+
+		return toPermissionPage(
+			HashMapBuilder.put(
+				"get",
+				addAction(
+					ActionKeys.PERMISSIONS,
+					"getAssetLibraryStructuredContentPermissionsPage",
+					portletName, assetLibraryId)
+			).put(
+				"replace",
+				addAction(
+					ActionKeys.PERMISSIONS,
+					"putAssetLibraryStructuredContentPermission", portletName,
+					assetLibraryId)
+			).build(),
+			assetLibraryId, portletName, roleNames);
+	}
+
+	/**
+	 * Invoke this method with the command line:
+	 *
+	 * curl -X 'PUT' 'http://localhost:8080/o/headless-delivery/v1.0/asset-libraries/{assetLibraryId}/structured-contents/permissions'  -u 'test@liferay.com:test'
+	 */
+	@Override
+	@Parameters(
+		value = {@Parameter(in = ParameterIn.PATH, name = "assetLibraryId")}
+	)
+	@Path("/asset-libraries/{assetLibraryId}/structured-contents/permissions")
+	@Produces({"application/json", "application/xml"})
+	@PUT
+	@Tags(value = {@Tag(name = "StructuredContent")})
+	public Page<com.liferay.portal.vulcan.permission.Permission>
+			putAssetLibraryStructuredContentPermission(
+				@NotNull @Parameter(hidden = true) @PathParam("assetLibraryId")
+					Long assetLibraryId,
+				com.liferay.portal.vulcan.permission.Permission[] permissions)
+		throws Exception {
+
+		String portletName = getPermissionCheckerPortletName(assetLibraryId);
+
+		PermissionUtil.checkPermission(
+			ActionKeys.PERMISSIONS, groupLocalService, portletName,
+			assetLibraryId, assetLibraryId);
+
+		resourcePermissionLocalService.updateResourcePermissions(
+			contextCompany.getCompanyId(), assetLibraryId, portletName,
+			String.valueOf(assetLibraryId),
+			ModelPermissionsUtil.toModelPermissions(
+				contextCompany.getCompanyId(), permissions, assetLibraryId,
+				portletName, resourceActionLocalService,
+				resourcePermissionLocalService, roleLocalService));
+
+		return toPermissionPage(
+			HashMapBuilder.put(
+				"get",
+				addAction(
+					ActionKeys.PERMISSIONS,
+					"getAssetLibraryStructuredContentPermissionsPage",
+					portletName, assetLibraryId)
+			).put(
+				"replace",
+				addAction(
+					ActionKeys.PERMISSIONS,
+					"putAssetLibraryStructuredContentPermission", portletName,
+					assetLibraryId)
+			).build(),
+			assetLibraryId, portletName, null);
 	}
 
 	/**
@@ -218,8 +317,8 @@ public abstract class BaseStructuredContentResourceImpl
 			@NotNull @Parameter(hidden = true) @PathParam("contentStructureId")
 				Long contentStructureId,
 			@Parameter(hidden = true) @QueryParam("search") String search,
-			@Context
-				com.liferay.portal.vulcan.aggregation.Aggregation aggregation,
+			@Context com.liferay.portal.vulcan.aggregation.Aggregation
+				aggregation,
 			@Context Filter filter, @Context Pagination pagination,
 			@Context Sort[] sorts)
 		throws Exception {
@@ -255,8 +354,8 @@ public abstract class BaseStructuredContentResourceImpl
 			@NotNull @Parameter(hidden = true) @PathParam("siteId") Long siteId,
 			@Parameter(hidden = true) @QueryParam("flatten") Boolean flatten,
 			@Parameter(hidden = true) @QueryParam("search") String search,
-			@Context
-				com.liferay.portal.vulcan.aggregation.Aggregation aggregation,
+			@Context com.liferay.portal.vulcan.aggregation.Aggregation
+				aggregation,
 			@Context Filter filter, @Context Pagination pagination,
 			@Context Sort[] sorts)
 		throws Exception {
@@ -267,7 +366,7 @@ public abstract class BaseStructuredContentResourceImpl
 	/**
 	 * Invoke this method with the command line:
 	 *
-	 * curl -X 'POST' 'http://localhost:8080/o/headless-delivery/v1.0/sites/{siteId}/structured-contents' -d $'{"contentFields": ___, "contentStructureId": ___, "customFields": ___, "datePublished": ___, "description": ___, "description_i18n": ___, "friendlyUrlPath": ___, "friendlyUrlPath_i18n": ___, "keywords": ___, "taxonomyCategoryIds": ___, "title": ___, "title_i18n": ___, "viewableBy": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
+	 * curl -X 'POST' 'http://localhost:8080/o/headless-delivery/v1.0/sites/{siteId}/structured-contents' -d $'{"contentFields": ___, "contentStructureId": ___, "customFields": ___, "datePublished": ___, "description": ___, "description_i18n": ___, "externalReferenceCode": ___, "friendlyUrlPath": ___, "friendlyUrlPath_i18n": ___, "keywords": ___, "taxonomyCategoryIds": ___, "title": ___, "title_i18n": ___, "viewableBy": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
 	 */
 	@Consumes({"application/json", "application/xml"})
 	@Operation(description = "Creates a new structured content.")
@@ -304,8 +403,8 @@ public abstract class BaseStructuredContentResourceImpl
 	@Tags(value = {@Tag(name = "StructuredContent")})
 	public Response postSiteStructuredContentBatch(
 			@NotNull @Parameter(hidden = true) @PathParam("siteId") Long siteId,
-			@Parameter(hidden = true) @QueryParam("callbackURL")
-				String callbackURL,
+			@Parameter(hidden = true) @QueryParam("callbackURL") String
+				callbackURL,
 			Object object)
 		throws Exception {
 
@@ -323,6 +422,99 @@ public abstract class BaseStructuredContentResourceImpl
 			vulcanBatchEngineImportTaskResource.postImportTask(
 				StructuredContent.class.getName(), callbackURL, null, object)
 		).build();
+	}
+
+	/**
+	 * Invoke this method with the command line:
+	 *
+	 * curl -X 'DELETE' 'http://localhost:8080/o/headless-delivery/v1.0/sites/{siteId}/structured-contents/by-external-reference-code/{externalReferenceCode}'  -u 'test@liferay.com:test'
+	 */
+	@DELETE
+	@Operation(
+		description = "Deletes the site's structured content by external reference code."
+	)
+	@Override
+	@Parameters(
+		value = {
+			@Parameter(in = ParameterIn.PATH, name = "siteId"),
+			@Parameter(in = ParameterIn.PATH, name = "externalReferenceCode")
+		}
+	)
+	@Path(
+		"/sites/{siteId}/structured-contents/by-external-reference-code/{externalReferenceCode}"
+	)
+	@Produces({"application/json", "application/xml"})
+	@Tags(value = {@Tag(name = "StructuredContent")})
+	public void deleteSiteStructuredContentByExternalReferenceCode(
+			@NotNull @Parameter(hidden = true) @PathParam("siteId") Long siteId,
+			@NotNull @Parameter(hidden = true)
+			@PathParam("externalReferenceCode")
+			String externalReferenceCode)
+		throws Exception {
+	}
+
+	/**
+	 * Invoke this method with the command line:
+	 *
+	 * curl -X 'GET' 'http://localhost:8080/o/headless-delivery/v1.0/sites/{siteId}/structured-contents/by-external-reference-code/{externalReferenceCode}'  -u 'test@liferay.com:test'
+	 */
+	@GET
+	@Operation(
+		description = "Retrieves the site's structured content by external reference code."
+	)
+	@Override
+	@Parameters(
+		value = {
+			@Parameter(in = ParameterIn.PATH, name = "siteId"),
+			@Parameter(in = ParameterIn.PATH, name = "externalReferenceCode")
+		}
+	)
+	@Path(
+		"/sites/{siteId}/structured-contents/by-external-reference-code/{externalReferenceCode}"
+	)
+	@Produces({"application/json", "application/xml"})
+	@Tags(value = {@Tag(name = "StructuredContent")})
+	public StructuredContent getSiteStructuredContentByExternalReferenceCode(
+			@NotNull @Parameter(hidden = true) @PathParam("siteId") Long siteId,
+			@NotNull @Parameter(hidden = true)
+			@PathParam("externalReferenceCode")
+			String externalReferenceCode)
+		throws Exception {
+
+		return new StructuredContent();
+	}
+
+	/**
+	 * Invoke this method with the command line:
+	 *
+	 * curl -X 'PUT' 'http://localhost:8080/o/headless-delivery/v1.0/sites/{siteId}/structured-contents/by-external-reference-code/{externalReferenceCode}' -d $'{"contentFields": ___, "contentStructureId": ___, "customFields": ___, "datePublished": ___, "description": ___, "description_i18n": ___, "externalReferenceCode": ___, "friendlyUrlPath": ___, "friendlyUrlPath_i18n": ___, "keywords": ___, "taxonomyCategoryIds": ___, "title": ___, "title_i18n": ___, "viewableBy": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
+	 */
+	@Consumes({"application/json", "application/xml"})
+	@Operation(
+		description = "Updates the site's structured content with the given external reference code, or creates it if it not exists."
+	)
+	@Override
+	@Parameters(
+		value = {
+			@Parameter(in = ParameterIn.PATH, name = "siteId"),
+			@Parameter(in = ParameterIn.PATH, name = "externalReferenceCode")
+		}
+	)
+	@Path(
+		"/sites/{siteId}/structured-contents/by-external-reference-code/{externalReferenceCode}"
+	)
+	@Produces({"application/json", "application/xml"})
+	@PUT
+	@Tags(value = {@Tag(name = "StructuredContent")})
+	public StructuredContent putSiteStructuredContentByExternalReferenceCode(
+			@NotNull @Parameter(hidden = true) @PathParam("siteId") Long siteId,
+			@NotNull @Parameter(hidden = true)
+			@PathParam("externalReferenceCode")
+			String externalReferenceCode,
+			StructuredContent structuredContent)
+		throws Exception {
+
+		return new StructuredContent();
 	}
 
 	/**
@@ -395,10 +587,10 @@ public abstract class BaseStructuredContentResourceImpl
 	@Tags(value = {@Tag(name = "StructuredContent")})
 	public Page<com.liferay.portal.vulcan.permission.Permission>
 			getSiteStructuredContentPermissionsPage(
-				@NotNull @Parameter(hidden = true) @PathParam("siteId")
-					Long siteId,
-				@Parameter(hidden = true) @QueryParam("roleNames")
-					String roleNames)
+				@NotNull @Parameter(hidden = true) @PathParam("siteId") Long
+					siteId,
+				@Parameter(hidden = true) @QueryParam("roleNames") String
+					roleNames)
 		throws Exception {
 
 		String portletName = getPermissionCheckerPortletName(siteId);
@@ -407,7 +599,20 @@ public abstract class BaseStructuredContentResourceImpl
 			ActionKeys.PERMISSIONS, groupLocalService, portletName, siteId,
 			siteId);
 
-		return toPermissionPage(siteId, portletName, roleNames);
+		return toPermissionPage(
+			HashMapBuilder.put(
+				"get",
+				addAction(
+					ActionKeys.PERMISSIONS,
+					"getSiteStructuredContentPermissionsPage", portletName,
+					siteId)
+			).put(
+				"replace",
+				addAction(
+					ActionKeys.PERMISSIONS,
+					"putSiteStructuredContentPermission", portletName, siteId)
+			).build(),
+			siteId, portletName, roleNames);
 	}
 
 	/**
@@ -421,9 +626,11 @@ public abstract class BaseStructuredContentResourceImpl
 	@Produces({"application/json", "application/xml"})
 	@PUT
 	@Tags(value = {@Tag(name = "StructuredContent")})
-	public void putSiteStructuredContentPermission(
-			@NotNull @Parameter(hidden = true) @PathParam("siteId") Long siteId,
-			com.liferay.portal.vulcan.permission.Permission[] permissions)
+	public Page<com.liferay.portal.vulcan.permission.Permission>
+			putSiteStructuredContentPermission(
+				@NotNull @Parameter(hidden = true) @PathParam("siteId") Long
+					siteId,
+				com.liferay.portal.vulcan.permission.Permission[] permissions)
 		throws Exception {
 
 		String portletName = getPermissionCheckerPortletName(siteId);
@@ -439,6 +646,21 @@ public abstract class BaseStructuredContentResourceImpl
 				contextCompany.getCompanyId(), permissions, siteId, portletName,
 				resourceActionLocalService, resourcePermissionLocalService,
 				roleLocalService));
+
+		return toPermissionPage(
+			HashMapBuilder.put(
+				"get",
+				addAction(
+					ActionKeys.PERMISSIONS,
+					"getSiteStructuredContentPermissionsPage", portletName,
+					siteId)
+			).put(
+				"replace",
+				addAction(
+					ActionKeys.PERMISSIONS,
+					"putSiteStructuredContentPermission", portletName, siteId)
+			).build(),
+			siteId, portletName, null);
 	}
 
 	/**
@@ -473,12 +695,11 @@ public abstract class BaseStructuredContentResourceImpl
 			getStructuredContentFolderStructuredContentsPage(
 				@NotNull @Parameter(hidden = true)
 				@PathParam("structuredContentFolderId")
-					Long structuredContentFolderId,
-				@Parameter(hidden = true) @QueryParam("flatten")
-					Boolean flatten,
+				Long structuredContentFolderId,
+				@Parameter(hidden = true) @QueryParam("flatten") Boolean
+					flatten,
 				@Parameter(hidden = true) @QueryParam("search") String search,
-				@Context
-					com.liferay.portal.vulcan.aggregation.Aggregation
+				@Context com.liferay.portal.vulcan.aggregation.Aggregation
 					aggregation,
 				@Context Filter filter, @Context Pagination pagination,
 				@Context Sort[] sorts)
@@ -490,7 +711,7 @@ public abstract class BaseStructuredContentResourceImpl
 	/**
 	 * Invoke this method with the command line:
 	 *
-	 * curl -X 'POST' 'http://localhost:8080/o/headless-delivery/v1.0/structured-content-folders/{structuredContentFolderId}/structured-contents' -d $'{"contentFields": ___, "contentStructureId": ___, "customFields": ___, "datePublished": ___, "description": ___, "description_i18n": ___, "friendlyUrlPath": ___, "friendlyUrlPath_i18n": ___, "keywords": ___, "taxonomyCategoryIds": ___, "title": ___, "title_i18n": ___, "viewableBy": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
+	 * curl -X 'POST' 'http://localhost:8080/o/headless-delivery/v1.0/structured-content-folders/{structuredContentFolderId}/structured-contents' -d $'{"contentFields": ___, "contentStructureId": ___, "customFields": ___, "datePublished": ___, "description": ___, "description_i18n": ___, "externalReferenceCode": ___, "friendlyUrlPath": ___, "friendlyUrlPath_i18n": ___, "keywords": ___, "taxonomyCategoryIds": ___, "title": ___, "title_i18n": ___, "viewableBy": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
 	 */
 	@Consumes({"application/json", "application/xml"})
 	@Operation(description = "Creates a new structured content in the folder.")
@@ -511,7 +732,7 @@ public abstract class BaseStructuredContentResourceImpl
 	public StructuredContent postStructuredContentFolderStructuredContent(
 			@NotNull @Parameter(hidden = true)
 			@PathParam("structuredContentFolderId")
-				Long structuredContentFolderId,
+			Long structuredContentFolderId,
 			StructuredContent structuredContent)
 		throws Exception {
 
@@ -542,9 +763,9 @@ public abstract class BaseStructuredContentResourceImpl
 	public Response postStructuredContentFolderStructuredContentBatch(
 			@NotNull @Parameter(hidden = true)
 			@PathParam("structuredContentFolderId")
-				Long structuredContentFolderId,
-			@Parameter(hidden = true) @QueryParam("callbackURL")
-				String callbackURL,
+			Long structuredContentFolderId,
+			@Parameter(hidden = true) @QueryParam("callbackURL") String
+				callbackURL,
 			Object object)
 		throws Exception {
 
@@ -603,8 +824,8 @@ public abstract class BaseStructuredContentResourceImpl
 	@Produces("application/json")
 	@Tags(value = {@Tag(name = "StructuredContent")})
 	public Response deleteStructuredContentBatch(
-			@Parameter(hidden = true) @QueryParam("callbackURL")
-				String callbackURL,
+			@Parameter(hidden = true) @QueryParam("callbackURL") String
+				callbackURL,
 			Object object)
 		throws Exception {
 
@@ -651,7 +872,7 @@ public abstract class BaseStructuredContentResourceImpl
 	/**
 	 * Invoke this method with the command line:
 	 *
-	 * curl -X 'PATCH' 'http://localhost:8080/o/headless-delivery/v1.0/structured-contents/{structuredContentId}' -d $'{"contentFields": ___, "contentStructureId": ___, "customFields": ___, "datePublished": ___, "description": ___, "description_i18n": ___, "friendlyUrlPath": ___, "friendlyUrlPath_i18n": ___, "keywords": ___, "taxonomyCategoryIds": ___, "title": ___, "title_i18n": ___, "viewableBy": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
+	 * curl -X 'PATCH' 'http://localhost:8080/o/headless-delivery/v1.0/structured-contents/{structuredContentId}' -d $'{"contentFields": ___, "contentStructureId": ___, "customFields": ___, "datePublished": ___, "description": ___, "description_i18n": ___, "externalReferenceCode": ___, "friendlyUrlPath": ___, "friendlyUrlPath_i18n": ___, "keywords": ___, "taxonomyCategoryIds": ___, "title": ___, "title_i18n": ___, "viewableBy": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
 	 */
 	@Consumes({"application/json", "application/xml"})
 	@Operation(
@@ -721,6 +942,11 @@ public abstract class BaseStructuredContentResourceImpl
 				structuredContent.getDescription_i18n());
 		}
 
+		if (structuredContent.getExternalReferenceCode() != null) {
+			existingStructuredContent.setExternalReferenceCode(
+				structuredContent.getExternalReferenceCode());
+		}
+
 		if (structuredContent.getFriendlyUrlPath() != null) {
 			existingStructuredContent.setFriendlyUrlPath(
 				structuredContent.getFriendlyUrlPath());
@@ -786,7 +1012,7 @@ public abstract class BaseStructuredContentResourceImpl
 	/**
 	 * Invoke this method with the command line:
 	 *
-	 * curl -X 'PUT' 'http://localhost:8080/o/headless-delivery/v1.0/structured-contents/{structuredContentId}' -d $'{"contentFields": ___, "contentStructureId": ___, "customFields": ___, "datePublished": ___, "description": ___, "description_i18n": ___, "friendlyUrlPath": ___, "friendlyUrlPath_i18n": ___, "keywords": ___, "taxonomyCategoryIds": ___, "title": ___, "title_i18n": ___, "viewableBy": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
+	 * curl -X 'PUT' 'http://localhost:8080/o/headless-delivery/v1.0/structured-contents/{structuredContentId}' -d $'{"contentFields": ___, "contentStructureId": ___, "customFields": ___, "datePublished": ___, "description": ___, "description_i18n": ___, "externalReferenceCode": ___, "friendlyUrlPath": ___, "friendlyUrlPath_i18n": ___, "keywords": ___, "taxonomyCategoryIds": ___, "title": ___, "title_i18n": ___, "viewableBy": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
 	 */
 	@Consumes({"application/json", "application/xml"})
 	@Operation(
@@ -826,8 +1052,8 @@ public abstract class BaseStructuredContentResourceImpl
 	@PUT
 	@Tags(value = {@Tag(name = "StructuredContent")})
 	public Response putStructuredContentBatch(
-			@Parameter(hidden = true) @QueryParam("callbackURL")
-				String callbackURL,
+			@Parameter(hidden = true) @QueryParam("callbackURL") String
+				callbackURL,
 			Object object)
 		throws Exception {
 
@@ -969,20 +1195,33 @@ public abstract class BaseStructuredContentResourceImpl
 			getStructuredContentPermissionsPage(
 				@NotNull @Parameter(hidden = true)
 				@PathParam("structuredContentId")
-					Long structuredContentId,
-				@Parameter(hidden = true) @QueryParam("roleNames")
-					String roleNames)
+				Long structuredContentId,
+				@Parameter(hidden = true) @QueryParam("roleNames") String
+					roleNames)
 		throws Exception {
 
 		String resourceName = getPermissionCheckerResourceName(
 			structuredContentId);
+		Long resourceId = getPermissionCheckerResourceId(structuredContentId);
 
 		PermissionUtil.checkPermission(
-			ActionKeys.PERMISSIONS, groupLocalService, resourceName,
-			structuredContentId,
+			ActionKeys.PERMISSIONS, groupLocalService, resourceName, resourceId,
 			getPermissionCheckerGroupId(structuredContentId));
 
-		return toPermissionPage(structuredContentId, resourceName, roleNames);
+		return toPermissionPage(
+			HashMapBuilder.put(
+				"get",
+				addAction(
+					ActionKeys.PERMISSIONS,
+					"getStructuredContentPermissionsPage", resourceName,
+					resourceId)
+			).put(
+				"replace",
+				addAction(
+					ActionKeys.PERMISSIONS, "putStructuredContentPermission",
+					resourceName, resourceId)
+			).build(),
+			resourceId, resourceName, roleNames);
 	}
 
 	/**
@@ -1000,27 +1239,45 @@ public abstract class BaseStructuredContentResourceImpl
 	@Produces({"application/json", "application/xml"})
 	@PUT
 	@Tags(value = {@Tag(name = "StructuredContent")})
-	public void putStructuredContentPermission(
-			@NotNull @Parameter(hidden = true) @PathParam("structuredContentId")
+	public Page<com.liferay.portal.vulcan.permission.Permission>
+			putStructuredContentPermission(
+				@NotNull @Parameter(hidden = true)
+				@PathParam("structuredContentId")
 				Long structuredContentId,
-			com.liferay.portal.vulcan.permission.Permission[] permissions)
+				com.liferay.portal.vulcan.permission.Permission[] permissions)
 		throws Exception {
 
 		String resourceName = getPermissionCheckerResourceName(
 			structuredContentId);
+		Long resourceId = getPermissionCheckerResourceId(structuredContentId);
 
 		PermissionUtil.checkPermission(
-			ActionKeys.PERMISSIONS, groupLocalService, resourceName,
-			structuredContentId,
+			ActionKeys.PERMISSIONS, groupLocalService, resourceName, resourceId,
 			getPermissionCheckerGroupId(structuredContentId));
 
 		resourcePermissionLocalService.updateResourcePermissions(
-			contextCompany.getCompanyId(), 0, resourceName,
-			String.valueOf(structuredContentId),
+			contextCompany.getCompanyId(),
+			getPermissionCheckerGroupId(structuredContentId), resourceName,
+			String.valueOf(resourceId),
 			ModelPermissionsUtil.toModelPermissions(
-				contextCompany.getCompanyId(), permissions, structuredContentId,
+				contextCompany.getCompanyId(), permissions, resourceId,
 				resourceName, resourceActionLocalService,
 				resourcePermissionLocalService, roleLocalService));
+
+		return toPermissionPage(
+			HashMapBuilder.put(
+				"get",
+				addAction(
+					ActionKeys.PERMISSIONS,
+					"getStructuredContentPermissionsPage", resourceName,
+					resourceId)
+			).put(
+				"replace",
+				addAction(
+					ActionKeys.PERMISSIONS, "putStructuredContentPermission",
+					resourceName, resourceId)
+			).build(),
+			resourceId, resourceName, null);
 	}
 
 	/**
@@ -1048,7 +1305,7 @@ public abstract class BaseStructuredContentResourceImpl
 			getStructuredContentRenderedContentByDisplayPageDisplayPageKey(
 				@NotNull @Parameter(hidden = true)
 				@PathParam("structuredContentId")
-					Long structuredContentId,
+				Long structuredContentId,
 				@NotNull @Parameter(hidden = true) @PathParam("displayPageKey")
 					String displayPageKey)
 		throws Exception {
@@ -1138,7 +1395,7 @@ public abstract class BaseStructuredContentResourceImpl
 
 		for (StructuredContent structuredContent : structuredContents) {
 			postSiteStructuredContent(
-				Long.valueOf((String)parameters.get("siteId")),
+				Long.parseLong((String)parameters.get("siteId")),
 				structuredContent);
 		}
 	}
@@ -1176,8 +1433,9 @@ public abstract class BaseStructuredContentResourceImpl
 		throws Exception {
 
 		return getSiteStructuredContentsPage(
-			(Long)parameters.get("siteId"), (Boolean)parameters.get("flatten"),
-			search, null, filter, pagination, sorts);
+			Long.parseLong((String)parameters.get("siteId")),
+			Boolean.parseBoolean((String)parameters.get("flatten")), search,
+			null, filter, pagination, sorts);
 	}
 
 	@Override
@@ -1211,7 +1469,8 @@ public abstract class BaseStructuredContentResourceImpl
 		for (StructuredContent structuredContent : structuredContents) {
 			putStructuredContent(
 				structuredContent.getId() != null ? structuredContent.getId() :
-					(Long)parameters.get("structuredContentId"),
+					Long.parseLong(
+						(String)parameters.get("structuredContentId")),
 				structuredContent);
 		}
 	}
@@ -1234,6 +1493,10 @@ public abstract class BaseStructuredContentResourceImpl
 			"This method needs to be implemented");
 	}
 
+	protected Long getPermissionCheckerResourceId(Object id) throws Exception {
+		return GetterUtil.getLong(id);
+	}
+
 	protected String getPermissionCheckerResourceName(Object id)
 		throws Exception {
 
@@ -1242,7 +1505,9 @@ public abstract class BaseStructuredContentResourceImpl
 	}
 
 	protected Page<com.liferay.portal.vulcan.permission.Permission>
-			toPermissionPage(long id, String resourceName, String roleNames)
+			toPermissionPage(
+				Map<String, Map<String, String>> actions, long id,
+				String resourceName, String roleNames)
 		throws Exception {
 
 		List<ResourceAction> resourceActions =
@@ -1250,6 +1515,7 @@ public abstract class BaseStructuredContentResourceImpl
 
 		if (Validator.isNotNull(roleNames)) {
 			return Page.of(
+				actions,
 				transform(
 					PermissionUtil.getRoles(
 						contextCompany, roleLocalService,
@@ -1260,10 +1526,11 @@ public abstract class BaseStructuredContentResourceImpl
 		}
 
 		return Page.of(
+			actions,
 			transform(
-				resourcePermissionLocalService.getResourcePermissions(
-					contextCompany.getCompanyId(), resourceName,
-					ResourceConstants.SCOPE_INDIVIDUAL, String.valueOf(id)),
+				PermissionUtil.getResourcePermissions(
+					contextCompany.getCompanyId(), id, resourceName,
+					resourcePermissionLocalService),
 				resourcePermission -> PermissionUtil.toPermission(
 					resourceActions, resourcePermission,
 					roleLocalService.getRole(resourcePermission.getRoleId()))));

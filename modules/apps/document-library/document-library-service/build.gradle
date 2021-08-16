@@ -5,6 +5,7 @@ buildService {
 dependencies {
 	compileOnly group: "com.liferay.portal", name: "com.liferay.portal.impl", version: "default"
 	compileOnly group: "com.liferay.portal", name: "com.liferay.portal.kernel", version: "default"
+	compileOnly group: "commons-lang", name: "commons-lang", version: "2.6"
 	compileOnly group: "javax.portlet", name: "portlet-api", version: "3.0.1"
 	compileOnly group: "org.apache.felix", name: "org.apache.felix.http.servlet-api", version: "1.1.2"
 	compileOnly group: "org.osgi", name: "org.osgi.annotation.versioning", version: "1.1.0"
@@ -19,10 +20,12 @@ dependencies {
 	compileOnly project(":apps:change-tracking:change-tracking-store-api")
 	compileOnly project(":apps:changeset:changeset-api")
 	compileOnly project(":apps:comment:comment-api")
+	compileOnly project(":apps:data-engine:data-engine-api")
 	compileOnly project(":apps:depot:depot-api")
 	compileOnly project(":apps:document-library:document-library-api")
 	compileOnly project(":apps:document-library:document-library-content-api")
 	compileOnly project(":apps:document-library:document-library-sync-api")
+	compileOnly project(":apps:dynamic-data-lists:dynamic-data-lists-api")
 	compileOnly project(":apps:dynamic-data-mapping:dynamic-data-mapping-api")
 	compileOnly project(":apps:export-import:export-import-api")
 	compileOnly project(":apps:petra:petra-portlet-url-builder")

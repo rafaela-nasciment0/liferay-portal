@@ -33,25 +33,23 @@ Role role = RoleServiceUtil.fetchRole(roleId);
 String portletResource = ParamUtil.getString(request, "portletResource");
 
 if (Validator.isNull(redirect)) {
-	PortletURL portletURL = PortletURLBuilder.createRenderURL(
+	redirect = PortletURLBuilder.createRenderURL(
 		renderResponse
 	).setMVCPath(
 		"/edit_role_permissions.jsp"
+	).setCMD(
+		Constants.VIEW
+	).setBackURL(
+		backURL
+	).setTabs1(
+		"define-permissions"
+	).setTabs2(
+		tabs2
 	).setParameter(
-		Constants.CMD, Constants.VIEW
-	).setParameter(
-		"tabs1", "define-permissions"
-	).setParameter(
-		"tabs2", tabs2
+		"roleId", role.getRoleId()
 	).setParameter(
 		"tabs3", tabs3
-	).setParameter(
-		"backURL", backURL
-	).setParameter(
-		"roleId", String.valueOf(role.getRoleId())
-	).build();
-
-	redirect = portletURL.toString();
+	).buildString();
 }
 
 request.setAttribute("edit_role_permissions.jsp-role", role);

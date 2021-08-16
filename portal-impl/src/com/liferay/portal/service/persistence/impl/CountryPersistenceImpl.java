@@ -5142,23 +5142,23 @@ public class CountryPersistenceImpl
 		ServiceContext serviceContext =
 			ServiceContextThreadLocal.getServiceContext();
 
-		Date now = new Date();
+		Date date = new Date();
 
 		if (isNew && (country.getCreateDate() == null)) {
 			if (serviceContext == null) {
-				country.setCreateDate(now);
+				country.setCreateDate(date);
 			}
 			else {
-				country.setCreateDate(serviceContext.getCreateDate(now));
+				country.setCreateDate(serviceContext.getCreateDate(date));
 			}
 		}
 
 		if (!countryModelImpl.hasSetModifiedDate()) {
 			if (serviceContext == null) {
-				country.setModifiedDate(now);
+				country.setModifiedDate(date);
 			}
 			else {
-				country.setModifiedDate(serviceContext.getModifiedDate(now));
+				country.setModifiedDate(serviceContext.getModifiedDate(date));
 			}
 		}
 
@@ -5730,6 +5730,13 @@ public class CountryPersistenceImpl
 						countryModelImpl.getColumnBitmask(columnName);
 				}
 
+				if (finderPath.isBaseModelResult() &&
+					(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION ==
+						finderPath.getCacheName())) {
+
+					finderPathColumnBitmask |= _ORDER_BY_COLUMNS_BITMASK;
+				}
+
 				_finderPathColumnBitmasksCache.put(
 					finderPath, finderPathColumnBitmask);
 			}
@@ -5751,7 +5758,7 @@ public class CountryPersistenceImpl
 			return CountryTable.INSTANCE.getTableName();
 		}
 
-		private Object[] _getValue(
+		private static Object[] _getValue(
 			CountryModelImpl countryModelImpl, String[] columnNames,
 			boolean original) {
 
@@ -5772,8 +5779,18 @@ public class CountryPersistenceImpl
 			return arguments;
 		}
 
-		private static Map<FinderPath, Long> _finderPathColumnBitmasksCache =
-			new ConcurrentHashMap<>();
+		private static final Map<FinderPath, Long>
+			_finderPathColumnBitmasksCache = new ConcurrentHashMap<>();
+
+		private static final long _ORDER_BY_COLUMNS_BITMASK;
+
+		static {
+			long orderByColumnsBitmask = 0;
+
+			orderByColumnsBitmask |= CountryModelImpl.getColumnBitmask("name");
+
+			_ORDER_BY_COLUMNS_BITMASK = orderByColumnsBitmask;
+		}
 
 	}
 

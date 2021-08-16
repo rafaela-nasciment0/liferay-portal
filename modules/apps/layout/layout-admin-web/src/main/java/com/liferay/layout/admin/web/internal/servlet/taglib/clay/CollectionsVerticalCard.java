@@ -78,20 +78,20 @@ public class CollectionsVerticalCard extends BaseVerticalCard {
 					"/select_layout_master_layout.jsp"
 				).setRedirect(
 					ParamUtil.getString(_httpServletRequest, "redirect")
-				).setParameter(
-					"backURL", themeDisplay.getURLCurrent()
-				).setParameter(
-					"groupId", _groupId
-				).setParameter(
-					"selPlid", ParamUtil.getLong(_httpServletRequest, "selPlid")
-				).setParameter(
-					"privateLayout",
-					ParamUtil.getBoolean(_httpServletRequest, "privateLayout")
+				).setBackURL(
+					themeDisplay.getURLCurrent()
 				).setParameter(
 					"collectionPK", _assetListEntry.getAssetListEntryId()
 				).setParameter(
 					"collectionType",
 					InfoListItemSelectorReturnType.class.getName()
+				).setParameter(
+					"groupId", _groupId
+				).setParameter(
+					"privateLayout",
+					ParamUtil.getBoolean(_httpServletRequest, "privateLayout")
+				).setParameter(
+					"selPlid", ParamUtil.getLong(_httpServletRequest, "selPlid")
 				).buildString());
 		}
 		catch (Exception exception) {

@@ -51,21 +51,21 @@ PortletURL renderURL = PortletURLBuilder.createRenderURL(
 	liferayPortletResponse
 ).setMVCRenderCommandName(
 	mvcRenderCommandName
-).setParameter(
-	"tabs1", "processes"
-).setParameter(
-	"localPublishing", String.valueOf(localPublishing)
+).setNavigation(
+	navigation
+).setTabs1(
+	"processes"
 ).setParameter(
 	"displayStyle", displayStyle
 ).setParameter(
-	"navigation", navigation
+	"localPublishing", localPublishing
 ).setParameter(
 	"orderByCol", orderByCol
 ).setParameter(
 	"orderByType", orderByType
 ).setParameter(
 	"searchContainerId", searchContainerId
-).build();
+).buildPortletURL();
 
 String taskExecutorClassName = localPublishing ? localTaskExecutorClassName : remoteTaskExecutorClassName;
 %>

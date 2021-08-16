@@ -3,7 +3,7 @@ definition {
 
 	property portal.release = "true";
 	property portal.upstream = "true";
-	property testray.main.component.name = "Documents Management";
+	property testray.main.component.name = "Document Management";
 
 	setUp {
 		TestCase.setUpPortalInstance();
@@ -24,17 +24,12 @@ definition {
 
 		Staging.activateStagingCP(siteName = "Site Name");
 
-		Navigator.gotoStagedSitePage(
-			pageName = "Staging DM Page",
-			siteName = "Site Name");
-
-		ProductMenu.gotoPortlet(
-			category = "Content &amp; Data",
-			portlet = "Documents and Media");
+		DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "site-name-staging");
 	}
 
 	@description = "This test covers LPS-126751. It ensures that a user cannot create empty document types or metadata sets."
 	@priority = "4"
+	@refactorneeded
 	test AddCustomTypeWithoutFields {
 		Navigator.gotoStagedSitePage(
 			pageName = "Staging DM Page",
@@ -77,6 +72,7 @@ definition {
 
 	@description = "This is a use case for LPS-74621."
 	@priority = "3"
+	@refactorneeded
 	test CommentDMDocumentOnLiveSite {
 		Navigator.gotoStagedSitePage(
 			pageName = "Staging DM Page",
@@ -174,6 +170,7 @@ definition {
 
 	@description = "This ensures that the document using custom document type can be deleted and republished."
 	@priority = "5"
+	@refactorneeded
 	test DeleteDocumentWithCustomType {
 		DMNavigator.gotoDocumentType();
 
@@ -199,9 +196,10 @@ definition {
 
 		Staging.publishToLive();
 
-		DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "site-name");
-
-		DMNavigator.gotoDocumentCP(dmDocumentTitle = "DM Document Title");
+		DMNavigator.openToEntryInAdmin(
+			dmDocumentTitle = "DM Document Title",
+			groupName = "Site Name",
+			siteURLKey = "site-name");
 
 		DMDocument.viewCP(dmDocumentTitle = "DM Document Title");
 
@@ -219,11 +217,12 @@ definition {
 
 		DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "site-name");
 
-		DMDocument.viewDefaultCP();
+		DMDocument.viewDefault();
 	}
 
 	@description = "This ensures that the document using custom document type can be edited and republished."
 	@priority = "5"
+	@refactorneeded
 	test EditDocumentWithCustomType {
 		DMNavigator.gotoDocumentType();
 
@@ -249,9 +248,10 @@ definition {
 
 		Staging.publishToLive();
 
-		DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "site-name");
-
-		DMNavigator.gotoDocumentCP(dmDocumentTitle = "DM Document Title");
+		DMNavigator.openToEntryInAdmin(
+			dmDocumentTitle = "DM Document Title",
+			groupName = "Site Name",
+			siteURLKey = "site-name");
 
 		DMDocument.viewCP(
 			dmDocumentDescription = "DM Document Description",
@@ -276,9 +276,10 @@ definition {
 
 		Staging.publishToLive();
 
-		DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "site-name");
-
-		DMNavigator.gotoDocumentCP(dmDocumentTitle = "DM Document Title Edit");
+		DMNavigator.openToEntryInAdmin(
+			dmDocumentTitle = "DM Document Title Edit",
+			groupName = "Site Name",
+			siteURLKey = "site-name");
 
 		DMDocument.viewCP(
 			dmDocumentDescription = "DM Document Description Edit",
@@ -289,6 +290,7 @@ definition {
 
 	@description = "This is a use case for LPS-79925."
 	@priority = "5"
+	@refactorneeded
 	test PublishDocumentFromRestrictedFolder {
 		DMNavigator.gotoDocumentType();
 
@@ -297,15 +299,14 @@ definition {
 			dmDocumentTypeFieldNames = "Text",
 			dmDocumentTypeName = "DM Document Type Name");
 
+		JSONDocument.addFolder(
+			dmFolderDescription = "DM Folder Description",
+			dmFolderName = "DM Folder Name",
+			groupName = "Site Name-staging");
+
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
 			portlet = "Documents and Media");
-
-		Refresh();
-
-		DMFolder.addCP(
-			dmFolderDescription = "DM Folder Description",
-			dmFolderName = "DM Folder Name");
 
 		DMFolder.configureWorkflowCP(
 			dmDocumentTypeName = "DM Document Type Name",
@@ -349,6 +350,7 @@ definition {
 
 	@description = "This test covers LPS-119234. It ensures that a document type can be published to live via SAP."
 	@priority = "4"
+	@refactorneeded
 	test PublishDocumentTypeViaSAP {
 		DMNavigator.gotoDocumentType();
 
@@ -380,6 +382,7 @@ definition {
 
 	@description = "This ensures that the custom document type being used by document can be edited and republished."
 	@priority = "5"
+	@refactorneeded
 	test PublishEditsToDocumentType {
 		DMNavigator.gotoDocumentType();
 
@@ -407,9 +410,10 @@ definition {
 
 		Staging.publishToLive();
 
-		DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "site-name");
-
-		DMNavigator.gotoDocumentCP(dmDocumentTitle = "DM Document Title");
+		DMNavigator.openToEntryInAdmin(
+			dmDocumentTitle = "DM Document Title",
+			groupName = "Site Name",
+			siteURLKey = "site-name");
 
 		DMDocument.viewCP(
 			dmDocumentTitle = "DM Document Title",
@@ -445,9 +449,10 @@ definition {
 
 		Staging.publishToLive();
 
-		DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "site-name");
-
-		DMNavigator.gotoDocumentCP(dmDocumentTitle = "DM Document Title");
+		DMNavigator.openToEntryInAdmin(
+			dmDocumentTitle = "DM Document Title",
+			groupName = "Site Name",
+			siteURLKey = "site-name");
 
 		DMDocument.viewCP(
 			dmDocumentTitle = "DM Document Title",
@@ -461,6 +466,7 @@ definition {
 
 	@description = "This ensures that the document using custom document type and custom metadataset can be edited and republished."
 	@priority = "5"
+	@refactorneeded
 	test PublishEditsToDocumentUsingCustomTypeAndSet {
 		DMNavigator.gotoMetadataSets();
 
@@ -505,9 +511,10 @@ definition {
 
 		Staging.publishToLive();
 
-		DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "site-name");
-
-		DMNavigator.gotoDocumentCP(dmDocumentTitle = "DM Document Title");
+		DMNavigator.openToEntryInAdmin(
+			dmDocumentTitle = "DM Document Title",
+			groupName = "Site Name",
+			siteURLKey = "site-name");
 
 		DMDocument.viewCP(
 			dmDocumentDescription = "DM Document Description",
@@ -538,9 +545,10 @@ definition {
 
 		Staging.publishToLive();
 
-		DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "site-name");
-
-		DMNavigator.gotoDocumentCP(dmDocumentTitle = "DM Document Title Edit");
+		DMNavigator.openToEntryInAdmin(
+			dmDocumentTitle = "DM Document Title Edit",
+			groupName = "Site Name",
+			siteURLKey = "site-name");
 
 		DMDocument.viewCP(
 			dmDocumentDescription = "DM Document Description Edit",
@@ -551,6 +559,7 @@ definition {
 
 	@description = "This ensures that the custom metadataset used in custom document type can be edited and republished."
 	@priority = "5"
+	@refactorneeded
 	test PublishEditsToMetadataSet {
 		DMNavigator.gotoMetadataSets();
 
@@ -651,6 +660,7 @@ definition {
 
 	@description = "This test covers LPS-82539."
 	@priority = "5"
+	@refactorneeded
 	test PublishFolderWithWorkflow {
 		DMFolder.addCP(
 			dmFolderDescription = "DM Folder Description",
@@ -703,29 +713,34 @@ definition {
 
 	@description = "This test covers LPS-82532. It ensures documents inside the subfolder that's being published to live are also published."
 	@priority = "5"
+	@refactorneeded
 	test PublishSubfolderWithDocumentsViaSAP {
 		property test.name.skip.portal.instance = "StagingDM#PublishSubfolderWithDocumentsViaSAP";
 
-		DMFolder.addCP(
+		JSONDocument.addFolder(
 			dmFolderDescription = "DM Folder Description",
-			dmFolderName = "DM Folder 1");
+			dmFolderName = "DM Folder 1",
+			groupName = "Site Name-staging");
 
-		DMFolder.viewCP(dmFolderName = "DM Folder 1");
+		JSONDocument.addFileWithUploadedFile(
+			dmDocumentDescription = "DM Document Description",
+			dmDocumentTitle = "DM Document in Folder 1",
+			folderName = "DM Folder 1",
+			groupName = "Site Name-staging",
+			mimeType = "text/plain",
+			sourceFileName = "Document_1.txt");
 
-		DMDocument.addCP(
-			dmDocumentDescription = "DM Document in Folder 1",
-			dmDocumentFile = "Document_1.txt",
-			dmDocumentTitle = "DM Document in Folder 1");
+		JSONDocument.addFolder(
+			dmFolderDescription = "DM Folder Description",
+			dmFolderName = "DM Folder 2",
+			groupName = "Site Name-staging",
+			parentFolderName = "DM Folder 1");
 
-		ProductMenu.gotoPortlet(
-			category = "Content &amp; Data",
-			portlet = "Documents and Media");
+		DMDocument.openDocumentsAndMediaAdmin(siteURLKey = "site-name-staging");
 
 		DMFolder.viewCP(
 			dmFolderName = "DM Folder 1",
 			specificNameFolder = "true");
-
-		DMFolder.addCP(dmFolderName = "DM Folder 2");
 
 		DMFolder.viewCP(
 			dmFolderName = "DM Folder 2",
@@ -736,9 +751,7 @@ definition {
 			dmDocumentFile = "Document_2.txt",
 			dmDocumentTitle = "DM Document in Folder 2");
 
-		ProductMenu.gotoPortlet(
-			category = "Content &amp; Data",
-			portlet = "Documents and Media");
+		DMDocument.openDocumentsAndMediaAdmin(siteURLKey = "site-name-staging");
 
 		DMFolder.viewCP(dmFolderName = "DM Folder 1");
 
@@ -757,9 +770,7 @@ definition {
 			dmDocumentFile = "Document_3.txt",
 			dmDocumentTitle = "DM Document in Folder 3");
 
-		ProductMenu.gotoPortlet(
-			category = "Content &amp; Data",
-			portlet = "Documents and Media");
+		DMDocument.openDocumentsAndMediaAdmin(siteURLKey = "site-name-staging");
 
 		Staging.publishViaSAP(
 			confirmMessage = "Are you sure you want to publish the selected folder?",
@@ -784,6 +795,7 @@ definition {
 
 	@description = "This test covers LPS-99265. It ensures that a staged document file cannot be shared unless it is first published to Live."
 	@priority = "4"
+	@refactorneeded
 	test ShareDMDocumentOnLiveSite {
 		property custom.properties = "jsonws.web.service.paths.excludes=";
 
@@ -865,6 +877,7 @@ definition {
 
 	@description = "This ensures that the document info is displayed correctly after publishing and republishing."
 	@priority = "5"
+	@refactorneeded
 	test ViewRepublishedDocumentInfo {
 		ProductMenu.gotoPortlet(
 			category = "Categorization",
@@ -985,11 +998,14 @@ definition {
 
 	@description = "This ensures that the image can be deleted and republished in web content."
 	@priority = "4"
+	@refactorneeded
 	test ViewWebContentWithDeletedImage {
 		DMDocument.addCP(
 			dmDocumentDescription = "DM Document Description",
 			dmDocumentFile = "Document_2.jpg",
 			dmDocumentTitle = "Document_2.jpg");
+
+		DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "site-name-staging");
 
 		Staging.publishViaSAP(
 			confirmMessage = "Are you sure you want to publish the selected document?",
@@ -1073,11 +1089,14 @@ definition {
 
 	@description = "This ensures that the image can be edited and republished in web content."
 	@priority = "4"
+	@refactorneeded
 	test ViewWebContentWithRepublishedImage {
 		DMDocument.addCP(
 			dmDocumentDescription = "DM Document Description",
 			dmDocumentFile = "Document_2.jpg",
 			dmDocumentTitle = "Document_2.jpg");
+
+		DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "site-name-staging");
 
 		Staging.publishViaSAP(
 			confirmMessage = "Are you sure you want to publish the selected document?",

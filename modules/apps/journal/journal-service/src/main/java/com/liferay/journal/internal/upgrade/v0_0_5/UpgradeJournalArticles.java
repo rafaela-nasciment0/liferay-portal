@@ -31,7 +31,7 @@ import com.liferay.portal.kernel.service.GroupLocalService;
 import com.liferay.portal.kernel.service.LayoutLocalService;
 import com.liferay.portal.kernel.service.PortletPreferenceValueLocalService;
 import com.liferay.portal.kernel.service.PortletPreferencesLocalService;
-import com.liferay.portal.kernel.upgrade.BaseUpgradePortletId;
+import com.liferay.portal.kernel.upgrade.BasePortletIdUpgradeProcess;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.StringUtil;
@@ -47,7 +47,7 @@ import javax.portlet.PortletPreferences;
 /**
  * @author Eudaldo Alonso
  */
-public class UpgradeJournalArticles extends BaseUpgradePortletId {
+public class UpgradeJournalArticles extends BasePortletIdUpgradeProcess {
 
 	public UpgradeJournalArticles(
 		AssetCategoryLocalService assetCategoryLocalService,
@@ -226,11 +226,13 @@ public class UpgradeJournalArticles extends BaseUpgradePortletId {
 		sb.append(oldRootPortletId);
 		sb.append("_USER_%_INSTANCE_%'");
 
-		try (PreparedStatement ps = connection.prepareStatement(sb.toString());
-			ResultSet rs = ps.executeQuery()) {
+		try (PreparedStatement preparedStatement = connection.prepareStatement(
+				sb.toString());
+			ResultSet resultSet = preparedStatement.executeQuery()) {
 
-			while (rs.next()) {
-				long portletPreferencesId = rs.getLong("portletPreferencesId");
+			while (resultSet.next()) {
+				long portletPreferencesId = resultSet.getLong(
+					"portletPreferencesId");
 
 				com.liferay.portal.kernel.model.PortletPreferences
 					portletPreferences =

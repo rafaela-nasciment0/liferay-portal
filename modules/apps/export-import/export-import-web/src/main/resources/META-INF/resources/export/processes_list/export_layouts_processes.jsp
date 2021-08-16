@@ -29,21 +29,21 @@ PortletURL portletURL = PortletURLBuilder.createRenderURL(
 	liferayPortletResponse
 ).setMVCRenderCommandName(
 	"/export_import/view_export_layouts"
-).setParameter(
-	"groupId", String.valueOf(groupId)
-).setParameter(
-	"privateLayout", String.valueOf(privateLayout)
+).setNavigation(
+	navigation
 ).setParameter(
 	"displayStyle", displayStyle
 ).setParameter(
-	"navigation", navigation
+	"groupId", groupId
 ).setParameter(
 	"orderByCol", orderByCol
 ).setParameter(
 	"orderByType", orderByType
 ).setParameter(
+	"privateLayout", privateLayout
+).setParameter(
 	"searchContainerId", searchContainerId
-).build();
+).buildPortletURL();
 %>
 
 <portlet:actionURL name="/export_import/delete_layout_export_background_tasks" var="deleteBackgroundTasksURL">
@@ -139,9 +139,7 @@ PortletURL portletURL = PortletURLBuilder.createRenderURL(
 							</span>
 
 							<%
-							List<FileEntry> attachmentsFileEntries = backgroundTask.getAttachmentsFileEntries();
-
-							for (FileEntry fileEntry : attachmentsFileEntries) {
+							for (FileEntry fileEntry : backgroundTask.getAttachmentsFileEntries()) {
 							%>
 
 								<liferay-ui:icon
@@ -277,19 +275,14 @@ PortletURL portletURL = PortletURLBuilder.createRenderURL(
 					>
 
 						<%
-						List<FileEntry> attachmentsFileEntries = backgroundTask.getAttachmentsFileEntries();
-
-						for (FileEntry fileEntry : attachmentsFileEntries) {
-						%>
-
-							<%
+						for (FileEntry fileEntry : backgroundTask.getAttachmentsFileEntries()) {
 							StringBundler sb = new StringBundler(4);
 
 							sb.append(fileEntry.getTitle());
 							sb.append(StringPool.OPEN_PARENTHESIS);
 							sb.append(LanguageUtil.formatStorageSize(fileEntry.getSize(), locale));
 							sb.append(StringPool.CLOSE_PARENTHESIS);
-							%>
+						%>
 
 							<liferay-ui:icon
 								icon="download"

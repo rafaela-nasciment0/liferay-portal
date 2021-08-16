@@ -1,4 +1,4 @@
-# Checks for .action, .function, .jrxml, .macro, .pom, .testcase, .toggle, .tpl, .wsdl, .xml or .xsd
+# Checks for .action, .function, .jrxml, .macro, .pom, .project, .properties, .testcase, .toggle, .tpl, .wsdl, .xml or .xsd
 
 Check | Category | Description
 ----- | -------- | -----------
@@ -13,6 +13,7 @@ XMLEmptyLinesCheck | [Styling](styling_checks.markdown#styling-checks) | Finds m
 XMLFSBExcludeFileCheck | [Styling](styling_checks.markdown#styling-checks) | Checks the order of attributes in `fsb-exclude.xml` file. |
 XMLFriendlyURLRoutesFileCheck | [Styling](styling_checks.markdown#styling-checks) | Performs several checks on `*-routes.xml` file. |
 XMLHBMFileCheck | [Styling](styling_checks.markdown#styling-checks) | Checks the order of imports in `*-hbm.xml` file. |
+XMLImportsCheck | [Styling](styling_checks.markdown#styling-checks) | Sorts and groups imports in `.xml` files. |
 XMLIndentationCheck | [Styling](styling_checks.markdown#styling-checks) | Finds incorrect indentation in `.xml` files. |
 XMLIvyFileCheck | [Styling](styling_checks.markdown#styling-checks) | Checks the order of dependcies in `ivy.xml` file. |
 XMLLog4jFileCheck | [Styling](styling_checks.markdown#styling-checks) | Checks the order of categories in `*-log4j.xml` file. |
@@ -27,6 +28,7 @@ XMLProjectElementCheck | [Bug Prevention](bug_prevention_checks.markdown#bug-pre
 XMLResourceActionsFileCheck | [Styling](styling_checks.markdown#styling-checks) | Checks the order of elements in files in directory `resource-actions`. |
 [XMLServiceEntityNameCheck](checks/xml_service_entity_name_check.markdown#xmlserviceentitynamecheck) | [Bug Prevention](bug_prevention_checks.markdown#bug-prevention-checks) | Checks that the `entity name` in `service.xml` does not equal the `package name`. |
 XMLServiceFileCheck | [Bug Prevention](bug_prevention_checks.markdown#bug-prevention-checks) | Performs several checks on `service.xml` file. |
+[XMLServiceFinderNameCheck](checks/xml_service_finder_name_check.markdown#xmlservicefindernamecheck) | [Bug Prevention](bug_prevention_checks.markdown#bug-prevention-checks) | Checks that the `finder name` in `service.xml`. |
 XMLServiceReferenceCheck | [Bug Prevention](bug_prevention_checks.markdown#bug-prevention-checks) | Checks for unused references in `service.xml` file. |
 XMLSourcechecksFileCheck | [Bug Prevention](bug_prevention_checks.markdown#bug-prevention-checks) | Performs several checks on `sourcechecks.xml` file. |
 XMLSpringFileCheck | [Styling](styling_checks.markdown#styling-checks) | Checks the order of elements in `*-spring.xml` file. |
@@ -39,3 +41,4 @@ XMLTilesDefsFileCheck | [Styling](styling_checks.markdown#styling-checks) | Chec
 XMLToggleFileCheck | [Styling](styling_checks.markdown#styling-checks) | Checks the order of elements in `.toggle` file. |
 XMLWebFileCheck | [Bug Prevention](bug_prevention_checks.markdown#bug-prevention-checks) | Performs several checks on `web.xml` file. |
 XMLWhitespaceCheck | [Styling](styling_checks.markdown#styling-checks) | Finds missing and unnecessary whitespace in `.xml` files. |
+XMLWorkflowDefinitionFileNameCheck | [Styling](styling_checks.markdown#styling-checks) | Checks the file name of workflow definition files. |

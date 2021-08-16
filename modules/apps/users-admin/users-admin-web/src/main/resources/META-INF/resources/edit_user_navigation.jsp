@@ -34,9 +34,7 @@ long selUserId = (selUser != null) ? selUser.getUserId() : 0;
 
 String screenNavigationCategoryKey = ParamUtil.getString(request, "screenNavigationCategoryKey", UserScreenNavigationEntryConstants.CATEGORY_KEY_GENERAL);
 String screenNavigationEntryKey = ParamUtil.getString(request, "screenNavigationEntryKey");
-%>
 
-<%
 PortletURL viewURL = renderResponse.createRenderURL();
 
 String backURL = ParamUtil.getString(request, "backURL", viewURL.toString());
@@ -51,17 +49,15 @@ if (!portletName.equals(UsersAdminPortletKeys.MY_ACCOUNT)) {
 String redirect = ParamUtil.getString(request, "redirect");
 
 if (Validator.isNull(redirect)) {
-	PortletURL redirectURL = PortletURLBuilder.createRenderURL(
+	redirect = PortletURLBuilder.createRenderURL(
 		renderResponse
 	).setMVCRenderCommandName(
 		"/users_admin/edit_user"
+	).setBackURL(
+		backURL
 	).setParameter(
-		"p_u_i_d", String.valueOf(selUserId)
-	).setParameter(
-		"backURL", backURL
-	).build();
-
-	redirect = redirectURL.toString();
+		"p_u_i_d", selUserId
+	).buildString();
 }
 
 redirect = HttpUtil.addParameter(redirect, liferayPortletResponse.getNamespace() + "screenNavigationCategoryKey", screenNavigationCategoryKey);

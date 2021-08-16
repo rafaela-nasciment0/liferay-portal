@@ -102,7 +102,7 @@ public abstract class BaseMessageBoardAttachmentResourceImpl
 	public void deleteMessageBoardAttachment(
 			@NotNull @Parameter(hidden = true)
 			@PathParam("messageBoardAttachmentId")
-				Long messageBoardAttachmentId)
+			Long messageBoardAttachmentId)
 		throws Exception {
 	}
 
@@ -121,8 +121,8 @@ public abstract class BaseMessageBoardAttachmentResourceImpl
 	@Produces("application/json")
 	@Tags(value = {@Tag(name = "MessageBoardAttachment")})
 	public Response deleteMessageBoardAttachmentBatch(
-			@Parameter(hidden = true) @QueryParam("callbackURL")
-				String callbackURL,
+			@Parameter(hidden = true) @QueryParam("callbackURL") String
+				callbackURL,
 			Object object)
 		throws Exception {
 
@@ -161,7 +161,7 @@ public abstract class BaseMessageBoardAttachmentResourceImpl
 	public MessageBoardAttachment getMessageBoardAttachment(
 			@NotNull @Parameter(hidden = true)
 			@PathParam("messageBoardAttachmentId")
-				Long messageBoardAttachmentId)
+			Long messageBoardAttachmentId)
 		throws Exception {
 
 		return new MessageBoardAttachment();
@@ -191,7 +191,7 @@ public abstract class BaseMessageBoardAttachmentResourceImpl
 			getMessageBoardMessageMessageBoardAttachmentsPage(
 				@NotNull @Parameter(hidden = true)
 				@PathParam("messageBoardMessageId")
-					Long messageBoardMessageId)
+				Long messageBoardMessageId)
 		throws Exception {
 
 		return Page.of(Collections.emptyList());
@@ -221,7 +221,7 @@ public abstract class BaseMessageBoardAttachmentResourceImpl
 	public MessageBoardAttachment postMessageBoardMessageMessageBoardAttachment(
 			@NotNull @Parameter(hidden = true)
 			@PathParam("messageBoardMessageId")
-				Long messageBoardMessageId,
+			Long messageBoardMessageId,
 			MultipartBody multipartBody)
 		throws Exception {
 
@@ -250,10 +250,10 @@ public abstract class BaseMessageBoardAttachmentResourceImpl
 	public Response postMessageBoardMessageMessageBoardAttachmentBatch(
 			@NotNull @Parameter(hidden = true)
 			@PathParam("messageBoardMessageId")
-				Long messageBoardMessageId,
+			Long messageBoardMessageId,
 			MultipartBody multipartBody,
-			@Parameter(hidden = true) @QueryParam("callbackURL")
-				String callbackURL,
+			@Parameter(hidden = true) @QueryParam("callbackURL") String
+				callbackURL,
 			Object object)
 		throws Exception {
 
@@ -298,7 +298,7 @@ public abstract class BaseMessageBoardAttachmentResourceImpl
 			getMessageBoardThreadMessageBoardAttachmentsPage(
 				@NotNull @Parameter(hidden = true)
 				@PathParam("messageBoardThreadId")
-					Long messageBoardThreadId)
+				Long messageBoardThreadId)
 		throws Exception {
 
 		return Page.of(Collections.emptyList());
@@ -328,7 +328,7 @@ public abstract class BaseMessageBoardAttachmentResourceImpl
 	public MessageBoardAttachment postMessageBoardThreadMessageBoardAttachment(
 			@NotNull @Parameter(hidden = true)
 			@PathParam("messageBoardThreadId")
-				Long messageBoardThreadId,
+			Long messageBoardThreadId,
 			MultipartBody multipartBody)
 		throws Exception {
 
@@ -357,10 +357,10 @@ public abstract class BaseMessageBoardAttachmentResourceImpl
 	public Response postMessageBoardThreadMessageBoardAttachmentBatch(
 			@NotNull @Parameter(hidden = true)
 			@PathParam("messageBoardThreadId")
-				Long messageBoardThreadId,
+			Long messageBoardThreadId,
 			MultipartBody multipartBody,
-			@Parameter(hidden = true) @QueryParam("callbackURL")
-				String callbackURL,
+			@Parameter(hidden = true) @QueryParam("callbackURL") String
+				callbackURL,
 			Object object)
 		throws Exception {
 
@@ -393,7 +393,7 @@ public abstract class BaseMessageBoardAttachmentResourceImpl
 				messageBoardAttachments) {
 
 			postMessageBoardMessageMessageBoardAttachment(
-				Long.valueOf((String)parameters.get("messageBoardMessageId")),
+				Long.parseLong((String)parameters.get("messageBoardMessageId")),
 				null);
 		}
 	}
@@ -434,7 +434,7 @@ public abstract class BaseMessageBoardAttachmentResourceImpl
 		throws Exception {
 
 		return getMessageBoardMessageMessageBoardAttachmentsPage(
-			(Long)parameters.get("messageBoardMessageId"));
+			Long.parseLong((String)parameters.get("messageBoardMessageId")));
 	}
 
 	@Override

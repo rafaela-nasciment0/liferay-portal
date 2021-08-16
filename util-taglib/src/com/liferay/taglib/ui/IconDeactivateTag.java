@@ -16,9 +16,9 @@ package com.liferay.taglib.ui;
 
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.language.UnicodeLanguageUtil;
+import com.liferay.portal.kernel.servlet.FileAvailabilityUtil;
 import com.liferay.portal.kernel.util.HtmlUtil;
 import com.liferay.portal.kernel.util.Http;
-import com.liferay.taglib.FileAvailabilityUtil;
 import com.liferay.taglib.util.TagResourceBundleUtil;
 
 /**
@@ -59,10 +59,8 @@ public class IconDeactivateTag extends IconTag {
 		sb.append(url);
 		sb.append(" } else { self.focus(); }");
 
-		url = sb.toString();
-
 		setMessage("deactivate");
-		setUrl(url);
+		setUrl(sb.toString());
 
 		return super.getPage();
 	}

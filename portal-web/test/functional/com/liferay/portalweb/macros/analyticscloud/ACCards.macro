@@ -1,0 +1,19 @@
+definition {
+
+	macro viewCards {
+		var key_cardTitle = "${cardTitle}";
+
+		AssertTextEquals(
+			locator1 = "ACCards#CARD_TITLE",
+			value1 = "${cardTitle}");
+	}
+
+	macro viewMetricValue {
+		AssertTextEquals(
+			key_cardTitle = "${cardTitle}",
+			key_metricName = "${metricName}",
+			locator1 = "ACCards#METRIC_VALUE",
+			value1 = "${metricValue}");
+	}
+
+}

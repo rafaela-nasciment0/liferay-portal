@@ -17,14 +17,12 @@ package com.liferay.frontend.taglib.servlet.taglib;
 import com.liferay.frontend.js.loader.modules.extender.npm.NPMResolvedPackageNameUtil;
 import com.liferay.frontend.js.module.launcher.JSModuleLauncher;
 import com.liferay.frontend.taglib.internal.util.ServicesProvider;
-import com.liferay.portal.json.JSONFactoryImpl;
-import com.liferay.portal.kernel.json.JSONFactoryUtil;
+import com.liferay.petra.lang.ClassLoaderPool;
 import com.liferay.portal.kernel.portlet.LiferayPortletConfig;
 import com.liferay.portal.kernel.servlet.taglib.aui.ScriptData;
 import com.liferay.portal.kernel.theme.PortletDisplay;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.JavaConstants;
-import com.liferay.portal.kernel.util.PortalClassLoaderUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.test.rule.LiferayUnitTestRule;
@@ -63,11 +61,8 @@ public class ComponentTagTest {
 
 	@BeforeClass
 	public static void setUpClass() {
-		JSONFactoryUtil jsonFactoryUtil = new JSONFactoryUtil();
-
-		jsonFactoryUtil.setJSONFactory(new JSONFactoryImpl());
-
-		PortalClassLoaderUtil.setClassLoader(PortalImpl.class.getClassLoader());
+		ClassLoaderPool.register(
+			"ShieldedContainerClassLoader", PortalImpl.class.getClassLoader());
 
 		PortalUtil portalUtil = new PortalUtil();
 

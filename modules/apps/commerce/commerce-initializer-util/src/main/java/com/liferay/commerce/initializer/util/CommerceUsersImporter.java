@@ -80,8 +80,6 @@ public class CommerceUsersImporter {
 			String imageDependenciesPath, long scopeGroupId, long userId)
 		throws Exception {
 
-		ServiceContext serviceContext = getServiceContext(scopeGroupId, userId);
-
 		MappingJsonFactory mappingJsonFactory = new MappingJsonFactory();
 
 		JsonParser jsonFactoryParser = mappingJsonFactory.createParser(
@@ -92,6 +90,8 @@ public class CommerceUsersImporter {
 		if (jsonToken != JsonToken.START_ARRAY) {
 			throw new Exception("JSON Array Expected");
 		}
+
+		ServiceContext serviceContext = getServiceContext(scopeGroupId, userId);
 
 		int importCount = 0;
 
@@ -127,9 +127,9 @@ public class CommerceUsersImporter {
 
 		ServiceContext serviceContext = new ServiceContext();
 
+		serviceContext.setCompanyId(user.getCompanyId());
 		serviceContext.setScopeGroupId(scopeGroupId);
 		serviceContext.setUserId(userId);
-		serviceContext.setCompanyId(user.getCompanyId());
 
 		for (int i = 0; i < jsonArray.length(); i++) {
 			_importCommerceUser(
@@ -138,21 +138,7 @@ public class CommerceUsersImporter {
 		}
 	}
 
-	protected ServiceContext getServiceContext(long scopeGroupId, long userId)
-		throws PortalException {
-
-		User user = _userLocalService.getUser(userId);
-
-		ServiceContext serviceContext = new ServiceContext();
-
-		serviceContext.setScopeGroupId(scopeGroupId);
-		serviceContext.setUserId(userId);
-		serviceContext.setCompanyId(user.getCompanyId());
-
-		return serviceContext;
-	}
-
-	protected User upsertUser(
+	protected User addOrUpdateUser(
 			String password, String userReminderQueryQuestion,
 			String userReminderQueryAnswer, String screenName,
 			String emailAddress, long facebookId, String openId,
@@ -214,6 +200,20 @@ public class CommerceUsersImporter {
 		}
 
 		return user;
+	}
+
+	protected ServiceContext getServiceContext(long scopeGroupId, long userId)
+		throws PortalException {
+
+		User user = _userLocalService.getUser(userId);
+
+		ServiceContext serviceContext = new ServiceContext();
+
+		serviceContext.setCompanyId(user.getCompanyId());
+		serviceContext.setScopeGroupId(scopeGroupId);
+		serviceContext.setUserId(userId);
+
+		return serviceContext;
 	}
 
 	@SuppressFBWarnings("PATH_TRAVERSAL_IN")
@@ -367,7 +367,7 @@ public class CommerceUsersImporter {
 
 		long[] userGroupIds = null;
 
-		user = upsertUser(
+		user = addOrUpdateUser(
 			password, userReminderQueryQuestion, userReminderQueryAnswer,
 			screenName, emailAddress, facebookId, openId, hasPortrait,
 			portraitBytes, locale, timeZoneId, greeting, comments, firstName,

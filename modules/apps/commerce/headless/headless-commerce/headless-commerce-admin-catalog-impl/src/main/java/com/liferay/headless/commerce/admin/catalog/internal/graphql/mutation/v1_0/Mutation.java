@@ -41,6 +41,7 @@ import com.liferay.headless.commerce.admin.catalog.resource.v1_0.CategoryResourc
 import com.liferay.headless.commerce.admin.catalog.resource.v1_0.OptionCategoryResource;
 import com.liferay.headless.commerce.admin.catalog.resource.v1_0.OptionResource;
 import com.liferay.headless.commerce.admin.catalog.resource.v1_0.OptionValueResource;
+import com.liferay.headless.commerce.admin.catalog.resource.v1_0.ProductAccountGroupResource;
 import com.liferay.headless.commerce.admin.catalog.resource.v1_0.ProductChannelResource;
 import com.liferay.headless.commerce.admin.catalog.resource.v1_0.ProductConfigurationResource;
 import com.liferay.headless.commerce.admin.catalog.resource.v1_0.ProductGroupProductResource;
@@ -138,6 +139,14 @@ public class Mutation {
 
 		_productResourceComponentServiceObjects =
 			productResourceComponentServiceObjects;
+	}
+
+	public static void setProductAccountGroupResourceComponentServiceObjects(
+		ComponentServiceObjects<ProductAccountGroupResource>
+			productAccountGroupResourceComponentServiceObjects) {
+
+		_productAccountGroupResourceComponentServiceObjects =
+			productAccountGroupResourceComponentServiceObjects;
 	}
 
 	public static void setProductChannelResourceComponentServiceObjects(
@@ -846,8 +855,8 @@ public class Mutation {
 	@GraphQLField
 	public Product createProductByExternalReferenceCodeClone(
 			@GraphQLName("externalReferenceCode") String externalReferenceCode,
-			@GraphQLName("catalogExternalReferenceCode")
-				String catalogExternalReferenceCode)
+			@GraphQLName("catalogExternalReferenceCode") String
+				catalogExternalReferenceCode)
 		throws Exception {
 
 		return _applyComponentServiceObjects(
@@ -904,6 +913,34 @@ public class Mutation {
 	}
 
 	@GraphQLField
+	public boolean deleteProductAccountGroup(@GraphQLName("id") Long id)
+		throws Exception {
+
+		_applyVoidComponentServiceObjects(
+			_productAccountGroupResourceComponentServiceObjects,
+			this::_populateResourceContext,
+			productAccountGroupResource ->
+				productAccountGroupResource.deleteProductAccountGroup(id));
+
+		return true;
+	}
+
+	@GraphQLField
+	public Response deleteProductAccountGroupBatch(
+			@GraphQLName("id") Long id,
+			@GraphQLName("callbackURL") String callbackURL,
+			@GraphQLName("object") Object object)
+		throws Exception {
+
+		return _applyComponentServiceObjects(
+			_productAccountGroupResourceComponentServiceObjects,
+			this::_populateResourceContext,
+			productAccountGroupResource ->
+				productAccountGroupResource.deleteProductAccountGroupBatch(
+					id, callbackURL, object));
+	}
+
+	@GraphQLField
 	public boolean deleteProductChannel(@GraphQLName("id") Long id)
 		throws Exception {
 
@@ -934,8 +971,8 @@ public class Mutation {
 	@GraphQLField
 	public Response patchProductByExternalReferenceCodeConfiguration(
 			@GraphQLName("externalReferenceCode") String externalReferenceCode,
-			@GraphQLName("productConfiguration")
-				ProductConfiguration productConfiguration)
+			@GraphQLName("productConfiguration") ProductConfiguration
+				productConfiguration)
 		throws Exception {
 
 		return _applyComponentServiceObjects(
@@ -950,8 +987,8 @@ public class Mutation {
 	@GraphQLField
 	public Response patchProductIdConfiguration(
 			@GraphQLName("id") Long id,
-			@GraphQLName("productConfiguration")
-				ProductConfiguration productConfiguration)
+			@GraphQLName("productConfiguration") ProductConfiguration
+				productConfiguration)
 		throws Exception {
 
 		return _applyComponentServiceObjects(
@@ -1088,10 +1125,10 @@ public class Mutation {
 	@GraphQLField
 	public ProductGroupProduct
 			createProductGroupByExternalReferenceCodeProductGroupProduct(
-				@GraphQLName("externalReferenceCode")
-					String externalReferenceCode,
-				@GraphQLName("productGroupProduct")
-					ProductGroupProduct productGroupProduct)
+				@GraphQLName("externalReferenceCode") String
+					externalReferenceCode,
+				@GraphQLName("productGroupProduct") ProductGroupProduct
+					productGroupProduct)
 		throws Exception {
 
 		return _applyComponentServiceObjects(
@@ -1106,8 +1143,8 @@ public class Mutation {
 	@GraphQLField
 	public ProductGroupProduct createProductGroupIdProductGroupProduct(
 			@GraphQLName("id") Long id,
-			@GraphQLName("productGroupProduct")
-				ProductGroupProduct productGroupProduct)
+			@GraphQLName("productGroupProduct") ProductGroupProduct
+				productGroupProduct)
 		throws Exception {
 
 		return _applyComponentServiceObjects(
@@ -1177,8 +1214,8 @@ public class Mutation {
 	@GraphQLField
 	public java.util.Collection<ProductOption>
 			createProductByExternalReferenceCodeProductOptionsPage(
-				@GraphQLName("externalReferenceCode")
-					String externalReferenceCode,
+				@GraphQLName("externalReferenceCode") String
+					externalReferenceCode,
 				@GraphQLName("productOptions") ProductOption[] productOptions)
 		throws Exception {
 
@@ -1217,8 +1254,8 @@ public class Mutation {
 	@GraphQLField
 	public ProductOptionValue createProductOptionIdProductOptionValue(
 			@GraphQLName("id") Long id,
-			@GraphQLName("productOptionValue")
-				ProductOptionValue productOptionValue)
+			@GraphQLName("productOptionValue") ProductOptionValue
+				productOptionValue)
 		throws Exception {
 
 		return _applyComponentServiceObjects(
@@ -1281,8 +1318,8 @@ public class Mutation {
 	@GraphQLField
 	public ProductSpecification createProductIdProductSpecification(
 			@GraphQLName("id") Long id,
-			@GraphQLName("productSpecification")
-				ProductSpecification productSpecification)
+			@GraphQLName("productSpecification") ProductSpecification
+				productSpecification)
 		throws Exception {
 
 		return _applyComponentServiceObjects(
@@ -1312,11 +1349,11 @@ public class Mutation {
 	@GraphQLField
 	public Response
 			patchProductByExternalReferenceCodeSubscriptionConfiguration(
-				@GraphQLName("externalReferenceCode")
-					String externalReferenceCode,
+				@GraphQLName("externalReferenceCode") String
+					externalReferenceCode,
 				@GraphQLName("productSubscriptionConfiguration")
 					ProductSubscriptionConfiguration
-					productSubscriptionConfiguration)
+						productSubscriptionConfiguration)
 		throws Exception {
 
 		return _applyComponentServiceObjects(
@@ -1334,7 +1371,7 @@ public class Mutation {
 			@GraphQLName("id") Long id,
 			@GraphQLName("productSubscriptionConfiguration")
 				ProductSubscriptionConfiguration
-				productSubscriptionConfiguration)
+					productSubscriptionConfiguration)
 		throws Exception {
 
 		return _applyComponentServiceObjects(
@@ -1349,8 +1386,8 @@ public class Mutation {
 	@GraphQLField
 	public Response patchProductByExternalReferenceCodeTaxConfiguration(
 			@GraphQLName("externalReferenceCode") String externalReferenceCode,
-			@GraphQLName("productTaxConfiguration")
-				ProductTaxConfiguration productTaxConfiguration)
+			@GraphQLName("productTaxConfiguration") ProductTaxConfiguration
+				productTaxConfiguration)
 		throws Exception {
 
 		return _applyComponentServiceObjects(
@@ -1365,8 +1402,8 @@ public class Mutation {
 	@GraphQLField
 	public Response patchProductIdTaxConfiguration(
 			@GraphQLName("id") Long id,
-			@GraphQLName("productTaxConfiguration")
-				ProductTaxConfiguration productTaxConfiguration)
+			@GraphQLName("productTaxConfiguration") ProductTaxConfiguration
+				productTaxConfiguration)
 		throws Exception {
 
 		return _applyComponentServiceObjects(
@@ -1733,6 +1770,22 @@ public class Mutation {
 	}
 
 	private void _populateResourceContext(
+			ProductAccountGroupResource productAccountGroupResource)
+		throws Exception {
+
+		productAccountGroupResource.setContextAcceptLanguage(_acceptLanguage);
+		productAccountGroupResource.setContextCompany(_company);
+		productAccountGroupResource.setContextHttpServletRequest(
+			_httpServletRequest);
+		productAccountGroupResource.setContextHttpServletResponse(
+			_httpServletResponse);
+		productAccountGroupResource.setContextUriInfo(_uriInfo);
+		productAccountGroupResource.setContextUser(_user);
+		productAccountGroupResource.setGroupLocalService(_groupLocalService);
+		productAccountGroupResource.setRoleLocalService(_roleLocalService);
+	}
+
+	private void _populateResourceContext(
 			ProductChannelResource productChannelResource)
 		throws Exception {
 
@@ -1958,6 +2011,8 @@ public class Mutation {
 		_optionValueResourceComponentServiceObjects;
 	private static ComponentServiceObjects<ProductResource>
 		_productResourceComponentServiceObjects;
+	private static ComponentServiceObjects<ProductAccountGroupResource>
+		_productAccountGroupResourceComponentServiceObjects;
 	private static ComponentServiceObjects<ProductChannelResource>
 		_productChannelResourceComponentServiceObjects;
 	private static ComponentServiceObjects<ProductConfigurationResource>

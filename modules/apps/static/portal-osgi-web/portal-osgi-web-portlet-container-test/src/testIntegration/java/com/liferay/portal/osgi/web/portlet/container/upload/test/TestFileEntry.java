@@ -52,8 +52,6 @@ public class TestFileEntry implements FileEntry {
 		_folderId = folderId;
 		_groupId = groupId;
 		_inputStream = inputStream;
-
-		_date = new Date();
 	}
 
 	@Override
@@ -104,6 +102,11 @@ public class TestFileEntry implements FileEntry {
 
 	@Override
 	public ExpandoBridge getExpandoBridge() {
+		return null;
+	}
+
+	@Override
+	public Date getExpirationDate() {
 		return null;
 	}
 
@@ -260,6 +263,11 @@ public class TestFileEntry implements FileEntry {
 	@Override
 	public long getRepositoryId() {
 		return DLFolderConstants.DEFAULT_PARENT_FOLDER_ID;
+	}
+
+	@Override
+	public Date getReviewDate() {
+		return null;
 	}
 
 	@Override
@@ -425,7 +433,7 @@ public class TestFileEntry implements FileEntry {
 
 	private static final Log _log = LogFactoryUtil.getLog(TestFileEntry.class);
 
-	private final Date _date;
+	private final Date _date = new Date();
 	private final String _fileName;
 	private final long _folderId;
 	private long _groupId;

@@ -1869,9 +1869,9 @@ public class PortletDataContextImpl implements PortletDataContext {
 		if (classedModel instanceof AuditedModel) {
 			AuditedModel auditedModel = (AuditedModel)classedModel;
 
-			serviceContext.setUserId(getUserId(auditedModel));
 			serviceContext.setCreateDate(auditedModel.getCreateDate());
 			serviceContext.setModifiedDate(auditedModel.getModifiedDate());
+			serviceContext.setUserId(getUserId(auditedModel));
 		}
 
 		// Permissions
@@ -2268,15 +2268,11 @@ public class PortletDataContextImpl implements PortletDataContext {
 				referencesElement.elements("reference")) {
 
 			if (!Objects.equals(
-					referenceElement.attributeValue("class-name"), className)) {
-
-				continue;
-			}
-
-			if ((groupId > 0) &&
-				!Objects.equals(
-					referenceElement.attributeValue("group-id"),
-					String.valueOf(groupId))) {
+					referenceElement.attributeValue("class-name"), className) ||
+				((groupId > 0) &&
+				 !Objects.equals(
+					 referenceElement.attributeValue("group-id"),
+					 String.valueOf(groupId)))) {
 
 				continue;
 			}

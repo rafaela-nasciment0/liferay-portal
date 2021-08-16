@@ -17,15 +17,15 @@ import {useProcessTitle} from '../../shared/hooks/useProcessTitle.es';
 import {processStatusConstants} from '../filter/ProcessStatusFilter.es';
 import {useTimeRangeFetch} from '../filter/hooks/useTimeRangeFetch.es';
 import {getTimeRangeParams} from '../filter/util/timeRangeUtil.es';
-import {Body} from './InstanceListPageBody.es';
-import {Header} from './InstanceListPageHeader.es';
+import Body from './InstanceListPageBody.es';
+import Header from './InstanceListPageHeader.es';
 import InstanceListPageProvider from './InstanceListPageProvider.es';
 import ModalProvider from './modal/ModalProvider.es';
 
-const InstanceListPage = ({routeParams}) => {
+function InstanceListPage({routeParams}) {
 	useTimeRangeFetch();
 
-	const {page, pageSize, processId} = routeParams;
+	const {page, pageSize, processId, sort} = routeParams;
 
 	useProcessTitle(processId, Liferay.Language.get('all-items'));
 
@@ -59,10 +59,11 @@ const InstanceListPage = ({routeParams}) => {
 	const {data, fetchData} = useFetch({
 		params: {
 			assigneeIds,
-			completed,
 			page,
 			pageSize,
 			slaStatuses,
+			sort,
+			statuses,
 			taskNames,
 			...timeRange,
 		},
@@ -90,7 +91,7 @@ const InstanceListPage = ({routeParams}) => {
 			</InstanceListPageProvider>
 		</ModalProvider>
 	);
-};
+}
 
 InstanceListPage.Body = Body;
 InstanceListPage.Header = Header;

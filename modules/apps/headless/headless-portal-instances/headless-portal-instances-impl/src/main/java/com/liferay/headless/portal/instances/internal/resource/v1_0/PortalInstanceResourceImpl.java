@@ -67,20 +67,19 @@ public class PortalInstanceResourceImpl extends BasePortalInstanceResourceImpl {
 	public Page<PortalInstance> getPortalInstancesPage(Boolean skipDefault)
 		throws Exception {
 
-		skipDefault = GetterUtil.getBoolean(skipDefault);
+		final boolean finalSkipDefault = GetterUtil.getBoolean(skipDefault);
 
 		List<PortalInstance> portalInstances = new ArrayList<>();
 
-		for (Company company : _companyLocalService.getCompanies(false)) {
-			if (skipDefault &&
-				(_portalInstancesLocalService.getDefaultCompanyId() ==
-					company.getCompanyId())) {
+		_companyLocalService.forEachCompany(
+			company -> {
+				if (!finalSkipDefault ||
+					(_portalInstancesLocalService.getDefaultCompanyId() !=
+						company.getCompanyId())) {
 
-				continue;
-			}
-
-			portalInstances.add(_toPortalInstance(company));
-		}
+					portalInstances.add(_toPortalInstance(company));
+				}
+			});
 
 		return Page.of(portalInstances);
 	}
@@ -105,16 +104,17 @@ public class PortalInstanceResourceImpl extends BasePortalInstanceResourceImpl {
 	}
 
 	@Override
-	public PortalInstance postPortalInstance(
-			String initializerKey, PortalInstance portalInstance)
+	public PortalInstance postPortalInstance(PortalInstance portalInstance)
 		throws Exception {
 
 		PortalInstanceInitializer portalInstanceInitializer = null;
 
-		if (Validator.isNotNull(initializerKey)) {
+		if (Validator.isNotNull(
+				portalInstance.getPortalInstanceInitializerKey())) {
+
 			portalInstanceInitializer =
 				_portalInstanceInitializerRegistry.getPortalInstanceInitializer(
-					initializerKey);
+					portalInstance.getPortalInstanceInitializerKey());
 
 			if (portalInstanceInitializer == null) {
 				throw new ValidationException("Invalid initializer key");
@@ -132,7 +132,9 @@ public class PortalInstanceResourceImpl extends BasePortalInstanceResourceImpl {
 		_portalInstancesLocalService.synchronizePortalInstances();
 
 		if (portalInstanceInitializer != null) {
-			portalInstanceInitializer.initialize(company.getCompanyId());
+			portalInstanceInitializer.initialize(
+				company.getCompanyId(), contextHttpServletRequest,
+				portalInstance.getPortalInstanceInitializerPayload());
 		}
 
 		return _toPortalInstance(company);

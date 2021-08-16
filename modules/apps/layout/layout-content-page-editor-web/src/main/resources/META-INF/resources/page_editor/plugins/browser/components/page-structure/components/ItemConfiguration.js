@@ -17,13 +17,20 @@ import ClayTabs from '@clayui/tabs';
 import PropTypes from 'prop-types';
 import React, {useEffect, useMemo, useState} from 'react';
 
-import {useCollectionActiveItemContext} from '../../../../../app/components/CollectionActiveItemContext';
-import {CollectionItemContext} from '../../../../../app/components/CollectionItemContext';
+import {useCollectionActiveItemContext} from '../../../../../app/contexts/CollectionActiveItemContext';
+import {
+	CollectionItemContext,
+	useToControlsId,
+} from '../../../../../app/contexts/CollectionItemContext';
 import {
 	useActiveItemId,
 	useActiveItemType,
-} from '../../../../../app/components/Controls';
-import {useSelectorCallback} from '../../../../../app/store/index';
+} from '../../../../../app/contexts/ControlsContext';
+import {
+	useSelector,
+	useSelectorCallback,
+} from '../../../../../app/contexts/StoreContext';
+import selectCanViewItemConfiguration from '../../../../../app/selectors/selectCanViewItemConfiguration';
 import {deepEqual} from '../../../../../app/utils/checkDeepEqual';
 import {useId} from '../../../../../app/utils/useId';
 import {PANELS, selectPanels} from '../selectors/selectPanels';
@@ -32,23 +39,29 @@ import PageStructureSidebarSection from './PageStructureSidebarSection';
 export default function ItemConfiguration() {
 	const collectionContext = useCollectionActiveItemContext();
 
-	return (
+	const canViewItemConfiguration = useSelector(
+		selectCanViewItemConfiguration
+	);
+
+	return canViewItemConfiguration ? (
 		<CollectionItemContext.Provider value={collectionContext}>
 			<ItemConfigurationContent />
 		</CollectionItemContext.Provider>
-	);
+	) : null;
 }
 
 function ItemConfigurationContent() {
 	const activeItemId = useActiveItemId();
 	const activeItemType = useActiveItemType();
 	const [activePanelId, setActivePanelId] = useState(null);
+	const toControlsIds = useToControlsId();
 	const tabIdPrefix = useId();
 	const panelIdPrefix = useId();
 
 	const {activeItem, panelsIds} = useSelectorCallback(
-		(state) => selectPanels(activeItemId, activeItemType, state),
-		[activeItemId, activeItemType],
+		(state) =>
+			selectPanels(activeItemId, activeItemType, state, toControlsIds),
+		[activeItemId, activeItemType, toControlsIds],
 		deepEqual
 	);
 

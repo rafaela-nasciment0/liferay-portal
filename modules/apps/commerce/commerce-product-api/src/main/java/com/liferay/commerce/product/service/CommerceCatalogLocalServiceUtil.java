@@ -167,6 +167,10 @@ public class CommerceCatalogLocalServiceUtil {
 		return getService().dslQuery(dslQuery);
 	}
 
+	public static int dslQueryCount(DSLQuery dslQuery) {
+		return getService().dslQueryCount(dslQuery);
+	}
+
 	public static DynamicQuery dynamicQuery() {
 		return getService().dynamicQuery();
 	}
@@ -282,6 +286,13 @@ public class CommerceCatalogLocalServiceUtil {
 
 		return getService().fetchCommerceCatalogByReferenceCode(
 			companyId, externalReferenceCode);
+	}
+
+	public static CommerceCatalog forceDeleteCommerceCatalog(
+			CommerceCatalog commerceCatalog)
+		throws PortalException {
+
+		return getService().forceDeleteCommerceCatalog(commerceCatalog);
 	}
 
 	public static com.liferay.portal.kernel.dao.orm.ActionableDynamicQuery

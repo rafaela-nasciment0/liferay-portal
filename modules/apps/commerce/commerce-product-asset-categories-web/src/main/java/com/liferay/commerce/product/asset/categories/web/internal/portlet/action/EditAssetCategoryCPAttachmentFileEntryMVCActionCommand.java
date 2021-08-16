@@ -103,9 +103,10 @@ public class EditAssetCategoryCPAttachmentFileEntryMVCActionCommand
 		long cpAttachmentFileEntryId = ParamUtil.getLong(
 			actionRequest, "cpAttachmentFileEntryId");
 
-		long categoryId = ParamUtil.getLong(actionRequest, "categoryId");
 		long fileEntryId = ParamUtil.getLong(actionRequest, "fileEntryId");
 
+		boolean cdnEnabled = ParamUtil.getBoolean(actionRequest, "cdnEnabled");
+		String cdnURL = ParamUtil.getString(actionRequest, "cdnURL");
 		int displayDateMonth = ParamUtil.getInteger(
 			actionRequest, "displayDateMonth");
 		int displayDateDay = ParamUtil.getInteger(
@@ -152,21 +153,24 @@ public class EditAssetCategoryCPAttachmentFileEntryMVCActionCommand
 
 		if (cpAttachmentFileEntryId > 0) {
 			_cpAttachmentFileEntryService.updateCPAttachmentFileEntry(
-				cpAttachmentFileEntryId, fileEntryId, displayDateMonth,
-				displayDateDay, displayDateYear, displayDateHour,
-				displayDateMinute, expirationDateMonth, expirationDateDay,
-				expirationDateYear, expirationDateHour, expirationDateMinute,
-				neverExpire, titleMap, null, priority, type, serviceContext);
+				cpAttachmentFileEntryId, fileEntryId, cdnEnabled, cdnURL,
+				displayDateMonth, displayDateDay, displayDateYear,
+				displayDateHour, displayDateMinute, expirationDateMonth,
+				expirationDateDay, expirationDateYear, expirationDateHour,
+				expirationDateMinute, neverExpire, titleMap, null, priority,
+				type, serviceContext);
 		}
 		else {
 			long classNameId = _portal.getClassNameId(AssetCategory.class);
+
+			long categoryId = ParamUtil.getLong(actionRequest, "categoryId");
 
 			AssetCategory assetCategory =
 				_assetCategoryLocalService.getAssetCategory(categoryId);
 
 			_cpAttachmentFileEntryService.addCPAttachmentFileEntry(
-				serviceContext.getUserId(), assetCategory.getGroupId(),
-				classNameId, categoryId, fileEntryId, displayDateMonth,
+				assetCategory.getGroupId(), classNameId, categoryId,
+				fileEntryId, cdnEnabled, cdnURL, displayDateMonth,
 				displayDateDay, displayDateYear, displayDateHour,
 				displayDateMinute, expirationDateMonth, expirationDateDay,
 				expirationDateYear, expirationDateHour, expirationDateMinute,

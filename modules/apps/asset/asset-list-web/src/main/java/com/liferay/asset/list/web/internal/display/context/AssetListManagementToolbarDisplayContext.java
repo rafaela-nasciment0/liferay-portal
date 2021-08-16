@@ -105,8 +105,8 @@ public class AssetListManagementToolbarDisplayContext
 	public String getClearResultsURL() {
 		return PortletURLBuilder.create(
 			getPortletURL()
-		).setParameter(
-			"keywords", StringPool.BLANK
+		).setKeywords(
+			StringPool.BLANK
 		).buildString();
 	}
 
@@ -160,11 +160,6 @@ public class AssetListManagementToolbarDisplayContext
 					LanguageUtil.get(httpServletRequest, "dynamic-collection"));
 			}
 		).build();
-	}
-
-	@Override
-	public String getDefaultEventHandler() {
-		return "assetListEntriesManagementToolbarDefaultEventHandler";
 	}
 
 	@Override

@@ -28,12 +28,12 @@ PortletURL portletURL = PortletURLBuilder.createRenderURL(
 ).setRedirect(
 	currentURL
 ).setParameter(
-	"nodeId", String.valueOf(wikiPage.getNodeId())
+	"nodeId", wikiPage.getNodeId()
+).setParameter(
+	"sourceVersion", sourceVersion
 ).setParameter(
 	"title", HtmlUtil.unescape(wikiPage.getTitle())
-).setParameter(
-	"sourceVersion", String.valueOf(sourceVersion)
-).build();
+).buildPortletURL();
 %>
 
 <clay:container-fluid>

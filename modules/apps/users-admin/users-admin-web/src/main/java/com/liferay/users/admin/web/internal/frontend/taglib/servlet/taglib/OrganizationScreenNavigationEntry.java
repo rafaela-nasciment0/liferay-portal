@@ -121,11 +121,20 @@ public class OrganizationScreenNavigationEntry
 					PortletRequest.RENDER_PHASE)
 			).setMVCRenderCommandName(
 				"/users_admin/edit_organization"
-			).setParameter(
-				"backURL", backURL
+			).setBackURL(
+				backURL
 			).setParameter(
 				"organizationId",
 				ParamUtil.getString(httpServletRequest, "organizationId")
+			).setParameter(
+				"screenNavigationCategoryKey",
+				ParamUtil.getString(
+					httpServletRequest, "screenNavigationCategoryKey",
+					UserScreenNavigationEntryConstants.CATEGORY_KEY_GENERAL)
+			).setParameter(
+				"screenNavigationEntryKey",
+				ParamUtil.getString(
+					httpServletRequest, "screenNavigationEntryKey")
 			).buildString();
 		}
 

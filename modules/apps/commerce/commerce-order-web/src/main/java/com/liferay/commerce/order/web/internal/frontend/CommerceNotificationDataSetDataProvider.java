@@ -110,8 +110,7 @@ public class CommerceNotificationDataSetDataProvider
 						"success",
 						getCommerceNotificationTemplateType(
 							commerceNotificationQueueEntry)),
-					HtmlUtil.escape(
-						commerceNotificationQueueEntry.getSubject()),
+					commerceNotificationQueueEntry.getSubject(),
 					HtmlUtil.extractText(
 						commerceNotificationQueueEntry.getBody()),
 					getNotificationPanelURL(
@@ -166,7 +165,7 @@ public class CommerceNotificationDataSetDataProvider
 			"/commerce_order/view_commerce_notification_queue_entry"
 		).setRedirect(
 			_portal.getCurrentURL(httpServletRequest)
-		).build();
+		).buildPortletURL();
 
 		long commerceOrderId = ParamUtil.getLong(
 			httpServletRequest, "commerceOrderId");

@@ -40,9 +40,11 @@ import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Company;
 import com.liferay.portal.kernel.model.Group;
+import com.liferay.portal.kernel.model.role.RoleConstants;
 import com.liferay.portal.kernel.service.CompanyLocalServiceUtil;
 import com.liferay.portal.kernel.test.util.GroupTestUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
+import com.liferay.portal.kernel.test.util.RoleTestUtil;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.DateFormatFactoryUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
@@ -693,7 +695,22 @@ public abstract class BaseDataDefinitionResourceTestCase {
 
 	@Test
 	public void testGetDataDefinitionPermissionsPage() throws Exception {
-		Assert.assertTrue(false);
+		DataDefinition postDataDefinition =
+			testGetDataDefinitionPermissionsPage_addDataDefinition();
+
+		Page<Permission> page =
+			dataDefinitionResource.getDataDefinitionPermissionsPage(
+				postDataDefinition.getId(), RoleConstants.GUEST);
+
+		Assert.assertNotNull(page);
+	}
+
+	protected DataDefinition
+			testGetDataDefinitionPermissionsPage_addDataDefinition()
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
 	}
 
 	@Test
@@ -702,15 +719,18 @@ public abstract class BaseDataDefinitionResourceTestCase {
 		DataDefinition dataDefinition =
 			testPutDataDefinitionPermission_addDataDefinition();
 
+		com.liferay.portal.kernel.model.Role role = RoleTestUtil.addRole(
+			RoleConstants.TYPE_REGULAR);
+
 		assertHttpResponseStatusCode(
-			204,
+			200,
 			dataDefinitionResource.putDataDefinitionPermissionHttpResponse(
 				dataDefinition.getId(),
 				new Permission[] {
 					new Permission() {
 						{
 							setActionIds(new String[] {"VIEW"});
-							setRoleName("Guest");
+							setRoleName(role.getName());
 						}
 					}
 				}));
@@ -1368,7 +1388,7 @@ public abstract class BaseDataDefinitionResourceTestCase {
 		graphQLFields.add(new GraphQLField("siteId"));
 
 		for (Field field :
-				ReflectionUtil.getDeclaredFields(
+				getDeclaredFields(
 					com.liferay.data.engine.rest.dto.v2_0.DataDefinition.
 						class)) {
 
@@ -1403,7 +1423,7 @@ public abstract class BaseDataDefinitionResourceTestCase {
 				}
 
 				List<GraphQLField> childrenGraphQLFields = getGraphQLFields(
-					ReflectionUtil.getDeclaredFields(clazz));
+					getDeclaredFields(clazz));
 
 				graphQLFields.add(
 					new GraphQLField(field.getName(), childrenGraphQLFields));
@@ -1628,6 +1648,17 @@ public abstract class BaseDataDefinitionResourceTestCase {
 		}
 
 		return false;
+	}
+
+	protected Field[] getDeclaredFields(Class clazz) throws Exception {
+		Stream<Field> stream = Stream.of(
+			ReflectionUtil.getDeclaredFields(clazz));
+
+		return stream.filter(
+			field -> !field.isSynthetic()
+		).toArray(
+			Field[]::new
+		);
 	}
 
 	protected java.util.Collection<EntityField> getEntityFields()

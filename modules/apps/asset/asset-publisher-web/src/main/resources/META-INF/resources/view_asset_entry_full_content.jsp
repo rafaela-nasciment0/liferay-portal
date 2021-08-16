@@ -28,13 +28,11 @@ redirect = PortalUtil.escapeRedirect(redirect);
 boolean showBackURL = GetterUtil.getBoolean(request.getAttribute("view.jsp-showBackURL"));
 
 if (Validator.isNull(redirect)) {
-	PortletURL portletURL = PortletURLBuilder.createRenderURL(
+	redirect = PortletURLBuilder.createRenderURL(
 		renderResponse
 	).setMVCPath(
 		"/view.jsp"
-	).build();
-
-	redirect = portletURL.toString();
+	).buildString();
 }
 
 AssetEntry assetEntry = (AssetEntry)request.getAttribute("view.jsp-assetEntry");
@@ -232,7 +230,7 @@ Map<String, Object> fragmentsEditorData = HashMapBuilder.<String, Object>put(
 			renderResponse
 		).setMVCPath(
 			"/view_content.jsp"
-		).build();
+		).buildPortletURL();
 
 		if (print) {
 			assetLingsURL.setParameter("viewMode", Constants.PRINT);
@@ -249,7 +247,7 @@ Map<String, Object> fragmentsEditorData = HashMapBuilder.<String, Object>put(
 	</c:if>
 
 	<%
-	boolean showContextLink = assetPublisherDisplayContext.isShowContextLink(assetRenderer.getGroupId(), assetRendererFactory.getPortletId()) && !print && assetEntry.isVisible();
+	boolean showContextLink = assetPublisherDisplayContext.isShowContextLink() && !print && assetEntry.isVisible();
 	boolean showRatings = assetPublisherDisplayContext.isEnableRatings() && assetRenderer.isRatable();
 	%>
 
@@ -335,28 +333,26 @@ Map<String, Object> fragmentsEditorData = HashMapBuilder.<String, Object>put(
 								url='<%= "javascript:" + liferayPortletResponse.getNamespace() + "printPage_" + id + "();" %>'
 							/>
 
-							<%
-							PortletURL printAssetURL = PortletURLBuilder.createRenderURL(
-								renderResponse
-							).setMVCPath(
-								"/view_content.jsp"
-							).setParameter(
-								"assetEntryId", String.valueOf(assetEntry.getEntryId())
-							).setParameter(
-								"viewMode", Constants.PRINT
-							).setParameter(
-								"type", assetRendererFactory.getType()
-							).setParameter(
-								"languageId", LanguageUtil.getLanguageId(request)
-							).setWindowState(
-								LiferayWindowState.POP_UP
-							).build();
-							%>
-
 							<aui:script>
 								function <portlet:namespace />printPage_<%= id %>() {
 									window.open(
-										'<%= printAssetURL %>',
+										'<%=
+											PortletURLBuilder.createRenderURL(
+												renderResponse
+											).setMVCPath(
+												"/view_content.jsp"
+											).setParameter(
+												"assetEntryId", assetEntry.getEntryId()
+											).setParameter(
+												"languageId", LanguageUtil.getLanguageId(request)
+											).setParameter(
+												"type", assetRendererFactory.getType()
+											).setParameter(
+												"viewMode", Constants.PRINT
+											).setWindowState(
+												LiferayWindowState.POP_UP
+											).buildPortletURL()
+										%>',
 										'',
 										'directories=0,height=480,left=80,location=1,menubar=1,resizable=1,scrollbars=yes,status=0,toolbar=0,top=180,width=640'
 									);
@@ -424,13 +420,13 @@ Map<String, Object> fragmentsEditorData = HashMapBuilder.<String, Object>put(
 				<%
 				PortletURL exportAssetURL = PortletURLBuilder.create(
 					assetRenderer.getURLExport(liferayPortletRequest, liferayPortletResponse)
+				).setPortletResource(
+					portletDisplay.getId()
 				).setParameter(
-					"plid", String.valueOf(themeDisplay.getPlid())
-				).setParameter(
-					"portletResource", portletDisplay.getId()
+					"plid", themeDisplay.getPlid()
 				).setWindowState(
 					LiferayWindowState.EXCLUSIVE
-				).build();
+				).buildPortletURL();
 
 				for (String extension : assetPublisherDisplayContext.getExtensions(assetRenderer)) {
 					exportAssetURL.setParameter("targetExtension", extension);

@@ -9,7 +9,7 @@
  * distribution rights of the Software.
  */
 
-import {cleanup, render} from '@testing-library/react';
+import {act, cleanup, fireEvent, render} from '@testing-library/react';
 import React, {useState} from 'react';
 
 import '@testing-library/jest-dom/extend-expect';
@@ -58,7 +58,7 @@ const data = {
 			name: 'Review',
 			onTime: true,
 			remainingTime: 13427723,
-			status: 'Stopped',
+			status: 'STOPPED',
 		},
 		{
 			dateOverdue: '2020-01-24T10:08:30Z',
@@ -66,7 +66,7 @@ const data = {
 			name: 'Update',
 			onTime: false,
 			remainingTime: -13427723,
-			status: 'Running',
+			status: 'RUNNING',
 		},
 	],
 	slaStatus: 'Overdue',
@@ -85,18 +85,20 @@ describe('The InstanceDetailsModal component should', () => {
 		);
 
 		getByText = renderResult.getByText;
-
-		jest.runAllTimers();
 	};
 
 	describe('render with a completed Instance', () => {
-		beforeAll(() => {
+		beforeAll(async () => {
 			renderComponent({
 				get: jest.fn().mockResolvedValue({data}),
 			});
+
+			await act(async () => {
+				jest.runAllTimers();
+			});
 		});
 
-		test('Render Modal title with correct item id and status icon', () => {
+		it('Render Modal title with correct item id and status icon', () => {
 			const instanceDetailsTitle = getByText('item #37634');
 			const instanceIconTitle = document.querySelector(
 				'.lexicon-icon-check-circle'
@@ -106,7 +108,7 @@ describe('The InstanceDetailsModal component should', () => {
 			expect(instanceIconTitle).toBeTruthy();
 		});
 
-		test('Render SLA details with correct status', () => {
+		it('Render SLA details with correct status', () => {
 			const resultIcons = document.querySelectorAll('.sticker');
 			const resultStatus = document.querySelectorAll('.sla-result');
 
@@ -114,17 +116,17 @@ describe('The InstanceDetailsModal component should', () => {
 			expect(resultStatus[0]).toHaveTextContent(
 				'Jan 24, 2020, 10:08 AM (0d 03h 43min overdue)'
 			);
-			expect(resultIcons[0].children[0].classList).toContain(
+			expect(resultIcons[1].children[0].classList).toContain(
 				'lexicon-icon-exclamation-circle'
 			);
 			expect(getByText('RESOLVED (1)')).toBeTruthy();
 			expect(resultStatus[1]).toHaveTextContent('(resolved-on-time)');
-			expect(resultIcons[1].children[0].classList).toContain(
+			expect(resultIcons[2].children[0].classList).toContain(
 				'lexicon-icon-check-circle'
 			);
 		});
 
-		test('Render Process details with correct infos', () => {
+		it('Render Process details with correct infos', () => {
 			const instanceDetailsRows = document.querySelectorAll('p.row');
 
 			expect(instanceDetailsRows.length).toBe(6);
@@ -140,29 +142,60 @@ describe('The InstanceDetailsModal component should', () => {
 			);
 		});
 
-		test('Render Go to Submission Page button with correct link', () => {
+		it('Render Go to Submission Page button with correct link', () => {
+			window.open = jest.fn();
 			const submissionPageButton = getByText('go-to-submission-page');
 
-			expect(submissionPageButton.getAttribute('href')).toContain(
-				'37634'
+			fireEvent.click(submissionPageButton);
+
+			expect(window.open).toHaveBeenCalledWith(
+				'/group/control_panel/manage/-/workflow_instance/view/37634',
+				'_blank'
 			);
 		});
 	});
 
 	describe('render with a pending Instance', () => {
-		beforeAll(() => {
+		beforeAll(async () => {
 			renderComponent({
 				get: jest.fn().mockResolvedValue({
 					data: {
 						...data,
 						completed: false,
+						slaResults: [
+							{...data.slaResults[0]},
+							{
+								...data.slaResults[1],
+								onTime: true,
+								status: 'NEW',
+							},
+						],
+						slaStatus: 'Untracked',
 						taskNames: ['Review'],
 					},
 				}),
 			});
+
+			await act(async () => {
+				jest.runAllTimers();
+			});
 		});
 
-		test('Render Process details with correct infos', () => {
+		it('Render details with slaStatus Untracked', () => {
+			const untrackedIcons = document.querySelectorAll(
+				'.lexicon-icon-hr'
+			);
+			const slaNotStartedElement = renderResult.getByText(
+				'NOT-STARTED (1)'
+			);
+			const slaResultLabelElement = renderResult.getByText('(untracked)');
+
+			expect(untrackedIcons.length).toBe(2);
+			expect(slaNotStartedElement).toBeTruthy();
+			expect(slaResultLabelElement).toBeTruthy();
+		});
+
+		it('Render Process details with correct infos', () => {
 			const instanceDetailsRows = document.querySelectorAll('p.row');
 
 			expect(instanceDetailsRows.length).toBe(7);

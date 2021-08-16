@@ -103,7 +103,7 @@ public abstract class BaseAttachmentResourceImpl
 	public Page<Attachment> getProductByExternalReferenceCodeAttachmentsPage(
 			@NotNull @Parameter(hidden = true)
 			@PathParam("externalReferenceCode")
-				String externalReferenceCode,
+			String externalReferenceCode,
 			@Context Pagination pagination)
 		throws Exception {
 
@@ -113,7 +113,7 @@ public abstract class BaseAttachmentResourceImpl
 	/**
 	 * Invoke this method with the command line:
 	 *
-	 * curl -X 'POST' 'http://localhost:8080/o/headless-commerce-admin-catalog/v1.0/products/by-externalReferenceCode/{externalReferenceCode}/attachments' -d $'{"attachment": ___, "displayDate": ___, "expirationDate": ___, "externalReferenceCode": ___, "neverExpire": ___, "options": ___, "priority": ___, "src": ___, "title": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
+	 * curl -X 'POST' 'http://localhost:8080/o/headless-commerce-admin-catalog/v1.0/products/by-externalReferenceCode/{externalReferenceCode}/attachments' -d $'{"attachment": ___, "cdnEnabled": ___, "cdnURL": ___, "customFields": ___, "displayDate": ___, "expirationDate": ___, "externalReferenceCode": ___, "id": ___, "neverExpire": ___, "options": ___, "priority": ___, "src": ___, "title": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
 	 */
 	@Consumes({"application/json", "application/xml"})
 	@Override
@@ -131,7 +131,7 @@ public abstract class BaseAttachmentResourceImpl
 	public Attachment postProductByExternalReferenceCodeAttachment(
 			@NotNull @Parameter(hidden = true)
 			@PathParam("externalReferenceCode")
-				String externalReferenceCode,
+			String externalReferenceCode,
 			Attachment attachment)
 		throws Exception {
 
@@ -141,7 +141,7 @@ public abstract class BaseAttachmentResourceImpl
 	/**
 	 * Invoke this method with the command line:
 	 *
-	 * curl -X 'POST' 'http://localhost:8080/o/headless-commerce-admin-catalog/v1.0/products/by-externalReferenceCode/{externalReferenceCode}/attachments/by-base64' -d $'{"attachment": ___, "displayDate": ___, "expirationDate": ___, "externalReferenceCode": ___, "neverExpire": ___, "options": ___, "priority": ___, "src": ___, "title": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
+	 * curl -X 'POST' 'http://localhost:8080/o/headless-commerce-admin-catalog/v1.0/products/by-externalReferenceCode/{externalReferenceCode}/attachments/by-base64' -d $'{"attachment": ___, "customFields": ___, "displayDate": ___, "expirationDate": ___, "externalReferenceCode": ___, "neverExpire": ___, "options": ___, "priority": ___, "src": ___, "title": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
 	 */
 	@Consumes({"application/json", "application/xml"})
 	@Override
@@ -159,7 +159,7 @@ public abstract class BaseAttachmentResourceImpl
 	public Attachment postProductByExternalReferenceCodeAttachmentByBase64(
 			@NotNull @Parameter(hidden = true)
 			@PathParam("externalReferenceCode")
-				String externalReferenceCode,
+			String externalReferenceCode,
 			AttachmentBase64 attachmentBase64)
 		throws Exception {
 
@@ -169,7 +169,7 @@ public abstract class BaseAttachmentResourceImpl
 	/**
 	 * Invoke this method with the command line:
 	 *
-	 * curl -X 'POST' 'http://localhost:8080/o/headless-commerce-admin-catalog/v1.0/products/by-externalReferenceCode/{externalReferenceCode}/attachments/by-url' -d $'{"displayDate": ___, "expirationDate": ___, "externalReferenceCode": ___, "neverExpire": ___, "options": ___, "priority": ___, "src": ___, "title": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
+	 * curl -X 'POST' 'http://localhost:8080/o/headless-commerce-admin-catalog/v1.0/products/by-externalReferenceCode/{externalReferenceCode}/attachments/by-url' -d $'{"customFields": ___, "displayDate": ___, "expirationDate": ___, "externalReferenceCode": ___, "neverExpire": ___, "options": ___, "priority": ___, "src": ___, "title": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
 	 */
 	@Consumes({"application/json", "application/xml"})
 	@Override
@@ -187,7 +187,7 @@ public abstract class BaseAttachmentResourceImpl
 	public Attachment postProductByExternalReferenceCodeAttachmentByUrl(
 			@NotNull @Parameter(hidden = true)
 			@PathParam("externalReferenceCode")
-				String externalReferenceCode,
+			String externalReferenceCode,
 			AttachmentUrl attachmentUrl)
 		throws Exception {
 
@@ -214,7 +214,7 @@ public abstract class BaseAttachmentResourceImpl
 	public Page<Attachment> getProductByExternalReferenceCodeImagesPage(
 			@NotNull @Parameter(hidden = true)
 			@PathParam("externalReferenceCode")
-				String externalReferenceCode,
+			String externalReferenceCode,
 			@Context Pagination pagination)
 		throws Exception {
 
@@ -224,7 +224,7 @@ public abstract class BaseAttachmentResourceImpl
 	/**
 	 * Invoke this method with the command line:
 	 *
-	 * curl -X 'POST' 'http://localhost:8080/o/headless-commerce-admin-catalog/v1.0/products/by-externalReferenceCode/{externalReferenceCode}/images' -d $'{"attachment": ___, "displayDate": ___, "expirationDate": ___, "externalReferenceCode": ___, "neverExpire": ___, "options": ___, "priority": ___, "src": ___, "title": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
+	 * curl -X 'POST' 'http://localhost:8080/o/headless-commerce-admin-catalog/v1.0/products/by-externalReferenceCode/{externalReferenceCode}/images' -d $'{"attachment": ___, "cdnEnabled": ___, "cdnURL": ___, "customFields": ___, "displayDate": ___, "expirationDate": ___, "externalReferenceCode": ___, "id": ___, "neverExpire": ___, "options": ___, "priority": ___, "src": ___, "title": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
 	 */
 	@Consumes({"application/json", "application/xml"})
 	@Override
@@ -240,7 +240,7 @@ public abstract class BaseAttachmentResourceImpl
 	public Attachment postProductByExternalReferenceCodeImage(
 			@NotNull @Parameter(hidden = true)
 			@PathParam("externalReferenceCode")
-				String externalReferenceCode,
+			String externalReferenceCode,
 			Attachment attachment)
 		throws Exception {
 
@@ -250,7 +250,7 @@ public abstract class BaseAttachmentResourceImpl
 	/**
 	 * Invoke this method with the command line:
 	 *
-	 * curl -X 'POST' 'http://localhost:8080/o/headless-commerce-admin-catalog/v1.0/products/by-externalReferenceCode/{externalReferenceCode}/images/by-base64' -d $'{"attachment": ___, "displayDate": ___, "expirationDate": ___, "externalReferenceCode": ___, "neverExpire": ___, "options": ___, "priority": ___, "src": ___, "title": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
+	 * curl -X 'POST' 'http://localhost:8080/o/headless-commerce-admin-catalog/v1.0/products/by-externalReferenceCode/{externalReferenceCode}/images/by-base64' -d $'{"attachment": ___, "customFields": ___, "displayDate": ___, "expirationDate": ___, "externalReferenceCode": ___, "neverExpire": ___, "options": ___, "priority": ___, "src": ___, "title": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
 	 */
 	@Consumes({"application/json", "application/xml"})
 	@Override
@@ -268,7 +268,7 @@ public abstract class BaseAttachmentResourceImpl
 	public Attachment postProductByExternalReferenceCodeImageByBase64(
 			@NotNull @Parameter(hidden = true)
 			@PathParam("externalReferenceCode")
-				String externalReferenceCode,
+			String externalReferenceCode,
 			AttachmentBase64 attachmentBase64)
 		throws Exception {
 
@@ -278,7 +278,7 @@ public abstract class BaseAttachmentResourceImpl
 	/**
 	 * Invoke this method with the command line:
 	 *
-	 * curl -X 'POST' 'http://localhost:8080/o/headless-commerce-admin-catalog/v1.0/products/by-externalReferenceCode/{externalReferenceCode}/images/by-url' -d $'{"displayDate": ___, "expirationDate": ___, "externalReferenceCode": ___, "neverExpire": ___, "options": ___, "priority": ___, "src": ___, "title": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
+	 * curl -X 'POST' 'http://localhost:8080/o/headless-commerce-admin-catalog/v1.0/products/by-externalReferenceCode/{externalReferenceCode}/images/by-url' -d $'{"customFields": ___, "displayDate": ___, "expirationDate": ___, "externalReferenceCode": ___, "neverExpire": ___, "options": ___, "priority": ___, "src": ___, "title": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
 	 */
 	@Consumes({"application/json", "application/xml"})
 	@Override
@@ -296,7 +296,7 @@ public abstract class BaseAttachmentResourceImpl
 	public Attachment postProductByExternalReferenceCodeImageByUrl(
 			@NotNull @Parameter(hidden = true)
 			@PathParam("externalReferenceCode")
-				String externalReferenceCode,
+			String externalReferenceCode,
 			AttachmentUrl attachmentUrl)
 		throws Exception {
 
@@ -331,7 +331,7 @@ public abstract class BaseAttachmentResourceImpl
 	/**
 	 * Invoke this method with the command line:
 	 *
-	 * curl -X 'POST' 'http://localhost:8080/o/headless-commerce-admin-catalog/v1.0/products/{id}/attachments' -d $'{"attachment": ___, "displayDate": ___, "expirationDate": ___, "externalReferenceCode": ___, "neverExpire": ___, "options": ___, "priority": ___, "src": ___, "title": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
+	 * curl -X 'POST' 'http://localhost:8080/o/headless-commerce-admin-catalog/v1.0/products/{id}/attachments' -d $'{"attachment": ___, "cdnEnabled": ___, "cdnURL": ___, "customFields": ___, "displayDate": ___, "expirationDate": ___, "externalReferenceCode": ___, "id": ___, "neverExpire": ___, "options": ___, "priority": ___, "src": ___, "title": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
 	 */
 	@Consumes({"application/json", "application/xml"})
 	@Override
@@ -367,8 +367,8 @@ public abstract class BaseAttachmentResourceImpl
 	@Tags(value = {@Tag(name = "Attachment")})
 	public Response postProductIdAttachmentBatch(
 			@NotNull @Parameter(hidden = true) @PathParam("id") Long id,
-			@Parameter(hidden = true) @QueryParam("callbackURL")
-				String callbackURL,
+			@Parameter(hidden = true) @QueryParam("callbackURL") String
+				callbackURL,
 			Object object)
 		throws Exception {
 
@@ -391,7 +391,7 @@ public abstract class BaseAttachmentResourceImpl
 	/**
 	 * Invoke this method with the command line:
 	 *
-	 * curl -X 'POST' 'http://localhost:8080/o/headless-commerce-admin-catalog/v1.0/products/{id}/attachments/by-base64' -d $'{"attachment": ___, "displayDate": ___, "expirationDate": ___, "externalReferenceCode": ___, "neverExpire": ___, "options": ___, "priority": ___, "src": ___, "title": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
+	 * curl -X 'POST' 'http://localhost:8080/o/headless-commerce-admin-catalog/v1.0/products/{id}/attachments/by-base64' -d $'{"attachment": ___, "customFields": ___, "displayDate": ___, "expirationDate": ___, "externalReferenceCode": ___, "neverExpire": ___, "options": ___, "priority": ___, "src": ___, "title": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
 	 */
 	@Consumes({"application/json", "application/xml"})
 	@Override
@@ -411,7 +411,7 @@ public abstract class BaseAttachmentResourceImpl
 	/**
 	 * Invoke this method with the command line:
 	 *
-	 * curl -X 'POST' 'http://localhost:8080/o/headless-commerce-admin-catalog/v1.0/products/{id}/attachments/by-url' -d $'{"displayDate": ___, "expirationDate": ___, "externalReferenceCode": ___, "neverExpire": ___, "options": ___, "priority": ___, "src": ___, "title": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
+	 * curl -X 'POST' 'http://localhost:8080/o/headless-commerce-admin-catalog/v1.0/products/{id}/attachments/by-url' -d $'{"customFields": ___, "displayDate": ___, "expirationDate": ___, "externalReferenceCode": ___, "neverExpire": ___, "options": ___, "priority": ___, "src": ___, "title": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
 	 */
 	@Consumes({"application/json", "application/xml"})
 	@Override
@@ -456,7 +456,7 @@ public abstract class BaseAttachmentResourceImpl
 	/**
 	 * Invoke this method with the command line:
 	 *
-	 * curl -X 'POST' 'http://localhost:8080/o/headless-commerce-admin-catalog/v1.0/products/{id}/images' -d $'{"attachment": ___, "displayDate": ___, "expirationDate": ___, "externalReferenceCode": ___, "neverExpire": ___, "options": ___, "priority": ___, "src": ___, "title": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
+	 * curl -X 'POST' 'http://localhost:8080/o/headless-commerce-admin-catalog/v1.0/products/{id}/images' -d $'{"attachment": ___, "cdnEnabled": ___, "cdnURL": ___, "customFields": ___, "displayDate": ___, "expirationDate": ___, "externalReferenceCode": ___, "id": ___, "neverExpire": ___, "options": ___, "priority": ___, "src": ___, "title": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
 	 */
 	@Consumes({"application/json", "application/xml"})
 	@Override
@@ -476,7 +476,7 @@ public abstract class BaseAttachmentResourceImpl
 	/**
 	 * Invoke this method with the command line:
 	 *
-	 * curl -X 'POST' 'http://localhost:8080/o/headless-commerce-admin-catalog/v1.0/products/{id}/images/by-base64' -d $'{"attachment": ___, "displayDate": ___, "expirationDate": ___, "externalReferenceCode": ___, "neverExpire": ___, "options": ___, "priority": ___, "src": ___, "title": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
+	 * curl -X 'POST' 'http://localhost:8080/o/headless-commerce-admin-catalog/v1.0/products/{id}/images/by-base64' -d $'{"attachment": ___, "customFields": ___, "displayDate": ___, "expirationDate": ___, "externalReferenceCode": ___, "neverExpire": ___, "options": ___, "priority": ___, "src": ___, "title": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
 	 */
 	@Consumes({"application/json", "application/xml"})
 	@Override
@@ -496,7 +496,7 @@ public abstract class BaseAttachmentResourceImpl
 	/**
 	 * Invoke this method with the command line:
 	 *
-	 * curl -X 'POST' 'http://localhost:8080/o/headless-commerce-admin-catalog/v1.0/products/{id}/images/by-url' -d $'{"displayDate": ___, "expirationDate": ___, "externalReferenceCode": ___, "neverExpire": ___, "options": ___, "priority": ___, "src": ___, "title": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
+	 * curl -X 'POST' 'http://localhost:8080/o/headless-commerce-admin-catalog/v1.0/products/{id}/images/by-url' -d $'{"customFields": ___, "displayDate": ___, "expirationDate": ___, "externalReferenceCode": ___, "neverExpire": ___, "options": ___, "priority": ___, "src": ___, "title": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
 	 */
 	@Consumes({"application/json", "application/xml"})
 	@Override

@@ -2892,24 +2892,25 @@ public class DEDataListViewPersistenceImpl
 		ServiceContext serviceContext =
 			ServiceContextThreadLocal.getServiceContext();
 
-		Date now = new Date();
+		Date date = new Date();
 
 		if (isNew && (deDataListView.getCreateDate() == null)) {
 			if (serviceContext == null) {
-				deDataListView.setCreateDate(now);
+				deDataListView.setCreateDate(date);
 			}
 			else {
-				deDataListView.setCreateDate(serviceContext.getCreateDate(now));
+				deDataListView.setCreateDate(
+					serviceContext.getCreateDate(date));
 			}
 		}
 
 		if (!deDataListViewModelImpl.hasSetModifiedDate()) {
 			if (serviceContext == null) {
-				deDataListView.setModifiedDate(now);
+				deDataListView.setModifiedDate(date);
 			}
 			else {
 				deDataListView.setModifiedDate(
-					serviceContext.getModifiedDate(now));
+					serviceContext.getModifiedDate(date));
 			}
 		}
 
@@ -3337,7 +3338,8 @@ public class DEDataListViewPersistenceImpl
 	public Set<String> getCTColumnNames(
 		CTColumnResolutionType ctColumnResolutionType) {
 
-		return _ctColumnNamesMap.get(ctColumnResolutionType);
+		return _ctColumnNamesMap.getOrDefault(
+			ctColumnResolutionType, Collections.emptySet());
 	}
 
 	@Override
@@ -3371,7 +3373,6 @@ public class DEDataListViewPersistenceImpl
 	static {
 		Set<String> ctControlColumnNames = new HashSet<String>();
 		Set<String> ctIgnoreColumnNames = new HashSet<String>();
-		Set<String> ctMergeColumnNames = new HashSet<String>();
 		Set<String> ctStrictColumnNames = new HashSet<String>();
 
 		ctControlColumnNames.add("mvccVersion");
@@ -3393,7 +3394,6 @@ public class DEDataListViewPersistenceImpl
 			CTColumnResolutionType.CONTROL, ctControlColumnNames);
 		_ctColumnNamesMap.put(
 			CTColumnResolutionType.IGNORE, ctIgnoreColumnNames);
-		_ctColumnNamesMap.put(CTColumnResolutionType.MERGE, ctMergeColumnNames);
 		_ctColumnNamesMap.put(
 			CTColumnResolutionType.PK,
 			Collections.singleton("deDataListViewId"));
@@ -3654,7 +3654,7 @@ public class DEDataListViewPersistenceImpl
 			return DEDataListViewTable.INSTANCE.getTableName();
 		}
 
-		private Object[] _getValue(
+		private static Object[] _getValue(
 			DEDataListViewModelImpl deDataListViewModelImpl,
 			String[] columnNames, boolean original) {
 
@@ -3677,8 +3677,8 @@ public class DEDataListViewPersistenceImpl
 			return arguments;
 		}
 
-		private static Map<FinderPath, Long> _finderPathColumnBitmasksCache =
-			new ConcurrentHashMap<>();
+		private static final Map<FinderPath, Long>
+			_finderPathColumnBitmasksCache = new ConcurrentHashMap<>();
 
 	}
 

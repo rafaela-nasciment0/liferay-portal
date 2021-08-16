@@ -793,6 +793,7 @@ definition {
 
 	@priority = "5"
 	test UnpublishAndDeleteUploadedDefinition {
+		property portal.acceptance = "true";
 		property test.name.skip.portal.instance = "WorkflowUsecase#UnpublishAndDeleteUploadedDefinition";
 
 		ApplicationsMenu.gotoPortlet(
@@ -1293,6 +1294,8 @@ definition {
 
 	@priority = "4"
 	test XSSScriptWebContent {
+		property portal.upstream = "quarantine";
+
 		var siteName = TestCase.getSiteName(siteName = "${siteName}");
 
 		Navigator.openURL();

@@ -455,13 +455,13 @@ public class DefaultWikiListPagesDisplayContext
 			).setRedirect(
 				_wikiRequestHelper.getCurrentURL()
 			).setParameter(
-				"nodeId", wikiPage.getNodeId()
-			).setParameter(
-				"title", StringPool.BLANK
-			).setParameter(
 				"editTitle", "1"
 			).setParameter(
+				"nodeId", wikiPage.getNodeId()
+			).setParameter(
 				"parentTitle", wikiPage.getTitle()
+			).setParameter(
+				"title", StringPool.BLANK
 			).buildString());
 
 		menuItems.add(urlMenuItem);
@@ -487,15 +487,15 @@ public class DefaultWikiListPagesDisplayContext
 			).setRedirect(
 				_wikiRequestHelper.getCurrentURL()
 			).setParameter(
-				"nodeId", wikiPage.getNodeId()
-			).setParameter(
-				"title", StringPool.BLANK
-			).setParameter(
 				"editTitle", "1"
+			).setParameter(
+				"nodeId", wikiPage.getNodeId()
 			).setParameter(
 				"templateNodeId", wikiPage.getNodeId()
 			).setParameter(
 				"templateTitle", HtmlUtil.unescape(wikiPage.getTitle())
+			).setParameter(
+				"title", StringPool.BLANK
 			).buildString());
 
 		menuItems.add(urlMenuItem);
@@ -522,10 +522,7 @@ public class DefaultWikiListPagesDisplayContext
 					_wikiRequestHelper.getLiferayPortletResponse()
 				).setActionName(
 					"/wiki/edit_page"
-				).setRedirect(
-					_wikiRequestHelper.getCurrentURL()
-				).setParameter(
-					Constants.CMD,
+				).setCMD(
 					() -> {
 						String cmd = Constants.DELETE;
 
@@ -537,6 +534,8 @@ public class DefaultWikiListPagesDisplayContext
 
 						return cmd;
 					}
+				).setRedirect(
+					_wikiRequestHelper.getCurrentURL()
 				).setParameter(
 					"nodeId", wikiPage.getNodeId()
 				).setParameter(
@@ -561,10 +560,10 @@ public class DefaultWikiListPagesDisplayContext
 					_wikiRequestHelper.getLiferayPortletResponse()
 				).setActionName(
 					"/wiki/edit_page"
+				).setCMD(
+					Constants.DELETE
 				).setRedirect(
 					_wikiRequestHelper.getCurrentURL()
-				).setParameter(
-					Constants.CMD, Constants.DELETE
 				).setParameter(
 					"nodeId", wikiPage.getNodeId()
 				).setParameter(
@@ -754,10 +753,10 @@ public class DefaultWikiListPagesDisplayContext
 					_wikiRequestHelper.getLiferayPortletResponse()
 				).setActionName(
 					"/wiki/edit_page"
+				).setCMD(
+					Constants.UNSUBSCRIBE
 				).setRedirect(
 					_wikiRequestHelper.getCurrentURL()
-				).setParameter(
-					Constants.CMD, Constants.UNSUBSCRIBE
 				).setParameter(
 					"nodeId", wikiPage.getNodeId()
 				).setParameter(
@@ -777,10 +776,10 @@ public class DefaultWikiListPagesDisplayContext
 					_wikiRequestHelper.getLiferayPortletResponse()
 				).setActionName(
 					"/wiki/edit_page"
+				).setCMD(
+					Constants.SUBSCRIBE
 				).setRedirect(
 					_wikiRequestHelper.getCurrentURL()
-				).setParameter(
-					Constants.CMD, Constants.SUBSCRIBE
 				).setParameter(
 					"nodeId", wikiPage.getNodeId()
 				).setParameter(
@@ -796,12 +795,8 @@ public class DefaultWikiListPagesDisplayContext
 
 		if (!WikiPagePermission.contains(
 				_wikiRequestHelper.getPermissionChecker(), wikiPage,
-				ActionKeys.UPDATE)) {
-
-			return false;
-		}
-
-		if (!WikiNodePermission.contains(
+				ActionKeys.UPDATE) ||
+			!WikiNodePermission.contains(
 				_wikiRequestHelper.getPermissionChecker(), wikiPage.getNodeId(),
 				ActionKeys.ADD_PAGE)) {
 

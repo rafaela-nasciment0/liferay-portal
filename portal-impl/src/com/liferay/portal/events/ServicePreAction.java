@@ -20,6 +20,7 @@ import com.liferay.exportimport.kernel.lar.PortletDataHandlerKeys;
 import com.liferay.exportimport.kernel.model.ExportImportConfiguration;
 import com.liferay.exportimport.kernel.service.ExportImportConfigurationLocalServiceUtil;
 import com.liferay.exportimport.kernel.service.ExportImportLocalServiceUtil;
+import com.liferay.petra.portlet.url.builder.PortletURLBuilder;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.events.Action;
@@ -275,13 +276,11 @@ public class ServicePreAction extends Action {
 		String friendlyURL = _getFriendlyURL(
 			PropsValues.DEFAULT_USER_PRIVATE_LAYOUT_FRIENDLY_URL);
 
-		ServiceContext serviceContext = new ServiceContext();
-
 		Layout layout = LayoutLocalServiceUtil.addLayout(
 			userId, groupId, true, LayoutConstants.DEFAULT_PARENT_LAYOUT_ID,
 			PropsValues.DEFAULT_USER_PRIVATE_LAYOUT_NAME, StringPool.BLANK,
 			StringPool.BLANK, LayoutConstants.TYPE_PORTLET, false, friendlyURL,
-			serviceContext);
+			new ServiceContext());
 
 		LayoutTypePortlet layoutTypePortlet =
 			(LayoutTypePortlet)layout.getLayoutType();
@@ -353,13 +352,11 @@ public class ServicePreAction extends Action {
 		String friendlyURL = _getFriendlyURL(
 			PropsValues.DEFAULT_USER_PUBLIC_LAYOUT_FRIENDLY_URL);
 
-		ServiceContext serviceContext = new ServiceContext();
-
 		Layout layout = LayoutLocalServiceUtil.addLayout(
 			userId, groupId, false, LayoutConstants.DEFAULT_PARENT_LAYOUT_ID,
 			PropsValues.DEFAULT_USER_PUBLIC_LAYOUT_NAME, StringPool.BLANK,
 			StringPool.BLANK, LayoutConstants.TYPE_PORTLET, false, friendlyURL,
-			serviceContext);
+			new ServiceContext());
 
 		LayoutTypePortlet layoutTypePortlet =
 			(LayoutTypePortlet)layout.getLayoutType();
@@ -426,19 +423,15 @@ public class ServicePreAction extends Action {
 	private void _deleteDefaultUserPrivateLayouts(User user) throws Exception {
 		Group group = user.getGroup();
 
-		ServiceContext serviceContext = new ServiceContext();
-
 		LayoutLocalServiceUtil.deleteLayouts(
-			group.getGroupId(), true, serviceContext);
+			group.getGroupId(), true, new ServiceContext());
 	}
 
 	private void _deleteDefaultUserPublicLayouts(User user) throws Exception {
 		Group userGroup = user.getGroup();
 
-		ServiceContext serviceContext = new ServiceContext();
-
 		LayoutLocalServiceUtil.deleteLayouts(
-			userGroup.getGroupId(), false, serviceContext);
+			userGroup.getGroupId(), false, new ServiceContext());
 	}
 
 	private LayoutComposite _getDefaultUserPersonalSiteLayoutComposite(
@@ -842,21 +835,15 @@ public class ServicePreAction extends Action {
 
 		// Company logo
 
-		StringBundler sb = new StringBundler(6);
-
-		sb.append(imagePath);
-		sb.append("/company_logo");
+		String companyLogo = imagePath + "/company_logo";
 
 		long companyLogoId = company.getLogoId();
 
 		if (companyLogoId > 0) {
-			sb.append("?img_id=");
-			sb.append(company.getLogoId());
-			sb.append("&t=");
-			sb.append(WebServerServletTokenUtil.getToken(company.getLogoId()));
+			companyLogo = StringBundler.concat(
+				"?img_id=", company.getLogoId(), "&t=",
+				WebServerServletTokenUtil.getToken(company.getLogoId()));
 		}
-
-		String companyLogo = sb.toString();
 
 		int companyLogoHeight = 0;
 		int companyLogoWidth = 0;
@@ -894,10 +881,6 @@ public class ServicePreAction extends Action {
 			return null;
 		}
 
-		// Portal URL
-
-		String portalURL = PortalUtil.getPortalURL(httpServletRequest);
-
 		boolean signedIn = !user.isDefaultUser();
 
 		if (PropsValues.BROWSER_CACHE_DISABLED ||
@@ -922,15 +905,6 @@ public class ServicePreAction extends Action {
 
 			realUser = UserLocalServiceUtil.getUserById(realUserId.longValue());
 		}
-
-		String doAsUserId = ParamUtil.getString(
-			httpServletRequest, "doAsUserId");
-		String doAsUserLanguageId = ParamUtil.getString(
-			httpServletRequest, "doAsUserLanguageId");
-		long doAsGroupId = ParamUtil.getLong(httpServletRequest, "doAsGroupId");
-
-		long refererGroupId = ParamUtil.getLong(
-			httpServletRequest, "refererGroupId");
 
 		long refererPlid = ParamUtil.getLong(httpServletRequest, "refererPlid");
 
@@ -985,7 +959,6 @@ public class ServicePreAction extends Action {
 		}
 
 		Layout layout = null;
-		List<Layout> layouts = null;
 
 		long plid = ParamUtil.getLong(httpServletRequest, "p_l_id");
 
@@ -1037,6 +1010,22 @@ public class ServicePreAction extends Action {
 					Group sourceGroup = GroupLocalServiceUtil.getGroup(
 						sourceGroupId);
 
+					if (sourceGroup.isUser() &&
+						!GroupPermissionUtil.contains(
+							permissionChecker, sourceGroup, ActionKeys.VIEW)) {
+
+						String message = StringBundler.concat(
+							"User ", user.getUserId(),
+							" is not allowed to access the private pages of ",
+							"user ", sourceGroup.getClassPK());
+
+						if (_log.isWarnEnabled()) {
+							_log.warn(message);
+						}
+
+						throw new NoSuchLayoutException(message);
+					}
+
 					layout = new VirtualLayout(layout, sourceGroup);
 				}
 				else {
@@ -1045,7 +1034,14 @@ public class ServicePreAction extends Action {
 			}
 		}
 
-		String ppid = ParamUtil.getString(httpServletRequest, "p_p_id");
+		long doAsGroupId = ParamUtil.getLong(httpServletRequest, "doAsGroupId");
+		String doAsUserId = ParamUtil.getString(
+			httpServletRequest, "doAsUserId");
+		String doAsUserLanguageId = ParamUtil.getString(
+			httpServletRequest, "doAsUserLanguageId");
+		Group group = null;
+		List<Layout> layouts = null;
+		boolean loginRequest = _isLoginRequest(httpServletRequest);
 
 		Boolean redirectToDefaultLayout =
 			(Boolean)httpServletRequest.getAttribute(
@@ -1055,9 +1051,9 @@ public class ServicePreAction extends Action {
 			redirectToDefaultLayout = Boolean.FALSE;
 		}
 
-		Group group = null;
+		long refererGroupId = ParamUtil.getLong(
+			httpServletRequest, "refererGroupId");
 
-		boolean loginRequest = _isLoginRequest(httpServletRequest);
 		boolean stagingGroup = false;
 		boolean viewableGroup = false;
 
@@ -1097,27 +1093,23 @@ public class ServicePreAction extends Action {
 					   !_hasAccessPermission(
 						   permissionChecker, layout, false)))) {
 
-				if (user.isDefaultUser() &&
+				if (!group.isUser() && user.isDefaultUser() &&
 					PropsValues.AUTH_LOGIN_PROMPT_ENABLED) {
 
 					throw new PrincipalException.MustBeAuthenticated(
 						user.getUserId());
 				}
 
-				sb = new StringBundler(6);
-
-				sb.append("User ");
-				sb.append(user.getUserId());
-				sb.append(" is not allowed to access the ");
-				sb.append(layout.isPrivateLayout() ? "private" : "public");
-				sb.append(" pages of group ");
-				sb.append(layout.getGroupId());
+				String message = StringBundler.concat(
+					"User ", user.getUserId(), " is not allowed to access the ",
+					layout.isPrivateLayout() ? "private" : "public",
+					" pages of group ", layout.getGroupId());
 
 				if (_log.isWarnEnabled()) {
-					_log.warn(sb.toString());
+					_log.warn(message);
 				}
 
-				throw new NoSuchLayoutException(sb.toString());
+				throw new NoSuchLayoutException(message);
 			}
 			else if (loginRequest && !viewableGroup) {
 				layout = null;
@@ -1226,15 +1218,9 @@ public class ServicePreAction extends Action {
 				}
 
 				if (logoId > 0) {
-					sb = new StringBundler(5);
-
-					sb.append(imagePath);
-					sb.append("/layout_set_logo?img_id=");
-					sb.append(logoId);
-					sb.append("&t=");
-					sb.append(WebServerServletTokenUtil.getToken(logoId));
-
-					layoutSetLogo = sb.toString();
+					layoutSetLogo = StringBundler.concat(
+						imagePath, "/layout_set_logo?img_id=", logoId, "&t=",
+						WebServerServletTokenUtil.getToken(logoId));
 
 					Image layoutSetLogoImage =
 						ImageLocalServiceUtil.getCompanyLogo(logoId);
@@ -1335,6 +1321,10 @@ public class ServicePreAction extends Action {
 
 		Locale locale = PortalUtil.getLocale(
 			httpServletRequest, httpServletResponse, true);
+
+		// Portal URL
+
+		String portalURL = PortalUtil.getPortalURL(httpServletRequest);
 
 		// Scope
 
@@ -1499,7 +1489,7 @@ public class ServicePreAction extends Action {
 		themeDisplay.setPathSound(contextPath.concat("/html/sound"));
 		themeDisplay.setPermissionChecker(permissionChecker);
 		themeDisplay.setPlid(plid);
-		themeDisplay.setPpid(ppid);
+		themeDisplay.setPpid(ParamUtil.getString(httpServletRequest, "p_p_id"));
 		themeDisplay.setRealCompanyLogo(companyLogo);
 		themeDisplay.setRealCompanyLogoHeight(companyLogoHeight);
 		themeDisplay.setRealCompanyLogoWidth(companyLogoWidth);
@@ -1668,13 +1658,13 @@ public class ServicePreAction extends Action {
 				}
 
 				if (hasPublishStagingPermission) {
-					PortletURL publishToLiveURL = PortletURLFactoryUtil.create(
-						httpServletRequest, PortletKeys.EXPORT_IMPORT, plid,
-						PortletRequest.RENDER_PHASE);
-
-					publishToLiveURL.setParameter(
-						"mvcRenderCommandName",
-						"/export_import/publish_layouts");
+					PortletURL publishToLiveURL = PortletURLBuilder.create(
+						PortletURLFactoryUtil.create(
+							httpServletRequest, PortletKeys.EXPORT_IMPORT, plid,
+							PortletRequest.RENDER_PHASE)
+					).setMVCRenderCommandName(
+						"/export_import/publish_layouts"
+					).buildPortletURL();
 
 					if (layout.isPrivateLayout()) {
 						publishToLiveURL.setParameter("tabs1", "private-pages");

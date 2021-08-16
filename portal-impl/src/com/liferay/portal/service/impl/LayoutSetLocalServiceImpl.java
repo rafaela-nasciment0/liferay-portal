@@ -69,7 +69,7 @@ public class LayoutSetLocalServiceImpl extends LayoutSetLocalServiceBaseImpl {
 
 		Group group = groupPersistence.findByPrimaryKey(groupId);
 
-		Date now = new Date();
+		Date date = new Date();
 
 		long layoutSetId = counterLocalService.increment(
 			LayoutSet.class.getName());
@@ -78,8 +78,8 @@ public class LayoutSetLocalServiceImpl extends LayoutSetLocalServiceBaseImpl {
 
 		layoutSet.setGroupId(groupId);
 		layoutSet.setCompanyId(group.getCompanyId());
-		layoutSet.setCreateDate(now);
-		layoutSet.setModifiedDate(now);
+		layoutSet.setCreateDate(date);
+		layoutSet.setModifiedDate(date);
 		layoutSet.setPrivateLayout(privateLayout);
 
 		layoutSet = initLayoutSet(layoutSet);
@@ -532,9 +532,9 @@ public class LayoutSetLocalServiceImpl extends LayoutSetLocalServiceBaseImpl {
 				long logoId = counterLocalService.increment();
 
 				imageLocalService.updateImage(
-					logoId, logoImage.getTextObj(), logoImage.getType(),
-					logoImage.getHeight(), logoImage.getWidth(),
-					logoImage.getSize());
+					layoutSet.getCompanyId(), logoId, logoImage.getTextObj(),
+					logoImage.getType(), logoImage.getHeight(),
+					logoImage.getWidth(), logoImage.getSize());
 
 				layoutSet.setLogoId(logoId);
 			}

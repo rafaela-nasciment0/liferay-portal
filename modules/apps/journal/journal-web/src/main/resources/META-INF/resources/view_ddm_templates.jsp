@@ -67,17 +67,15 @@ if (ddmStructure != null) {
 			String rowHREF = StringPool.BLANK;
 
 			if (DDMTemplatePermission.contains(permissionChecker, ddmTemplate, ActionKeys.UPDATE)) {
-				PortletURL rowURL = PortletURLBuilder.createRenderURL(
+				rowHREF = PortletURLBuilder.createRenderURL(
 					renderResponse
 				).setMVCPath(
 					"/edit_ddm_template.jsp"
 				).setRedirect(
 					currentURL
 				).setParameter(
-					"ddmTemplateId", String.valueOf(ddmTemplate.getTemplateId())
-				).build();
-
-				rowHREF = rowURL.toString();
+					"ddmTemplateId", ddmTemplate.getTemplateId()
+				).buildString();
 			}
 
 			row.setData(

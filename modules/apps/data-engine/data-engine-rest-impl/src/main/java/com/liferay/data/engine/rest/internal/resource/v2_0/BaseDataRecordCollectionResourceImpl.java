@@ -20,7 +20,6 @@ import com.liferay.petra.function.UnsafeFunction;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.model.GroupedModel;
 import com.liferay.portal.kernel.model.ResourceAction;
-import com.liferay.portal.kernel.model.ResourceConstants;
 import com.liferay.portal.kernel.search.Sort;
 import com.liferay.portal.kernel.search.filter.Filter;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
@@ -29,6 +28,8 @@ import com.liferay.portal.kernel.service.GroupLocalService;
 import com.liferay.portal.kernel.service.ResourceActionLocalService;
 import com.liferay.portal.kernel.service.ResourcePermissionLocalService;
 import com.liferay.portal.kernel.service.RoleLocalService;
+import com.liferay.portal.kernel.util.GetterUtil;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
@@ -132,9 +133,9 @@ public abstract class BaseDataRecordCollectionResourceImpl
 			getDataDefinitionDataRecordCollectionsPage(
 				@NotNull @Parameter(hidden = true)
 				@PathParam("dataDefinitionId")
-					Long dataDefinitionId,
-				@Parameter(hidden = true) @QueryParam("keywords")
-					String keywords,
+				Long dataDefinitionId,
+				@Parameter(hidden = true) @QueryParam("keywords") String
+					keywords,
 				@Context Pagination pagination)
 		throws Exception {
 
@@ -184,8 +185,8 @@ public abstract class BaseDataRecordCollectionResourceImpl
 	public Response postDataDefinitionDataRecordCollectionBatch(
 			@NotNull @Parameter(hidden = true) @PathParam("dataDefinitionId")
 				Long dataDefinitionId,
-			@Parameter(hidden = true) @QueryParam("callbackURL")
-				String callbackURL,
+			@Parameter(hidden = true) @QueryParam("callbackURL") String
+				callbackURL,
 			Object object)
 		throws Exception {
 
@@ -223,7 +224,7 @@ public abstract class BaseDataRecordCollectionResourceImpl
 	public void deleteDataRecordCollection(
 			@NotNull @Parameter(hidden = true)
 			@PathParam("dataRecordCollectionId")
-				Long dataRecordCollectionId)
+			Long dataRecordCollectionId)
 		throws Exception {
 	}
 
@@ -242,8 +243,8 @@ public abstract class BaseDataRecordCollectionResourceImpl
 	@Produces("application/json")
 	@Tags(value = {@Tag(name = "DataRecordCollection")})
 	public Response deleteDataRecordCollectionBatch(
-			@Parameter(hidden = true) @QueryParam("callbackURL")
-				String callbackURL,
+			@Parameter(hidden = true) @QueryParam("callbackURL") String
+				callbackURL,
 			Object object)
 		throws Exception {
 
@@ -281,7 +282,7 @@ public abstract class BaseDataRecordCollectionResourceImpl
 	public DataRecordCollection getDataRecordCollection(
 			@NotNull @Parameter(hidden = true)
 			@PathParam("dataRecordCollectionId")
-				Long dataRecordCollectionId)
+			Long dataRecordCollectionId)
 		throws Exception {
 
 		return new DataRecordCollection();
@@ -306,7 +307,7 @@ public abstract class BaseDataRecordCollectionResourceImpl
 	public DataRecordCollection putDataRecordCollection(
 			@NotNull @Parameter(hidden = true)
 			@PathParam("dataRecordCollectionId")
-				Long dataRecordCollectionId,
+			Long dataRecordCollectionId,
 			DataRecordCollection dataRecordCollection)
 		throws Exception {
 
@@ -328,8 +329,8 @@ public abstract class BaseDataRecordCollectionResourceImpl
 	@PUT
 	@Tags(value = {@Tag(name = "DataRecordCollection")})
 	public Response putDataRecordCollectionBatch(
-			@Parameter(hidden = true) @QueryParam("callbackURL")
-				String callbackURL,
+			@Parameter(hidden = true) @QueryParam("callbackURL") String
+				callbackURL,
 			Object object)
 		throws Exception {
 
@@ -369,21 +370,34 @@ public abstract class BaseDataRecordCollectionResourceImpl
 			getDataRecordCollectionPermissionsPage(
 				@NotNull @Parameter(hidden = true)
 				@PathParam("dataRecordCollectionId")
-					Long dataRecordCollectionId,
-				@Parameter(hidden = true) @QueryParam("roleNames")
-					String roleNames)
+				Long dataRecordCollectionId,
+				@Parameter(hidden = true) @QueryParam("roleNames") String
+					roleNames)
 		throws Exception {
 
 		String resourceName = getPermissionCheckerResourceName(
 			dataRecordCollectionId);
+		Long resourceId = getPermissionCheckerResourceId(
+			dataRecordCollectionId);
 
 		PermissionUtil.checkPermission(
-			ActionKeys.PERMISSIONS, groupLocalService, resourceName,
-			dataRecordCollectionId,
+			ActionKeys.PERMISSIONS, groupLocalService, resourceName, resourceId,
 			getPermissionCheckerGroupId(dataRecordCollectionId));
 
 		return toPermissionPage(
-			dataRecordCollectionId, resourceName, roleNames);
+			HashMapBuilder.put(
+				"get",
+				addAction(
+					ActionKeys.PERMISSIONS,
+					"getDataRecordCollectionPermissionsPage", resourceName,
+					resourceId)
+			).put(
+				"replace",
+				addAction(
+					ActionKeys.PERMISSIONS, "putDataRecordCollectionPermission",
+					resourceName, resourceId)
+			).build(),
+			resourceId, resourceName, roleNames);
 	}
 
 	/**
@@ -401,29 +415,46 @@ public abstract class BaseDataRecordCollectionResourceImpl
 	@Produces({"application/json", "application/xml"})
 	@PUT
 	@Tags(value = {@Tag(name = "DataRecordCollection")})
-	public void putDataRecordCollectionPermission(
-			@NotNull @Parameter(hidden = true)
-			@PathParam("dataRecordCollectionId")
+	public Page<com.liferay.portal.vulcan.permission.Permission>
+			putDataRecordCollectionPermission(
+				@NotNull @Parameter(hidden = true)
+				@PathParam("dataRecordCollectionId")
 				Long dataRecordCollectionId,
-			com.liferay.portal.vulcan.permission.Permission[] permissions)
+				com.liferay.portal.vulcan.permission.Permission[] permissions)
 		throws Exception {
 
 		String resourceName = getPermissionCheckerResourceName(
 			dataRecordCollectionId);
+		Long resourceId = getPermissionCheckerResourceId(
+			dataRecordCollectionId);
 
 		PermissionUtil.checkPermission(
-			ActionKeys.PERMISSIONS, groupLocalService, resourceName,
-			dataRecordCollectionId,
+			ActionKeys.PERMISSIONS, groupLocalService, resourceName, resourceId,
 			getPermissionCheckerGroupId(dataRecordCollectionId));
 
 		resourcePermissionLocalService.updateResourcePermissions(
-			contextCompany.getCompanyId(), 0, resourceName,
-			String.valueOf(dataRecordCollectionId),
+			contextCompany.getCompanyId(),
+			getPermissionCheckerGroupId(dataRecordCollectionId), resourceName,
+			String.valueOf(resourceId),
 			ModelPermissionsUtil.toModelPermissions(
-				contextCompany.getCompanyId(), permissions,
-				dataRecordCollectionId, resourceName,
-				resourceActionLocalService, resourcePermissionLocalService,
-				roleLocalService));
+				contextCompany.getCompanyId(), permissions, resourceId,
+				resourceName, resourceActionLocalService,
+				resourcePermissionLocalService, roleLocalService));
+
+		return toPermissionPage(
+			HashMapBuilder.put(
+				"get",
+				addAction(
+					ActionKeys.PERMISSIONS,
+					"getDataRecordCollectionPermissionsPage", resourceName,
+					resourceId)
+			).put(
+				"replace",
+				addAction(
+					ActionKeys.PERMISSIONS, "putDataRecordCollectionPermission",
+					resourceName, resourceId)
+			).build(),
+			resourceId, resourceName, null);
 	}
 
 	/**
@@ -446,7 +477,7 @@ public abstract class BaseDataRecordCollectionResourceImpl
 	public String getDataRecordCollectionPermissionByCurrentUser(
 			@NotNull @Parameter(hidden = true)
 			@PathParam("dataRecordCollectionId")
-				Long dataRecordCollectionId)
+			Long dataRecordCollectionId)
 		throws Exception {
 
 		return StringPool.BLANK;
@@ -472,11 +503,11 @@ public abstract class BaseDataRecordCollectionResourceImpl
 	@Tags(value = {@Tag(name = "DataRecordCollection")})
 	public DataRecordCollection
 			getSiteDataRecordCollectionByDataRecordCollectionKey(
-				@NotNull @Parameter(hidden = true) @PathParam("siteId")
-					Long siteId,
+				@NotNull @Parameter(hidden = true) @PathParam("siteId") Long
+					siteId,
 				@NotNull @Parameter(hidden = true)
 				@PathParam("dataRecordCollectionKey")
-					String dataRecordCollectionKey)
+				String dataRecordCollectionKey)
 		throws Exception {
 
 		return new DataRecordCollection();
@@ -493,7 +524,7 @@ public abstract class BaseDataRecordCollectionResourceImpl
 				dataRecordCollections) {
 
 			postDataDefinitionDataRecordCollection(
-				Long.valueOf((String)parameters.get("dataDefinitionId")),
+				Long.parseLong((String)parameters.get("dataDefinitionId")),
 				dataRecordCollection);
 		}
 	}
@@ -533,7 +564,7 @@ public abstract class BaseDataRecordCollectionResourceImpl
 		throws Exception {
 
 		return getDataDefinitionDataRecordCollectionsPage(
-			(Long)parameters.get("dataDefinitionId"),
+			Long.parseLong((String)parameters.get("dataDefinitionId")),
 			(String)parameters.get("keywords"), pagination);
 	}
 
@@ -571,7 +602,8 @@ public abstract class BaseDataRecordCollectionResourceImpl
 			putDataRecordCollection(
 				dataRecordCollection.getId() != null ?
 					dataRecordCollection.getId() :
-						(Long)parameters.get("dataRecordCollectionId"),
+						Long.parseLong(
+							(String)parameters.get("dataRecordCollectionId")),
 				dataRecordCollection);
 		}
 	}
@@ -594,6 +626,10 @@ public abstract class BaseDataRecordCollectionResourceImpl
 			"This method needs to be implemented");
 	}
 
+	protected Long getPermissionCheckerResourceId(Object id) throws Exception {
+		return GetterUtil.getLong(id);
+	}
+
 	protected String getPermissionCheckerResourceName(Object id)
 		throws Exception {
 
@@ -602,7 +638,9 @@ public abstract class BaseDataRecordCollectionResourceImpl
 	}
 
 	protected Page<com.liferay.portal.vulcan.permission.Permission>
-			toPermissionPage(long id, String resourceName, String roleNames)
+			toPermissionPage(
+				Map<String, Map<String, String>> actions, long id,
+				String resourceName, String roleNames)
 		throws Exception {
 
 		List<ResourceAction> resourceActions =
@@ -610,6 +648,7 @@ public abstract class BaseDataRecordCollectionResourceImpl
 
 		if (Validator.isNotNull(roleNames)) {
 			return Page.of(
+				actions,
 				transform(
 					PermissionUtil.getRoles(
 						contextCompany, roleLocalService,
@@ -620,10 +659,11 @@ public abstract class BaseDataRecordCollectionResourceImpl
 		}
 
 		return Page.of(
+			actions,
 			transform(
-				resourcePermissionLocalService.getResourcePermissions(
-					contextCompany.getCompanyId(), resourceName,
-					ResourceConstants.SCOPE_INDIVIDUAL, String.valueOf(id)),
+				PermissionUtil.getResourcePermissions(
+					contextCompany.getCompanyId(), id, resourceName,
+					resourcePermissionLocalService),
 				resourcePermission -> PermissionUtil.toPermission(
 					resourceActions, resourcePermission,
 					roleLocalService.getRole(resourcePermission.getRoleId()))));

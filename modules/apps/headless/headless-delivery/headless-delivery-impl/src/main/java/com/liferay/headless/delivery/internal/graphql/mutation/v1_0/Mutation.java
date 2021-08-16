@@ -36,6 +36,7 @@ import com.liferay.headless.delivery.dto.v1_0.WikiPageAttachment;
 import com.liferay.headless.delivery.resource.v1_0.BlogPostingImageResource;
 import com.liferay.headless.delivery.resource.v1_0.BlogPostingResource;
 import com.liferay.headless.delivery.resource.v1_0.CommentResource;
+import com.liferay.headless.delivery.resource.v1_0.ContentStructureResource;
 import com.liferay.headless.delivery.resource.v1_0.DocumentFolderResource;
 import com.liferay.headless.delivery.resource.v1_0.DocumentResource;
 import com.liferay.headless.delivery.resource.v1_0.KnowledgeBaseArticleResource;
@@ -60,6 +61,7 @@ import com.liferay.portal.vulcan.accept.language.AcceptLanguage;
 import com.liferay.portal.vulcan.graphql.annotation.GraphQLField;
 import com.liferay.portal.vulcan.graphql.annotation.GraphQLName;
 import com.liferay.portal.vulcan.multipart.MultipartBody;
+import com.liferay.portal.vulcan.pagination.Page;
 
 import java.util.function.BiFunction;
 
@@ -104,6 +106,14 @@ public class Mutation {
 
 		_commentResourceComponentServiceObjects =
 			commentResourceComponentServiceObjects;
+	}
+
+	public static void setContentStructureResourceComponentServiceObjects(
+		ComponentServiceObjects<ContentStructureResource>
+			contentStructureResourceComponentServiceObjects) {
+
+		_contentStructureResourceComponentServiceObjects =
+			contentStructureResourceComponentServiceObjects;
 	}
 
 	public static void setDocumentResourceComponentServiceObjects(
@@ -346,6 +356,27 @@ public class Mutation {
 				blogPostingId, rating));
 	}
 
+	@GraphQLField
+	public java.util.Collection<com.liferay.portal.vulcan.permission.Permission>
+			updateBlogPostingPermission(
+				@GraphQLName("blogPostingId") Long blogPostingId,
+				@GraphQLName("permissions")
+					com.liferay.portal.vulcan.permission.Permission[]
+						permissions)
+		throws Exception {
+
+		return _applyComponentServiceObjects(
+			_blogPostingResourceComponentServiceObjects,
+			this::_populateResourceContext,
+			blogPostingResource -> {
+				Page paginationPage =
+					blogPostingResource.putBlogPostingPermission(
+						blogPostingId, permissions);
+
+				return paginationPage.getItems();
+			});
+	}
+
 	@GraphQLField(description = "Creates a new blog post.")
 	public BlogPosting createSiteBlogPosting(
 			@GraphQLName("siteKey") @NotEmpty String siteKey,
@@ -371,6 +402,63 @@ public class Mutation {
 			this::_populateResourceContext,
 			blogPostingResource -> blogPostingResource.postSiteBlogPostingBatch(
 				Long.valueOf(siteKey), callbackURL, object));
+	}
+
+	@GraphQLField(
+		description = "Deletes the blog post by external reference code."
+	)
+	public boolean deleteSiteBlogPostingByExternalReferenceCode(
+			@GraphQLName("siteKey") @NotEmpty String siteKey,
+			@GraphQLName("externalReferenceCode") String externalReferenceCode)
+		throws Exception {
+
+		_applyVoidComponentServiceObjects(
+			_blogPostingResourceComponentServiceObjects,
+			this::_populateResourceContext,
+			blogPostingResource ->
+				blogPostingResource.
+					deleteSiteBlogPostingByExternalReferenceCode(
+						Long.valueOf(siteKey), externalReferenceCode));
+
+		return true;
+	}
+
+	@GraphQLField(
+		description = "Updates the site's blog post with the given external reference code, or creates it if it not exists."
+	)
+	public BlogPosting updateSiteBlogPostingByExternalReferenceCode(
+			@GraphQLName("siteKey") @NotEmpty String siteKey,
+			@GraphQLName("externalReferenceCode") String externalReferenceCode,
+			@GraphQLName("blogPosting") BlogPosting blogPosting)
+		throws Exception {
+
+		return _applyComponentServiceObjects(
+			_blogPostingResourceComponentServiceObjects,
+			this::_populateResourceContext,
+			blogPostingResource ->
+				blogPostingResource.putSiteBlogPostingByExternalReferenceCode(
+					Long.valueOf(siteKey), externalReferenceCode, blogPosting));
+	}
+
+	@GraphQLField
+	public java.util.Collection<com.liferay.portal.vulcan.permission.Permission>
+			updateSiteBlogPostingPermission(
+				@GraphQLName("siteKey") @NotEmpty String siteKey,
+				@GraphQLName("permissions")
+					com.liferay.portal.vulcan.permission.Permission[]
+						permissions)
+		throws Exception {
+
+		return _applyComponentServiceObjects(
+			_blogPostingResourceComponentServiceObjects,
+			this::_populateResourceContext,
+			blogPostingResource -> {
+				Page paginationPage =
+					blogPostingResource.putSiteBlogPostingPermission(
+						Long.valueOf(siteKey), permissions);
+
+				return paginationPage.getItems();
+			});
 	}
 
 	@GraphQLField
@@ -622,6 +710,70 @@ public class Mutation {
 	}
 
 	@GraphQLField
+	public java.util.Collection<com.liferay.portal.vulcan.permission.Permission>
+			updateAssetLibraryContentStructurePermission(
+				@GraphQLName("assetLibraryId") @NotEmpty String assetLibraryId,
+				@GraphQLName("permissions")
+					com.liferay.portal.vulcan.permission.Permission[]
+						permissions)
+		throws Exception {
+
+		return _applyComponentServiceObjects(
+			_contentStructureResourceComponentServiceObjects,
+			this::_populateResourceContext,
+			contentStructureResource -> {
+				Page paginationPage =
+					contentStructureResource.
+						putAssetLibraryContentStructurePermission(
+							Long.valueOf(assetLibraryId), permissions);
+
+				return paginationPage.getItems();
+			});
+	}
+
+	@GraphQLField
+	public java.util.Collection<com.liferay.portal.vulcan.permission.Permission>
+			updateContentStructurePermission(
+				@GraphQLName("contentStructureId") Long contentStructureId,
+				@GraphQLName("permissions")
+					com.liferay.portal.vulcan.permission.Permission[]
+						permissions)
+		throws Exception {
+
+		return _applyComponentServiceObjects(
+			_contentStructureResourceComponentServiceObjects,
+			this::_populateResourceContext,
+			contentStructureResource -> {
+				Page paginationPage =
+					contentStructureResource.putContentStructurePermission(
+						contentStructureId, permissions);
+
+				return paginationPage.getItems();
+			});
+	}
+
+	@GraphQLField
+	public java.util.Collection<com.liferay.portal.vulcan.permission.Permission>
+			updateSiteContentStructurePermission(
+				@GraphQLName("siteKey") @NotEmpty String siteKey,
+				@GraphQLName("permissions")
+					com.liferay.portal.vulcan.permission.Permission[]
+						permissions)
+		throws Exception {
+
+		return _applyComponentServiceObjects(
+			_contentStructureResourceComponentServiceObjects,
+			this::_populateResourceContext,
+			contentStructureResource -> {
+				Page paginationPage =
+					contentStructureResource.putSiteContentStructurePermission(
+						Long.valueOf(siteKey), permissions);
+
+				return paginationPage.getItems();
+			});
+	}
+
+	@GraphQLField
 	@GraphQLName(
 		description = "null",
 		value = "postAssetLibraryDocumentAssetLibraryIdMultipartBody"
@@ -652,6 +804,27 @@ public class Mutation {
 			documentResource -> documentResource.postAssetLibraryDocumentBatch(
 				Long.valueOf(assetLibraryId), multipartBody, callbackURL,
 				object));
+	}
+
+	@GraphQLField
+	public java.util.Collection<com.liferay.portal.vulcan.permission.Permission>
+			updateAssetLibraryDocumentPermission(
+				@GraphQLName("assetLibraryId") @NotEmpty String assetLibraryId,
+				@GraphQLName("permissions")
+					com.liferay.portal.vulcan.permission.Permission[]
+						permissions)
+		throws Exception {
+
+		return _applyComponentServiceObjects(
+			_documentResourceComponentServiceObjects,
+			this::_populateResourceContext,
+			documentResource -> {
+				Page paginationPage =
+					documentResource.putAssetLibraryDocumentPermission(
+						Long.valueOf(assetLibraryId), permissions);
+
+				return paginationPage.getItems();
+			});
 	}
 
 	@GraphQLField(
@@ -814,6 +987,26 @@ public class Mutation {
 				documentId, rating));
 	}
 
+	@GraphQLField
+	public java.util.Collection<com.liferay.portal.vulcan.permission.Permission>
+			updateDocumentPermission(
+				@GraphQLName("documentId") Long documentId,
+				@GraphQLName("permissions")
+					com.liferay.portal.vulcan.permission.Permission[]
+						permissions)
+		throws Exception {
+
+		return _applyComponentServiceObjects(
+			_documentResourceComponentServiceObjects,
+			this::_populateResourceContext,
+			documentResource -> {
+				Page paginationPage = documentResource.putDocumentPermission(
+					documentId, permissions);
+
+				return paginationPage.getItems();
+			});
+	}
+
 	@GraphQLField(
 		description = "Creates a new document. The request body must be `multipart/form-data` with two parts, the file's bytes (`file`), and an optional JSON string (`document`) with the metadata."
 	)
@@ -848,6 +1041,67 @@ public class Mutation {
 				Long.valueOf(siteKey), multipartBody, callbackURL, object));
 	}
 
+	@GraphQLField(
+		description = "Deletes the site's document by external reference code returns a 204 if the operation succeeds."
+	)
+	public boolean deleteSiteDocumentByExternalReferenceCode(
+			@GraphQLName("siteKey") @NotEmpty String siteKey,
+			@GraphQLName("externalReferenceCode") String externalReferenceCode)
+		throws Exception {
+
+		_applyVoidComponentServiceObjects(
+			_documentResourceComponentServiceObjects,
+			this::_populateResourceContext,
+			documentResource ->
+				documentResource.deleteSiteDocumentByExternalReferenceCode(
+					Long.valueOf(siteKey), externalReferenceCode));
+
+		return true;
+	}
+
+	@GraphQLField(
+		description = "Replaces the document by external reference code with the information sent in the request body, or replaces it if it not exists. Any missing fields are deleted, unless they are required. The request body must be `multipart/form-data` with two parts, the file'sbytes (`file`), and an optional JSON string (`document`) with the metadata."
+	)
+	@GraphQLName(
+		description = "Replaces the document by external reference code with the information sent in the request body, or replaces it if it not exists. Any missing fields are deleted, unless they are required. The request body must be `multipart/form-data` with two parts, the file'sbytes (`file`), and an optional JSON string (`document`) with the metadata.",
+		value = "putSiteDocumentByExternalReferenceCodeSiteIdExternalReferenceCodeMultipartBody"
+	)
+	public Document updateSiteDocumentByExternalReferenceCode(
+			@GraphQLName("siteKey") @NotEmpty String siteKey,
+			@GraphQLName("externalReferenceCode") String externalReferenceCode,
+			@GraphQLName("multipartBody") MultipartBody multipartBody)
+		throws Exception {
+
+		return _applyComponentServiceObjects(
+			_documentResourceComponentServiceObjects,
+			this::_populateResourceContext,
+			documentResource ->
+				documentResource.putSiteDocumentByExternalReferenceCode(
+					Long.valueOf(siteKey), externalReferenceCode,
+					multipartBody));
+	}
+
+	@GraphQLField
+	public java.util.Collection<com.liferay.portal.vulcan.permission.Permission>
+			updateSiteDocumentPermission(
+				@GraphQLName("siteKey") @NotEmpty String siteKey,
+				@GraphQLName("permissions")
+					com.liferay.portal.vulcan.permission.Permission[]
+						permissions)
+		throws Exception {
+
+		return _applyComponentServiceObjects(
+			_documentResourceComponentServiceObjects,
+			this::_populateResourceContext,
+			documentResource -> {
+				Page paginationPage =
+					documentResource.putSiteDocumentPermission(
+						Long.valueOf(siteKey), permissions);
+
+				return paginationPage.getItems();
+			});
+	}
+
 	@GraphQLField
 	public DocumentFolder createAssetLibraryDocumentFolder(
 			@GraphQLName("assetLibraryId") @NotEmpty String assetLibraryId,
@@ -875,6 +1129,28 @@ public class Mutation {
 			documentFolderResource ->
 				documentFolderResource.postAssetLibraryDocumentFolderBatch(
 					Long.valueOf(assetLibraryId), callbackURL, object));
+	}
+
+	@GraphQLField
+	public java.util.Collection<com.liferay.portal.vulcan.permission.Permission>
+			updateAssetLibraryDocumentFolderPermission(
+				@GraphQLName("assetLibraryId") @NotEmpty String assetLibraryId,
+				@GraphQLName("permissions")
+					com.liferay.portal.vulcan.permission.Permission[]
+						permissions)
+		throws Exception {
+
+		return _applyComponentServiceObjects(
+			_documentFolderResourceComponentServiceObjects,
+			this::_populateResourceContext,
+			documentFolderResource -> {
+				Page paginationPage =
+					documentFolderResource.
+						putAssetLibraryDocumentFolderPermission(
+							Long.valueOf(assetLibraryId), permissions);
+
+				return paginationPage.getItems();
+			});
 	}
 
 	@GraphQLField(
@@ -953,6 +1229,27 @@ public class Mutation {
 	}
 
 	@GraphQLField
+	public java.util.Collection<com.liferay.portal.vulcan.permission.Permission>
+			updateDocumentFolderPermission(
+				@GraphQLName("documentFolderId") Long documentFolderId,
+				@GraphQLName("permissions")
+					com.liferay.portal.vulcan.permission.Permission[]
+						permissions)
+		throws Exception {
+
+		return _applyComponentServiceObjects(
+			_documentFolderResourceComponentServiceObjects,
+			this::_populateResourceContext,
+			documentFolderResource -> {
+				Page paginationPage =
+					documentFolderResource.putDocumentFolderPermission(
+						documentFolderId, permissions);
+
+				return paginationPage.getItems();
+			});
+	}
+
+	@GraphQLField
 	public boolean updateDocumentFolderSubscribe(
 			@GraphQLName("documentFolderId") Long documentFolderId)
 		throws Exception {
@@ -1027,6 +1324,27 @@ public class Mutation {
 					Long.valueOf(siteKey), callbackURL, object));
 	}
 
+	@GraphQLField
+	public java.util.Collection<com.liferay.portal.vulcan.permission.Permission>
+			updateSiteDocumentFolderPermission(
+				@GraphQLName("siteKey") @NotEmpty String siteKey,
+				@GraphQLName("permissions")
+					com.liferay.portal.vulcan.permission.Permission[]
+						permissions)
+		throws Exception {
+
+		return _applyComponentServiceObjects(
+			_documentFolderResourceComponentServiceObjects,
+			this::_populateResourceContext,
+			documentFolderResource -> {
+				Page paginationPage =
+					documentFolderResource.putSiteDocumentFolderPermission(
+						Long.valueOf(siteKey), permissions);
+
+				return paginationPage.getItems();
+			});
+	}
+
 	@GraphQLField(
 		description = "Deletes the knowledge base article and returns a 204 if the operation succeeds."
 	)
@@ -1063,8 +1381,8 @@ public class Mutation {
 	)
 	public KnowledgeBaseArticle patchKnowledgeBaseArticle(
 			@GraphQLName("knowledgeBaseArticleId") Long knowledgeBaseArticleId,
-			@GraphQLName("knowledgeBaseArticle")
-				KnowledgeBaseArticle knowledgeBaseArticle)
+			@GraphQLName("knowledgeBaseArticle") KnowledgeBaseArticle
+				knowledgeBaseArticle)
 		throws Exception {
 
 		return _applyComponentServiceObjects(
@@ -1080,8 +1398,8 @@ public class Mutation {
 	)
 	public KnowledgeBaseArticle updateKnowledgeBaseArticle(
 			@GraphQLName("knowledgeBaseArticleId") Long knowledgeBaseArticleId,
-			@GraphQLName("knowledgeBaseArticle")
-				KnowledgeBaseArticle knowledgeBaseArticle)
+			@GraphQLName("knowledgeBaseArticle") KnowledgeBaseArticle
+				knowledgeBaseArticle)
 		throws Exception {
 
 		return _applyComponentServiceObjects(
@@ -1156,6 +1474,29 @@ public class Mutation {
 	}
 
 	@GraphQLField
+	public java.util.Collection<com.liferay.portal.vulcan.permission.Permission>
+			updateKnowledgeBaseArticlePermission(
+				@GraphQLName("knowledgeBaseArticleId") Long
+					knowledgeBaseArticleId,
+				@GraphQLName("permissions")
+					com.liferay.portal.vulcan.permission.Permission[]
+						permissions)
+		throws Exception {
+
+		return _applyComponentServiceObjects(
+			_knowledgeBaseArticleResourceComponentServiceObjects,
+			this::_populateResourceContext,
+			knowledgeBaseArticleResource -> {
+				Page paginationPage =
+					knowledgeBaseArticleResource.
+						putKnowledgeBaseArticlePermission(
+							knowledgeBaseArticleId, permissions);
+
+				return paginationPage.getItems();
+			});
+	}
+
+	@GraphQLField
 	public boolean updateKnowledgeBaseArticleSubscribe(
 			@GraphQLName("knowledgeBaseArticleId") Long knowledgeBaseArticleId)
 		throws Exception {
@@ -1189,10 +1530,10 @@ public class Mutation {
 		description = "Creates a child knowledge base article of the knowledge base article identified by `parentKnowledgeBaseArticleId`."
 	)
 	public KnowledgeBaseArticle createKnowledgeBaseArticleKnowledgeBaseArticle(
-			@GraphQLName("parentKnowledgeBaseArticleId")
-				Long parentKnowledgeBaseArticleId,
-			@GraphQLName("knowledgeBaseArticle")
-				KnowledgeBaseArticle knowledgeBaseArticle)
+			@GraphQLName("parentKnowledgeBaseArticleId") Long
+				parentKnowledgeBaseArticleId,
+			@GraphQLName("knowledgeBaseArticle") KnowledgeBaseArticle
+				knowledgeBaseArticle)
 		throws Exception {
 
 		return _applyComponentServiceObjects(
@@ -1209,8 +1550,8 @@ public class Mutation {
 	)
 	public KnowledgeBaseArticle createKnowledgeBaseFolderKnowledgeBaseArticle(
 			@GraphQLName("knowledgeBaseFolderId") Long knowledgeBaseFolderId,
-			@GraphQLName("knowledgeBaseArticle")
-				KnowledgeBaseArticle knowledgeBaseArticle)
+			@GraphQLName("knowledgeBaseArticle") KnowledgeBaseArticle
+				knowledgeBaseArticle)
 		throws Exception {
 
 		return _applyComponentServiceObjects(
@@ -1241,8 +1582,8 @@ public class Mutation {
 	@GraphQLField(description = "Creates a new knowledge base article.")
 	public KnowledgeBaseArticle createSiteKnowledgeBaseArticle(
 			@GraphQLName("siteKey") @NotEmpty String siteKey,
-			@GraphQLName("knowledgeBaseArticle")
-				KnowledgeBaseArticle knowledgeBaseArticle)
+			@GraphQLName("knowledgeBaseArticle") KnowledgeBaseArticle
+				knowledgeBaseArticle)
 		throws Exception {
 
 		return _applyComponentServiceObjects(
@@ -1266,6 +1607,69 @@ public class Mutation {
 			knowledgeBaseArticleResource ->
 				knowledgeBaseArticleResource.postSiteKnowledgeBaseArticleBatch(
 					Long.valueOf(siteKey), callbackURL, object));
+	}
+
+	@GraphQLField(
+		description = "Deletes the knowledge base article by external reference code."
+	)
+	public boolean deleteSiteKnowledgeBaseArticleByExternalReferenceCode(
+			@GraphQLName("siteKey") @NotEmpty String siteKey,
+			@GraphQLName("externalReferenceCode") String externalReferenceCode)
+		throws Exception {
+
+		_applyVoidComponentServiceObjects(
+			_knowledgeBaseArticleResourceComponentServiceObjects,
+			this::_populateResourceContext,
+			knowledgeBaseArticleResource ->
+				knowledgeBaseArticleResource.
+					deleteSiteKnowledgeBaseArticleByExternalReferenceCode(
+						Long.valueOf(siteKey), externalReferenceCode));
+
+		return true;
+	}
+
+	@GraphQLField(
+		description = "Updates the site's knowledge base article with the given external reference code, or creates it if it not exists."
+	)
+	public KnowledgeBaseArticle
+			updateSiteKnowledgeBaseArticleByExternalReferenceCode(
+				@GraphQLName("siteKey") @NotEmpty String siteKey,
+				@GraphQLName("externalReferenceCode") String
+					externalReferenceCode,
+				@GraphQLName("knowledgeBaseArticle") KnowledgeBaseArticle
+					knowledgeBaseArticle)
+		throws Exception {
+
+		return _applyComponentServiceObjects(
+			_knowledgeBaseArticleResourceComponentServiceObjects,
+			this::_populateResourceContext,
+			knowledgeBaseArticleResource ->
+				knowledgeBaseArticleResource.
+					putSiteKnowledgeBaseArticleByExternalReferenceCode(
+						Long.valueOf(siteKey), externalReferenceCode,
+						knowledgeBaseArticle));
+	}
+
+	@GraphQLField
+	public java.util.Collection<com.liferay.portal.vulcan.permission.Permission>
+			updateSiteKnowledgeBaseArticlePermission(
+				@GraphQLName("siteKey") @NotEmpty String siteKey,
+				@GraphQLName("permissions")
+					com.liferay.portal.vulcan.permission.Permission[]
+						permissions)
+		throws Exception {
+
+		return _applyComponentServiceObjects(
+			_knowledgeBaseArticleResourceComponentServiceObjects,
+			this::_populateResourceContext,
+			knowledgeBaseArticleResource -> {
+				Page paginationPage =
+					knowledgeBaseArticleResource.
+						putSiteKnowledgeBaseArticlePermission(
+							Long.valueOf(siteKey), permissions);
+
+				return paginationPage.getItems();
+			});
 	}
 
 	@GraphQLField
@@ -1309,8 +1713,8 @@ public class Mutation {
 	)
 	public KnowledgeBaseAttachment
 			createKnowledgeBaseArticleKnowledgeBaseAttachment(
-				@GraphQLName("knowledgeBaseArticleId")
-					Long knowledgeBaseArticleId,
+				@GraphQLName("knowledgeBaseArticleId") Long
+					knowledgeBaseArticleId,
 				@GraphQLName("multipartBody") MultipartBody multipartBody)
 		throws Exception {
 
@@ -1345,8 +1749,8 @@ public class Mutation {
 		description = "Deletes the knowledge base file attachment and returns a 204 if the operation succeeds."
 	)
 	public boolean deleteKnowledgeBaseAttachment(
-			@GraphQLName("knowledgeBaseAttachmentId")
-				Long knowledgeBaseAttachmentId)
+			@GraphQLName("knowledgeBaseAttachmentId") Long
+				knowledgeBaseAttachmentId)
 		throws Exception {
 
 		_applyVoidComponentServiceObjects(
@@ -1409,8 +1813,8 @@ public class Mutation {
 	)
 	public KnowledgeBaseFolder patchKnowledgeBaseFolder(
 			@GraphQLName("knowledgeBaseFolderId") Long knowledgeBaseFolderId,
-			@GraphQLName("knowledgeBaseFolder")
-				KnowledgeBaseFolder knowledgeBaseFolder)
+			@GraphQLName("knowledgeBaseFolder") KnowledgeBaseFolder
+				knowledgeBaseFolder)
 		throws Exception {
 
 		return _applyComponentServiceObjects(
@@ -1426,8 +1830,8 @@ public class Mutation {
 	)
 	public KnowledgeBaseFolder updateKnowledgeBaseFolder(
 			@GraphQLName("knowledgeBaseFolderId") Long knowledgeBaseFolderId,
-			@GraphQLName("knowledgeBaseFolder")
-				KnowledgeBaseFolder knowledgeBaseFolder)
+			@GraphQLName("knowledgeBaseFolder") KnowledgeBaseFolder
+				knowledgeBaseFolder)
 		throws Exception {
 
 		return _applyComponentServiceObjects(
@@ -1452,14 +1856,37 @@ public class Mutation {
 					callbackURL, object));
 	}
 
+	@GraphQLField
+	public java.util.Collection<com.liferay.portal.vulcan.permission.Permission>
+			updateKnowledgeBaseFolderPermission(
+				@GraphQLName("knowledgeBaseFolderId") Long
+					knowledgeBaseFolderId,
+				@GraphQLName("permissions")
+					com.liferay.portal.vulcan.permission.Permission[]
+						permissions)
+		throws Exception {
+
+		return _applyComponentServiceObjects(
+			_knowledgeBaseFolderResourceComponentServiceObjects,
+			this::_populateResourceContext,
+			knowledgeBaseFolderResource -> {
+				Page paginationPage =
+					knowledgeBaseFolderResource.
+						putKnowledgeBaseFolderPermission(
+							knowledgeBaseFolderId, permissions);
+
+				return paginationPage.getItems();
+			});
+	}
+
 	@GraphQLField(
 		description = "Creates a knowledge base folder inside the parent folder."
 	)
 	public KnowledgeBaseFolder createKnowledgeBaseFolderKnowledgeBaseFolder(
-			@GraphQLName("parentKnowledgeBaseFolderId")
-				Long parentKnowledgeBaseFolderId,
-			@GraphQLName("knowledgeBaseFolder")
-				KnowledgeBaseFolder knowledgeBaseFolder)
+			@GraphQLName("parentKnowledgeBaseFolderId") Long
+				parentKnowledgeBaseFolderId,
+			@GraphQLName("knowledgeBaseFolder") KnowledgeBaseFolder
+				knowledgeBaseFolder)
 		throws Exception {
 
 		return _applyComponentServiceObjects(
@@ -1474,8 +1901,8 @@ public class Mutation {
 	@GraphQLField(description = "Creates a new knowledge base folder.")
 	public KnowledgeBaseFolder createSiteKnowledgeBaseFolder(
 			@GraphQLName("siteKey") @NotEmpty String siteKey,
-			@GraphQLName("knowledgeBaseFolder")
-				KnowledgeBaseFolder knowledgeBaseFolder)
+			@GraphQLName("knowledgeBaseFolder") KnowledgeBaseFolder
+				knowledgeBaseFolder)
 		throws Exception {
 
 		return _applyComponentServiceObjects(
@@ -1502,11 +1929,74 @@ public class Mutation {
 	}
 
 	@GraphQLField(
+		description = "Deletes the knowledge base folder by external reference code."
+	)
+	public boolean deleteSiteKnowledgeBaseFolderByExternalReferenceCode(
+			@GraphQLName("siteKey") @NotEmpty String siteKey,
+			@GraphQLName("externalReferenceCode") String externalReferenceCode)
+		throws Exception {
+
+		_applyVoidComponentServiceObjects(
+			_knowledgeBaseFolderResourceComponentServiceObjects,
+			this::_populateResourceContext,
+			knowledgeBaseFolderResource ->
+				knowledgeBaseFolderResource.
+					deleteSiteKnowledgeBaseFolderByExternalReferenceCode(
+						Long.valueOf(siteKey), externalReferenceCode));
+
+		return true;
+	}
+
+	@GraphQLField(
+		description = "Updates the site's knowledge base folder with the given external reference code, or creates it if it not exists."
+	)
+	public KnowledgeBaseFolder
+			updateSiteKnowledgeBaseFolderByExternalReferenceCode(
+				@GraphQLName("siteKey") @NotEmpty String siteKey,
+				@GraphQLName("externalReferenceCode") String
+					externalReferenceCode,
+				@GraphQLName("knowledgeBaseFolder") KnowledgeBaseFolder
+					knowledgeBaseFolder)
+		throws Exception {
+
+		return _applyComponentServiceObjects(
+			_knowledgeBaseFolderResourceComponentServiceObjects,
+			this::_populateResourceContext,
+			knowledgeBaseFolderResource ->
+				knowledgeBaseFolderResource.
+					putSiteKnowledgeBaseFolderByExternalReferenceCode(
+						Long.valueOf(siteKey), externalReferenceCode,
+						knowledgeBaseFolder));
+	}
+
+	@GraphQLField
+	public java.util.Collection<com.liferay.portal.vulcan.permission.Permission>
+			updateSiteKnowledgeBaseFolderPermission(
+				@GraphQLName("siteKey") @NotEmpty String siteKey,
+				@GraphQLName("permissions")
+					com.liferay.portal.vulcan.permission.Permission[]
+						permissions)
+		throws Exception {
+
+		return _applyComponentServiceObjects(
+			_knowledgeBaseFolderResourceComponentServiceObjects,
+			this::_populateResourceContext,
+			knowledgeBaseFolderResource -> {
+				Page paginationPage =
+					knowledgeBaseFolderResource.
+						putSiteKnowledgeBaseFolderPermission(
+							Long.valueOf(siteKey), permissions);
+
+				return paginationPage.getItems();
+			});
+	}
+
+	@GraphQLField(
 		description = "Deletes the message board attachment and returns a 204 if the operation succeeds."
 	)
 	public boolean deleteMessageBoardAttachment(
-			@GraphQLName("messageBoardAttachmentId")
-				Long messageBoardAttachmentId)
+			@GraphQLName("messageBoardAttachmentId") Long
+				messageBoardAttachmentId)
 		throws Exception {
 
 		_applyVoidComponentServiceObjects(
@@ -1542,8 +2032,8 @@ public class Mutation {
 	)
 	public MessageBoardAttachment
 			createMessageBoardMessageMessageBoardAttachment(
-				@GraphQLName("messageBoardMessageId")
-					Long messageBoardMessageId,
+				@GraphQLName("messageBoardMessageId") Long
+					messageBoardMessageId,
 				@GraphQLName("multipartBody") MultipartBody multipartBody)
 		throws Exception {
 
@@ -1650,8 +2140,8 @@ public class Mutation {
 	)
 	public MessageBoardMessage patchMessageBoardMessage(
 			@GraphQLName("messageBoardMessageId") Long messageBoardMessageId,
-			@GraphQLName("messageBoardMessage")
-				MessageBoardMessage messageBoardMessage)
+			@GraphQLName("messageBoardMessage") MessageBoardMessage
+				messageBoardMessage)
 		throws Exception {
 
 		return _applyComponentServiceObjects(
@@ -1667,8 +2157,8 @@ public class Mutation {
 	)
 	public MessageBoardMessage updateMessageBoardMessage(
 			@GraphQLName("messageBoardMessageId") Long messageBoardMessageId,
-			@GraphQLName("messageBoardMessage")
-				MessageBoardMessage messageBoardMessage)
+			@GraphQLName("messageBoardMessage") MessageBoardMessage
+				messageBoardMessage)
 		throws Exception {
 
 		return _applyComponentServiceObjects(
@@ -1743,6 +2233,29 @@ public class Mutation {
 	}
 
 	@GraphQLField
+	public java.util.Collection<com.liferay.portal.vulcan.permission.Permission>
+			updateMessageBoardMessagePermission(
+				@GraphQLName("messageBoardMessageId") Long
+					messageBoardMessageId,
+				@GraphQLName("permissions")
+					com.liferay.portal.vulcan.permission.Permission[]
+						permissions)
+		throws Exception {
+
+		return _applyComponentServiceObjects(
+			_messageBoardMessageResourceComponentServiceObjects,
+			this::_populateResourceContext,
+			messageBoardMessageResource -> {
+				Page paginationPage =
+					messageBoardMessageResource.
+						putMessageBoardMessagePermission(
+							messageBoardMessageId, permissions);
+
+				return paginationPage.getItems();
+			});
+	}
+
+	@GraphQLField
 	public boolean updateMessageBoardMessageSubscribe(
 			@GraphQLName("messageBoardMessageId") Long messageBoardMessageId)
 		throws Exception {
@@ -1776,10 +2289,10 @@ public class Mutation {
 		description = "Creates a child message board message of the parent message."
 	)
 	public MessageBoardMessage createMessageBoardMessageMessageBoardMessage(
-			@GraphQLName("parentMessageBoardMessageId")
-				Long parentMessageBoardMessageId,
-			@GraphQLName("messageBoardMessage")
-				MessageBoardMessage messageBoardMessage)
+			@GraphQLName("parentMessageBoardMessageId") Long
+				parentMessageBoardMessageId,
+			@GraphQLName("messageBoardMessage") MessageBoardMessage
+				messageBoardMessage)
 		throws Exception {
 
 		return _applyComponentServiceObjects(
@@ -1796,8 +2309,8 @@ public class Mutation {
 	)
 	public MessageBoardMessage createMessageBoardThreadMessageBoardMessage(
 			@GraphQLName("messageBoardThreadId") Long messageBoardThreadId,
-			@GraphQLName("messageBoardMessage")
-				MessageBoardMessage messageBoardMessage)
+			@GraphQLName("messageBoardMessage") MessageBoardMessage
+				messageBoardMessage)
 		throws Exception {
 
 		return _applyComponentServiceObjects(
@@ -1829,8 +2342,8 @@ public class Mutation {
 		description = "Deletes the site's message board message by external reference code."
 	)
 	public boolean deleteSiteMessageBoardMessageByExternalReferenceCode(
-			@GraphQLName("externalReferenceCode") String externalReferenceCode,
-			@GraphQLName("siteKey") @NotEmpty String siteKey)
+			@GraphQLName("siteKey") @NotEmpty String siteKey,
+			@GraphQLName("externalReferenceCode") String externalReferenceCode)
 		throws Exception {
 
 		_applyVoidComponentServiceObjects(
@@ -1839,7 +2352,7 @@ public class Mutation {
 			messageBoardMessageResource ->
 				messageBoardMessageResource.
 					deleteSiteMessageBoardMessageByExternalReferenceCode(
-						externalReferenceCode, Long.valueOf(siteKey)));
+						Long.valueOf(siteKey), externalReferenceCode));
 
 		return true;
 	}
@@ -1849,11 +2362,11 @@ public class Mutation {
 	)
 	public MessageBoardMessage
 			updateSiteMessageBoardMessageByExternalReferenceCode(
-				@GraphQLName("externalReferenceCode")
-					String externalReferenceCode,
 				@GraphQLName("siteKey") @NotEmpty String siteKey,
-				@GraphQLName("messageBoardMessage")
-					MessageBoardMessage messageBoardMessage)
+				@GraphQLName("externalReferenceCode") String
+					externalReferenceCode,
+				@GraphQLName("messageBoardMessage") MessageBoardMessage
+					messageBoardMessage)
 		throws Exception {
 
 		return _applyComponentServiceObjects(
@@ -1862,8 +2375,30 @@ public class Mutation {
 			messageBoardMessageResource ->
 				messageBoardMessageResource.
 					putSiteMessageBoardMessageByExternalReferenceCode(
-						externalReferenceCode, Long.valueOf(siteKey),
+						Long.valueOf(siteKey), externalReferenceCode,
 						messageBoardMessage));
+	}
+
+	@GraphQLField
+	public java.util.Collection<com.liferay.portal.vulcan.permission.Permission>
+			updateSiteMessageBoardMessagePermission(
+				@GraphQLName("siteKey") @NotEmpty String siteKey,
+				@GraphQLName("permissions")
+					com.liferay.portal.vulcan.permission.Permission[]
+						permissions)
+		throws Exception {
+
+		return _applyComponentServiceObjects(
+			_messageBoardMessageResourceComponentServiceObjects,
+			this::_populateResourceContext,
+			messageBoardMessageResource -> {
+				Page paginationPage =
+					messageBoardMessageResource.
+						putSiteMessageBoardMessagePermission(
+							Long.valueOf(siteKey), permissions);
+
+				return paginationPage.getItems();
+			});
 	}
 
 	@GraphQLField(
@@ -1902,8 +2437,8 @@ public class Mutation {
 	)
 	public MessageBoardSection patchMessageBoardSection(
 			@GraphQLName("messageBoardSectionId") Long messageBoardSectionId,
-			@GraphQLName("messageBoardSection")
-				MessageBoardSection messageBoardSection)
+			@GraphQLName("messageBoardSection") MessageBoardSection
+				messageBoardSection)
 		throws Exception {
 
 		return _applyComponentServiceObjects(
@@ -1919,8 +2454,8 @@ public class Mutation {
 	)
 	public MessageBoardSection updateMessageBoardSection(
 			@GraphQLName("messageBoardSectionId") Long messageBoardSectionId,
-			@GraphQLName("messageBoardSection")
-				MessageBoardSection messageBoardSection)
+			@GraphQLName("messageBoardSection") MessageBoardSection
+				messageBoardSection)
 		throws Exception {
 
 		return _applyComponentServiceObjects(
@@ -1943,6 +2478,29 @@ public class Mutation {
 			messageBoardSectionResource ->
 				messageBoardSectionResource.putMessageBoardSectionBatch(
 					callbackURL, object));
+	}
+
+	@GraphQLField
+	public java.util.Collection<com.liferay.portal.vulcan.permission.Permission>
+			updateMessageBoardSectionPermission(
+				@GraphQLName("messageBoardSectionId") Long
+					messageBoardSectionId,
+				@GraphQLName("permissions")
+					com.liferay.portal.vulcan.permission.Permission[]
+						permissions)
+		throws Exception {
+
+		return _applyComponentServiceObjects(
+			_messageBoardSectionResourceComponentServiceObjects,
+			this::_populateResourceContext,
+			messageBoardSectionResource -> {
+				Page paginationPage =
+					messageBoardSectionResource.
+						putMessageBoardSectionPermission(
+							messageBoardSectionId, permissions);
+
+				return paginationPage.getItems();
+			});
 	}
 
 	@GraphQLField
@@ -1979,10 +2537,10 @@ public class Mutation {
 		description = "Creates a new message board section in the parent section."
 	)
 	public MessageBoardSection createMessageBoardSectionMessageBoardSection(
-			@GraphQLName("parentMessageBoardSectionId")
-				Long parentMessageBoardSectionId,
-			@GraphQLName("messageBoardSection")
-				MessageBoardSection messageBoardSection)
+			@GraphQLName("parentMessageBoardSectionId") Long
+				parentMessageBoardSectionId,
+			@GraphQLName("messageBoardSection") MessageBoardSection
+				messageBoardSection)
 		throws Exception {
 
 		return _applyComponentServiceObjects(
@@ -1997,8 +2555,8 @@ public class Mutation {
 	@GraphQLField(description = "Creates a new message board section.")
 	public MessageBoardSection createSiteMessageBoardSection(
 			@GraphQLName("siteKey") @NotEmpty String siteKey,
-			@GraphQLName("messageBoardSection")
-				MessageBoardSection messageBoardSection)
+			@GraphQLName("messageBoardSection") MessageBoardSection
+				messageBoardSection)
 		throws Exception {
 
 		return _applyComponentServiceObjects(
@@ -2024,13 +2582,35 @@ public class Mutation {
 					Long.valueOf(siteKey), callbackURL, object));
 	}
 
+	@GraphQLField
+	public java.util.Collection<com.liferay.portal.vulcan.permission.Permission>
+			updateSiteMessageBoardSectionPermission(
+				@GraphQLName("siteKey") @NotEmpty String siteKey,
+				@GraphQLName("permissions")
+					com.liferay.portal.vulcan.permission.Permission[]
+						permissions)
+		throws Exception {
+
+		return _applyComponentServiceObjects(
+			_messageBoardSectionResourceComponentServiceObjects,
+			this::_populateResourceContext,
+			messageBoardSectionResource -> {
+				Page paginationPage =
+					messageBoardSectionResource.
+						putSiteMessageBoardSectionPermission(
+							Long.valueOf(siteKey), permissions);
+
+				return paginationPage.getItems();
+			});
+	}
+
 	@GraphQLField(
 		description = "Creates a new message board thread inside a section."
 	)
 	public MessageBoardThread createMessageBoardSectionMessageBoardThread(
 			@GraphQLName("messageBoardSectionId") Long messageBoardSectionId,
-			@GraphQLName("messageBoardThread")
-				MessageBoardThread messageBoardThread)
+			@GraphQLName("messageBoardThread") MessageBoardThread
+				messageBoardThread)
 		throws Exception {
 
 		return _applyComponentServiceObjects(
@@ -2094,8 +2674,8 @@ public class Mutation {
 	)
 	public MessageBoardThread patchMessageBoardThread(
 			@GraphQLName("messageBoardThreadId") Long messageBoardThreadId,
-			@GraphQLName("messageBoardThread")
-				MessageBoardThread messageBoardThread)
+			@GraphQLName("messageBoardThread") MessageBoardThread
+				messageBoardThread)
 		throws Exception {
 
 		return _applyComponentServiceObjects(
@@ -2111,8 +2691,8 @@ public class Mutation {
 	)
 	public MessageBoardThread updateMessageBoardThread(
 			@GraphQLName("messageBoardThreadId") Long messageBoardThreadId,
-			@GraphQLName("messageBoardThread")
-				MessageBoardThread messageBoardThread)
+			@GraphQLName("messageBoardThread") MessageBoardThread
+				messageBoardThread)
 		throws Exception {
 
 		return _applyComponentServiceObjects(
@@ -2185,6 +2765,27 @@ public class Mutation {
 	}
 
 	@GraphQLField
+	public java.util.Collection<com.liferay.portal.vulcan.permission.Permission>
+			updateMessageBoardThreadPermission(
+				@GraphQLName("messageBoardThreadId") Long messageBoardThreadId,
+				@GraphQLName("permissions")
+					com.liferay.portal.vulcan.permission.Permission[]
+						permissions)
+		throws Exception {
+
+		return _applyComponentServiceObjects(
+			_messageBoardThreadResourceComponentServiceObjects,
+			this::_populateResourceContext,
+			messageBoardThreadResource -> {
+				Page paginationPage =
+					messageBoardThreadResource.putMessageBoardThreadPermission(
+						messageBoardThreadId, permissions);
+
+				return paginationPage.getItems();
+			});
+	}
+
+	@GraphQLField
 	public boolean updateMessageBoardThreadSubscribe(
 			@GraphQLName("messageBoardThreadId") Long messageBoardThreadId)
 		throws Exception {
@@ -2217,8 +2818,8 @@ public class Mutation {
 	@GraphQLField(description = "Creates a new message board thread.")
 	public MessageBoardThread createSiteMessageBoardThread(
 			@GraphQLName("siteKey") @NotEmpty String siteKey,
-			@GraphQLName("messageBoardThread")
-				MessageBoardThread messageBoardThread)
+			@GraphQLName("messageBoardThread") MessageBoardThread
+				messageBoardThread)
 		throws Exception {
 
 		return _applyComponentServiceObjects(
@@ -2242,6 +2843,28 @@ public class Mutation {
 			messageBoardThreadResource ->
 				messageBoardThreadResource.postSiteMessageBoardThreadBatch(
 					Long.valueOf(siteKey), callbackURL, object));
+	}
+
+	@GraphQLField
+	public java.util.Collection<com.liferay.portal.vulcan.permission.Permission>
+			updateSiteMessageBoardThreadPermission(
+				@GraphQLName("siteKey") @NotEmpty String siteKey,
+				@GraphQLName("permissions")
+					com.liferay.portal.vulcan.permission.Permission[]
+						permissions)
+		throws Exception {
+
+		return _applyComponentServiceObjects(
+			_messageBoardThreadResourceComponentServiceObjects,
+			this::_populateResourceContext,
+			messageBoardThreadResource -> {
+				Page paginationPage =
+					messageBoardThreadResource.
+						putSiteMessageBoardThreadPermission(
+							Long.valueOf(siteKey), permissions);
+
+				return paginationPage.getItems();
+			});
 	}
 
 	@GraphQLField(
@@ -2303,6 +2926,27 @@ public class Mutation {
 					callbackURL, object));
 	}
 
+	@GraphQLField
+	public java.util.Collection<com.liferay.portal.vulcan.permission.Permission>
+			updateNavigationMenuPermission(
+				@GraphQLName("navigationMenuId") Long navigationMenuId,
+				@GraphQLName("permissions")
+					com.liferay.portal.vulcan.permission.Permission[]
+						permissions)
+		throws Exception {
+
+		return _applyComponentServiceObjects(
+			_navigationMenuResourceComponentServiceObjects,
+			this::_populateResourceContext,
+			navigationMenuResource -> {
+				Page paginationPage =
+					navigationMenuResource.putNavigationMenuPermission(
+						navigationMenuId, permissions);
+
+				return paginationPage.getItems();
+			});
+	}
+
 	@GraphQLField(description = "Creates a new navigation menu.")
 	public NavigationMenu createSiteNavigationMenu(
 			@GraphQLName("siteKey") @NotEmpty String siteKey,
@@ -2333,10 +2977,31 @@ public class Mutation {
 	}
 
 	@GraphQLField
+	public java.util.Collection<com.liferay.portal.vulcan.permission.Permission>
+			updateSiteNavigationMenuPermission(
+				@GraphQLName("siteKey") @NotEmpty String siteKey,
+				@GraphQLName("permissions")
+					com.liferay.portal.vulcan.permission.Permission[]
+						permissions)
+		throws Exception {
+
+		return _applyComponentServiceObjects(
+			_navigationMenuResourceComponentServiceObjects,
+			this::_populateResourceContext,
+			navigationMenuResource -> {
+				Page paginationPage =
+					navigationMenuResource.putSiteNavigationMenuPermission(
+						Long.valueOf(siteKey), permissions);
+
+				return paginationPage.getItems();
+			});
+	}
+
+	@GraphQLField
 	public StructuredContent createAssetLibraryStructuredContent(
 			@GraphQLName("assetLibraryId") @NotEmpty String assetLibraryId,
-			@GraphQLName("structuredContent")
-				StructuredContent structuredContent)
+			@GraphQLName("structuredContent") StructuredContent
+				structuredContent)
 		throws Exception {
 
 		return _applyComponentServiceObjects(
@@ -2363,11 +3028,33 @@ public class Mutation {
 						Long.valueOf(assetLibraryId), callbackURL, object));
 	}
 
+	@GraphQLField
+	public java.util.Collection<com.liferay.portal.vulcan.permission.Permission>
+			updateAssetLibraryStructuredContentPermission(
+				@GraphQLName("assetLibraryId") @NotEmpty String assetLibraryId,
+				@GraphQLName("permissions")
+					com.liferay.portal.vulcan.permission.Permission[]
+						permissions)
+		throws Exception {
+
+		return _applyComponentServiceObjects(
+			_structuredContentResourceComponentServiceObjects,
+			this::_populateResourceContext,
+			structuredContentResource -> {
+				Page paginationPage =
+					structuredContentResource.
+						putAssetLibraryStructuredContentPermission(
+							Long.valueOf(assetLibraryId), permissions);
+
+				return paginationPage.getItems();
+			});
+	}
+
 	@GraphQLField(description = "Creates a new structured content.")
 	public StructuredContent createSiteStructuredContent(
 			@GraphQLName("siteKey") @NotEmpty String siteKey,
-			@GraphQLName("structuredContent")
-				StructuredContent structuredContent)
+			@GraphQLName("structuredContent") StructuredContent
+				structuredContent)
 		throws Exception {
 
 		return _applyComponentServiceObjects(
@@ -2393,31 +3080,75 @@ public class Mutation {
 					Long.valueOf(siteKey), callbackURL, object));
 	}
 
-	@GraphQLField
-	public boolean updateSiteStructuredContentPermission(
+	@GraphQLField(
+		description = "Deletes the site's structured content by external reference code."
+	)
+	public boolean deleteSiteStructuredContentByExternalReferenceCode(
 			@GraphQLName("siteKey") @NotEmpty String siteKey,
-			@GraphQLName("permissions")
-				com.liferay.portal.vulcan.permission.Permission[] permissions)
+			@GraphQLName("externalReferenceCode") String externalReferenceCode)
 		throws Exception {
 
 		_applyVoidComponentServiceObjects(
 			_structuredContentResourceComponentServiceObjects,
 			this::_populateResourceContext,
 			structuredContentResource ->
-				structuredContentResource.putSiteStructuredContentPermission(
-					Long.valueOf(siteKey), permissions));
+				structuredContentResource.
+					deleteSiteStructuredContentByExternalReferenceCode(
+						Long.valueOf(siteKey), externalReferenceCode));
 
 		return true;
+	}
+
+	@GraphQLField(
+		description = "Updates the site's structured content with the given external reference code, or creates it if it not exists."
+	)
+	public StructuredContent updateSiteStructuredContentByExternalReferenceCode(
+			@GraphQLName("siteKey") @NotEmpty String siteKey,
+			@GraphQLName("externalReferenceCode") String externalReferenceCode,
+			@GraphQLName("structuredContent") StructuredContent
+				structuredContent)
+		throws Exception {
+
+		return _applyComponentServiceObjects(
+			_structuredContentResourceComponentServiceObjects,
+			this::_populateResourceContext,
+			structuredContentResource ->
+				structuredContentResource.
+					putSiteStructuredContentByExternalReferenceCode(
+						Long.valueOf(siteKey), externalReferenceCode,
+						structuredContent));
+	}
+
+	@GraphQLField
+	public java.util.Collection<com.liferay.portal.vulcan.permission.Permission>
+			updateSiteStructuredContentPermission(
+				@GraphQLName("siteKey") @NotEmpty String siteKey,
+				@GraphQLName("permissions")
+					com.liferay.portal.vulcan.permission.Permission[]
+						permissions)
+		throws Exception {
+
+		return _applyComponentServiceObjects(
+			_structuredContentResourceComponentServiceObjects,
+			this::_populateResourceContext,
+			structuredContentResource -> {
+				Page paginationPage =
+					structuredContentResource.
+						putSiteStructuredContentPermission(
+							Long.valueOf(siteKey), permissions);
+
+				return paginationPage.getItems();
+			});
 	}
 
 	@GraphQLField(
 		description = "Creates a new structured content in the folder."
 	)
 	public StructuredContent createStructuredContentFolderStructuredContent(
-			@GraphQLName("structuredContentFolderId")
-				Long structuredContentFolderId,
-			@GraphQLName("structuredContent")
-				StructuredContent structuredContent)
+			@GraphQLName("structuredContentFolderId") Long
+				structuredContentFolderId,
+			@GraphQLName("structuredContent") StructuredContent
+				structuredContent)
 		throws Exception {
 
 		return _applyComponentServiceObjects(
@@ -2431,8 +3162,8 @@ public class Mutation {
 
 	@GraphQLField
 	public Response createStructuredContentFolderStructuredContentBatch(
-			@GraphQLName("structuredContentFolderId")
-				Long structuredContentFolderId,
+			@GraphQLName("structuredContentFolderId") Long
+				structuredContentFolderId,
 			@GraphQLName("callbackURL") String callbackURL,
 			@GraphQLName("object") Object object)
 		throws Exception {
@@ -2482,8 +3213,8 @@ public class Mutation {
 	)
 	public StructuredContent patchStructuredContent(
 			@GraphQLName("structuredContentId") Long structuredContentId,
-			@GraphQLName("structuredContent")
-				StructuredContent structuredContent)
+			@GraphQLName("structuredContent") StructuredContent
+				structuredContent)
 		throws Exception {
 
 		return _applyComponentServiceObjects(
@@ -2499,8 +3230,8 @@ public class Mutation {
 	)
 	public StructuredContent updateStructuredContent(
 			@GraphQLName("structuredContentId") Long structuredContentId,
-			@GraphQLName("structuredContent")
-				StructuredContent structuredContent)
+			@GraphQLName("structuredContent") StructuredContent
+				structuredContent)
 		throws Exception {
 
 		return _applyComponentServiceObjects(
@@ -2573,20 +3304,24 @@ public class Mutation {
 	}
 
 	@GraphQLField
-	public boolean updateStructuredContentPermission(
-			@GraphQLName("structuredContentId") Long structuredContentId,
-			@GraphQLName("permissions")
-				com.liferay.portal.vulcan.permission.Permission[] permissions)
+	public java.util.Collection<com.liferay.portal.vulcan.permission.Permission>
+			updateStructuredContentPermission(
+				@GraphQLName("structuredContentId") Long structuredContentId,
+				@GraphQLName("permissions")
+					com.liferay.portal.vulcan.permission.Permission[]
+						permissions)
 		throws Exception {
 
-		_applyVoidComponentServiceObjects(
+		return _applyComponentServiceObjects(
 			_structuredContentResourceComponentServiceObjects,
 			this::_populateResourceContext,
-			structuredContentResource ->
-				structuredContentResource.putStructuredContentPermission(
-					structuredContentId, permissions));
+			structuredContentResource -> {
+				Page paginationPage =
+					structuredContentResource.putStructuredContentPermission(
+						structuredContentId, permissions);
 
-		return true;
+				return paginationPage.getItems();
+			});
 	}
 
 	@GraphQLField
@@ -2622,8 +3357,8 @@ public class Mutation {
 	@GraphQLField
 	public StructuredContentFolder createAssetLibraryStructuredContentFolder(
 			@GraphQLName("assetLibraryId") @NotEmpty String assetLibraryId,
-			@GraphQLName("structuredContentFolder")
-				StructuredContentFolder structuredContentFolder)
+			@GraphQLName("structuredContentFolder") StructuredContentFolder
+				structuredContentFolder)
 		throws Exception {
 
 		return _applyComponentServiceObjects(
@@ -2651,11 +3386,33 @@ public class Mutation {
 						Long.valueOf(assetLibraryId), callbackURL, object));
 	}
 
+	@GraphQLField
+	public java.util.Collection<com.liferay.portal.vulcan.permission.Permission>
+			updateAssetLibraryStructuredContentFolderPermission(
+				@GraphQLName("assetLibraryId") @NotEmpty String assetLibraryId,
+				@GraphQLName("permissions")
+					com.liferay.portal.vulcan.permission.Permission[]
+						permissions)
+		throws Exception {
+
+		return _applyComponentServiceObjects(
+			_structuredContentFolderResourceComponentServiceObjects,
+			this::_populateResourceContext,
+			structuredContentFolderResource -> {
+				Page paginationPage =
+					structuredContentFolderResource.
+						putAssetLibraryStructuredContentFolderPermission(
+							Long.valueOf(assetLibraryId), permissions);
+
+				return paginationPage.getItems();
+			});
+	}
+
 	@GraphQLField(description = "Creates a new structured content folder.")
 	public StructuredContentFolder createSiteStructuredContentFolder(
 			@GraphQLName("siteKey") @NotEmpty String siteKey,
-			@GraphQLName("structuredContentFolder")
-				StructuredContentFolder structuredContentFolder)
+			@GraphQLName("structuredContentFolder") StructuredContentFolder
+				structuredContentFolder)
 		throws Exception {
 
 		return _applyComponentServiceObjects(
@@ -2682,15 +3439,60 @@ public class Mutation {
 						Long.valueOf(siteKey), callbackURL, object));
 	}
 
+	@GraphQLField
+	public java.util.Collection<com.liferay.portal.vulcan.permission.Permission>
+			updateSiteStructuredContentFolderPermission(
+				@GraphQLName("siteKey") @NotEmpty String siteKey,
+				@GraphQLName("permissions")
+					com.liferay.portal.vulcan.permission.Permission[]
+						permissions)
+		throws Exception {
+
+		return _applyComponentServiceObjects(
+			_structuredContentFolderResourceComponentServiceObjects,
+			this::_populateResourceContext,
+			structuredContentFolderResource -> {
+				Page paginationPage =
+					structuredContentFolderResource.
+						putSiteStructuredContentFolderPermission(
+							Long.valueOf(siteKey), permissions);
+
+				return paginationPage.getItems();
+			});
+	}
+
+	@GraphQLField
+	public java.util.Collection<com.liferay.portal.vulcan.permission.Permission>
+			updateStructuredContentFolderPermission(
+				@GraphQLName("structuredContentFolderId") Long
+					structuredContentFolderId,
+				@GraphQLName("permissions")
+					com.liferay.portal.vulcan.permission.Permission[]
+						permissions)
+		throws Exception {
+
+		return _applyComponentServiceObjects(
+			_structuredContentFolderResourceComponentServiceObjects,
+			this::_populateResourceContext,
+			structuredContentFolderResource -> {
+				Page paginationPage =
+					structuredContentFolderResource.
+						putStructuredContentFolderPermission(
+							structuredContentFolderId, permissions);
+
+				return paginationPage.getItems();
+			});
+	}
+
 	@GraphQLField(
 		description = "Creates a new structured content folder in an existing folder."
 	)
 	public StructuredContentFolder
 			createStructuredContentFolderStructuredContentFolder(
-				@GraphQLName("parentStructuredContentFolderId")
-					Long parentStructuredContentFolderId,
-				@GraphQLName("structuredContentFolder")
-					StructuredContentFolder structuredContentFolder)
+				@GraphQLName("parentStructuredContentFolderId") Long
+					parentStructuredContentFolderId,
+				@GraphQLName("structuredContentFolder") StructuredContentFolder
+					structuredContentFolder)
 		throws Exception {
 
 		return _applyComponentServiceObjects(
@@ -2707,8 +3509,8 @@ public class Mutation {
 		description = "Deletes the structured content folder and returns a 204 if the operation succeeds."
 	)
 	public boolean deleteStructuredContentFolder(
-			@GraphQLName("structuredContentFolderId")
-				Long structuredContentFolderId)
+			@GraphQLName("structuredContentFolderId") Long
+				structuredContentFolderId)
 		throws Exception {
 
 		_applyVoidComponentServiceObjects(
@@ -2739,10 +3541,10 @@ public class Mutation {
 		description = "Updates only the fields received in the request body, leaving any other fields untouched."
 	)
 	public StructuredContentFolder patchStructuredContentFolder(
-			@GraphQLName("structuredContentFolderId")
-				Long structuredContentFolderId,
-			@GraphQLName("structuredContentFolder")
-				StructuredContentFolder structuredContentFolder)
+			@GraphQLName("structuredContentFolderId") Long
+				structuredContentFolderId,
+			@GraphQLName("structuredContentFolder") StructuredContentFolder
+				structuredContentFolder)
 		throws Exception {
 
 		return _applyComponentServiceObjects(
@@ -2757,10 +3559,10 @@ public class Mutation {
 		description = "Replaces the structured content folder with the information sent in the request body. Any missing fields are deleted, unless they are required."
 	)
 	public StructuredContentFolder updateStructuredContentFolder(
-			@GraphQLName("structuredContentFolderId")
-				Long structuredContentFolderId,
-			@GraphQLName("structuredContentFolder")
-				StructuredContentFolder structuredContentFolder)
+			@GraphQLName("structuredContentFolderId") Long
+				structuredContentFolderId,
+			@GraphQLName("structuredContentFolder") StructuredContentFolder
+				structuredContentFolder)
 		throws Exception {
 
 		return _applyComponentServiceObjects(
@@ -2787,8 +3589,8 @@ public class Mutation {
 
 	@GraphQLField
 	public boolean updateStructuredContentFolderSubscribe(
-			@GraphQLName("structuredContentFolderId")
-				Long structuredContentFolderId)
+			@GraphQLName("structuredContentFolderId") Long
+				structuredContentFolderId)
 		throws Exception {
 
 		_applyVoidComponentServiceObjects(
@@ -2804,8 +3606,8 @@ public class Mutation {
 
 	@GraphQLField
 	public boolean updateStructuredContentFolderUnsubscribe(
-			@GraphQLName("structuredContentFolderId")
-				Long structuredContentFolderId)
+			@GraphQLName("structuredContentFolderId") Long
+				structuredContentFolderId)
 		throws Exception {
 
 		_applyVoidComponentServiceObjects(
@@ -2844,6 +3646,62 @@ public class Mutation {
 			this::_populateResourceContext,
 			wikiNodeResource -> wikiNodeResource.postSiteWikiNodeBatch(
 				Long.valueOf(siteKey), callbackURL, object));
+	}
+
+	@GraphQLField(
+		description = "Deletes the site's wiki node by external reference code."
+	)
+	public boolean deleteSiteWikiNodeByExternalReferenceCode(
+			@GraphQLName("siteKey") @NotEmpty String siteKey,
+			@GraphQLName("externalReferenceCode") String externalReferenceCode)
+		throws Exception {
+
+		_applyVoidComponentServiceObjects(
+			_wikiNodeResourceComponentServiceObjects,
+			this::_populateResourceContext,
+			wikiNodeResource ->
+				wikiNodeResource.deleteSiteWikiNodeByExternalReferenceCode(
+					Long.valueOf(siteKey), externalReferenceCode));
+
+		return true;
+	}
+
+	@GraphQLField(
+		description = "Updates the site's wiki node with the given external reference code, or creates it if it not exists."
+	)
+	public WikiNode updateSiteWikiNodeByExternalReferenceCode(
+			@GraphQLName("siteKey") @NotEmpty String siteKey,
+			@GraphQLName("externalReferenceCode") String externalReferenceCode,
+			@GraphQLName("wikiNode") WikiNode wikiNode)
+		throws Exception {
+
+		return _applyComponentServiceObjects(
+			_wikiNodeResourceComponentServiceObjects,
+			this::_populateResourceContext,
+			wikiNodeResource ->
+				wikiNodeResource.putSiteWikiNodeByExternalReferenceCode(
+					Long.valueOf(siteKey), externalReferenceCode, wikiNode));
+	}
+
+	@GraphQLField
+	public java.util.Collection<com.liferay.portal.vulcan.permission.Permission>
+			updateSiteWikiNodePermission(
+				@GraphQLName("siteKey") @NotEmpty String siteKey,
+				@GraphQLName("permissions")
+					com.liferay.portal.vulcan.permission.Permission[]
+						permissions)
+		throws Exception {
+
+		return _applyComponentServiceObjects(
+			_wikiNodeResourceComponentServiceObjects,
+			this::_populateResourceContext,
+			wikiNodeResource -> {
+				Page paginationPage =
+					wikiNodeResource.putSiteWikiNodePermission(
+						Long.valueOf(siteKey), permissions);
+
+				return paginationPage.getItems();
+			});
 	}
 
 	@GraphQLField(
@@ -2902,6 +3760,26 @@ public class Mutation {
 	}
 
 	@GraphQLField
+	public java.util.Collection<com.liferay.portal.vulcan.permission.Permission>
+			updateWikiNodePermission(
+				@GraphQLName("wikiNodeId") Long wikiNodeId,
+				@GraphQLName("permissions")
+					com.liferay.portal.vulcan.permission.Permission[]
+						permissions)
+		throws Exception {
+
+		return _applyComponentServiceObjects(
+			_wikiNodeResourceComponentServiceObjects,
+			this::_populateResourceContext,
+			wikiNodeResource -> {
+				Page paginationPage = wikiNodeResource.putWikiNodePermission(
+					wikiNodeId, permissions);
+
+				return paginationPage.getItems();
+			});
+	}
+
+	@GraphQLField
 	public boolean updateWikiNodeSubscribe(
 			@GraphQLName("wikiNodeId") Long wikiNodeId)
 		throws Exception {
@@ -2927,6 +3805,41 @@ public class Mutation {
 				wikiNodeId));
 
 		return true;
+	}
+
+	@GraphQLField(
+		description = "Deletes the wiki page by external reference code."
+	)
+	public boolean deleteSiteWikiPageByExternalReferenceCode(
+			@GraphQLName("siteKey") @NotEmpty String siteKey,
+			@GraphQLName("externalReferenceCode") String externalReferenceCode)
+		throws Exception {
+
+		_applyVoidComponentServiceObjects(
+			_wikiPageResourceComponentServiceObjects,
+			this::_populateResourceContext,
+			wikiPageResource ->
+				wikiPageResource.deleteSiteWikiPageByExternalReferenceCode(
+					Long.valueOf(siteKey), externalReferenceCode));
+
+		return true;
+	}
+
+	@GraphQLField(
+		description = "Updates the wiki page with the given external reference code, or creates it if it not exists."
+	)
+	public WikiPage updateSiteWikiPageByExternalReferenceCode(
+			@GraphQLName("siteKey") @NotEmpty String siteKey,
+			@GraphQLName("externalReferenceCode") String externalReferenceCode,
+			@GraphQLName("wikiPage") WikiPage wikiPage)
+		throws Exception {
+
+		return _applyComponentServiceObjects(
+			_wikiPageResourceComponentServiceObjects,
+			this::_populateResourceContext,
+			wikiPageResource ->
+				wikiPageResource.putSiteWikiPageByExternalReferenceCode(
+					Long.valueOf(siteKey), externalReferenceCode, wikiPage));
 	}
 
 	@GraphQLField(description = "Creates a new wiki page")
@@ -3024,6 +3937,26 @@ public class Mutation {
 			this::_populateResourceContext,
 			wikiPageResource -> wikiPageResource.putWikiPageBatch(
 				callbackURL, object));
+	}
+
+	@GraphQLField
+	public java.util.Collection<com.liferay.portal.vulcan.permission.Permission>
+			updateWikiPagePermission(
+				@GraphQLName("wikiPageId") Long wikiPageId,
+				@GraphQLName("permissions")
+					com.liferay.portal.vulcan.permission.Permission[]
+						permissions)
+		throws Exception {
+
+		return _applyComponentServiceObjects(
+			_wikiPageResourceComponentServiceObjects,
+			this::_populateResourceContext,
+			wikiPageResource -> {
+				Page paginationPage = wikiPageResource.putWikiPagePermission(
+					wikiPageId, permissions);
+
+				return paginationPage.getItems();
+			});
 	}
 
 	@GraphQLField
@@ -3200,6 +4133,22 @@ public class Mutation {
 		commentResource.setContextUser(_user);
 		commentResource.setGroupLocalService(_groupLocalService);
 		commentResource.setRoleLocalService(_roleLocalService);
+	}
+
+	private void _populateResourceContext(
+			ContentStructureResource contentStructureResource)
+		throws Exception {
+
+		contentStructureResource.setContextAcceptLanguage(_acceptLanguage);
+		contentStructureResource.setContextCompany(_company);
+		contentStructureResource.setContextHttpServletRequest(
+			_httpServletRequest);
+		contentStructureResource.setContextHttpServletResponse(
+			_httpServletResponse);
+		contentStructureResource.setContextUriInfo(_uriInfo);
+		contentStructureResource.setContextUser(_user);
+		contentStructureResource.setGroupLocalService(_groupLocalService);
+		contentStructureResource.setRoleLocalService(_roleLocalService);
 	}
 
 	private void _populateResourceContext(DocumentResource documentResource)
@@ -3444,6 +4393,8 @@ public class Mutation {
 		_blogPostingImageResourceComponentServiceObjects;
 	private static ComponentServiceObjects<CommentResource>
 		_commentResourceComponentServiceObjects;
+	private static ComponentServiceObjects<ContentStructureResource>
+		_contentStructureResourceComponentServiceObjects;
 	private static ComponentServiceObjects<DocumentResource>
 		_documentResourceComponentServiceObjects;
 	private static ComponentServiceObjects<DocumentFolderResource>

@@ -130,8 +130,8 @@ public class WorkflowDefinitionLinkDisplayContext {
 	public String getClearResultsURL() {
 		return PortletURLBuilder.create(
 			getPortletURL()
-		).setParameter(
-			"keywords", StringPool.BLANK
+		).setKeywords(
+			StringPool.BLANK
 		).buildString();
 	}
 
@@ -251,23 +251,34 @@ public class WorkflowDefinitionLinkDisplayContext {
 			_liferayPortletResponse
 		).setMVCPath(
 			"/view.jsp"
+		).setKeywords(
+			() -> {
+				String keywords = ParamUtil.getString(
+					_httpServletRequest, "keywords");
+
+				if (Validator.isNotNull(keywords)) {
+					return keywords;
+				}
+
+				return null;
+			}
+		).setTabs1(
+			"default-configuration"
+		).setParameter(
+			"delta",
+			() -> {
+				String delta = ParamUtil.getString(
+					_httpServletRequest, "delta");
+
+				if (Validator.isNotNull(delta)) {
+					return delta;
+				}
+
+				return null;
+			}
 		).setParameter(
 			"tab", WorkflowWebKeys.WORKFLOW_TAB_DEFINITION_LINK
-		).setParameter(
-			"tabs1", "default-configuration"
-		).build();
-
-		String delta = ParamUtil.getString(_httpServletRequest, "delta");
-
-		if (Validator.isNotNull(delta)) {
-			portletURL.setParameter("delta", delta);
-		}
-
-		String keywords = ParamUtil.getString(_httpServletRequest, "keywords");
-
-		if (Validator.isNotNull(keywords)) {
-			portletURL.setParameter("keywords", keywords);
-		}
+		).buildPortletURL();
 
 		String orderByType = ParamUtil.getString(
 			_httpServletRequest, "orderByType", "asc");
@@ -395,8 +406,6 @@ public class WorkflowDefinitionLinkDisplayContext {
 		return PortletURLBuilder.createRenderURL(
 			_workflowDefinitionLinkRequestHelper.getLiferayPortletResponse()
 		).setParameter(
-			"tab", WorkflowWebKeys.WORKFLOW_TAB_DEFINITION_LINK
-		).setParameter(
 			"orderByCol", getOrderByCol()
 		).setParameter(
 			"orderByType",
@@ -410,6 +419,8 @@ public class WorkflowDefinitionLinkDisplayContext {
 
 				return "asc";
 			}
+		).setParameter(
+			"tab", WorkflowWebKeys.WORKFLOW_TAB_DEFINITION_LINK
 		).buildString();
 	}
 

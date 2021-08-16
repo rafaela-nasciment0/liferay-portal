@@ -67,8 +67,6 @@ import com.liferay.portal.kernel.settings.ModifiableSettings;
 import com.liferay.portal.kernel.settings.Settings;
 import com.liferay.portal.kernel.settings.SettingsFactory;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
-import com.liferay.portal.kernel.test.rule.DataGuard;
-import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
 import com.liferay.portal.kernel.test.util.GroupTestUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.test.util.ServiceContextTestUtil;
@@ -105,7 +103,6 @@ import org.springframework.mock.web.MockHttpServletRequest;
 /**
  * @author Alec Sloan
  */
-@DataGuard(scope = DataGuard.Scope.METHOD)
 @RunWith(Arquillian.class)
 public class CommerceOrderTest {
 
@@ -315,6 +312,7 @@ public class CommerceOrderTest {
 			"If I remove the user from the second account they should only " +
 				"see 1 order"
 		);
+
 		CommerceAccount commerceAccount =
 			_commerceAccountLocalService.addBusinessCommerceAccount(
 				"Test Business Account", 0, null, null, true, null,
@@ -839,6 +837,71 @@ public class CommerceOrderTest {
 	}
 
 	@Test
+	public void testGetPendingCommerceOrderByPartialOrderId() throws Exception {
+		frutillaRule.scenario(
+			"Try to get a pending order based on the orderId"
+		).given(
+			"A B2B Site"
+		).and(
+			"A Group"
+		).and(
+			"A User"
+		).when(
+			"I try to get that order by a partial orderId"
+		).then(
+			"I should be able to get the order"
+		);
+
+		CommerceAccount commerceAccount =
+			_commerceAccountLocalService.addBusinessCommerceAccount(
+				"Test Business Account", 0, null, null, true, null,
+				new long[] {_user.getUserId()},
+				new String[] {_user.getEmailAddress()}, _serviceContext);
+
+		long commerceChannelGroupId = _commerceChannel.getGroupId();
+
+		CommerceOrder commerceOrder1 =
+			_commerceOrderLocalService.addCommerceOrder(
+				_user.getUserId(), commerceChannelGroupId,
+				commerceAccount.getCommerceAccountId(),
+				_commerceCurrency.getCommerceCurrencyId());
+
+		String commerceOrderId = String.valueOf(
+			commerceOrder1.getCommerceOrderId());
+
+		String partialCommerceOrderId = commerceOrderId.substring(
+			0, commerceOrderId.length() - 1);
+
+		int ordersCountByAccountId =
+			_commerceOrderService.getPendingCommerceOrdersCount(
+				commerceChannelGroupId, commerceAccount.getCommerceAccountId(),
+				partialCommerceOrderId);
+
+		Assert.assertEquals(1, ordersCountByAccountId);
+
+		List<CommerceOrder> commerceOrders =
+			_commerceOrderService.getPendingCommerceOrders(
+				commerceChannelGroupId, commerceAccount.getCommerceAccountId(),
+				partialCommerceOrderId, 0, 1);
+
+		CommerceOrder actualCommerceOrder = commerceOrders.get(0);
+
+		Assert.assertEquals(commerceOrder1, actualCommerceOrder);
+
+		long ordersCountByUser = _getUserOrdersCount(
+			commerceChannelGroupId, false);
+
+		Assert.assertEquals(1, ordersCountByUser);
+
+		commerceOrders = _getUserOrders(commerceChannelGroupId, false);
+
+		Assert.assertEquals(commerceOrder1, commerceOrders.get(0));
+
+		_commerceOrderLocalService.deleteCommerceOrders(commerceChannelGroupId);
+		_commerceAccountLocalService.deleteCommerceAccount(commerceAccount);
+	}
+
+	@Test
 	public void testGetPlacedCommerceOrder() throws Exception {
 		frutillaRule.scenario(
 			"Try to get a placed order based on the userId, and directly " +
@@ -1085,7 +1148,6 @@ public class CommerceOrderTest {
 	private CommerceAccountOrganizationRelLocalService
 		_commerceAccountOrganizationRelLocalService;
 
-	@DeleteAfterTestRun
 	private final List<CommerceAccount> _commerceAccounts = new ArrayList<>();
 
 	@Inject
@@ -1095,7 +1157,6 @@ public class CommerceOrderTest {
 	@Inject
 	private CommerceAddressLocalService _commerceAddressLocalService;
 
-	@DeleteAfterTestRun
 	private CommerceChannel _commerceChannel;
 
 	@Inject
@@ -1104,7 +1165,6 @@ public class CommerceOrderTest {
 	@Inject
 	private CommerceContextFactory _commerceContextFactory;
 
-	@DeleteAfterTestRun
 	private CommerceCurrency _commerceCurrency;
 
 	@Inject
@@ -1116,19 +1176,16 @@ public class CommerceOrderTest {
 	@Inject
 	private CommerceOrderService _commerceOrderService;
 
-	@DeleteAfterTestRun
 	private Country _country;
 
 	@Inject
 	private CountryLocalService _countryLocalService;
 
-	@DeleteAfterTestRun
 	private Group _group;
 
 	@Inject
 	private OrganizationLocalService _organizationLocalService;
 
-	@DeleteAfterTestRun
 	private Region _region;
 
 	@Inject
@@ -1145,7 +1202,6 @@ public class CommerceOrderTest {
 	@Inject
 	private SettingsFactory _settingsFactory;
 
-	@DeleteAfterTestRun
 	private User _user;
 
 	@Inject

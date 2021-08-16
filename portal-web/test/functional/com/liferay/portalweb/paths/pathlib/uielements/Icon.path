@@ -2,11 +2,13 @@
 <head>
 <title>Icon</title>
 </head>
+
 <body>
-<table cellpadding="1" cellspacing="1" border="1">
+<table border="1" cellpadding="1" cellspacing="1">
 <thead>
 <tr><td rowspan="1" colspan="3">Icon</td></tr>
 </thead>
+
 <tbody>
 <tr>
 	<td>ADD_FAVORITE</td>
@@ -41,6 +43,11 @@
 <tr>
 	<td>ANY_ITEM_SELECTOR</td>
 	<td>//label[normalize-space(text())='${key_fieldLabel}']/following-sibling::div//button[contains(@class,'item-selector')]//*[name()='svg'][contains(@class,'lexicon-icon-${key_text}')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>ANY_LAST</td>
+	<td>xpath=(//*[*[name()='svg'][contains(@class,'lexicon-icon-${key_text}')]])[last()]</td>
 	<td></td>
 </tr>
 <tr>
@@ -214,6 +221,11 @@
 	<td></td>
 </tr>
 <tr>
+	<td>FLAG_1</td>
+	<td>//*[*[name()='svg'][contains(@class,'exicon-icon-es-es')]]</td>
+	<td></td>
+</tr>
+<tr>
 	<td>INFO</td>
 	<td>//*[@data-qa-id='infoButton'] | //div[contains(@class,'management-bar-default')]//a[contains(@class,'infoPanelToggler')] | //button[*[name()='svg'][contains(@class,'lexicon-icon-info')]]</td>
 	<td></td>
@@ -304,6 +316,11 @@
 	<td></td>
 </tr>
 <tr>
+	<td>TIMES_2</td>
+	<td>xpath=(//button[*[name()='svg'][contains(@class,'icon-times')]])[2]</td>
+	<td></td>
+</tr>
+<tr>
 	<td>TOOLTIP</td>
 	<td>//span[*[name()='svg'][contains(@class,'icon-question')]]</td>
 	<td></td>
@@ -331,12 +348,7 @@
 </tr>
 <tr>
 	<td>BODY_VERTICAL_ELLIPSIS</td>
-	<td>//div[contains(@class,'portlet') and contains(@class,'container')]//a[span/*[name()='svg'][contains(@class,'icon-ellipsis')]]</td>
-	<td></td>
-</tr>
-<tr>
-	<td>BODY_VERTICAL_ELLIPSIS_2</td>
-	<td>xpath=(//div[contains(@class,'portlet') and contains(@class,'container')]//a[span/*[name()='svg'][contains(@class,'icon-ellipsis')]])[2]</td>
+	<td>//div[contains(@class,'portlet') and contains(@class,'container')]//a[span/*[name()='svg'][contains(@class,'icon-ellipsis')]] | //*[contains(@class,'sheet-title')]//*[contains(@class,'dropdown-toggle')][.//*[name()='svg'][contains(@class,'icon-ellipsis')]]</td>
 	<td></td>
 </tr>
 <tr>
@@ -422,6 +434,11 @@
 <tr>
 	<td>SVG_ELLIPSIS</td>
 	<td>//*[name()='svg'][contains(@class,'icon-ellipsis')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>SVG_ELLIPSIS_BY_ID</td>
+	<td>//span[contains(@id,'${key_text}')]//*[name()='svg'][contains(@class,'icon-ellipsis')]</td>
 	<td></td>
 </tr>
 <tr>

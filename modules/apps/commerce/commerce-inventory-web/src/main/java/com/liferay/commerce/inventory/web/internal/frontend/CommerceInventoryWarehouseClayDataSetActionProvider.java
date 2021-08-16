@@ -108,10 +108,10 @@ public class CommerceInventoryWarehouseClayDataSetActionProvider
 				CPPortletKeys.COMMERCE_INVENTORY, PortletRequest.ACTION_PHASE)
 		).setActionName(
 			"/commerce_inventory/edit_commerce_inventory_warehouse_item"
+		).setCMD(
+			Constants.DELETE
 		).setRedirect(
 			redirect
-		).setParameter(
-			Constants.CMD, Constants.DELETE
 		).setParameter(
 			"commerceInventoryWarehouseItemId", commerceInventoryWarehouseItemId
 		).buildString();
@@ -137,7 +137,7 @@ public class CommerceInventoryWarehouseClayDataSetActionProvider
 			themeDisplay.getURLCurrent()
 		).setParameter(
 			"commerceInventoryWarehouseItemId", commerceInventoryWarehouseItemId
-		).build();
+		).buildPortletURL();
 
 		try {
 			portletURL.setWindowState(LiferayWindowState.POP_UP);

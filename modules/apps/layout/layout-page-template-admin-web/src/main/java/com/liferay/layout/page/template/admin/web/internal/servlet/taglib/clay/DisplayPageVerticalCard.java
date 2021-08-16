@@ -42,7 +42,6 @@ import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
 
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
@@ -184,29 +183,22 @@ public class DisplayPageVerticalCard
 	}
 
 	private String _getSubtypeLabel() {
-		InfoItemFormVariationsProvider infoItemFormVariationsProvider =
+		InfoItemFormVariationsProvider<?> infoItemFormVariationsProvider =
 			_infoItemServiceTracker.getFirstInfoItemService(
 				InfoItemFormVariationsProvider.class,
 				_layoutPageTemplateEntry.getClassName());
 
-		if (infoItemFormVariationsProvider != null) {
-			Collection<InfoItemFormVariation> infoItemFormVariations =
-				infoItemFormVariationsProvider.getInfoItemFormVariations(
-					_layoutPageTemplateEntry.getGroupId());
+		if (infoItemFormVariationsProvider == null) {
+			return StringPool.BLANK;
+		}
 
-			for (InfoItemFormVariation infoItemFormVariation :
-					infoItemFormVariations) {
+		InfoItemFormVariation infoItemFormVariation =
+			infoItemFormVariationsProvider.getInfoItemFormVariation(
+				_layoutPageTemplateEntry.getGroupId(),
+				String.valueOf(_layoutPageTemplateEntry.getClassTypeId()));
 
-				String key = infoItemFormVariation.getKey();
-
-				if (key.equals(
-						String.valueOf(
-							_layoutPageTemplateEntry.getClassTypeId()))) {
-
-					return infoItemFormVariation.getLabel(
-						_themeDisplay.getLocale());
-				}
-			}
+		if (infoItemFormVariation != null) {
+			return infoItemFormVariation.getLabel(_themeDisplay.getLocale());
 		}
 
 		return StringPool.BLANK;

@@ -30,7 +30,7 @@ import com.liferay.commerce.frontend.model.HeaderActionModel;
 import com.liferay.commerce.percentage.PercentageFormatter;
 import com.liferay.commerce.pricing.constants.CommercePricingPortletKeys;
 import com.liferay.commerce.pricing.model.CommercePricingClass;
-import com.liferay.commerce.pricing.web.internal.constants.CommerceDiscountScreenNavigationConstants;
+import com.liferay.commerce.pricing.web.internal.servlet.taglib.ui.constants.CommerceDiscountScreenNavigationConstants;
 import com.liferay.commerce.product.model.CPDefinition;
 import com.liferay.frontend.taglib.clay.data.set.servlet.taglib.util.ClayDataSetActionDropdownItem;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.CreationMenu;
@@ -152,40 +152,31 @@ public class CommerceDiscountDisplayContext extends BasePricingDisplayContext {
 				commerceDiscount.getLevel(),
 				CommerceDiscountConstants.LEVEL_L1)) {
 
-			return _getCommerceDiscountAmountFormatted(
-				commerceDiscount.isUsePercentage(),
-				commerceDiscount.getLevel1(), locale);
+			return _getCommerceDiscountAmount(commerceDiscount.getLevel1());
 		}
 
 		if (Objects.equals(
 				commerceDiscount.getLevel(),
 				CommerceDiscountConstants.LEVEL_L2)) {
 
-			return _getCommerceDiscountAmountFormatted(
-				commerceDiscount.isUsePercentage(),
-				commerceDiscount.getLevel2(), locale);
+			return _getCommerceDiscountAmount(commerceDiscount.getLevel2());
 		}
 
 		if (Objects.equals(
 				commerceDiscount.getLevel(),
 				CommerceDiscountConstants.LEVEL_L3)) {
 
-			return _getCommerceDiscountAmountFormatted(
-				commerceDiscount.isUsePercentage(),
-				commerceDiscount.getLevel3(), locale);
+			return _getCommerceDiscountAmount(commerceDiscount.getLevel3());
 		}
 
 		if (Objects.equals(
 				commerceDiscount.getLevel(),
 				CommerceDiscountConstants.LEVEL_L4)) {
 
-			return _getCommerceDiscountAmountFormatted(
-				commerceDiscount.isUsePercentage(),
-				commerceDiscount.getLevel4(), locale);
+			return _getCommerceDiscountAmount(commerceDiscount.getLevel4());
 		}
 
-		return _getCommerceDiscountAmountFormatted(
-			commerceDiscount.isUsePercentage(), BigDecimal.ZERO, locale);
+		return _getCommerceDiscountAmount(BigDecimal.ZERO);
 	}
 
 	public long getCommerceDiscountId() throws PortalException {
@@ -259,45 +250,35 @@ public class CommerceDiscountDisplayContext extends BasePricingDisplayContext {
 			getDiscountClayDataSetActionDropdownItems()
 		throws PortalException {
 
-		List<ClayDataSetActionDropdownItem> clayDataSetActionDropdownItems =
-			new ArrayList<>();
-
-		PortletURL portletURL = PortletURLBuilder.create(
-			PortletProviderUtil.getPortletURL(
-				httpServletRequest, CommerceDiscount.class.getName(),
-				PortletProvider.Action.MANAGE)
-		).setMVCRenderCommandName(
-			"/commerce_discount/edit_commerce_discount"
-		).setRedirect(
-			commercePricingRequestHelper.getCurrentURL()
-		).setParameter(
-			"commerceDiscountId", "{id}"
-		).setParameter(
-			"usePercentage", "{usePercentage}"
-		).setParameter(
-			"screenNavigationCategoryKey",
-			CommerceDiscountScreenNavigationConstants.CATEGORY_KEY_DETAILS
-		).build();
-
-		clayDataSetActionDropdownItems.add(
+		return ListUtil.fromArray(
 			new ClayDataSetActionDropdownItem(
-				portletURL.toString(), "pencil", "edit",
-				LanguageUtil.get(httpServletRequest, "edit"), "get", null,
-				null));
-
-		clayDataSetActionDropdownItems.add(
+				PortletURLBuilder.create(
+					PortletProviderUtil.getPortletURL(
+						httpServletRequest, CommerceDiscount.class.getName(),
+						PortletProvider.Action.MANAGE)
+				).setMVCRenderCommandName(
+					"/commerce_discount/edit_commerce_discount"
+				).setRedirect(
+					commercePricingRequestHelper.getCurrentURL()
+				).setParameter(
+					"commerceDiscountId", "{id}"
+				).setParameter(
+					"screenNavigationCategoryKey",
+					CommerceDiscountScreenNavigationConstants.
+						CATEGORY_KEY_DETAILS
+				).setParameter(
+					"usePercentage", "{usePercentage}"
+				).buildString(),
+				"pencil", "edit", LanguageUtil.get(httpServletRequest, "edit"),
+				"get", null, null),
 			new ClayDataSetActionDropdownItem(
 				null, "trash", "delete",
 				LanguageUtil.get(httpServletRequest, "delete"), "delete",
-				"delete", "headless"));
-
-		clayDataSetActionDropdownItems.add(
+				"delete", "headless"),
 			new ClayDataSetActionDropdownItem(
 				_getManageDiscountPermissionsURL(), null, "permissions",
 				LanguageUtil.get(httpServletRequest, "permissions"), "get",
 				"permissions", "modal-permissions"));
-
-		return clayDataSetActionDropdownItems;
 	}
 
 	public String getDiscountCPDefinitionApiURL() throws PortalException {
@@ -411,7 +392,7 @@ public class CommerceDiscountDisplayContext extends BasePricingDisplayContext {
 		).setParameter(
 			"screenNavigationCategoryKey",
 			CommerceDiscountScreenNavigationConstants.CATEGORY_KEY_DETAILS
-		).build();
+		).buildPortletURL();
 
 		try {
 			portletURL.setWindowState(LiferayWindowState.POP_UP);
@@ -438,8 +419,8 @@ public class CommerceDiscountDisplayContext extends BasePricingDisplayContext {
 				PortletRequest.ACTION_PHASE)
 		).setActionName(
 			"/commerce_discount/edit_commerce_discount"
-		).setParameter(
-			Constants.CMD, Constants.UPDATE
+		).setCMD(
+			Constants.UPDATE
 		).setParameter(
 			"commerceDiscountId", commerceDiscount.getCommerceDiscountId()
 		).setWindowState(
@@ -455,7 +436,7 @@ public class CommerceDiscountDisplayContext extends BasePricingDisplayContext {
 				PortletRequest.RENDER_PHASE)
 		).setMVCRenderCommandName(
 			"/commerce_discount/edit_commerce_discount"
-		).build();
+		).buildPortletURL();
 	}
 
 	public List<HeaderActionModel> getHeaderActionModels() throws Exception {
@@ -655,17 +636,11 @@ public class CommerceDiscountDisplayContext extends BasePricingDisplayContext {
 		return clayDataSetActionDropdownItems;
 	}
 
-	private String _getCommerceDiscountAmountFormatted(
-			boolean usePercentage, BigDecimal commerceDiscountAmount,
-			Locale locale)
-		throws PortalException {
+	private String _getCommerceDiscountAmount(
+		BigDecimal commerceDiscountAmount) {
 
 		if (commerceDiscountAmount == null) {
 			commerceDiscountAmount = BigDecimal.ZERO;
-		}
-
-		if (usePercentage) {
-			return getLocalizedPercentage(commerceDiscountAmount, locale);
 		}
 
 		return String.valueOf(round(commerceDiscountAmount));
@@ -688,7 +663,7 @@ public class CommerceDiscountDisplayContext extends BasePricingDisplayContext {
 			"modelResourceDescription", "{name}"
 		).setParameter(
 			"resourcePrimKey", "{id}"
-		).build();
+		).buildPortletURL();
 
 		try {
 			portletURL.setWindowState(LiferayWindowState.POP_UP);

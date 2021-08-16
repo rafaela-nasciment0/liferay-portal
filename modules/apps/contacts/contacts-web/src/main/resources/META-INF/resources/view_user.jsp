@@ -323,13 +323,13 @@ request.setAttribute("view_user.jsp-user", user2);
 															liferayPortletResponse, searchPortletId
 														).setMVCPath(
 															"/search.jsp"
+														).setKeywords(
+															assetTag.getName()
 														).setParameter(
 															"groupId", "0"
-														).setParameter(
-															"keywords", assetTag.getName()
 														).setWindowState(
 															WindowState.MAXIMIZED
-														).build();
+														).buildPortletURL();
 
 														sb.append("<li><a href=\"");
 														sb.append(searchURL);

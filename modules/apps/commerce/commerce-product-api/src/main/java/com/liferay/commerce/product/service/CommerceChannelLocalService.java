@@ -148,6 +148,9 @@ public interface CommerceChannelLocalService
 	public <T> T dslQuery(DSLQuery dslQuery);
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public int dslQueryCount(DSLQuery dslQuery);
+
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public DynamicQuery dynamicQuery();
 
 	/**
@@ -241,6 +244,10 @@ public interface CommerceChannelLocalService
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public CommerceChannel fetchCommerceChannelBySiteGroupId(long siteGroupId);
+
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public Group fetchCommerceChannelGroup(long commerceChannelId)
+		throws PortalException;
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public ActionableDynamicQuery getActionableDynamicQuery();

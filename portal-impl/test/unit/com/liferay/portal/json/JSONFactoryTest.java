@@ -28,7 +28,7 @@ import com.liferay.portal.test.log.LogEntry;
 import com.liferay.portal.test.log.LoggerTestUtil;
 import com.liferay.portal.test.rule.LiferayUnitTestRule;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
@@ -72,18 +72,16 @@ public class JSONFactoryTest {
 
 	@Test
 	public void testAnnotations() {
-		FooBean fooBean = new FooBean();
-
-		String json = removeQuotes(JSONFactoryUtil.looseSerialize(fooBean));
+		String json = removeQuotes(
+			JSONFactoryUtil.looseSerialize(new FooBean()));
 
 		Assert.assertEquals("{name:bar,value:173}", json);
 	}
 
 	@Test
 	public void testCollection() {
-		FooBean1 fooBean1 = new FooBean1();
-
-		String json = removeQuotes(JSONFactoryUtil.looseSerialize(fooBean1));
+		String json = removeQuotes(
+			JSONFactoryUtil.looseSerialize(new FooBean1()));
 
 		Assert.assertEquals("{collection:[element],value:173}", json);
 	}
@@ -210,12 +208,12 @@ public class JSONFactoryTest {
 		Object object = JSONFactoryUtil.looseDeserialize(
 			"{\"class\":\"java.lang.Thread\"}");
 
-		Assert.assertEquals(HashMap.class, object.getClass());
+		Assert.assertEquals(LinkedHashMap.class, object.getClass());
 
 		object = JSONFactoryUtil.looseDeserialize(
 			"{\"\u0063lass\":\"java.lang.Thread\"}");
 
-		Assert.assertEquals(HashMap.class, object.getClass());
+		Assert.assertEquals(LinkedHashMap.class, object.getClass());
 
 		Map<?, ?> map = (Map<?, ?>)object;
 
@@ -292,9 +290,8 @@ public class JSONFactoryTest {
 
 	@Test
 	public void testStrictMode() {
-		FooBean2 fooBean2 = new FooBean2();
-
-		String json = removeQuotes(JSONFactoryUtil.looseSerialize(fooBean2));
+		String json = removeQuotes(
+			JSONFactoryUtil.looseSerialize(new FooBean2()));
 
 		Assert.assertEquals("{value:173}", json);
 	}

@@ -186,6 +186,13 @@ public class AddressLocalServiceWrapper
 	}
 
 	@Override
+	public int dslQueryCount(
+		com.liferay.petra.sql.dsl.query.DSLQuery dslQuery) {
+
+		return _addressLocalService.dslQueryCount(dslQuery);
+	}
+
+	@Override
 	public com.liferay.portal.kernel.dao.orm.DynamicQuery dynamicQuery() {
 		return _addressLocalService.dynamicQuery();
 	}
@@ -421,6 +428,29 @@ public class AddressLocalServiceWrapper
 
 		return _addressLocalService.getAddresses(
 			companyId, className, classPK, start, end, orderByComparator);
+	}
+
+	@Override
+	public java.util.List<com.liferay.portal.kernel.model.Address>
+		getAddressesByTypeIds(
+			long companyId, java.lang.String className, long classPK,
+			long[] typeIds) {
+
+		return _addressLocalService.getAddressesByTypeIds(
+			companyId, className, classPK, typeIds);
+	}
+
+	@Override
+	public java.util.List<com.liferay.portal.kernel.model.Address>
+		getAddressesByTypeIds(
+			long companyId, java.lang.String className, long classPK,
+			long[] typeIds, int start, int end,
+			com.liferay.portal.kernel.util.OrderByComparator
+				<com.liferay.portal.kernel.model.Address> orderByComparator) {
+
+		return _addressLocalService.getAddressesByTypeIds(
+			companyId, className, classPK, typeIds, start, end,
+			orderByComparator);
 	}
 
 	/**

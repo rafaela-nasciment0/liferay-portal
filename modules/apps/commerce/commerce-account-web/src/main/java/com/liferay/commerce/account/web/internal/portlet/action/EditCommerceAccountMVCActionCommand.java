@@ -145,8 +145,6 @@ public class EditCommerceAccountMVCActionCommand extends BaseMVCActionCommand {
 				actionRequest, CommerceAccount.class.getName(),
 				PortletProvider.Action.VIEW)
 		).setParameter(
-			"commerceAccountId", commerceAccount.getCommerceAccountId()
-		).setParameter(
 			PortletQName.PUBLIC_RENDER_PARAMETER_NAMESPACE + "backURL",
 			() -> {
 				PortletURL managePortletURL = PortletProviderUtil.getPortletURL(
@@ -155,6 +153,8 @@ public class EditCommerceAccountMVCActionCommand extends BaseMVCActionCommand {
 
 				return managePortletURL.toString();
 			}
+		).setParameter(
+			"commerceAccountId", commerceAccount.getCommerceAccountId()
 		).buildString();
 	}
 
@@ -193,13 +193,6 @@ public class EditCommerceAccountMVCActionCommand extends BaseMVCActionCommand {
 		String name = ParamUtil.getString(actionRequest, "name");
 		String email = ParamUtil.getString(actionRequest, "email");
 		String taxId = ParamUtil.getString(actionRequest, "taxId");
-		boolean active = ParamUtil.getBoolean(actionRequest, "active");
-		String externalReferenceCode = ParamUtil.getString(
-			actionRequest, "externalReferenceCode");
-		long[] userIds = StringUtil.split(
-			ParamUtil.getString(actionRequest, "userIds"), 0L);
-		String[] emailAddresses = ParamUtil.getStringValues(
-			actionRequest, "emailAddresses");
 
 		byte[] logoBytes = null;
 
@@ -230,6 +223,14 @@ public class EditCommerceAccountMVCActionCommand extends BaseMVCActionCommand {
 				serviceContext);
 		}
 		else {
+			boolean active = ParamUtil.getBoolean(actionRequest, "active");
+			String externalReferenceCode = ParamUtil.getString(
+				actionRequest, "externalReferenceCode");
+			long[] userIds = StringUtil.split(
+				ParamUtil.getString(actionRequest, "userIds"), 0L);
+			String[] emailAddresses = ParamUtil.getStringValues(
+				actionRequest, "emailAddresses");
+
 			commerceAccount =
 				_commerceAccountService.addBusinessCommerceAccount(
 					name, CommerceAccountConstants.DEFAULT_PARENT_ACCOUNT_ID,

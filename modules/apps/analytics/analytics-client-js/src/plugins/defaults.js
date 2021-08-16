@@ -21,6 +21,7 @@ import read from './read';
 import resolution from './resolution';
 import scrolling from './scrolling';
 import timing from './timing';
+import visibility from './visibility';
 import webContents from './web-contents';
 
 export {
@@ -40,13 +41,17 @@ export default [
 
 	resolution,
 
+	// Dxp should be before other events plugins, because it can dispose analytics
+
+	dxp,
+
 	blogs,
 	custom,
 	documents,
-	dxp,
 	forms,
 	read,
 	scrolling,
 	timing,
+	visibility,
 	webContents,
 ];

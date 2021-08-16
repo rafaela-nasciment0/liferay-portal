@@ -22,8 +22,8 @@ import React, {useCallback, useEffect, useMemo, useState} from 'react';
 
 import {LAYOUT_TYPES} from '../../../app/config/constants/layoutTypes';
 import {config} from '../../../app/config/index';
+import {useDispatch, useSelector} from '../../../app/contexts/StoreContext';
 import LayoutService from '../../../app/services/LayoutService';
-import {useDispatch, useSelector} from '../../../app/store/index';
 import changeMasterLayout from '../../../app/thunks/changeMasterLayout';
 import {useId} from '../../../app/utils/useId';
 import SidebarPanelContent from '../../../common/components/SidebarPanelContent';
@@ -93,11 +93,9 @@ export default function PageDesignOptionsSidebar() {
 	);
 
 	useEffect(() => {
-		const wrapper = document.getElementById('wrapper');
-
-		if (selectedStyleBook && wrapper) {
+		if (selectedStyleBook && document.body) {
 			Object.values(selectedStyleBook.tokenValues).forEach((token) => {
-				wrapper.style.setProperty(
+				document.body.style.setProperty(
 					`--${token.cssVariable}`,
 					token.value
 				);

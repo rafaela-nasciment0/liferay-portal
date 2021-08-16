@@ -25,12 +25,10 @@ import com.liferay.portal.json.JSONFactoryImpl;
 import com.liferay.portal.kernel.json.JSONFactory;
 import com.liferay.portal.kernel.test.util.PropsTestUtil;
 import com.liferay.portal.kernel.util.HashMapBuilder;
-import com.liferay.portal.kernel.util.HtmlUtil;
 import com.liferay.portal.kernel.util.LocaleThreadLocal;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.PortalClassLoaderUtil;
 import com.liferay.portal.kernel.util.ResourceBundleUtil;
-import com.liferay.portal.util.HtmlImpl;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -73,7 +71,6 @@ public class SelectDDMFormFieldTemplateContextContributorTest
 
 		PropsTestUtil.setProps("collator.rules", "<<<");
 
-		_setUpHtmlUtil();
 		_setUpJSONFactory();
 		_setUpLocaleThreadLocal();
 	}
@@ -249,6 +246,8 @@ public class SelectDDMFormFieldTemplateContextContributorTest
 		Assert.assertEquals("Label 3", optionMap.get("label"));
 		Assert.assertEquals("value 3", optionMap.get("value"));
 
+		Assert.assertEquals(true, parameters.get("showEmptyOption"));
+
 		List<String> value = (List<String>)parameters.get("value");
 
 		Assert.assertEquals(value.toString(), 1, value.size());
@@ -259,8 +258,9 @@ public class SelectDDMFormFieldTemplateContextContributorTest
 	public void testGetParameters2() throws Exception {
 		DDMFormField ddmFormField = new DDMFormField("field", "select");
 
-		ddmFormField.setProperty("dataSourceType", "manual");
 		ddmFormField.setMultiple(true);
+		ddmFormField.setProperty("dataSourceType", "manual");
+		ddmFormField.setProperty("showEmptyOption", false);
 
 		DDMFormFieldRenderingContext ddmFormFieldRenderingContext =
 			new DDMFormFieldRenderingContext();
@@ -323,6 +323,8 @@ public class SelectDDMFormFieldTemplateContextContributorTest
 		Assert.assertTrue(
 			predefinedValueParameter.toString(),
 			predefinedValueParameter.contains("value 3"));
+
+		Assert.assertEquals(false, parameters.get("showEmptyOption"));
 	}
 
 	@Test
@@ -365,12 +367,9 @@ public class SelectDDMFormFieldTemplateContextContributorTest
 		DDMFormField ddmFormField, DDMFormFieldOptions ddmFormFieldOptions,
 		Locale locale) {
 
-		DDMFormFieldRenderingContext ddmFormFieldRenderingContext =
-			new DDMFormFieldRenderingContext();
-
 		return _selectDDMFormFieldTemplateContextContributor.getOptions(
 			ddmFormField, ddmFormFieldOptions, locale,
-			ddmFormFieldRenderingContext);
+			new DDMFormFieldRenderingContext());
 	}
 
 	private void _setUpDDMFormFieldOptionsFactory(
@@ -395,12 +394,6 @@ public class SelectDDMFormFieldTemplateContextContributorTest
 		).thenReturn(
 			ddmFormFieldOptions
 		);
-	}
-
-	private void _setUpHtmlUtil() {
-		HtmlUtil htmlUtil = new HtmlUtil();
-
-		htmlUtil.setHtml(new HtmlImpl());
 	}
 
 	private void _setUpJSONFactory() throws Exception {

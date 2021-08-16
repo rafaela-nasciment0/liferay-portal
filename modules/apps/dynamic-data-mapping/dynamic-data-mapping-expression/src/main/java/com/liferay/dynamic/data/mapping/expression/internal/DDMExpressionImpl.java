@@ -25,6 +25,8 @@ import com.liferay.dynamic.data.mapping.expression.DDMExpressionParameterAccesso
 import com.liferay.dynamic.data.mapping.expression.internal.parser.DDMExpressionLexer;
 import com.liferay.dynamic.data.mapping.expression.internal.parser.DDMExpressionParser;
 import com.liferay.dynamic.data.mapping.expression.model.Expression;
+import com.liferay.petra.string.CharPool;
+import com.liferay.portal.kernel.util.StringUtil;
 
 import java.math.BigDecimal;
 
@@ -80,10 +82,7 @@ public class DDMExpressionImpl<T> implements DDMExpression<T> {
 
 	@Override
 	public Expression getModel() {
-		DDMExpressionModelVisitor ddmExpressionModelVisitor =
-			new DDMExpressionModelVisitor();
-
-		return _expressionContext.accept(ddmExpressionModelVisitor);
+		return _expressionContext.accept(new DDMExpressionModelVisitor());
 	}
 
 	@Override
@@ -97,6 +96,23 @@ public class DDMExpressionImpl<T> implements DDMExpression<T> {
 
 	protected DDMExpressionImpl(String expressionString)
 		throws DDMExpressionException {
+
+		this(expressionString, false);
+	}
+
+	protected DDMExpressionImpl(
+			String expressionString, boolean ddmExpressionDateValidation)
+		throws DDMExpressionException {
+
+		if (ddmExpressionDateValidation) {
+			String expressionSubstring = expressionString.substring(
+				expressionString.indexOf(CharPool.OPEN_CURLY_BRACE),
+				expressionString.lastIndexOf(CharPool.CLOSE_CURLY_BRACE));
+
+			expressionString = StringUtil.replace(
+				expressionString, expressionSubstring,
+				StringUtil.removeChar(expressionSubstring, CharPool.QUOTE));
+		}
 
 		_expressionString = expressionString;
 

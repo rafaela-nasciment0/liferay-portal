@@ -75,15 +75,13 @@ page import="com.liferay.portlet.portletconfiguration.util.PublicRenderParameter
 page import="com.liferay.roles.admin.constants.RolesAdminWebKeys" %><%@
 page import="com.liferay.roles.admin.role.type.contributor.RoleTypeContributor" %><%@
 page import="com.liferay.roles.admin.role.type.contributor.provider.RoleTypeContributorProvider" %><%@
-page import="com.liferay.taglib.servlet.PipingServletResponse" %>
+page import="com.liferay.taglib.servlet.PipingServletResponseFactory" %>
 
 <%@ page import="java.util.ArrayList" %><%@
 page import="java.util.LinkedHashSet" %><%@
 page import="java.util.List" %><%@
 page import="java.util.Objects" %><%@
 page import="java.util.Set" %>
-
-<%@ page import="javax.portlet.PortletURL" %>
 
 <liferay-frontend:defineObjects />
 

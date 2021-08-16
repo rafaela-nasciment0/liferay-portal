@@ -14,7 +14,9 @@
 
 package com.liferay.headless.delivery.internal.resource.v1_0;
 
+import com.liferay.blogs.constants.BlogsConstants;
 import com.liferay.blogs.model.BlogsEntry;
+import com.liferay.blogs.service.BlogsEntryLocalService;
 import com.liferay.blogs.service.BlogsEntryService;
 import com.liferay.document.library.kernel.service.DLAppService;
 import com.liferay.expando.kernel.service.ExpandoColumnLocalService;
@@ -25,8 +27,8 @@ import com.liferay.headless.delivery.dto.v1_0.BlogPosting;
 import com.liferay.headless.delivery.dto.v1_0.Image;
 import com.liferay.headless.delivery.dto.v1_0.Rating;
 import com.liferay.headless.delivery.dto.v1_0.TaxonomyCategoryBrief;
+import com.liferay.headless.delivery.dto.v1_0.util.CustomFieldsUtil;
 import com.liferay.headless.delivery.internal.dto.v1_0.converter.BlogPostingDTOConverter;
-import com.liferay.headless.delivery.internal.dto.v1_0.util.CustomFieldsUtil;
 import com.liferay.headless.delivery.internal.dto.v1_0.util.DisplayPageRendererUtil;
 import com.liferay.headless.delivery.internal.dto.v1_0.util.EntityFieldsUtil;
 import com.liferay.headless.delivery.internal.dto.v1_0.util.RatingUtil;
@@ -39,7 +41,9 @@ import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.search.Field;
 import com.liferay.portal.kernel.search.Sort;
 import com.liferay.portal.kernel.search.filter.Filter;
+import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.service.LayoutLocalService;
+import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.UserLocalService;
 import com.liferay.portal.kernel.servlet.taglib.ui.ImageSelector;
 import com.liferay.portal.kernel.util.FileUtil;
@@ -53,6 +57,7 @@ import com.liferay.portal.vulcan.dto.converter.DTOConverterRegistry;
 import com.liferay.portal.vulcan.dto.converter.DefaultDTOConverterContext;
 import com.liferay.portal.vulcan.pagination.Page;
 import com.liferay.portal.vulcan.pagination.Pagination;
+import com.liferay.portal.vulcan.permission.PermissionUtil;
 import com.liferay.portal.vulcan.resource.EntityModelResource;
 import com.liferay.portal.vulcan.util.LocalDateTimeUtil;
 import com.liferay.portal.vulcan.util.SearchUtil;
@@ -90,6 +95,18 @@ public class BlogPostingResourceImpl
 		SPIRatingResource<Rating> spiRatingResource = _getSPIRatingResource();
 
 		spiRatingResource.deleteRating(blogPostingId);
+	}
+
+	@Override
+	public void deleteSiteBlogPostingByExternalReferenceCode(
+			Long siteId, String externalReferenceCode)
+		throws Exception {
+
+		BlogsEntry blogsEntry =
+			_blogsEntryLocalService.getBlogsEntryByExternalReferenceCode(
+				siteId, externalReferenceCode);
+
+		_blogsEntryService.deleteEntry(blogsEntry.getEntryId());
 	}
 
 	@Override
@@ -131,6 +148,27 @@ public class BlogPostingResourceImpl
 	}
 
 	@Override
+	public BlogPosting getSiteBlogPostingByExternalReferenceCode(
+			Long siteId, String externalReferenceCode)
+		throws Exception {
+
+		BlogsEntry blogsEntry =
+			_blogsEntryLocalService.getBlogsEntryByExternalReferenceCode(
+				siteId, externalReferenceCode);
+
+		String resourceName = getPermissionCheckerResourceName(
+			blogsEntry.getEntryId());
+		Long resourceId = getPermissionCheckerResourceId(
+			blogsEntry.getEntryId());
+
+		PermissionUtil.checkPermission(
+			ActionKeys.VIEW, groupLocalService, resourceName, resourceId,
+			getPermissionCheckerGroupId(blogsEntry.getEntryId()));
+
+		return _toBlogPosting(blogsEntry);
+	}
+
+	@Override
 	public Page<BlogPosting> getSiteBlogPostingsPage(
 			Long siteId, String search, Aggregation aggregation, Filter filter,
 			Pagination pagination, Sort[] sorts)
@@ -140,22 +178,22 @@ public class BlogPostingResourceImpl
 			HashMapBuilder.put(
 				"create",
 				addAction(
-					"ADD_ENTRY", "postSiteBlogPosting", "com.liferay.blogs",
-					siteId)
+					ActionKeys.ADD_ENTRY, "postSiteBlogPosting",
+					BlogsConstants.RESOURCE_NAME, siteId)
 			).put(
 				"subscribe",
 				addAction(
-					"SUBSCRIBE", "putSiteBlogPostingSubscribe",
-					"com.liferay.blogs", siteId)
+					ActionKeys.SUBSCRIBE, "putSiteBlogPostingSubscribe",
+					BlogsConstants.RESOURCE_NAME, siteId)
 			).put(
 				"unsubscribe",
 				addAction(
-					"SUBSCRIBE", "putSiteBlogPostingUnsubscribe",
-					"com.liferay.blogs", siteId)
+					ActionKeys.SUBSCRIBE, "putSiteBlogPostingUnsubscribe",
+					BlogsConstants.RESOURCE_NAME, siteId)
 			).build(),
 			booleanQuery -> {
 			},
-			filter, BlogsEntry.class, search, pagination,
+			filter, BlogsEntry.class.getName(), search, pagination,
 			queryConfig -> queryConfig.setSelectedFieldNames(
 				Field.ENTRY_CLASS_PK),
 			searchContext -> {
@@ -185,25 +223,8 @@ public class BlogPostingResourceImpl
 	public BlogPosting postSiteBlogPosting(Long siteId, BlogPosting blogPosting)
 		throws Exception {
 
-		LocalDateTime localDateTime = LocalDateTimeUtil.toLocalDateTime(
-			blogPosting.getDatePublished());
-		Image image = blogPosting.getImage();
-
-		return _toBlogPosting(
-			_blogsEntryService.addEntry(
-				blogPosting.getHeadline(), blogPosting.getAlternativeHeadline(),
-				blogPosting.getFriendlyUrlPath(), blogPosting.getDescription(),
-				blogPosting.getArticleBody(), localDateTime.getMonthValue() - 1,
-				localDateTime.getDayOfMonth(), localDateTime.getYear(),
-				localDateTime.getHour(), localDateTime.getMinute(), true, true,
-				new String[0], _getCaption(image), _getImageSelector(image),
-				null,
-				ServiceContextRequestUtil.createServiceContext(
-					blogPosting.getTaxonomyCategoryIds(),
-					blogPosting.getKeywords(),
-					_getExpandoBridgeAttributes(blogPosting), siteId,
-					contextHttpServletRequest,
-					blogPosting.getViewableByAsString())));
+		return _addBlogPosting(
+			blogPosting.getExternalReferenceCode(), siteId, blogPosting);
 	}
 
 	@Override
@@ -211,27 +232,9 @@ public class BlogPostingResourceImpl
 			Long blogPostingId, BlogPosting blogPosting)
 		throws Exception {
 
-		LocalDateTime localDateTime = LocalDateTimeUtil.toLocalDateTime(
-			blogPosting.getDatePublished());
-		Image image = blogPosting.getImage();
 		BlogsEntry blogsEntry = _blogsEntryService.getEntry(blogPostingId);
 
-		return _toBlogPosting(
-			_blogsEntryService.updateEntry(
-				blogPostingId, blogPosting.getHeadline(),
-				blogPosting.getAlternativeHeadline(),
-				blogPosting.getFriendlyUrlPath(), blogPosting.getDescription(),
-				blogPosting.getArticleBody(), localDateTime.getMonthValue() - 1,
-				localDateTime.getDayOfMonth(), localDateTime.getYear(),
-				localDateTime.getHour(), localDateTime.getMinute(), true, true,
-				new String[0], _getCaption(image), _getImageSelector(image),
-				null,
-				ServiceContextRequestUtil.createServiceContext(
-					blogPosting.getTaxonomyCategoryIds(),
-					blogPosting.getKeywords(),
-					_getExpandoBridgeAttributes(blogPosting),
-					blogsEntry.getGroupId(), contextHttpServletRequest,
-					blogPosting.getViewableByAsString())));
+		return _updateBlogPosting(blogsEntry, blogPosting);
 	}
 
 	@Override
@@ -245,6 +248,22 @@ public class BlogPostingResourceImpl
 	}
 
 	@Override
+	public BlogPosting putSiteBlogPostingByExternalReferenceCode(
+			Long siteId, String externalReferenceCode, BlogPosting blogPosting)
+		throws Exception {
+
+		BlogsEntry blogsEntry =
+			_blogsEntryLocalService.fetchBlogsEntryByExternalReferenceCode(
+				siteId, externalReferenceCode);
+
+		if (blogsEntry != null) {
+			return _updateBlogPosting(blogsEntry, blogPosting);
+		}
+
+		return _addBlogPosting(externalReferenceCode, siteId, blogPosting);
+	}
+
+	@Override
 	public void putSiteBlogPostingSubscribe(Long siteId) throws Exception {
 		_blogsEntryService.subscribe(siteId);
 	}
@@ -252,6 +271,23 @@ public class BlogPostingResourceImpl
 	@Override
 	public void putSiteBlogPostingUnsubscribe(Long siteId) throws Exception {
 		_blogsEntryService.unsubscribe(siteId);
+	}
+
+	@Override
+	protected Long getPermissionCheckerGroupId(Object id) throws Exception {
+		BlogsEntry blogsEntry = _blogsEntryService.getEntry((Long)id);
+
+		return blogsEntry.getGroupId();
+	}
+
+	@Override
+	protected String getPermissionCheckerPortletName(Object id) {
+		return BlogsConstants.RESOURCE_NAME;
+	}
+
+	@Override
+	protected String getPermissionCheckerResourceName(Object id) {
+		return BlogsEntry.class.getName();
 	}
 
 	@Override
@@ -280,6 +316,35 @@ public class BlogPostingResourceImpl
 					TaxonomyCategoryBrief::getTaxonomyCategoryId,
 					Long[].class));
 		}
+	}
+
+	private BlogPosting _addBlogPosting(
+			String externalReferenceCode, long groupId, BlogPosting blogPosting)
+		throws Exception {
+
+		LocalDateTime localDateTime = LocalDateTimeUtil.toLocalDateTime(
+			blogPosting.getDatePublished());
+		Image image = blogPosting.getImage();
+
+		return _toBlogPosting(
+			_blogsEntryService.addEntry(
+				externalReferenceCode, blogPosting.getHeadline(),
+				blogPosting.getAlternativeHeadline(),
+				blogPosting.getFriendlyUrlPath(), blogPosting.getDescription(),
+				blogPosting.getArticleBody(), localDateTime.getMonthValue() - 1,
+				localDateTime.getDayOfMonth(), localDateTime.getYear(),
+				localDateTime.getHour(), localDateTime.getMinute(), true, true,
+				new String[0], _getCaption(image), _getImageSelector(image),
+				null, _createServiceContext(blogPosting, groupId)));
+	}
+
+	private ServiceContext _createServiceContext(
+		BlogPosting blogPosting, long groupId) {
+
+		return ServiceContextRequestUtil.createServiceContext(
+			blogPosting.getTaxonomyCategoryIds(), blogPosting.getKeywords(),
+			_getExpandoBridgeAttributes(blogPosting), groupId,
+			contextHttpServletRequest, blogPosting.getViewableByAsString());
 	}
 
 	private String _getCaption(Image image) {
@@ -329,17 +394,24 @@ public class BlogPostingResourceImpl
 				return RatingUtil.toRating(
 					HashMapBuilder.put(
 						"create",
-						addAction("VIEW", blogsEntry, "postBlogPostingMyRating")
+						addAction(
+							ActionKeys.VIEW, blogsEntry,
+							"postBlogPostingMyRating")
 					).put(
 						"delete",
 						addAction(
-							"VIEW", blogsEntry, "deleteBlogPostingMyRating")
+							ActionKeys.VIEW, blogsEntry,
+							"deleteBlogPostingMyRating")
 					).put(
 						"get",
-						addAction("VIEW", blogsEntry, "getBlogPostingMyRating")
+						addAction(
+							ActionKeys.VIEW, blogsEntry,
+							"getBlogPostingMyRating")
 					).put(
 						"replace",
-						addAction("VIEW", blogsEntry, "putBlogPostingMyRating")
+						addAction(
+							ActionKeys.VIEW, blogsEntry,
+							"putBlogPostingMyRating")
 					).build(),
 					_portal, ratingsEntry, _userLocalService);
 			},
@@ -352,28 +424,55 @@ public class BlogPostingResourceImpl
 				contextAcceptLanguage.isAcceptAllLanguages(),
 				HashMapBuilder.put(
 					"delete",
-					addAction("DELETE", blogsEntry, "deleteBlogPosting")
+					addAction(
+						ActionKeys.DELETE, blogsEntry, "deleteBlogPosting")
 				).put(
-					"get", addAction("VIEW", blogsEntry, "getBlogPosting")
+					"get",
+					addAction(ActionKeys.VIEW, blogsEntry, "getBlogPosting")
 				).put(
 					"get-rendered-content-by-display-page",
 					addAction(
-						"VIEW", blogsEntry,
+						ActionKeys.VIEW, blogsEntry,
 						"getBlogPostingRenderedContentByDisplayPageDisplay" +
 							"PageKey")
 				).put(
-					"replace", addAction("UPDATE", blogsEntry, "putBlogPosting")
+					"replace",
+					addAction(ActionKeys.UPDATE, blogsEntry, "putBlogPosting")
 				).put(
 					"update",
-					addAction("UPDATE", blogsEntry, "patchBlogPosting")
+					addAction(ActionKeys.UPDATE, blogsEntry, "patchBlogPosting")
 				).build(),
 				_dtoConverterRegistry, blogsEntry.getEntryId(),
 				contextAcceptLanguage.getPreferredLocale(), contextUriInfo,
 				contextUser));
 	}
 
+	private BlogPosting _updateBlogPosting(
+			BlogsEntry blogsEntry, BlogPosting blogPosting)
+		throws Exception {
+
+		LocalDateTime localDateTime = LocalDateTimeUtil.toLocalDateTime(
+			blogPosting.getDatePublished());
+		Image image = blogPosting.getImage();
+
+		return _toBlogPosting(
+			_blogsEntryService.updateEntry(
+				blogsEntry.getEntryId(), blogPosting.getHeadline(),
+				blogPosting.getAlternativeHeadline(),
+				blogPosting.getFriendlyUrlPath(), blogPosting.getDescription(),
+				blogPosting.getArticleBody(), localDateTime.getMonthValue() - 1,
+				localDateTime.getDayOfMonth(), localDateTime.getYear(),
+				localDateTime.getHour(), localDateTime.getMinute(), true, true,
+				new String[0], _getCaption(image), _getImageSelector(image),
+				null,
+				_createServiceContext(blogPosting, blogsEntry.getGroupId())));
+	}
+
 	@Reference
 	private BlogPostingDTOConverter _blogPostingDTOConverter;
+
+	@Reference
+	private BlogsEntryLocalService _blogsEntryLocalService;
 
 	@Reference
 	private BlogsEntryService _blogsEntryService;

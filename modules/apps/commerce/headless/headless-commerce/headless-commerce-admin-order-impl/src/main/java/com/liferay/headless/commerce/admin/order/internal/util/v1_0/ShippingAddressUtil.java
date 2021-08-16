@@ -32,7 +32,7 @@ import com.liferay.portal.kernel.util.Validator;
  */
 public class ShippingAddressUtil {
 
-	public static CommerceOrder upsertShippingAddress(
+	public static CommerceOrder addOrUpdateShippingAddress(
 			CommerceAddressService commerceAddressService,
 			CommerceOrderService commerceOrderService,
 			CommerceOrder commerceOrder, ShippingAddress shippingAddress,
@@ -107,20 +107,20 @@ public class ShippingAddressUtil {
 			ShippingAddress shippingAddress)
 		throws Exception {
 
-		if (Validator.isNull(shippingAddress.getRegionISOCode()) &&
-			(commerceAddress != null)) {
+		if ((country != null) &&
+			Validator.isNotNull(shippingAddress.getRegionISOCode())) {
 
+			Region region = RegionLocalServiceUtil.getRegion(
+				country.getCountryId(), shippingAddress.getRegionISOCode());
+
+			return region.getRegionId();
+		}
+
+		if (commerceAddress != null) {
 			return commerceAddress.getRegionId();
 		}
 
-		if (country == null) {
-			return 0;
-		}
-
-		Region region = RegionLocalServiceUtil.getRegion(
-			country.getCountryId(), shippingAddress.getRegionISOCode());
-
-		return region.getRegionId();
+		return 0;
 	}
 
 	private static String _getStreet2(CommerceAddress commerceAddress) {

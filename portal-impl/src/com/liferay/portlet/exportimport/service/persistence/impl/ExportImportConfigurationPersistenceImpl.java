@@ -3016,25 +3016,25 @@ public class ExportImportConfigurationPersistenceImpl
 		ServiceContext serviceContext =
 			ServiceContextThreadLocal.getServiceContext();
 
-		Date now = new Date();
+		Date date = new Date();
 
 		if (isNew && (exportImportConfiguration.getCreateDate() == null)) {
 			if (serviceContext == null) {
-				exportImportConfiguration.setCreateDate(now);
+				exportImportConfiguration.setCreateDate(date);
 			}
 			else {
 				exportImportConfiguration.setCreateDate(
-					serviceContext.getCreateDate(now));
+					serviceContext.getCreateDate(date));
 			}
 		}
 
 		if (!exportImportConfigurationModelImpl.hasSetModifiedDate()) {
 			if (serviceContext == null) {
-				exportImportConfiguration.setModifiedDate(now);
+				exportImportConfiguration.setModifiedDate(date);
 			}
 			else {
 				exportImportConfiguration.setModifiedDate(
-					serviceContext.getModifiedDate(now));
+					serviceContext.getModifiedDate(date));
 			}
 		}
 
@@ -3540,6 +3540,13 @@ public class ExportImportConfigurationPersistenceImpl
 							columnName);
 				}
 
+				if (finderPath.isBaseModelResult() &&
+					(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION ==
+						finderPath.getCacheName())) {
+
+					finderPathColumnBitmask |= _ORDER_BY_COLUMNS_BITMASK;
+				}
+
 				_finderPathColumnBitmasksCache.put(
 					finderPath, finderPathColumnBitmask);
 			}
@@ -3562,7 +3569,7 @@ public class ExportImportConfigurationPersistenceImpl
 			return ExportImportConfigurationTable.INSTANCE.getTableName();
 		}
 
-		private Object[] _getValue(
+		private static Object[] _getValue(
 			ExportImportConfigurationModelImpl
 				exportImportConfigurationModelImpl,
 			String[] columnNames, boolean original) {
@@ -3587,8 +3594,20 @@ public class ExportImportConfigurationPersistenceImpl
 			return arguments;
 		}
 
-		private static Map<FinderPath, Long> _finderPathColumnBitmasksCache =
-			new ConcurrentHashMap<>();
+		private static final Map<FinderPath, Long>
+			_finderPathColumnBitmasksCache = new ConcurrentHashMap<>();
+
+		private static final long _ORDER_BY_COLUMNS_BITMASK;
+
+		static {
+			long orderByColumnsBitmask = 0;
+
+			orderByColumnsBitmask |=
+				ExportImportConfigurationModelImpl.getColumnBitmask(
+					"createDate");
+
+			_ORDER_BY_COLUMNS_BITMASK = orderByColumnsBitmask;
+		}
 
 	}
 

@@ -105,9 +105,9 @@ public class LayoutPageTemplatesAdminDisplayContext {
 	public PortletURL getPortletURL() {
 		return PortletURLBuilder.createRenderURL(
 			_liferayPortletResponse
-		).setParameter(
-			"tabs1", getTabs1()
-		).build();
+		).setTabs1(
+			getTabs1()
+		).buildPortletURL();
 	}
 
 	public String getTabs1() {

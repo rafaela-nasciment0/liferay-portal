@@ -32,6 +32,7 @@ import com.liferay.petra.sql.dsl.spi.expression.DSLFunction;
 import com.liferay.petra.sql.dsl.spi.expression.DSLFunctionType;
 import com.liferay.petra.sql.dsl.spi.expression.TableStar;
 import com.liferay.petra.sql.dsl.spi.query.Select;
+import com.liferay.petra.sql.dsl.spi.query.SetOperation;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.change.tracking.CTCollectionThreadLocal;
@@ -178,8 +179,6 @@ public class BasePersistenceImpl<T extends BaseModel<T>>
 
 		dslQuery.toSQL(sb::append, defaultASTNodeListener);
 
-		String[] tableNames = defaultASTNodeListener.getTableNames();
-
 		Select select = null;
 
 		ASTNode astNode = dslQuery;
@@ -193,13 +192,22 @@ public class BasePersistenceImpl<T extends BaseModel<T>>
 
 			BaseASTNode baseASTNode = (BaseASTNode)astNode;
 
-			astNode = baseASTNode.getChild();
+			if (baseASTNode instanceof SetOperation) {
+				SetOperation setOperation = (SetOperation)astNode;
+
+				astNode = setOperation.getLeftDSLQuery();
+			}
+			else {
+				astNode = baseASTNode.getChild();
+			}
 		}
 
 		if (select == null) {
 			throw new IllegalArgumentException(
 				"No Select found for " + dslQuery);
 		}
+
+		String[] tableNames = defaultASTNodeListener.getTableNames();
 
 		ProjectionType projectionType = _getProjectionType(
 			tableNames, select.getExpressions());
@@ -402,6 +410,26 @@ public class BasePersistenceImpl<T extends BaseModel<T>>
 			return map;
 		}
 
+		if ((databaseInMaxParameters > 0) &&
+			(uncachedPrimaryKeys.size() > databaseInMaxParameters)) {
+
+			Iterator<Serializable> iterator = uncachedPrimaryKeys.iterator();
+
+			while (iterator.hasNext()) {
+				Set<Serializable> page = new HashSet<>();
+
+				for (int i = 0;
+					 (i < databaseInMaxParameters) && iterator.hasNext(); i++) {
+
+					page.add(iterator.next());
+				}
+
+				map.putAll(fetchByPrimaryKeys(page));
+			}
+
+			return map;
+		}
+
 		StringBundler sb = new StringBundler(
 			(2 * uncachedPrimaryKeys.size()) + 4);
 
@@ -560,6 +588,7 @@ public class BasePersistenceImpl<T extends BaseModel<T>>
 		return _dataSource;
 	}
 
+	@Override
 	public DB getDB() {
 		if (_db == null) {
 			_db = DBManagerUtil.getDB(_dialect, _dataSource);
@@ -690,12 +719,12 @@ public class BasePersistenceImpl<T extends BaseModel<T>>
 
 	@Override
 	public T update(T model) {
-		Class<?> clazz = model.getModelClass();
-
 		if (ReadOnlyTransactionThreadLocal.isReadOnly()) {
 			throw new IllegalStateException(
 				"Update called with read only transaction");
 		}
+
+		Class<?> clazz = model.getModelClass();
 
 		while (model instanceof ModelWrapper) {
 			ModelWrapper<T> modelWrapper = (ModelWrapper<T>)model;
@@ -719,7 +748,7 @@ public class BasePersistenceImpl<T extends BaseModel<T>>
 					auditedModel.getCompanyId()
 				));
 
-			Long modelCount = dslQuery(groupByStep);
+			int modelCount = dslQueryCount(groupByStep);
 
 			if (modelCount >= _dataLimitModelMaxCount) {
 				throw new DataLimitExceededException(

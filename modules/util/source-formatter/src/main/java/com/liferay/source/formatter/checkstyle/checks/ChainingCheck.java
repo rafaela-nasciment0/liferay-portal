@@ -22,7 +22,6 @@ import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
-import com.liferay.portal.tools.ToolsUtil;
 import com.liferay.source.formatter.checks.util.JavaSourceUtil;
 import com.liferay.source.formatter.parser.JavaClass;
 import com.liferay.source.formatter.parser.JavaClassParser;
@@ -175,7 +174,7 @@ public class ChainingCheck extends BaseCheck {
 
 			_checkAllowedChaining(methodCallDetailAST);
 
-			List<String> chainedMethodNames = _getChainedMethodNames(
+			List<String> chainedMethodNames = getChainedMethodNames(
 				methodCallDetailAST);
 
 			_checkRequiredChaining(methodCallDetailAST, chainedMethodNames);
@@ -249,17 +248,14 @@ public class ChainingCheck extends BaseCheck {
 
 		DetailAST methodCallDetailAST = dotDetailAST.getParent();
 
-		if (methodCallDetailAST.getType() != TokenTypes.METHOD_CALL) {
-			return;
-		}
-
-		if ((detailAST.findFirstToken(TokenTypes.ARRAY_DECLARATOR) != null) ||
+		if ((methodCallDetailAST.getType() != TokenTypes.METHOD_CALL) ||
+			(detailAST.findFirstToken(TokenTypes.ARRAY_DECLARATOR) != null) ||
 			(detailAST.findFirstToken(TokenTypes.OBJBLOCK) != null)) {
 
 			return;
 		}
 
-		List<String> chainedMethodNames = _getChainedMethodNames(
+		List<String> chainedMethodNames = getChainedMethodNames(
 			methodCallDetailAST);
 
 		if (_isAllowedChainingMethodCall(
@@ -461,37 +457,6 @@ public class ChainingCheck extends BaseCheck {
 		}
 	}
 
-	private List<String> _getChainedMethodNames(DetailAST methodCallDetailAST) {
-		List<String> chainedMethodNames = new ArrayList<>();
-
-		chainedMethodNames.add(getMethodName(methodCallDetailAST));
-
-		while (true) {
-			DetailAST parentDetailAST = methodCallDetailAST.getParent();
-
-			if (parentDetailAST.getType() != TokenTypes.DOT) {
-				return chainedMethodNames;
-			}
-
-			DetailAST grandParentDetailAST = parentDetailAST.getParent();
-
-			if (grandParentDetailAST.getType() != TokenTypes.METHOD_CALL) {
-				DetailAST siblingDetailAST =
-					methodCallDetailAST.getNextSibling();
-
-				if (siblingDetailAST.getType() == TokenTypes.IDENT) {
-					chainedMethodNames.add(siblingDetailAST.getText());
-				}
-
-				return chainedMethodNames;
-			}
-
-			methodCallDetailAST = grandParentDetailAST;
-
-			chainedMethodNames.add(getMethodName(methodCallDetailAST));
-		}
-	}
-
 	private DetailAST _getGlobalVariableDefinitonDetailAST(
 		DetailAST methodCallDetailAST) {
 
@@ -537,8 +502,7 @@ public class ChainingCheck extends BaseCheck {
 
 	private JavaClass _getJavaClass(String requiredChainingClassFileName) {
 		File file = SourceFormatterUtil.getFile(
-			getBaseDirName(), requiredChainingClassFileName,
-			ToolsUtil.PORTAL_MAX_DIR_LEVEL);
+			getBaseDirName(), requiredChainingClassFileName, getMaxDirLevel());
 
 		try {
 			if (file != null) {

@@ -16,25 +16,36 @@ import PropTypes from 'prop-types';
 import React from 'react';
 
 import {config} from '../../app/config/index';
+import {useCustomCollectionSelectorURL} from '../../app/contexts/CollectionItemContext';
 import itemSelectorValueToCollection from '../../app/utils/item-selector-value/itemSelectorValueToCollection';
 import ItemSelector from './ItemSelector';
 
+const DEFAULT_OPTION_MENU_ITEMS = [];
+
 export default function CollectionSelector({
-	collectionTitle,
+	collectionItem,
 	itemSelectorURL,
 	label,
 	onCollectionSelect,
+	optionsMenuItems = DEFAULT_OPTION_MENU_ITEMS,
 }) {
 	const eventName = `${config.portletNamespace}selectInfoList`;
+
+	const customCollectionSelectorURL = useCustomCollectionSelectorURL();
 
 	return (
 		<ItemSelector
 			eventName={eventName}
-			itemSelectorURL={itemSelectorURL || config.infoListSelectorURL}
+			itemSelectorURL={
+				customCollectionSelectorURL ||
+				itemSelectorURL ||
+				config.infoListSelectorURL
+			}
 			label={label}
 			onItemSelect={onCollectionSelect}
+			optionsMenuItems={optionsMenuItems}
 			quickMappedInfoItems={config.selectedMappingTypes?.linkedCollection}
-			selectedItemTitle={collectionTitle}
+			selectedItem={collectionItem}
 			showMappedItems={!!config.selectedMappingTypes?.linkedCollection}
 			transformValueCallback={itemSelectorValueToCollection}
 		/>
@@ -42,7 +53,7 @@ export default function CollectionSelector({
 }
 
 CollectionSelector.propTypes = {
-	collectionTitle: PropTypes.string,
+	collectionItem: PropTypes.shape({title: PropTypes.string}),
 	label: PropTypes.string,
 	onCollectionSelect: PropTypes.func.isRequired,
 };

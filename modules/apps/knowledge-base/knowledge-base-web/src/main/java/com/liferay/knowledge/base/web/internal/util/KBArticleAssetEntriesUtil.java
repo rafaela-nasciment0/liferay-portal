@@ -149,7 +149,7 @@ public class KBArticleAssetEntriesUtil {
 				"/blogs/view_entry"
 			).setParameter(
 				"entryId", classPK
-			).build();
+			).buildPortletURL();
 		}
 		else if (className.equals(JournalArticle.class.getName())) {
 			JournalArticle journalArticle =
@@ -159,12 +159,12 @@ public class KBArticleAssetEntriesUtil {
 				PortletURLFactoryUtil.create(
 					httpServletRequest, portletId, PortletRequest.RENDER_PHASE)
 			).setParameter(
-				"struts_action", "/journal_content/view"
+				"articleId", journalArticle.getArticleId()
 			).setParameter(
 				"groupId", journalArticle.getGroupId()
 			).setParameter(
-				"articleId", journalArticle.getArticleId()
-			).build();
+				"struts_action", "/journal_content/view"
+			).buildPortletURL();
 		}
 		else if (className.equals(KBArticle.class.getName())) {
 			portletURL = PortletURLBuilder.create(
@@ -176,17 +176,17 @@ public class KBArticleAssetEntriesUtil {
 				"/article/view_article.jsp"
 			).setParameter(
 				"resourcePrimKey", classPK
-			).build();
+			).buildPortletURL();
 		}
 		else if (className.equals(MBMessage.class.getName())) {
 			portletURL = PortletURLBuilder.create(
 				PortletURLFactoryUtil.create(
 					httpServletRequest, portletId, PortletRequest.RENDER_PHASE)
 			).setParameter(
-				"struts_action", "/message_boards/view_message"
-			).setParameter(
 				"messageId", classPK
-			).build();
+			).setParameter(
+				"struts_action", "/message_boards/view_message"
+			).buildPortletURL();
 		}
 		else if (className.equals(WikiPage.class.getName())) {
 			WikiPage wikiPage = WikiPageLocalServiceUtil.getPage(classPK);
@@ -195,12 +195,12 @@ public class KBArticleAssetEntriesUtil {
 				PortletURLFactoryUtil.create(
 					httpServletRequest, portletId, PortletRequest.RENDER_PHASE)
 			).setParameter(
-				"struts_action", "/wiki/view"
-			).setParameter(
 				"nodeId", wikiPage.getNodeId()
 			).setParameter(
+				"struts_action", "/wiki/view"
+			).setParameter(
 				"title", wikiPage.getTitle()
-			).build();
+			).buildPortletURL();
 		}
 
 		String currentURL = PortalUtil.getCurrentURL(httpServletRequest);

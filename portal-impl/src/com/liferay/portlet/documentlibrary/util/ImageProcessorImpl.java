@@ -144,13 +144,10 @@ public class ImageProcessorImpl
 
 	@Override
 	public boolean hasImages(FileVersion fileVersion) {
-		if (!PropsValues.DL_FILE_ENTRY_PREVIEW_ENABLED &&
-			!PropsValues.DL_FILE_ENTRY_THUMBNAIL_ENABLED) {
+		if ((!PropsValues.DL_FILE_ENTRY_PREVIEW_ENABLED &&
+			 !PropsValues.DL_FILE_ENTRY_THUMBNAIL_ENABLED) ||
+			(fileVersion.getSize() == 0)) {
 
-			return false;
-		}
-
-		if (fileVersion.getSize() == 0) {
 			return false;
 		}
 
@@ -433,8 +430,10 @@ public class ImageProcessorImpl
 		try {
 			file = FileUtil.createTempFile(type);
 
-			try (FileOutputStream fos = new FileOutputStream(file)) {
-				ImageToolUtil.write(renderedImage, type, fos);
+			try (FileOutputStream fileOutputStream = new FileOutputStream(
+					file)) {
+
+				ImageToolUtil.write(renderedImage, type, fileOutputStream);
 			}
 
 			addFileToStore(

@@ -105,6 +105,19 @@ public class TestrayImporter {
 			_getJenkinsBuildDescriptionElement(
 				"Jenkins Suite", topLevelBuild.getTestSuiteName()));
 
+		PullRequest pullRequest = getPullRequest();
+
+		if (pullRequest != null) {
+			Dom4JUtil.addToElement(
+				rootElement,
+				_getJenkinsBuildDescriptionElement(
+					"Pull Request",
+					JenkinsResultsParserUtil.combine(
+						pullRequest.getReceiverUsername(), "#",
+						pullRequest.getNumber()),
+					pullRequest.getHtmlURL()));
+		}
+
 		Map<Integer, TestrayBuild> testrayBuildMap = new HashMap<>();
 
 		for (TestrayBuild testrayBuild : _testrayBuilds.values()) {
@@ -123,15 +136,39 @@ public class TestrayImporter {
 					testrayBuildTitle, " (", String.valueOf(i), ")");
 			}
 
+			String testrayRoutineTitle = "Testray Routine";
+
+			if (i > 0) {
+				testrayRoutineTitle = JenkinsResultsParserUtil.combine(
+					testrayRoutineTitle, " (", String.valueOf(i), ")");
+			}
+
 			TestrayBuild testrayBuild = testrayBuildEntry.getValue();
+
+			TestrayRoutine testrayRoutine = testrayBuild.getTestrayRoutine();
 
 			Dom4JUtil.addToElement(
 				rootElement,
+				_getJenkinsBuildDescriptionElement(
+					testrayRoutineTitle, testrayRoutine.getName(),
+					String.valueOf(testrayRoutine.getURL())),
 				_getJenkinsBuildDescriptionElement(
 					testrayBuildTitle, testrayBuild.getName(),
 					String.valueOf(testrayBuild.getURL())));
 
 			i++;
+		}
+
+		String currentJobName = System.getenv("JOB_NAME");
+
+		if (!JenkinsResultsParserUtil.isNullOrEmpty(currentJobName)) {
+			Dom4JUtil.addToElement(
+				rootElement,
+				_getJenkinsBuildDescriptionElement(
+					"Testray Importer",
+					JenkinsResultsParserUtil.combine(
+						currentJobName, "#", System.getenv("BUILD_NUMBER")),
+					System.getenv("BUILD_URL")));
 		}
 
 		try {
@@ -544,6 +581,15 @@ public class TestrayImporter {
 					break;
 				}
 			}
+
+			String jobName = job.getJobName();
+
+			if ((testrayProductVersion == null) &&
+				jobName.equals("test-qa-websites-functional-daily")) {
+
+				testrayProductVersion =
+					testrayProject.createTestrayProductVersion("1.x");
+			}
 		}
 		finally {
 			if (testrayProductVersion != null) {
@@ -897,7 +943,8 @@ public class TestrayImporter {
 				axisTestClassGroup.getTestBaseDir());
 
 			TestrayRun testrayRun = new TestrayRun(
-				testrayBuild, axisTestClassGroup.getBatchName());
+				testrayBuild, axisTestClassGroup.getBatchName(),
+				_getPropertiesList(axisTestClassGroup.getTestBaseDir()));
 
 			long start = JenkinsResultsParserUtil.getCurrentTimeMillis();
 
@@ -978,8 +1025,16 @@ public class TestrayImporter {
 					testrayCaseResult.getComponentName());
 				testcasePropertiesMap.put(
 					"testray.team.name", testrayCaseResult.getTeamName());
+
+				String testrayCaseName = testrayCaseResult.getName();
+
+				if (testrayCaseName.length() > 150) {
+					testrayCaseName = testrayCaseName.substring(0, 150);
+				}
+
 				testcasePropertiesMap.put(
-					"testray.testcase.name", testrayCaseResult.getName());
+					"testray.testcase.name", testrayCaseName);
+
 				testcasePropertiesMap.put(
 					"testray.testcase.priority",
 					String.valueOf(testrayCaseResult.getPriority()));
@@ -1088,6 +1143,8 @@ public class TestrayImporter {
 
 			testrayServer.importCaseResults(jenkinsMaster);
 		}
+
+		_sendPullRequestNotification();
 	}
 
 	public void setup() {
@@ -1329,12 +1386,6 @@ public class TestrayImporter {
 			return;
 		}
 
-		QAWebsitesBranchInformationBuild qaWebsitesBranchInformationBuild =
-			(QAWebsitesBranchInformationBuild)_topLevelBuild;
-
-		Build.BranchInformation branchInformation =
-			qaWebsitesBranchInformationBuild.getQAWebsitesBranchInformation();
-
 		Properties buildProperties;
 
 		try {
@@ -1343,6 +1394,12 @@ public class TestrayImporter {
 		catch (IOException ioException) {
 			throw new RuntimeException(ioException);
 		}
+
+		QAWebsitesBranchInformationBuild qaWebsitesBranchInformationBuild =
+			(QAWebsitesBranchInformationBuild)_topLevelBuild;
+
+		Build.BranchInformation branchInformation =
+			qaWebsitesBranchInformationBuild.getQAWebsitesBranchInformation();
 
 		String upstreamBranchName = branchInformation.getUpstreamBranchName();
 
@@ -1464,6 +1521,13 @@ public class TestrayImporter {
 		Job job = getJob();
 
 		propertiesList.add(job.getJobProperties());
+
+		try {
+			propertiesList.add(JenkinsResultsParserUtil.getBuildProperties());
+		}
+		catch (IOException ioException) {
+			throw new RuntimeException(ioException);
+		}
 
 		return propertiesList;
 	}
@@ -1959,6 +2023,16 @@ public class TestrayImporter {
 		return string;
 	}
 
+	private void _sendPullRequestNotification() {
+		PullRequest pullRequest = getPullRequest();
+
+		if (pullRequest == null) {
+			return;
+		}
+
+		pullRequest.addComment(getJenkinsBuildDescription());
+	}
+
 	private void _setupPortalBundle() {
 		PortalGitWorkingDirectory portalGitWorkingDirectory =
 			_getPortalGitWorkingDirectory();
@@ -1979,7 +2053,7 @@ public class TestrayImporter {
 			"liferay.portal.bundle", portalRelease.getPortalVersion());
 		parameters.put(
 			"test.build.bundle.zip.url",
-			String.valueOf(portalRelease.getTomcatURL()));
+			String.valueOf(portalRelease.getTomcatLocalURL()));
 
 		PortalFixpackRelease portalFixpackRelease = getPortalFixpackRelease();
 		PortalHotfixRelease portalHotfixRelease = getPortalHotfixRelease();
@@ -2018,7 +2092,7 @@ public class TestrayImporter {
 				"build-test.xml", "prepare-test-bundle", parameters);
 		}
 		catch (AntException antException) {
-			throw new RuntimeException(antException);
+			antException.printStackTrace();
 		}
 	}
 

@@ -478,20 +478,6 @@ public abstract class BaseProductResourceTestCase {
 
 		assertEquals(randomProduct, postProduct);
 		assertValid(postProduct);
-
-		randomProduct = randomProduct();
-
-		assertHttpResponseStatusCode(
-			404,
-			productResource.getProductByExternalReferenceCodeHttpResponse(
-				randomProduct.getExternalReferenceCode()));
-
-		testPostProduct_addProduct(randomProduct);
-
-		assertHttpResponseStatusCode(
-			200,
-			productResource.getProductByExternalReferenceCodeHttpResponse(
-				randomProduct.getExternalReferenceCode()));
 	}
 
 	protected Product testPostProduct_addProduct(Product product)
@@ -617,20 +603,6 @@ public abstract class BaseProductResourceTestCase {
 
 		assertEquals(randomProduct, postProduct);
 		assertValid(postProduct);
-
-		randomProduct = randomProduct();
-
-		assertHttpResponseStatusCode(
-			404,
-			productResource.getProductByExternalReferenceCodeHttpResponse(
-				randomProduct.getExternalReferenceCode()));
-
-		testPostProductByExternalReferenceCodeClone_addProduct(randomProduct);
-
-		assertHttpResponseStatusCode(
-			200,
-			productResource.getProductByExternalReferenceCodeHttpResponse(
-				randomProduct.getExternalReferenceCode()));
 	}
 
 	protected Product testPostProductByExternalReferenceCodeClone_addProduct(
@@ -761,20 +733,6 @@ public abstract class BaseProductResourceTestCase {
 
 		assertEquals(randomProduct, postProduct);
 		assertValid(postProduct);
-
-		randomProduct = randomProduct();
-
-		assertHttpResponseStatusCode(
-			404,
-			productResource.getProductByExternalReferenceCodeHttpResponse(
-				randomProduct.getExternalReferenceCode()));
-
-		testPostProductClone_addProduct(randomProduct);
-
-		assertHttpResponseStatusCode(
-			200,
-			productResource.getProductByExternalReferenceCodeHttpResponse(
-				randomProduct.getExternalReferenceCode()));
 	}
 
 	protected Product testPostProductClone_addProduct(Product product)
@@ -914,6 +872,14 @@ public abstract class BaseProductResourceTestCase {
 				continue;
 			}
 
+			if (Objects.equals("customFields", additionalAssertFieldName)) {
+				if (product.getCustomFields() == null) {
+					valid = false;
+				}
+
+				continue;
+			}
+
 			if (Objects.equals("defaultSku", additionalAssertFieldName)) {
 				if (product.getDefaultSku() == null) {
 					valid = false;
@@ -1014,6 +980,26 @@ public abstract class BaseProductResourceTestCase {
 
 			if (Objects.equals("neverExpire", additionalAssertFieldName)) {
 				if (product.getNeverExpire() == null) {
+					valid = false;
+				}
+
+				continue;
+			}
+
+			if (Objects.equals(
+					"productAccountGroupFilter", additionalAssertFieldName)) {
+
+				if (product.getProductAccountGroupFilter() == null) {
+					valid = false;
+				}
+
+				continue;
+			}
+
+			if (Objects.equals(
+					"productAccountGroups", additionalAssertFieldName)) {
+
+				if (product.getProductAccountGroups() == null) {
 					valid = false;
 				}
 
@@ -1215,7 +1201,7 @@ public abstract class BaseProductResourceTestCase {
 		List<GraphQLField> graphQLFields = new ArrayList<>();
 
 		for (Field field :
-				ReflectionUtil.getDeclaredFields(
+				getDeclaredFields(
 					com.liferay.headless.commerce.admin.catalog.dto.v1_0.
 						Product.class)) {
 
@@ -1250,7 +1236,7 @@ public abstract class BaseProductResourceTestCase {
 				}
 
 				List<GraphQLField> childrenGraphQLFields = getGraphQLFields(
-					ReflectionUtil.getDeclaredFields(clazz));
+					getDeclaredFields(clazz));
 
 				graphQLFields.add(
 					new GraphQLField(field.getName(), childrenGraphQLFields));
@@ -1347,6 +1333,17 @@ public abstract class BaseProductResourceTestCase {
 			if (Objects.equals("createDate", additionalAssertFieldName)) {
 				if (!Objects.deepEquals(
 						product1.getCreateDate(), product2.getCreateDate())) {
+
+					return false;
+				}
+
+				continue;
+			}
+
+			if (Objects.equals("customFields", additionalAssertFieldName)) {
+				if (!Objects.deepEquals(
+						product1.getCustomFields(),
+						product2.getCustomFields())) {
 
 					return false;
 				}
@@ -1493,6 +1490,32 @@ public abstract class BaseProductResourceTestCase {
 			if (Objects.equals("neverExpire", additionalAssertFieldName)) {
 				if (!Objects.deepEquals(
 						product1.getNeverExpire(), product2.getNeverExpire())) {
+
+					return false;
+				}
+
+				continue;
+			}
+
+			if (Objects.equals(
+					"productAccountGroupFilter", additionalAssertFieldName)) {
+
+				if (!Objects.deepEquals(
+						product1.getProductAccountGroupFilter(),
+						product2.getProductAccountGroupFilter())) {
+
+					return false;
+				}
+
+				continue;
+			}
+
+			if (Objects.equals(
+					"productAccountGroups", additionalAssertFieldName)) {
+
+				if (!Objects.deepEquals(
+						product1.getProductAccountGroups(),
+						product2.getProductAccountGroups())) {
 
 					return false;
 				}
@@ -1745,6 +1768,17 @@ public abstract class BaseProductResourceTestCase {
 		return false;
 	}
 
+	protected Field[] getDeclaredFields(Class clazz) throws Exception {
+		Stream<Field> stream = Stream.of(
+			ReflectionUtil.getDeclaredFields(clazz));
+
+		return stream.filter(
+			field -> !field.isSynthetic()
+		).toArray(
+			Field[]::new
+		);
+	}
+
 	protected java.util.Collection<EntityField> getEntityFields()
 		throws Exception {
 
@@ -1859,6 +1893,11 @@ public abstract class BaseProductResourceTestCase {
 			}
 
 			return sb.toString();
+		}
+
+		if (entityFieldName.equals("customFields")) {
+			throw new IllegalArgumentException(
+				"Invalid entity field " + entityFieldName);
 		}
 
 		if (entityFieldName.equals("defaultSku")) {
@@ -2011,6 +2050,16 @@ public abstract class BaseProductResourceTestCase {
 		}
 
 		if (entityFieldName.equals("neverExpire")) {
+			throw new IllegalArgumentException(
+				"Invalid entity field " + entityFieldName);
+		}
+
+		if (entityFieldName.equals("productAccountGroupFilter")) {
+			throw new IllegalArgumentException(
+				"Invalid entity field " + entityFieldName);
+		}
+
+		if (entityFieldName.equals("productAccountGroups")) {
 			throw new IllegalArgumentException(
 				"Invalid entity field " + entityFieldName);
 		}
@@ -2178,6 +2227,7 @@ public abstract class BaseProductResourceTestCase {
 				id = RandomTestUtil.randomLong();
 				modifiedDate = RandomTestUtil.nextDate();
 				neverExpire = RandomTestUtil.randomBoolean();
+				productAccountGroupFilter = RandomTestUtil.randomBoolean();
 				productChannelFilter = RandomTestUtil.randomBoolean();
 				productId = RandomTestUtil.randomLong();
 				productStatus = RandomTestUtil.randomInt();

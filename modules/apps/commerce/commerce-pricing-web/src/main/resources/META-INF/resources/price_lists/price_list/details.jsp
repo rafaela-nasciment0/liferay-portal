@@ -70,7 +70,7 @@ if ((commercePriceList != null) && (commercePriceList.getExpirationDate() != nul
 					for (CommerceCatalog commerceCatalog : commerceCatalogs) {
 					%>
 
-						<aui:option label="<%= commerceCatalog.getName() %>" selected="<%= (commercePriceList == null) ? (commerceCatalogs.size() == 1) : commercePriceListDisplayContext.isSelectedCatalog(commerceCatalog) %>" value="<%= commerceCatalog.getGroupId() %>" />
+						<aui:option label="<%= HtmlUtil.escape(commerceCatalog.getName()) %>" selected="<%= (commercePriceList == null) ? (commerceCatalogs.size() == 1) : commercePriceListDisplayContext.isSelectedCatalog(commerceCatalog) %>" value="<%= commerceCatalog.getGroupId() %>" />
 
 					<%
 					}
@@ -81,9 +81,7 @@ if ((commercePriceList != null) && (commercePriceList.getExpirationDate() != nul
 				<aui:select label="currency" name="commerceCurrencyId" required="<%= true %>" showEmptyOption="<%= true %>">
 
 					<%
-					List<CommerceCurrency> commerceCurrencies = commercePriceListDisplayContext.getCommerceCurrencies();
-
-					for (CommerceCurrency commerceCurrency : commerceCurrencies) {
+					for (CommerceCurrency commerceCurrency : commercePriceListDisplayContext.getCommerceCurrencies()) {
 					%>
 
 						<aui:option label="<%= HtmlUtil.escape(commerceCurrency.getCode()) %>" selected="<%= (commercePriceList != null) && (commercePriceList.getCommerceCurrencyId() == commerceCurrency.getCommerceCurrencyId()) %>" value="<%= commerceCurrency.getCommerceCurrencyId() %>" />
@@ -107,7 +105,7 @@ if ((commercePriceList != null) && (commercePriceList.getExpirationDate() != nul
 						apiUrl:
 							'<%= commercePriceListDisplayContext.getPriceListsApiUrl(portletName) %>',
 						initialLabel:
-							'<%= (parentCommercePriceList == null) ? StringPool.BLANK : parentCommercePriceList.getName() %>',
+							'<%= (parentCommercePriceList == null) ? StringPool.BLANK : HtmlUtil.escapeJS(parentCommercePriceList.getName()) %>',
 						initialValue:
 							'<%= (parentCommercePriceList == null) ? 0 : parentCommercePriceList.getCommercePriceListId() %>',
 						inputId: 'parentCommercePriceListId',

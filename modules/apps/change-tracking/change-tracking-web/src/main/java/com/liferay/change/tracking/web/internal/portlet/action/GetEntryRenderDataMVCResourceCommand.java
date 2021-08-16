@@ -15,17 +15,17 @@
 package com.liferay.change.tracking.web.internal.portlet.action;
 
 import com.liferay.change.tracking.constants.CTConstants;
+import com.liferay.change.tracking.constants.CTPortletKeys;
 import com.liferay.change.tracking.model.CTCollection;
 import com.liferay.change.tracking.model.CTEntry;
 import com.liferay.change.tracking.service.CTCollectionLocalService;
 import com.liferay.change.tracking.service.CTEntryLocalService;
 import com.liferay.change.tracking.spi.display.CTDisplayRenderer;
-import com.liferay.change.tracking.web.internal.constants.CTPortletKeys;
 import com.liferay.change.tracking.web.internal.display.BasePersistenceRegistry;
 import com.liferay.change.tracking.web.internal.display.CTDisplayRendererRegistry;
 import com.liferay.change.tracking.web.internal.display.DisplayContextImpl;
 import com.liferay.petra.io.unsync.UnsyncStringWriter;
-import com.liferay.petra.lang.SafeClosable;
+import com.liferay.petra.lang.SafeCloseable;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.change.tracking.sql.CTSQLModeThreadLocal;
 import com.liferay.portal.kernel.change.tracking.CTCollectionThreadLocal;
@@ -43,10 +43,11 @@ import com.liferay.portal.kernel.portlet.LiferayPortletRequest;
 import com.liferay.portal.kernel.portlet.LiferayPortletResponse;
 import com.liferay.portal.kernel.portlet.bridges.mvc.BaseMVCResourceCommand;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCResourceCommand;
+import com.liferay.portal.kernel.servlet.PipingServletResponse;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.Portal;
+import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
-import com.liferay.taglib.servlet.PipingServletResponse;
 
 import javax.portlet.ResourceRequest;
 import javax.portlet.ResourceResponse;
@@ -190,6 +191,18 @@ public class GetEntryRenderDataMVCResourceCommand
 				ctEntry.getModelClassPK());
 
 			if (rightModel != null) {
+				boolean activeCTCollection = ParamUtil.getBoolean(
+					resourceRequest, "activeCTCollection");
+
+				if (activeCTCollection) {
+					String editURL = ctDisplayRenderer.getEditURL(
+						httpServletRequest, rightModel);
+
+					if (Validator.isNotNull(editURL)) {
+						jsonObject.put("editURL", editURL);
+					}
+				}
+
 				rightRender = _getRender(
 					httpServletRequest, httpServletResponse,
 					rightCtCollectionId, ctDisplayRenderer, ctEntryId,
@@ -214,8 +227,8 @@ public class GetEntryRenderDataMVCResourceCommand
 
 			T leftModel = null;
 
-			try (SafeClosable safeClosable =
-					CTCollectionThreadLocal.setCTCollectionId(
+			try (SafeCloseable safeCloseable =
+					CTCollectionThreadLocal.setCTCollectionIdWithSafeCloseable(
 						rightCtCollectionId)) {
 
 				leftModel = ctDisplayRenderer.getPreviousVersionedModel(
@@ -407,10 +420,11 @@ public class GetEntryRenderDataMVCResourceCommand
 			CTSQLModeThreadLocal.CTSQLMode ctSQLMode, T model, String type)
 		throws Exception {
 
-		try (SafeClosable safeClosable1 =
-				CTCollectionThreadLocal.setCTCollectionId(ctCollectionId);
-			SafeClosable safeClosable2 = CTSQLModeThreadLocal.setCTSQLMode(
-				ctSQLMode);
+		try (SafeCloseable safeCloseable1 =
+				CTCollectionThreadLocal.setCTCollectionIdWithSafeCloseable(
+					ctCollectionId);
+			SafeCloseable safeCloseable2 =
+				CTSQLModeThreadLocal.setCTSQLModeWithSafeCloseable(ctSQLMode);
 			UnsyncStringWriter unsyncStringWriter = new UnsyncStringWriter()) {
 
 			PipingServletResponse pipingServletResponse =

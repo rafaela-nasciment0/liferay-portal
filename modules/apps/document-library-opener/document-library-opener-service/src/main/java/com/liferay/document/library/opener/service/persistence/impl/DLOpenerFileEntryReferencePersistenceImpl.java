@@ -845,25 +845,25 @@ public class DLOpenerFileEntryReferencePersistenceImpl
 		ServiceContext serviceContext =
 			ServiceContextThreadLocal.getServiceContext();
 
-		Date now = new Date();
+		Date date = new Date();
 
 		if (isNew && (dlOpenerFileEntryReference.getCreateDate() == null)) {
 			if (serviceContext == null) {
-				dlOpenerFileEntryReference.setCreateDate(now);
+				dlOpenerFileEntryReference.setCreateDate(date);
 			}
 			else {
 				dlOpenerFileEntryReference.setCreateDate(
-					serviceContext.getCreateDate(now));
+					serviceContext.getCreateDate(date));
 			}
 		}
 
 		if (!dlOpenerFileEntryReferenceModelImpl.hasSetModifiedDate()) {
 			if (serviceContext == null) {
-				dlOpenerFileEntryReference.setModifiedDate(now);
+				dlOpenerFileEntryReference.setModifiedDate(date);
 			}
 			else {
 				dlOpenerFileEntryReference.setModifiedDate(
-					serviceContext.getModifiedDate(now));
+					serviceContext.getModifiedDate(date));
 			}
 		}
 
@@ -1352,7 +1352,7 @@ public class DLOpenerFileEntryReferencePersistenceImpl
 			return DLOpenerFileEntryReferenceTable.INSTANCE.getTableName();
 		}
 
-		private Object[] _getValue(
+		private static Object[] _getValue(
 			DLOpenerFileEntryReferenceModelImpl
 				dlOpenerFileEntryReferenceModelImpl,
 			String[] columnNames, boolean original) {
@@ -1377,8 +1377,8 @@ public class DLOpenerFileEntryReferencePersistenceImpl
 			return arguments;
 		}
 
-		private static Map<FinderPath, Long> _finderPathColumnBitmasksCache =
-			new ConcurrentHashMap<>();
+		private static final Map<FinderPath, Long>
+			_finderPathColumnBitmasksCache = new ConcurrentHashMap<>();
 
 	}
 

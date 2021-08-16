@@ -22,7 +22,6 @@ import com.liferay.analytics.message.storage.service.AnalyticsMessageLocalServic
 import com.liferay.analytics.settings.configuration.AnalyticsConfiguration;
 import com.liferay.analytics.settings.configuration.AnalyticsConfigurationTracker;
 import com.liferay.analytics.settings.internal.model.AnalyticsUserImpl;
-import com.liferay.analytics.settings.internal.security.auth.verifier.AnalyticsSecurityAuthVerifier;
 import com.liferay.analytics.settings.internal.util.EntityModelListenerTracker;
 import com.liferay.analytics.settings.security.constants.AnalyticsSecurityConstants;
 import com.liferay.expando.kernel.model.ExpandoColumn;
@@ -76,7 +75,6 @@ import org.osgi.framework.Constants;
 import org.osgi.service.cm.Configuration;
 import org.osgi.service.cm.ConfigurationAdmin;
 import org.osgi.service.cm.ManagedServiceFactory;
-import org.osgi.service.component.ComponentContext;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Modified;
@@ -230,26 +228,9 @@ public class AnalyticsConfigurationTrackerImpl
 
 	@Activate
 	@Modified
-	protected void activate(
-		ComponentContext componentContext, Map<String, Object> properties) {
-
-		_componentContext = componentContext;
-
+	protected void activate(Map<String, Object> properties) {
 		_systemAnalyticsConfiguration = ConfigurableUtil.createConfigurable(
 			AnalyticsConfiguration.class, properties);
-	}
-
-	private void _activate() {
-		if (!_active) {
-			_active = true;
-		}
-
-		if (!_authVerifierEnabled) {
-			_componentContext.enableComponent(
-				AnalyticsSecurityAuthVerifier.class.getName());
-
-			_authVerifierEnabled = true;
-		}
 	}
 
 	private void _addAnalyticsAdmin(long companyId) throws Exception {
@@ -370,19 +351,6 @@ public class AnalyticsConfigurationTrackerImpl
 		_addAnalyticsMessages("update", contacts);
 	}
 
-	private void _deactivate() {
-		if (_active && !_hasConfiguration()) {
-			_active = false;
-		}
-
-		if (_authVerifierEnabled && !_hasConfiguration()) {
-			_componentContext.disableComponent(
-				AnalyticsSecurityAuthVerifier.class.getName());
-
-			_authVerifierEnabled = false;
-		}
-	}
-
 	private void _deleteAnalyticsAdmin(long companyId) throws Exception {
 		User user = _userLocalService.fetchUserByScreenName(
 			companyId, AnalyticsSecurityConstants.SCREEN_NAME_ANALYTICS_ADMIN);
@@ -411,7 +379,9 @@ public class AnalyticsConfigurationTrackerImpl
 				_deleteSAPEntry(companyId);
 			}
 
-			_deactivate();
+			if (_active && !_hasConfiguration()) {
+				_active = false;
+			}
 		}
 		catch (Exception exception) {
 			_log.error(exception, exception);
@@ -420,7 +390,8 @@ public class AnalyticsConfigurationTrackerImpl
 
 	private void _enable(long companyId) {
 		try {
-			_activate();
+			_active = true;
+
 			_addAnalyticsAdmin(companyId);
 			_addSAPEntry(companyId);
 		}
@@ -814,15 +785,11 @@ public class AnalyticsConfigurationTrackerImpl
 	@Reference
 	private AnalyticsMessageLocalService _analyticsMessageLocalService;
 
-	private boolean _authVerifierEnabled;
-
 	@Reference
 	private ClassNameLocalService _classNameLocalService;
 
 	@Reference
 	private CompanyLocalService _companyLocalService;
-
-	private ComponentContext _componentContext;
 
 	@Reference
 	private ConfigurationAdmin _configurationAdmin;

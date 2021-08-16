@@ -45,6 +45,7 @@ import com.liferay.portal.kernel.model.Company;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.GroupConstants;
 import com.liferay.portal.kernel.model.Layout;
+import com.liferay.portal.kernel.model.LayoutSet;
 import com.liferay.portal.kernel.model.StagedModel;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.model.VirtualLayoutConstants;
@@ -92,13 +93,13 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Scanner;
+import java.util.TreeMap;
 import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -153,20 +154,24 @@ public class DefaultExportImportContentProcessorTest {
 
 		_liveGroup = GroupTestUtil.addGroup();
 
+		GroupTestUtil.addLayoutSetVirtualHosts(_liveGroup);
+
 		GroupTestUtil.enableLocalStaging(
 			_liveGroup, TestPropsValues.getUserId());
 
 		_stagingGroup = _liveGroup.getStagingGroup();
+
+		GroupTestUtil.addLayoutSetVirtualHosts(_stagingGroup);
 
 		ServiceContext serviceContext =
 			ServiceContextTestUtil.getServiceContext(
 				_stagingGroup.getGroupId(), TestPropsValues.getUserId());
 
 		_fileEntry = DLAppLocalServiceUtil.addFileEntry(
-			TestPropsValues.getUserId(), _stagingGroup.getGroupId(),
+			null, TestPropsValues.getUserId(), _stagingGroup.getGroupId(),
 			DLFolderConstants.DEFAULT_PARENT_FOLDER_ID,
 			RandomTestUtil.randomString() + ".txt", ContentTypes.TEXT_PLAIN,
-			TestDataConstants.TEST_BYTE_ARRAY, serviceContext);
+			TestDataConstants.TEST_BYTE_ARRAY, null, null, serviceContext);
 
 		ThumbnailCapability thumbnailCapability =
 			_fileEntry.getRepositoryCapability(ThumbnailCapability.class);
@@ -251,42 +256,6 @@ public class DefaultExportImportContentProcessorTest {
 	}
 
 	@Test
-	public void testDeleteTimestampFromDLReferenceURLs() throws Exception {
-		String content = replaceParameters(
-			getContent("dl_references.txt"), _fileEntry);
-
-		List<String> urls = getURLs(content);
-
-		String urlContent = StringUtil.merge(urls, StringPool.NEW_LINE);
-
-		content = _exportImportContentProcessor.replaceExportContentReferences(
-			_portletDataContextExport, _referrerStagedModel, urlContent, true,
-			true);
-
-		String[] exportedURLs = content.split(StringPool.NEW_LINE);
-
-		Assert.assertEquals(
-			Arrays.toString(exportedURLs), urls.size(), exportedURLs.length);
-
-		for (int i = 0; i < urls.size(); i++) {
-			String exportedUrl = exportedURLs[i];
-			String url = urls.get(i);
-
-			Assert.assertFalse(exportedUrl, exportedUrl.matches("[?&]t="));
-
-			if (url.contains("/documents/") && url.contains("?")) {
-				Assert.assertTrue(
-					exportedUrl, exportedUrl.contains("width=100&height=100"));
-			}
-
-			if (url.contains("/documents/") && url.contains("mustkeep")) {
-				Assert.assertTrue(
-					exportedUrl, exportedUrl.contains("mustkeep"));
-			}
-		}
-	}
-
-	@Test
 	public void testExportDLReferences() throws Exception {
 		_portletDataContextExport.setZipWriter(new TestReaderWriter());
 
@@ -323,7 +292,11 @@ public class DefaultExportImportContentProcessorTest {
 			if (entry.contains(DLFileEntryConstants.getClassName())) {
 				Assert.assertTrue(
 					content,
-					content.contains("[$dl-reference=" + entry + "$]"));
+					content.contains(
+						"[$dl-reference=" + entry +
+							"$,$include-uuid=false$]") ||
+					content.contains(
+						"[$dl-reference=" + entry + "$,$include-uuid=true$]"));
 
 				count++;
 			}
@@ -1108,8 +1081,19 @@ public class DefaultExportImportContentProcessorTest {
 			_livePublicLayout.getFriendlyURLMap();
 		Map<Locale, String> stagingPrivateLayoutFriendlyURLMap =
 			_stagingPrivateLayout.getFriendlyURLMap();
+
+		LayoutSet stagingPrivateLayoutSet = _stagingGroup.getPrivateLayoutSet();
+
+		TreeMap<String, String> stagingPrivateVirtualHostnames =
+			stagingPrivateLayoutSet.getVirtualHostnames();
+
 		Map<Locale, String> stagingPublicLayoutFriendlyURLMap =
 			_stagingPublicLayout.getFriendlyURLMap();
+
+		LayoutSet stagingPublicLayoutSet = _stagingGroup.getPublicLayoutSet();
+
+		TreeMap<String, String> stagingPublicVirtualHostnames =
+			stagingPublicLayoutSet.getVirtualHostnames();
 
 		content = StringUtil.replace(
 			content,
@@ -1122,11 +1106,15 @@ public class DefaultExportImportContentProcessorTest {
 				"[$EXTERNAL_PRIVATE_LAYOUT_FRIENDLY_URL$]",
 				"[$EXTERNAL_PUBLIC_LAYOUT_FRIENDLY_URL$]",
 				"[$FRIENDLY_URL_SEPARATOR$]", "[$GROUP_FRIENDLY_URL$]",
-				"[$GROUP_ID$]", "[$IMAGE_ID$]", "[$LIVE_GROUP_FRIENDLY_URL$]",
-				"[$LIVE_GROUP_ID$]", "[$LIVE_PUBLIC_LAYOUT_FRIENDLY_URL$]",
+				"[$GROUP_ID$]", "[$GROUP_PRIVATE_PAGES_VIRTUAL_HOST$]",
+				"[$GROUP_PUBLIC_PAGES_VIRTUAL_HOST$]", "[$IMAGE_ID$]",
+				"[$LIVE_GROUP_FRIENDLY_URL$]", "[$LIVE_GROUP_ID$]",
+				"[$LIVE_PUBLIC_LAYOUT_FRIENDLY_URL$]",
 				"[$NON_DEFAULT_LIVE_PUBLIC_LAYOUT_FRIENDLY_URL$]",
 				"[$NON_DEFAULT_PRIVATE_LAYOUT_FRIENDLY_URL$]",
 				"[$NON_DEFAULT_PUBLIC_LAYOUT_FRIENDLY_URL$]",
+				"[$NONREPLACEABLE_PRIVATE_LAYOUT_FRIENDLY_URL$]",
+				"[$NONREPLACEABLE_PUBLIC_LAYOUT_FRIENDLY_URL$]",
 				"[$PATH_CONTEXT$]", "[$PATH_FRIENDLY_URL_PRIVATE_GROUP$]",
 				"[$PATH_FRIENDLY_URL_PRIVATE_USER$]",
 				"[$PATH_FRIENDLY_URL_PUBLIC$]",
@@ -1143,6 +1131,8 @@ public class DefaultExportImportContentProcessorTest {
 				_externalPublicLayout.getFriendlyURL(),
 				Portal.FRIENDLY_URL_SEPARATOR, _stagingGroup.getFriendlyURL(),
 				String.valueOf(fileEntry.getGroupId()),
+				stagingPrivateVirtualHostnames.firstKey(),
+				stagingPublicVirtualHostnames.firstKey(),
 				String.valueOf(fileEntry.getFileEntryId()),
 				_liveGroup.getFriendlyURL(),
 				String.valueOf(_liveGroup.getGroupId()),
@@ -1150,6 +1140,8 @@ public class DefaultExportImportContentProcessorTest {
 				livePublicLayoutFriendlyURLMap.get(_nondefaultLocale),
 				stagingPrivateLayoutFriendlyURLMap.get(_nondefaultLocale),
 				stagingPublicLayoutFriendlyURLMap.get(_nondefaultLocale),
+				_stagingPrivateLayout.getFriendlyURL(),
+				_stagingPublicLayout.getFriendlyURL(),
 				PortalUtil.getPathContext(),
 				PropsValues.LAYOUT_FRIENDLY_URL_PRIVATE_GROUP_SERVLET_MAPPING,
 				PropsValues.LAYOUT_FRIENDLY_URL_PRIVATE_USER_SERVLET_MAPPING,

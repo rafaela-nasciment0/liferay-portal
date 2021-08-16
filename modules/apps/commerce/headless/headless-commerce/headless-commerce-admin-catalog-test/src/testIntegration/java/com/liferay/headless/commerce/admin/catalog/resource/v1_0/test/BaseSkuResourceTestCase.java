@@ -328,20 +328,6 @@ public abstract class BaseSkuResourceTestCase {
 
 		assertEquals(randomSku, postSku);
 		assertValid(postSku);
-
-		randomSku = randomSku();
-
-		assertHttpResponseStatusCode(
-			404,
-			skuResource.getSkuByExternalReferenceCodeHttpResponse(
-				randomSku.getExternalReferenceCode()));
-
-		testPostProductByExternalReferenceCodeSku_addSku(randomSku);
-
-		assertHttpResponseStatusCode(
-			200,
-			skuResource.getSkuByExternalReferenceCodeHttpResponse(
-				randomSku.getExternalReferenceCode()));
 	}
 
 	protected Sku testPostProductByExternalReferenceCodeSku_addSku(Sku sku)
@@ -449,20 +435,6 @@ public abstract class BaseSkuResourceTestCase {
 
 		assertEquals(randomSku, postSku);
 		assertValid(postSku);
-
-		randomSku = randomSku();
-
-		assertHttpResponseStatusCode(
-			404,
-			skuResource.getSkuByExternalReferenceCodeHttpResponse(
-				randomSku.getExternalReferenceCode()));
-
-		testPostProductIdSku_addSku(randomSku);
-
-		assertHttpResponseStatusCode(
-			200,
-			skuResource.getSkuByExternalReferenceCodeHttpResponse(
-				randomSku.getExternalReferenceCode()));
 	}
 
 	protected Sku testPostProductIdSku_addSku(Sku sku) throws Exception {
@@ -1198,7 +1170,7 @@ public abstract class BaseSkuResourceTestCase {
 		List<GraphQLField> graphQLFields = new ArrayList<>();
 
 		for (Field field :
-				ReflectionUtil.getDeclaredFields(
+				getDeclaredFields(
 					com.liferay.headless.commerce.admin.catalog.dto.v1_0.Sku.
 						class)) {
 
@@ -1233,7 +1205,7 @@ public abstract class BaseSkuResourceTestCase {
 				}
 
 				List<GraphQLField> childrenGraphQLFields = getGraphQLFields(
-					ReflectionUtil.getDeclaredFields(clazz));
+					getDeclaredFields(clazz));
 
 				graphQLFields.add(
 					new GraphQLField(field.getName(), childrenGraphQLFields));
@@ -1492,6 +1464,17 @@ public abstract class BaseSkuResourceTestCase {
 		}
 
 		return false;
+	}
+
+	protected Field[] getDeclaredFields(Class clazz) throws Exception {
+		Stream<Field> stream = Stream.of(
+			ReflectionUtil.getDeclaredFields(clazz));
+
+		return stream.filter(
+			field -> !field.isSynthetic()
+		).toArray(
+			Field[]::new
+		);
 	}
 
 	protected java.util.Collection<EntityField> getEntityFields()

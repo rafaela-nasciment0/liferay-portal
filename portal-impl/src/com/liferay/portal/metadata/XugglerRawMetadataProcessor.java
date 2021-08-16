@@ -77,8 +77,6 @@ public class XugglerRawMetadataProcessor extends BaseRawMetadataProcessor {
 		IContainer container = IContainer.make();
 
 		try {
-			Metadata metadata = new Metadata();
-
 			int result = container.open(
 				file.getCanonicalPath(), IContainer.Type.READ, null);
 
@@ -90,6 +88,8 @@ public class XugglerRawMetadataProcessor extends BaseRawMetadataProcessor {
 				throw new IllegalStateException(
 					"Could not query stream metadata");
 			}
+
+			Metadata metadata = new Metadata();
 
 			long microseconds = container.getDuration();
 
@@ -150,14 +150,11 @@ public class XugglerRawMetadataProcessor extends BaseRawMetadataProcessor {
 	}
 
 	protected boolean isSupported(String mimeType) {
-		if (XugglerUtil.isEnabled()) {
-			if (AudioProcessorUtil.isAudioSupported(mimeType)) {
-				return true;
-			}
+		if (XugglerUtil.isEnabled() &&
+			(AudioProcessorUtil.isAudioSupported(mimeType) ||
+			 VideoProcessorUtil.isVideoSupported(mimeType))) {
 
-			if (VideoProcessorUtil.isVideoSupported(mimeType)) {
-				return true;
-			}
+			return true;
 		}
 
 		return false;

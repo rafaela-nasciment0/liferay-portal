@@ -51,6 +51,60 @@ public interface UserAccountResource {
 		return FactoryHolder.factory.create();
 	}
 
+	public Page<UserAccount> getAccountUserAccountsByExternalReferenceCodePage(
+			String externalReferenceCode, String search, Filter filter,
+			Pagination pagination, Sort[] sorts)
+		throws Exception;
+
+	public UserAccount postAccountUserAccountByExternalReferenceCode(
+			String externalReferenceCode, UserAccount userAccount)
+		throws Exception;
+
+	public void deleteAccountUserAccountsByExternalReferenceCodeByEmailAddress(
+			String externalReferenceCode, String[] strings)
+		throws Exception;
+
+	public void postAccountUserAccountsByExternalReferenceCodeByEmailAddress(
+			String externalReferenceCode, String[] strings)
+		throws Exception;
+
+	public void deleteAccountUserAccountByExternalReferenceCodeByEmailAddress(
+			String externalReferenceCode, String emailAddress)
+		throws Exception;
+
+	public void postAccountUserAccountByExternalReferenceCodeByEmailAddress(
+			String externalReferenceCode, String emailAddress)
+		throws Exception;
+
+	public Page<UserAccount> getAccountUserAccountsPage(
+			Long accountId, String search, Filter filter, Pagination pagination,
+			Sort[] sorts)
+		throws Exception;
+
+	public UserAccount postAccountUserAccount(
+			Long accountId, UserAccount userAccount)
+		throws Exception;
+
+	public Response postAccountUserAccountBatch(
+			Long accountId, String callbackURL, Object object)
+		throws Exception;
+
+	public void deleteAccountUserAccountsByEmailAddress(
+			Long accountId, String[] strings)
+		throws Exception;
+
+	public void postAccountUserAccountsByEmailAddress(
+			Long accountId, String[] strings)
+		throws Exception;
+
+	public void deleteAccountUserAccountByEmailAddress(
+			Long accountId, String emailAddress)
+		throws Exception;
+
+	public void postAccountUserAccountByEmailAddress(
+			Long accountId, String emailAddress)
+		throws Exception;
+
 	public UserAccount getMyUserAccount() throws Exception;
 
 	public Page<UserAccount> getOrganizationUserAccountsPage(
@@ -71,6 +125,18 @@ public interface UserAccountResource {
 		throws Exception;
 
 	public Response postUserAccountBatch(String callbackURL, Object object)
+		throws Exception;
+
+	public void deleteUserAccountByExternalReferenceCode(
+			String externalReferenceCode)
+		throws Exception;
+
+	public UserAccount getUserAccountByExternalReferenceCode(
+			String externalReferenceCode)
+		throws Exception;
+
+	public UserAccount putUserAccountByExternalReferenceCode(
+			String externalReferenceCode, UserAccount userAccount)
 		throws Exception;
 
 	public void deleteUserAccount(Long userAccountId) throws Exception;

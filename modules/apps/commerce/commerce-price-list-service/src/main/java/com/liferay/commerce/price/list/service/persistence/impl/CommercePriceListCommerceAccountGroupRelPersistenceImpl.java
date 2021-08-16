@@ -2402,18 +2402,18 @@ public class CommercePriceListCommerceAccountGroupRelPersistenceImpl
 		ServiceContext serviceContext =
 			ServiceContextThreadLocal.getServiceContext();
 
-		Date now = new Date();
+		Date date = new Date();
 
 		if (isNew &&
 			(commercePriceListCommerceAccountGroupRel.getCreateDate() ==
 				null)) {
 
 			if (serviceContext == null) {
-				commercePriceListCommerceAccountGroupRel.setCreateDate(now);
+				commercePriceListCommerceAccountGroupRel.setCreateDate(date);
 			}
 			else {
 				commercePriceListCommerceAccountGroupRel.setCreateDate(
-					serviceContext.getCreateDate(now));
+					serviceContext.getCreateDate(date));
 			}
 		}
 
@@ -2421,11 +2421,11 @@ public class CommercePriceListCommerceAccountGroupRelPersistenceImpl
 				hasSetModifiedDate()) {
 
 			if (serviceContext == null) {
-				commercePriceListCommerceAccountGroupRel.setModifiedDate(now);
+				commercePriceListCommerceAccountGroupRel.setModifiedDate(date);
 			}
 			else {
 				commercePriceListCommerceAccountGroupRel.setModifiedDate(
-					serviceContext.getModifiedDate(now));
+					serviceContext.getModifiedDate(date));
 			}
 		}
 
@@ -2938,6 +2938,13 @@ public class CommercePriceListCommerceAccountGroupRelPersistenceImpl
 							getColumnBitmask(columnName);
 				}
 
+				if (finderPath.isBaseModelResult() &&
+					(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION ==
+						finderPath.getCacheName())) {
+
+					finderPathColumnBitmask |= _ORDER_BY_COLUMNS_BITMASK;
+				}
+
 				_finderPathColumnBitmasksCache.put(
 					finderPath, finderPathColumnBitmask);
 			}
@@ -2962,7 +2969,7 @@ public class CommercePriceListCommerceAccountGroupRelPersistenceImpl
 				getTableName();
 		}
 
-		private Object[] _getValue(
+		private static Object[] _getValue(
 			CommercePriceListCommerceAccountGroupRelModelImpl
 				commercePriceListCommerceAccountGroupRelModelImpl,
 			String[] columnNames, boolean original) {
@@ -2987,8 +2994,20 @@ public class CommercePriceListCommerceAccountGroupRelPersistenceImpl
 			return arguments;
 		}
 
-		private static Map<FinderPath, Long> _finderPathColumnBitmasksCache =
-			new ConcurrentHashMap<>();
+		private static final Map<FinderPath, Long>
+			_finderPathColumnBitmasksCache = new ConcurrentHashMap<>();
+
+		private static final long _ORDER_BY_COLUMNS_BITMASK;
+
+		static {
+			long orderByColumnsBitmask = 0;
+
+			orderByColumnsBitmask |=
+				CommercePriceListCommerceAccountGroupRelModelImpl.
+					getColumnBitmask("order_");
+
+			_ORDER_BY_COLUMNS_BITMASK = orderByColumnsBitmask;
+		}
 
 	}
 

@@ -400,10 +400,10 @@ public class DDMFormValuesExportImportContentProcessorTest {
 				_stagingGroup.getGroupId(), TestPropsValues.getUserId());
 
 		_fileEntry = _dlAppLocalService.addFileEntry(
-			TestPropsValues.getUserId(), _stagingGroup.getGroupId(),
+			null, TestPropsValues.getUserId(), _stagingGroup.getGroupId(),
 			DLFolderConstants.DEFAULT_PARENT_FOLDER_ID,
 			RandomTestUtil.randomString() + ".txt", ContentTypes.TEXT_PLAIN,
-			TestDataConstants.TEST_BYTE_ARRAY, serviceContext);
+			TestDataConstants.TEST_BYTE_ARRAY, null, null, serviceContext);
 
 		ThumbnailCapability thumbnailCapability =
 			_fileEntry.getRepositoryCapability(ThumbnailCapability.class);
@@ -454,7 +454,7 @@ public class DDMFormValuesExportImportContentProcessorTest {
 		String content = sb.toString();
 
 		_journalArticle = _journalArticleLocalService.addArticle(
-			TestPropsValues.getUserId(), _stagingGroup.getGroupId(),
+			null, TestPropsValues.getUserId(), _stagingGroup.getGroupId(),
 			JournalFolderConstants.DEFAULT_PARENT_FOLDER_ID, nameMap, nameMap,
 			content, structure.getStructureKey(), _ddmTemplate.getTemplateKey(),
 			serviceContext);
@@ -491,14 +491,15 @@ public class DDMFormValuesExportImportContentProcessorTest {
 				new long[] {_ddmStructure.getStructureId()}, serviceContext);
 
 		DLFileEntry dlFileEntry = _dlFileEntryLocalService.addFileEntry(
-			TestPropsValues.getUserId(), _stagingGroup.getGroupId(),
+			null, TestPropsValues.getUserId(), _stagingGroup.getGroupId(),
 			_stagingGroup.getGroupId(),
 			DLFolderConstants.DEFAULT_PARENT_FOLDER_ID,
 			RandomTestUtil.randomString() + ".txt",
 			MimeTypesUtil.getExtensionContentType("txt"),
 			RandomTestUtil.randomString(), RandomTestUtil.randomString(),
 			StringPool.BLANK, dlFileEntryType.getFileEntryTypeId(),
-			ddmFormValuesMap, file, inputStream, size, serviceContext);
+			ddmFormValuesMap, file, inputStream, size, null, null,
+			serviceContext);
 
 		_fileEntry = _dlAppLocalService.getFileEntry(
 			dlFileEntry.getFileEntryId());

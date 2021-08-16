@@ -4148,24 +4148,24 @@ public class EmailAddressPersistenceImpl
 		ServiceContext serviceContext =
 			ServiceContextThreadLocal.getServiceContext();
 
-		Date now = new Date();
+		Date date = new Date();
 
 		if (isNew && (emailAddress.getCreateDate() == null)) {
 			if (serviceContext == null) {
-				emailAddress.setCreateDate(now);
+				emailAddress.setCreateDate(date);
 			}
 			else {
-				emailAddress.setCreateDate(serviceContext.getCreateDate(now));
+				emailAddress.setCreateDate(serviceContext.getCreateDate(date));
 			}
 		}
 
 		if (!emailAddressModelImpl.hasSetModifiedDate()) {
 			if (serviceContext == null) {
-				emailAddress.setModifiedDate(now);
+				emailAddress.setModifiedDate(date);
 			}
 			else {
 				emailAddress.setModifiedDate(
-					serviceContext.getModifiedDate(now));
+					serviceContext.getModifiedDate(date));
 			}
 		}
 
@@ -4697,6 +4697,13 @@ public class EmailAddressPersistenceImpl
 						emailAddressModelImpl.getColumnBitmask(columnName);
 				}
 
+				if (finderPath.isBaseModelResult() &&
+					(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION ==
+						finderPath.getCacheName())) {
+
+					finderPathColumnBitmask |= _ORDER_BY_COLUMNS_BITMASK;
+				}
+
 				_finderPathColumnBitmasksCache.put(
 					finderPath, finderPathColumnBitmask);
 			}
@@ -4718,7 +4725,7 @@ public class EmailAddressPersistenceImpl
 			return EmailAddressTable.INSTANCE.getTableName();
 		}
 
-		private Object[] _getValue(
+		private static Object[] _getValue(
 			EmailAddressModelImpl emailAddressModelImpl, String[] columnNames,
 			boolean original) {
 
@@ -4740,8 +4747,19 @@ public class EmailAddressPersistenceImpl
 			return arguments;
 		}
 
-		private static Map<FinderPath, Long> _finderPathColumnBitmasksCache =
-			new ConcurrentHashMap<>();
+		private static final Map<FinderPath, Long>
+			_finderPathColumnBitmasksCache = new ConcurrentHashMap<>();
+
+		private static final long _ORDER_BY_COLUMNS_BITMASK;
+
+		static {
+			long orderByColumnsBitmask = 0;
+
+			orderByColumnsBitmask |= EmailAddressModelImpl.getColumnBitmask(
+				"createDate");
+
+			_ORDER_BY_COLUMNS_BITMASK = orderByColumnsBitmask;
+		}
 
 	}
 

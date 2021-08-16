@@ -14,17 +14,14 @@
 
 package com.liferay.commerce.model.impl;
 
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
-import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.webserver.WebServerServletTokenUtil;
 
 /**
  * @author Alessio Antonio Rendina
  */
 public class CommerceShippingMethodImpl extends CommerceShippingMethodBaseImpl {
-
-	public CommerceShippingMethodImpl() {
-	}
 
 	@Override
 	public String getImageURL(ThemeDisplay themeDisplay) {

@@ -30,7 +30,6 @@ import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.security.permission.PermissionThreadLocal;
-import com.liferay.portal.kernel.util.Constants;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.Portal;
 
@@ -99,16 +98,16 @@ public class CommerceProductAccountGroupDataSetActionProvider
 				PortletRequest.ACTION_PHASE)
 		).setActionName(
 			"/cp_definitions/edit_cp_definition"
+		).setCMD(
+			"deleteAccountGroup"
 		).setRedirect(
 			redirect
-		).setParameter(
-			Constants.CMD, "deleteAccountGroup"
 		).setParameter(
 			"commerceAccountGroupRelId",
 			commerceAccountGroupRel.getCommerceAccountGroupRelId()
 		).setParameter(
 			"cpDefinitionId", commerceAccountGroupRel.getClassPK()
-		).build();
+		).buildPortletURL();
 	}
 
 	@Reference

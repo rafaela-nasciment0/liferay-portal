@@ -5905,25 +5905,25 @@ public class DEDataDefinitionFieldLinkPersistenceImpl
 		ServiceContext serviceContext =
 			ServiceContextThreadLocal.getServiceContext();
 
-		Date now = new Date();
+		Date date = new Date();
 
 		if (isNew && (deDataDefinitionFieldLink.getCreateDate() == null)) {
 			if (serviceContext == null) {
-				deDataDefinitionFieldLink.setCreateDate(now);
+				deDataDefinitionFieldLink.setCreateDate(date);
 			}
 			else {
 				deDataDefinitionFieldLink.setCreateDate(
-					serviceContext.getCreateDate(now));
+					serviceContext.getCreateDate(date));
 			}
 		}
 
 		if (!deDataDefinitionFieldLinkModelImpl.hasSetModifiedDate()) {
 			if (serviceContext == null) {
-				deDataDefinitionFieldLink.setModifiedDate(now);
+				deDataDefinitionFieldLink.setModifiedDate(date);
 			}
 			else {
 				deDataDefinitionFieldLink.setModifiedDate(
-					serviceContext.getModifiedDate(now));
+					serviceContext.getModifiedDate(date));
 			}
 		}
 
@@ -6370,7 +6370,8 @@ public class DEDataDefinitionFieldLinkPersistenceImpl
 	public Set<String> getCTColumnNames(
 		CTColumnResolutionType ctColumnResolutionType) {
 
-		return _ctColumnNamesMap.get(ctColumnResolutionType);
+		return _ctColumnNamesMap.getOrDefault(
+			ctColumnResolutionType, Collections.emptySet());
 	}
 
 	@Override
@@ -6404,7 +6405,6 @@ public class DEDataDefinitionFieldLinkPersistenceImpl
 	static {
 		Set<String> ctControlColumnNames = new HashSet<String>();
 		Set<String> ctIgnoreColumnNames = new HashSet<String>();
-		Set<String> ctMergeColumnNames = new HashSet<String>();
 		Set<String> ctStrictColumnNames = new HashSet<String>();
 
 		ctControlColumnNames.add("mvccVersion");
@@ -6424,7 +6424,6 @@ public class DEDataDefinitionFieldLinkPersistenceImpl
 			CTColumnResolutionType.CONTROL, ctControlColumnNames);
 		_ctColumnNamesMap.put(
 			CTColumnResolutionType.IGNORE, ctIgnoreColumnNames);
-		_ctColumnNamesMap.put(CTColumnResolutionType.MERGE, ctMergeColumnNames);
 		_ctColumnNamesMap.put(
 			CTColumnResolutionType.PK,
 			Collections.singleton("deDataDefinitionFieldLinkId"));
@@ -6800,7 +6799,7 @@ public class DEDataDefinitionFieldLinkPersistenceImpl
 			return DEDataDefinitionFieldLinkTable.INSTANCE.getTableName();
 		}
 
-		private Object[] _getValue(
+		private static Object[] _getValue(
 			DEDataDefinitionFieldLinkModelImpl
 				deDataDefinitionFieldLinkModelImpl,
 			String[] columnNames, boolean original) {
@@ -6825,8 +6824,8 @@ public class DEDataDefinitionFieldLinkPersistenceImpl
 			return arguments;
 		}
 
-		private static Map<FinderPath, Long> _finderPathColumnBitmasksCache =
-			new ConcurrentHashMap<>();
+		private static final Map<FinderPath, Long>
+			_finderPathColumnBitmasksCache = new ConcurrentHashMap<>();
 
 	}
 

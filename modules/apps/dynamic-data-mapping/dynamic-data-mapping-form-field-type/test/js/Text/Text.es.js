@@ -12,8 +12,9 @@
  * details.
  */
 
+import '@testing-library/jest-dom/extend-expect';
 import {act, cleanup, fireEvent, render} from '@testing-library/react';
-import {PageProvider} from 'dynamic-data-mapping-form-renderer';
+import {PageProvider} from 'data-engine-js-components-web';
 import React from 'react';
 
 import Text from '../../../src/main/resources/META-INF/resources/Text/Text.es';
@@ -183,6 +184,48 @@ describe('Field Text', () => {
 	});
 
 	it('renders autocomplete dropdown menu', () => {
+		const onChange = jest.fn();
+
+		const props = {
+			autocomplete: true,
+			options: [
+				{label: 'Option 1', value: 'Option1'},
+				{label: 'Option 2', value: 'Option2'},
+			],
+			value: '',
+			...defaultTextConfig,
+		};
+
+		const {container} = render(
+			<div className="ddm-page-container-layout">
+				<TextWithProvider {...props} key="input" onChange={onChange} />
+			</div>
+		);
+
+		const input = container.querySelector('input');
+
+		fireEvent.change(input, {
+			target: {
+				value: 'Option',
+			},
+		});
+
+		act(() => {
+			jest.runAllTimers();
+		});
+
+		const autocompleteDropdownMenu = document.querySelector(
+			'.autocomplete-dropdown-menu'
+		);
+
+		expect(
+			autocompleteDropdownMenu.classList.contains('show')
+		).toBeTruthy();
+	});
+
+	it('hides autocomplete dropdown menu when input is empty', () => {
+		const onChange = jest.fn();
+
 		const props = {
 			autocomplete: true,
 			options: [
@@ -193,23 +236,79 @@ describe('Field Text', () => {
 			...defaultTextConfig,
 		};
 
-		render(
+		const {container} = render(
 			<div className="ddm-page-container-layout">
-				<TextWithProvider {...props} />
+				<TextWithProvider {...props} key="input" onChange={onChange} />
 			</div>
 		);
+
+		const input = container.querySelector('input');
+
+		fireEvent.change(input, {
+			target: {
+				value: '',
+			},
+		});
 
 		act(() => {
 			jest.runAllTimers();
 		});
 
-		const autocompleteDropdownMenu = document.body.querySelector(
+		const autocompleteDropdownMenu = document.querySelector(
 			'.autocomplete-dropdown-menu'
 		);
 
-		const classList = autocompleteDropdownMenu.classList;
+		expect(autocompleteDropdownMenu.classList.contains('show')).toBeFalsy();
+	});
 
-		expect(classList.contains('show')).toBeTruthy();
+	it('hides autocomplete dropdown menu when focus is changed', () => {
+		const onChange = jest.fn();
+
+		const props = {
+			autocomplete: true,
+			options: [
+				{label: 'Option 1', value: 'Option1'},
+				{label: 'Option 2', value: 'Option2'},
+			],
+			value: '',
+			...defaultTextConfig,
+		};
+
+		const {container} = render(
+			<div className="ddm-page-container-layout">
+				<TextWithProvider {...props} key="input" onChange={onChange} />
+			</div>
+		);
+
+		const input = container.querySelector('input');
+
+		fireEvent.change(input, {
+			target: {
+				value: 'Option',
+			},
+		});
+
+		act(() => {
+			jest.runAllTimers();
+		});
+
+		const autocompleteDropdownMenu = document.querySelector(
+			'.autocomplete-dropdown-menu'
+		);
+
+		expect(
+			autocompleteDropdownMenu.classList.contains('show')
+		).toBeTruthy();
+
+		const body = document.body;
+
+		fireEvent.mouseDown(body);
+
+		act(() => {
+			jest.runAllTimers();
+		});
+
+		expect(autocompleteDropdownMenu.classList.contains('show')).toBeFalsy();
 	});
 
 	it('renders Label if showLabel is true', () => {
@@ -287,5 +386,80 @@ describe('Field Text', () => {
 		});
 
 		expect(input.value).toEqual('FieldReference');
+	});
+
+	it('normalizes the value of the Format field if it contains invalid characters', () => {
+		const onChange = jest.fn();
+
+		const {container} = render(
+			<TextWithProvider
+				{...defaultTextConfig}
+				fieldName="inputMaskFormat"
+				key="input"
+				onChange={onChange}
+			/>
+		);
+
+		const input = container.querySelector('input');
+
+		fireEvent.change(input, {
+			target: {
+				value: '+9 (129) 993-9999',
+			},
+		});
+
+		act(() => {
+			jest.runAllTimers();
+		});
+
+		expect(input.value).toEqual('+9 (9) 99-9999');
+	});
+
+	describe('Confirmation Field', () => {
+		it('does not show the confirmation field', () => {
+			render(<TextWithProvider {...defaultTextConfig} />);
+
+			const confirmationField = document.getElementById(
+				'textFieldconfirmationField_fieldDetails'
+			);
+
+			expect(confirmationField).toBeNull();
+		});
+
+		it('shows the confirmation field if the requireConfirmation property is enabled', () => {
+			const {container} = render(
+				<TextWithProvider
+					{...defaultTextConfig}
+					direction="horizontal"
+					requireConfirmation={true}
+				/>
+			);
+
+			const confirmationField = document.getElementById(
+				'textFieldconfirmationField_fieldDetails'
+			);
+
+			expect(confirmationField).not.toBeNull();
+
+			expect(container.firstChild).toHaveClass('row');
+
+			expect(
+				container.firstChild.querySelector('.col-md-6')
+			).not.toBeNull();
+		});
+
+		it('shows the confirmation field in vertical mode', () => {
+			const {container} = render(
+				<TextWithProvider
+					{...defaultTextConfig}
+					direction="vertical"
+					requireConfirmation={true}
+				/>
+			);
+
+			expect(
+				container.firstChild.querySelector('.col-md-12')
+			).not.toBeNull();
+		});
 	});
 });

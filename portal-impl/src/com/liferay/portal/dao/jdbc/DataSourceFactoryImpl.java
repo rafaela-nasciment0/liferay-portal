@@ -33,7 +33,6 @@ import com.liferay.portal.kernel.jndi.JNDIUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.util.JavaDetector;
-import com.liferay.portal.kernel.util.PortalClassLoaderUtil;
 import com.liferay.portal.kernel.util.PropertiesUtil;
 import com.liferay.portal.kernel.util.PropsKeys;
 import com.liferay.portal.kernel.util.ServerDetector;
@@ -164,8 +163,9 @@ public class DataSourceFactoryImpl implements DataSourceFactory {
 
 			ClassLoader classLoader = currentThread.getContextClassLoader();
 
-			currentThread.setContextClassLoader(
-				PortalClassLoaderUtil.getClassLoader());
+			Class<?> clazz = classLoader.getClass();
+
+			currentThread.setContextClassLoader(clazz.getClassLoader());
 
 			try {
 				Properties jndiEnvironmentProperties = PropsUtil.getProperties(
@@ -330,7 +330,7 @@ public class DataSourceFactoryImpl implements DataSourceFactory {
 			// Set C3PO property
 
 			try {
-				BeanUtil.setProperty(comboPooledDataSource, key, value);
+				BeanUtil.pojo.setProperty(comboPooledDataSource, key, value);
 			}
 			catch (Exception exception) {
 				if (_log.isWarnEnabled()) {
@@ -412,7 +412,7 @@ public class DataSourceFactoryImpl implements DataSourceFactory {
 			// Set HikariCP property
 
 			try {
-				BeanUtil.setProperty(
+				BeanUtil.pojo.setProperty(
 					hikariDataSource, key, (String)entry.getValue());
 			}
 			catch (Exception exception) {
@@ -459,7 +459,7 @@ public class DataSourceFactoryImpl implements DataSourceFactory {
 			// Set Tomcat JDBC property
 
 			try {
-				BeanUtil.setProperty(
+				BeanUtil.pojo.setProperty(
 					poolProperties, key, (String)entry.getValue());
 			}
 			catch (Exception exception) {

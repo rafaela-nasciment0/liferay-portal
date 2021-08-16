@@ -32,6 +32,7 @@ import com.liferay.portal.kernel.repository.model.FileVersion;
 import com.liferay.portal.kernel.security.permission.PermissionThreadLocal;
 import com.liferay.portal.kernel.service.CompanyLocalService;
 import com.liferay.portal.kernel.service.PortletLocalService;
+import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.test.ReflectionTestUtil;
 import com.liferay.portal.kernel.test.portlet.MockLiferayPortletActionRequest;
 import com.liferay.portal.kernel.test.portlet.MockLiferayPortletActionResponse;
@@ -56,6 +57,7 @@ import java.io.InputStream;
 
 import java.util.AbstractMap;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -121,11 +123,13 @@ public class EditFileEntryMVCActionCommandTest {
 			_editFileEntryMVCActionCommand, "_addMultipleFileEntries",
 			new Class<?>[] {
 				PortletConfig.class, ActionRequest.class, String.class,
-				List.class, List.class
+				List.class, List.class, Date.class, Date.class,
+				ServiceContext.class
 			},
 			_getLiferayPortletConfig(),
 			_getMockLiferayPortletActionRequest(parameters),
-			tempFileEntry.getFileName(), new ArrayList<>(), new ArrayList<>());
+			tempFileEntry.getFileName(), new ArrayList<>(), new ArrayList<>(),
+			null, null, ServiceContextTestUtil.getServiceContext());
 
 		FileEntry fileName = _dlAppLocalService.getFileEntryByFileName(
 			_group.getGroupId(), folderId, "image.jpg");
@@ -177,11 +181,13 @@ public class EditFileEntryMVCActionCommandTest {
 				_editFileEntryMVCActionCommand, "_addMultipleFileEntries",
 				new Class<?>[] {
 					PortletConfig.class, ActionRequest.class, String.class,
-					List.class, List.class
+					List.class, List.class, Date.class, Date.class,
+					ServiceContext.class
 				},
 				_getLiferayPortletConfig(),
 				_getMockLiferayPortletActionRequest(parameters),
-				selectedFileName, new ArrayList<>(), new ArrayList<>());
+				selectedFileName, new ArrayList<>(), new ArrayList<>(), null,
+				null, ServiceContextTestUtil.getServiceContext());
 		}
 
 		FileEntry fileEntry = _dlAppLocalService.getFileEntryByFileName(
@@ -240,11 +246,13 @@ public class EditFileEntryMVCActionCommandTest {
 				_editFileEntryMVCActionCommand, "_addMultipleFileEntries",
 				new Class<?>[] {
 					PortletConfig.class, ActionRequest.class, String.class,
-					List.class, List.class
+					List.class, List.class, Date.class, Date.class,
+					ServiceContext.class
 				},
 				_getLiferayPortletConfig(),
 				_getMockLiferayPortletActionRequest(parameters),
-				selectedFileName, new ArrayList<>(), new ArrayList<>());
+				selectedFileName, new ArrayList<>(), new ArrayList<>(), null,
+				null, ServiceContextTestUtil.getServiceContext());
 		}
 
 		FileEntry fileEntry = _dlAppLocalService.getFileEntryByFileName(
@@ -263,10 +271,10 @@ public class EditFileEntryMVCActionCommandTest {
 	@Test
 	public void testCheckIn() throws PortalException, PortletException {
 		FileEntry initialFileEntry = _dlAppLocalService.addFileEntry(
-			TestPropsValues.getUserId(), _group.getGroupId(),
+			null, TestPropsValues.getUserId(), _group.getGroupId(),
 			DLFolderConstants.DEFAULT_PARENT_FOLDER_ID,
-			RandomTestUtil.randomString(), ContentTypes.TEXT_PLAIN, null,
-			ServiceContextTestUtil.getServiceContext());
+			RandomTestUtil.randomString(), ContentTypes.TEXT_PLAIN, null, null,
+			null, ServiceContextTestUtil.getServiceContext());
 
 		_dlAppService.checkOutFileEntry(
 			initialFileEntry.getFileEntryId(),
@@ -312,10 +320,10 @@ public class EditFileEntryMVCActionCommandTest {
 	@Test
 	public void testCheckOut() throws PortalException, PortletException {
 		FileEntry initialFileEntry = _dlAppLocalService.addFileEntry(
-			TestPropsValues.getUserId(), _group.getGroupId(),
+			null, TestPropsValues.getUserId(), _group.getGroupId(),
 			DLFolderConstants.DEFAULT_PARENT_FOLDER_ID,
-			RandomTestUtil.randomString(), ContentTypes.TEXT_PLAIN, null,
-			ServiceContextTestUtil.getServiceContext());
+			RandomTestUtil.randomString(), ContentTypes.TEXT_PLAIN, null, null,
+			null, ServiceContextTestUtil.getServiceContext());
 
 		Map<String, String[]> parameters = Stream.of(
 			new AbstractMap.SimpleEntry<>(

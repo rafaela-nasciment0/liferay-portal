@@ -55,6 +55,20 @@ public class CommerceMLForecastAlertEntryLocalServiceWrapper
 			addCommerceMLForecastAlertEntry(commerceMLForecastAlertEntry);
 	}
 
+	@Override
+	public com.liferay.commerce.machine.learning.forecast.alert.model.
+		CommerceMLForecastAlertEntry addOrUpdateCommerceMLForecastAlertEntry(
+				long companyId, long userId, long commerceAccountId,
+				java.util.Date timestamp, float actual, float forecast,
+				float relativeChange)
+			throws com.liferay.portal.kernel.exception.PortalException {
+
+		return _commerceMLForecastAlertEntryLocalService.
+			addOrUpdateCommerceMLForecastAlertEntry(
+				companyId, userId, commerceAccountId, timestamp, actual,
+				forecast, relativeChange);
+	}
+
 	/**
 	 * Creates a new commerce ml forecast alert entry with the primary key. Does not add the commerce ml forecast alert entry to the database.
 	 *
@@ -138,6 +152,14 @@ public class CommerceMLForecastAlertEntryLocalServiceWrapper
 	@Override
 	public <T> T dslQuery(com.liferay.petra.sql.dsl.query.DSLQuery dslQuery) {
 		return _commerceMLForecastAlertEntryLocalService.dslQuery(dslQuery);
+	}
+
+	@Override
+	public int dslQueryCount(
+		com.liferay.petra.sql.dsl.query.DSLQuery dslQuery) {
+
+		return _commerceMLForecastAlertEntryLocalService.dslQueryCount(
+			dslQuery);
 	}
 
 	@Override
@@ -474,20 +496,6 @@ public class CommerceMLForecastAlertEntryLocalServiceWrapper
 
 		return _commerceMLForecastAlertEntryLocalService.updateStatus(
 			userId, commerceMLForecastAlertEntryId, status);
-	}
-
-	@Override
-	public com.liferay.commerce.machine.learning.forecast.alert.model.
-		CommerceMLForecastAlertEntry upsertCommerceMLForecastAlertEntry(
-				long companyId, long userId, long commerceAccountId,
-				java.util.Date timestamp, float actual, float forecast,
-				float relativeChange)
-			throws com.liferay.portal.kernel.exception.PortalException {
-
-		return _commerceMLForecastAlertEntryLocalService.
-			upsertCommerceMLForecastAlertEntry(
-				companyId, userId, commerceAccountId, timestamp, actual,
-				forecast, relativeChange);
 	}
 
 	@Override

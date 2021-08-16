@@ -382,15 +382,31 @@ public class AdvancedPermissionChecker extends BasePermissionChecker {
 
 		int count = TeamLocalServiceUtil.getGroupTeamsCount(group.getGroupId());
 
-		if (count == 0) {
-			return;
+		List<Role> roles = null;
+
+		if (count > 0) {
+			roles = RoleLocalServiceUtil.getUserTeamRoles(
+				userId, group.getGroupId());
+
+			for (Role role : roles) {
+				roleIds.add(role.getRoleId());
+			}
 		}
 
-		List<Role> roles = RoleLocalServiceUtil.getUserTeamRoles(
-			userId, group.getGroupId());
+		if (group.isStaged() && !group.isStagedRemotely()) {
+			Group stagingGroup = group.getStagingGroup();
 
-		for (Role role : roles) {
-			roleIds.add(role.getRoleId());
+			count = TeamLocalServiceUtil.getGroupTeamsCount(
+				stagingGroup.getGroupId());
+
+			if (count > 0) {
+				roles = RoleLocalServiceUtil.getUserTeamRoles(
+					userId, stagingGroup.getGroupId());
+
+				for (Role role : roles) {
+					roleIds.add(role.getRoleId());
+				}
+			}
 		}
 	}
 
@@ -736,15 +752,11 @@ public class AdvancedPermissionChecker extends BasePermissionChecker {
 
 		if (RoleLocalServiceUtil.hasUserRole(
 				getUserId(), group.getCompanyId(),
-				RoleConstants.PORTAL_CONTENT_REVIEWER, true)) {
-
-			return true;
-		}
-
-		if (group.isSite() &&
-			UserGroupRoleLocalServiceUtil.hasUserGroupRole(
-				getUserId(), groupId, RoleConstants.SITE_CONTENT_REVIEWER,
-				true)) {
+				RoleConstants.PORTAL_CONTENT_REVIEWER, true) ||
+			(group.isSite() &&
+			 UserGroupRoleLocalServiceUtil.hasUserGroupRole(
+				 getUserId(), groupId, RoleConstants.SITE_CONTENT_REVIEWER,
+				 true))) {
 
 			return true;
 		}
@@ -759,11 +771,7 @@ public class AdvancedPermissionChecker extends BasePermissionChecker {
 			return false;
 		}
 
-		if (isOmniadmin()) {
-			return true;
-		}
-
-		if (isCompanyAdmin(companyId)) {
+		if (isOmniadmin() || isCompanyAdmin(companyId)) {
 			return true;
 		}
 
@@ -919,11 +927,7 @@ public class AdvancedPermissionChecker extends BasePermissionChecker {
 	}
 
 	protected boolean isGroupMemberImpl(long groupId) throws Exception {
-		if (!signedIn) {
-			return false;
-		}
-
-		if (groupId <= 0) {
+		if (!signedIn || (groupId <= 0)) {
 			return false;
 		}
 
@@ -1331,12 +1335,9 @@ public class AdvancedPermissionChecker extends BasePermissionChecker {
 				noSuchResourcePermissionException);
 		}
 
-		if (isOmniadmin()) {
-			return true;
-		}
-
-		if (name.equals(Organization.class.getName()) &&
-			isOrganizationAdminImpl(GetterUtil.getLong(primKey))) {
+		if (isOmniadmin() ||
+			(name.equals(Organization.class.getName()) &&
+			 isOrganizationAdminImpl(GetterUtil.getLong(primKey)))) {
 
 			return true;
 		}
@@ -1351,12 +1352,8 @@ public class AdvancedPermissionChecker extends BasePermissionChecker {
 			// the current portlet
 
 			if (Validator.isNull(name) || Validator.isNull(primKey) ||
-				!primKey.contains(PortletConstants.LAYOUT_SEPARATOR)) {
-
-				return true;
-			}
-
-			if (PortletPermissionUtil.hasLayoutManagerPermission(
+				!primKey.contains(PortletConstants.LAYOUT_SEPARATOR) ||
+				PortletPermissionUtil.hasLayoutManagerPermission(
 					name, actionId)) {
 
 				return true;

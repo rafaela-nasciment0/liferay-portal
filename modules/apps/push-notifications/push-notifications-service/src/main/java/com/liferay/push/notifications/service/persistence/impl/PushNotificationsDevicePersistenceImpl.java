@@ -29,6 +29,8 @@ import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.BaseModel;
 import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
+import com.liferay.portal.kernel.service.ServiceContext;
+import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
 import com.liferay.portal.kernel.service.persistence.BasePersistence;
 import com.liferay.portal.kernel.service.persistence.impl.BasePersistenceImpl;
 import com.liferay.portal.kernel.util.ArrayUtil;
@@ -48,6 +50,7 @@ import java.io.Serializable;
 
 import java.lang.reflect.InvocationHandler;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -1460,6 +1463,21 @@ public class PushNotificationsDevicePersistenceImpl
 		PushNotificationsDeviceModelImpl pushNotificationsDeviceModelImpl =
 			(PushNotificationsDeviceModelImpl)pushNotificationsDevice;
 
+		if (isNew && (pushNotificationsDevice.getCreateDate() == null)) {
+			ServiceContext serviceContext =
+				ServiceContextThreadLocal.getServiceContext();
+
+			Date date = new Date();
+
+			if (serviceContext == null) {
+				pushNotificationsDevice.setCreateDate(date);
+			}
+			else {
+				pushNotificationsDevice.setCreateDate(
+					serviceContext.getCreateDate(date));
+			}
+		}
+
 		Session session = null;
 
 		try {
@@ -1948,7 +1966,7 @@ public class PushNotificationsDevicePersistenceImpl
 			return PushNotificationsDeviceTable.INSTANCE.getTableName();
 		}
 
-		private Object[] _getValue(
+		private static Object[] _getValue(
 			PushNotificationsDeviceModelImpl pushNotificationsDeviceModelImpl,
 			String[] columnNames, boolean original) {
 
@@ -1972,8 +1990,8 @@ public class PushNotificationsDevicePersistenceImpl
 			return arguments;
 		}
 
-		private static Map<FinderPath, Long> _finderPathColumnBitmasksCache =
-			new ConcurrentHashMap<>();
+		private static final Map<FinderPath, Long>
+			_finderPathColumnBitmasksCache = new ConcurrentHashMap<>();
 
 	}
 

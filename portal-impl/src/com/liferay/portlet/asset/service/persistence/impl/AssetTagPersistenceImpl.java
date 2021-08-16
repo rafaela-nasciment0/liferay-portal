@@ -2418,7 +2418,7 @@ public class AssetTagPersistenceImpl
 				QueryPos queryPos = QueryPos.getInstance(query);
 
 				if (bindName) {
-					queryPos.add(name);
+					queryPos.add(StringUtil.toLowerCase(name));
 				}
 
 				list = (List<AssetTag>)QueryUtil.list(
@@ -2692,7 +2692,7 @@ public class AssetTagPersistenceImpl
 		QueryPos queryPos = QueryPos.getInstance(query);
 
 		if (bindName) {
-			queryPos.add(name);
+			queryPos.add(StringUtil.toLowerCase(name));
 		}
 
 		if (orderByComparator != null) {
@@ -2978,7 +2978,7 @@ public class AssetTagPersistenceImpl
 				QueryPos queryPos = QueryPos.getInstance(query);
 
 				if (bindName) {
-					queryPos.add(name);
+					queryPos.add(StringUtil.toLowerCase(name));
 				}
 
 				count = (Long)query.uniqueResult();
@@ -3097,7 +3097,7 @@ public class AssetTagPersistenceImpl
 	}
 
 	private static final String _FINDER_COLUMN_NAME_NAME_2 =
-		"assetTag.name = ?";
+		"lower(assetTag.name) = ?";
 
 	private static final String _FINDER_COLUMN_NAME_NAME_3 =
 		"(assetTag.name IS NULL OR assetTag.name = '')";
@@ -3226,7 +3226,7 @@ public class AssetTagPersistenceImpl
 				queryPos.add(groupId);
 
 				if (bindName) {
-					queryPos.add(name);
+					queryPos.add(StringUtil.toLowerCase(name));
 				}
 
 				List<AssetTag> list = query.list();
@@ -3336,7 +3336,7 @@ public class AssetTagPersistenceImpl
 				queryPos.add(groupId);
 
 				if (bindName) {
-					queryPos.add(name);
+					queryPos.add(StringUtil.toLowerCase(name));
 				}
 
 				count = (Long)query.uniqueResult();
@@ -3359,7 +3359,8 @@ public class AssetTagPersistenceImpl
 	private static final String _FINDER_COLUMN_G_N_GROUPID_2 =
 		"assetTag.groupId = ? AND ";
 
-	private static final String _FINDER_COLUMN_G_N_NAME_2 = "assetTag.name = ?";
+	private static final String _FINDER_COLUMN_G_N_NAME_2 =
+		"lower(assetTag.name) = ?";
 
 	private static final String _FINDER_COLUMN_G_N_NAME_3 =
 		"(assetTag.name IS NULL OR assetTag.name = '')";
@@ -3466,7 +3467,7 @@ public class AssetTagPersistenceImpl
 				for (AssetTag assetTag : list) {
 					if ((groupId != assetTag.getGroupId()) ||
 						!StringUtil.wildcardMatches(
-							assetTag.getName(), name, '_', '%', '\\', true)) {
+							assetTag.getName(), name, '_', '%', '\\', false)) {
 
 						list = null;
 
@@ -3524,7 +3525,7 @@ public class AssetTagPersistenceImpl
 				queryPos.add(groupId);
 
 				if (bindName) {
-					queryPos.add(name);
+					queryPos.add(StringUtil.toLowerCase(name));
 				}
 
 				list = (List<AssetTag>)QueryUtil.list(
@@ -3820,7 +3821,7 @@ public class AssetTagPersistenceImpl
 		queryPos.add(groupId);
 
 		if (bindName) {
-			queryPos.add(name);
+			queryPos.add(StringUtil.toLowerCase(name));
 		}
 
 		if (orderByComparator != null) {
@@ -3963,7 +3964,7 @@ public class AssetTagPersistenceImpl
 				for (AssetTag assetTag : list) {
 					if (!ArrayUtil.contains(groupIds, assetTag.getGroupId()) ||
 						!StringUtil.wildcardMatches(
-							assetTag.getName(), name, '_', '%', '\\', true)) {
+							assetTag.getName(), name, '_', '%', '\\', false)) {
 
 						list = null;
 
@@ -4026,7 +4027,7 @@ public class AssetTagPersistenceImpl
 				QueryPos queryPos = QueryPos.getInstance(query);
 
 				if (bindName) {
-					queryPos.add(name);
+					queryPos.add(StringUtil.toLowerCase(name));
 				}
 
 				list = (List<AssetTag>)QueryUtil.list(
@@ -4127,7 +4128,7 @@ public class AssetTagPersistenceImpl
 				queryPos.add(groupId);
 
 				if (bindName) {
-					queryPos.add(name);
+					queryPos.add(StringUtil.toLowerCase(name));
 				}
 
 				count = (Long)query.uniqueResult();
@@ -4224,7 +4225,7 @@ public class AssetTagPersistenceImpl
 				QueryPos queryPos = QueryPos.getInstance(query);
 
 				if (bindName) {
-					queryPos.add(name);
+					queryPos.add(StringUtil.toLowerCase(name));
 				}
 
 				count = (Long)query.uniqueResult();
@@ -4253,7 +4254,7 @@ public class AssetTagPersistenceImpl
 		"assetTag.groupId IN (";
 
 	private static final String _FINDER_COLUMN_G_LIKEN_NAME_2 =
-		"assetTag.name LIKE ?";
+		"lower(assetTag.name) LIKE ?";
 
 	private static final String _FINDER_COLUMN_G_LIKEN_NAME_3 =
 		"(assetTag.name IS NULL OR assetTag.name LIKE '')";
@@ -4518,23 +4519,23 @@ public class AssetTagPersistenceImpl
 		ServiceContext serviceContext =
 			ServiceContextThreadLocal.getServiceContext();
 
-		Date now = new Date();
+		Date date = new Date();
 
 		if (isNew && (assetTag.getCreateDate() == null)) {
 			if (serviceContext == null) {
-				assetTag.setCreateDate(now);
+				assetTag.setCreateDate(date);
 			}
 			else {
-				assetTag.setCreateDate(serviceContext.getCreateDate(now));
+				assetTag.setCreateDate(serviceContext.getCreateDate(date));
 			}
 		}
 
 		if (!assetTagModelImpl.hasSetModifiedDate()) {
 			if (serviceContext == null) {
-				assetTag.setModifiedDate(now);
+				assetTag.setModifiedDate(date);
 			}
 			else {
-				assetTag.setModifiedDate(serviceContext.getModifiedDate(now));
+				assetTag.setModifiedDate(serviceContext.getModifiedDate(date));
 			}
 		}
 
@@ -5274,7 +5275,8 @@ public class AssetTagPersistenceImpl
 	public Set<String> getCTColumnNames(
 		CTColumnResolutionType ctColumnResolutionType) {
 
-		return _ctColumnNamesMap.get(ctColumnResolutionType);
+		return _ctColumnNamesMap.getOrDefault(
+			ctColumnResolutionType, Collections.emptySet());
 	}
 
 	@Override
@@ -5569,6 +5571,13 @@ public class AssetTagPersistenceImpl
 						assetTagModelImpl.getColumnBitmask(columnName);
 				}
 
+				if (finderPath.isBaseModelResult() &&
+					(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION ==
+						finderPath.getCacheName())) {
+
+					finderPathColumnBitmask |= _ORDER_BY_COLUMNS_BITMASK;
+				}
+
 				_finderPathColumnBitmasksCache.put(
 					finderPath, finderPathColumnBitmask);
 			}
@@ -5590,7 +5599,7 @@ public class AssetTagPersistenceImpl
 			return AssetTagTable.INSTANCE.getTableName();
 		}
 
-		private Object[] _getValue(
+		private static Object[] _getValue(
 			AssetTagModelImpl assetTagModelImpl, String[] columnNames,
 			boolean original) {
 
@@ -5611,8 +5620,18 @@ public class AssetTagPersistenceImpl
 			return arguments;
 		}
 
-		private static Map<FinderPath, Long> _finderPathColumnBitmasksCache =
-			new ConcurrentHashMap<>();
+		private static final Map<FinderPath, Long>
+			_finderPathColumnBitmasksCache = new ConcurrentHashMap<>();
+
+		private static final long _ORDER_BY_COLUMNS_BITMASK;
+
+		static {
+			long orderByColumnsBitmask = 0;
+
+			orderByColumnsBitmask |= AssetTagModelImpl.getColumnBitmask("name");
+
+			_ORDER_BY_COLUMNS_BITMASK = orderByColumnsBitmask;
+		}
 
 	}
 

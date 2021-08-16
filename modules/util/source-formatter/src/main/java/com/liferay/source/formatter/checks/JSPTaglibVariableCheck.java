@@ -20,7 +20,6 @@ import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.tools.ToolsUtil;
-import com.liferay.source.formatter.checks.util.JSPSourceUtil;
 
 import java.io.IOException;
 
@@ -89,7 +88,7 @@ public class JSPTaglibVariableCheck extends BaseJSPTermsCheck {
 
 				String variableName = variableTypeAndName.substring(y + 1);
 
-				if (!nextTags.contains("=\"<%= " + variableName + " %>\"")) {
+				if (!nextTags.contains("<%= " + variableName + " %>")) {
 					continue;
 				}
 
@@ -99,7 +98,7 @@ public class JSPTaglibVariableCheck extends BaseJSPTermsCheck {
 
 				if (hasVariableReference(
 						s, taglibValue,
-						s.lastIndexOf("=\"<%= " + variableName + " %>\""))) {
+						s.lastIndexOf("<%= " + variableName + " %>"))) {
 
 					continue;
 				}
@@ -111,7 +110,7 @@ public class JSPTaglibVariableCheck extends BaseJSPTermsCheck {
 
 					if (!variableName.startsWith("taglib") &&
 						(_getVariableCount(content, variableName) == 2) &&
-						nextTags.contains("=\"<%= " + variableName + " %>\"")) {
+						nextTags.contains("<%= " + variableName + " %>")) {
 
 						addMessage(
 							fileName,
@@ -136,15 +135,15 @@ public class JSPTaglibVariableCheck extends BaseJSPTermsCheck {
 					}
 
 					newContent = StringUtil.replaceFirst(
-						content, "<%= " + variableName + " %>\"",
+						content, "<%= " + variableName + " %>",
 						StringBundler.concat(
-							"<%= new ", typeName, " ", taglibValue, " %>\""),
+							"<%= new ", typeName, " ", taglibValue, " %>"),
 						matcher.end());
 				}
 				else {
 					newContent = StringUtil.replaceFirst(
-						content, "<%= " + variableName + " %>\"",
-						"<%= " + taglibValue + " %>\"", matcher.end());
+						content, "<%= " + variableName + " %>",
+						"<%= " + taglibValue + " %>", matcher.end());
 				}
 
 				y = newContent.indexOf(variableDefinition, matcher.start());
@@ -186,7 +185,7 @@ public class JSPTaglibVariableCheck extends BaseJSPTermsCheck {
 		while (matcher.find()) {
 			int x = matcher.start() + 1;
 
-			if (JSPSourceUtil.isJavaSource(content, x)) {
+			if (isJavaSource(content, x)) {
 				if (!ToolsUtil.isInsideQuotes(content, x)) {
 					count++;
 				}
@@ -194,7 +193,7 @@ public class JSPTaglibVariableCheck extends BaseJSPTermsCheck {
 				continue;
 			}
 
-			if (JSPSourceUtil.isJavaSource(content, x, true)) {
+			if (isJavaSource(content, x, true)) {
 				count++;
 			}
 		}

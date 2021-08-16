@@ -38,7 +38,6 @@ import com.liferay.portal.kernel.util.WebKeys;
 
 import java.util.List;
 
-import javax.portlet.PortletURL;
 import javax.portlet.RenderRequest;
 import javax.portlet.RenderResponse;
 import javax.portlet.ResourceURL;
@@ -75,26 +74,44 @@ public class BasicFragmentCompositionActionDropdownItemsProvider {
 				_themeDisplay.getScopeGroupId(),
 				FragmentActionKeys.MANAGE_FRAGMENT_ENTRIES);
 
-		return DropdownItemListBuilder.add(
-			() -> hasManageFragmentEntriesPermission,
-			_getRenameFragmentCompositionActionUnsafeConsumer()
-		).add(
-			() -> hasManageFragmentEntriesPermission,
-			_getMoveFragmentCompositionActionUnsafeConsumer()
-		).add(
-			() -> hasManageFragmentEntriesPermission,
-			_getUpdateFragmentCompositionPreviewActionUnsafeConsumer()
-		).add(
-			() ->
-				hasManageFragmentEntriesPermission &&
-				(_fragmentComposition.getPreviewFileEntryId() > 0),
-			_getDeleteFragmentCompositionPreviewActionUnsafeConsumer()
-		).add(
-			() -> hasManageFragmentEntriesPermission,
-			_getExportFragmentCompositionActionUnsafeConsumer()
-		).add(
-			() -> hasManageFragmentEntriesPermission,
-			_getDeleteFragmentCompositionActionUnsafeConsumer()
+		return DropdownItemListBuilder.addGroup(
+			dropdownGroupItem -> {
+				dropdownGroupItem.setDropdownItems(
+					DropdownItemListBuilder.add(
+						() -> hasManageFragmentEntriesPermission,
+						_getUpdateFragmentCompositionPreviewActionUnsafeConsumer()
+					).add(
+						() ->
+							hasManageFragmentEntriesPermission &&
+							(_fragmentComposition.getPreviewFileEntryId() > 0),
+						_getDeleteFragmentCompositionPreviewActionUnsafeConsumer()
+					).add(
+						() -> hasManageFragmentEntriesPermission,
+						_getRenameFragmentCompositionActionUnsafeConsumer()
+					).build());
+				dropdownGroupItem.setSeparator(true);
+			}
+		).addGroup(
+			dropdownGroupItem -> {
+				dropdownGroupItem.setDropdownItems(
+					DropdownItemListBuilder.add(
+						() -> hasManageFragmentEntriesPermission,
+						_getExportFragmentCompositionActionUnsafeConsumer()
+					).add(
+						() -> hasManageFragmentEntriesPermission,
+						_getMoveFragmentCompositionActionUnsafeConsumer()
+					).build());
+				dropdownGroupItem.setSeparator(true);
+			}
+		).addGroup(
+			dropdownGroupItem -> {
+				dropdownGroupItem.setDropdownItems(
+					DropdownItemListBuilder.add(
+						() -> hasManageFragmentEntriesPermission,
+						_getDeleteFragmentCompositionActionUnsafeConsumer()
+					).build());
+				dropdownGroupItem.setSeparator(true);
+			}
 		).build();
 	}
 
@@ -164,15 +181,14 @@ public class BasicFragmentCompositionActionDropdownItemsProvider {
 	}
 
 	private String _getItemSelectorURL() {
-		PortletURL uploadURL = PortletURLBuilder.createActionURL(
-			_renderResponse
-		).setActionName(
-			"/fragment/upload_fragment_composition_preview"
-		).build();
-
 		ItemSelectorCriterion itemSelectorCriterion =
 			new UploadItemSelectorCriterion(
-				FragmentPortletKeys.FRAGMENT, uploadURL.toString(),
+				FragmentPortletKeys.FRAGMENT,
+				PortletURLBuilder.createActionURL(
+					_renderResponse
+				).setActionName(
+					"/fragment/upload_fragment_composition_preview"
+				).buildString(),
 				LanguageUtil.get(_themeDisplay.getLocale(), "fragments"),
 				UploadServletRequestConfigurationHelperUtil.getMaxSize(),
 				_fragmentPortletConfiguration.thumbnailExtensions());
@@ -195,15 +211,6 @@ public class BasicFragmentCompositionActionDropdownItemsProvider {
 			_getMoveFragmentCompositionActionUnsafeConsumer()
 		throws Exception {
 
-		PortletURL selectFragmentCollectionURL =
-			PortletURLBuilder.createRenderURL(
-				_renderResponse
-			).setMVCRenderCommandName(
-				"/fragment/select_fragment_collection"
-			).setWindowState(
-				LiferayWindowState.POP_UP
-			).build();
-
 		return dropdownItem -> {
 			dropdownItem.putData("action", "moveFragmentComposition");
 			dropdownItem.putData(
@@ -221,7 +228,13 @@ public class BasicFragmentCompositionActionDropdownItemsProvider {
 				).buildString());
 			dropdownItem.putData(
 				"selectFragmentCollectionURL",
-				selectFragmentCollectionURL.toString());
+				PortletURLBuilder.createRenderURL(
+					_renderResponse
+				).setMVCRenderCommandName(
+					"/fragment/select_fragment_collection"
+				).setWindowState(
+					LiferayWindowState.POP_UP
+				).buildString());
 			dropdownItem.setLabel(
 				LanguageUtil.get(_httpServletRequest, "move"));
 		};

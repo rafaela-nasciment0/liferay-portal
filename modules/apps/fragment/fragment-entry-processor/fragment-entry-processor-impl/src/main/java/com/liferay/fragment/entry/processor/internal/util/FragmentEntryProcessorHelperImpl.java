@@ -189,11 +189,9 @@ public class FragmentEntryProcessorHelperImpl
 	public long getFileEntryId(
 		Object displayObject, String fieldId, Locale locale) {
 
-		if (Validator.isNull(fieldId)) {
-			return 0;
-		}
+		if (Validator.isNull(fieldId) ||
+			!(displayObject instanceof ClassedModel)) {
 
-		if (!(displayObject instanceof ClassedModel)) {
 			return 0;
 		}
 
@@ -283,7 +281,7 @@ public class FragmentEntryProcessorHelperImpl
 		}
 
 		InfoFieldValue<Object> infoFieldValue =
-			infoItemFieldValuesProvider.getInfoItemFieldValue(
+			infoItemFieldValuesProvider.getInfoFieldValue(
 				displayObjectOptional.get(),
 				jsonObject.getString("collectionFieldId"));
 
@@ -310,55 +308,9 @@ public class FragmentEntryProcessorHelperImpl
 	}
 
 	@Override
-	public Object getMappedLayoutValue(
+	public Object getMappedInfoItemFieldValue(
 			JSONObject jsonObject,
-			FragmentEntryProcessorContext fragmentEntryProcessorContext)
-		throws PortalException {
-
-		if (!isMappedLayout(jsonObject)) {
-			return StringPool.BLANK;
-		}
-
-		HttpServletRequest httpServletRequest =
-			fragmentEntryProcessorContext.getHttpServletRequest();
-
-		if (httpServletRequest == null) {
-			return StringPool.BLANK;
-		}
-
-		ThemeDisplay themeDisplay =
-			(ThemeDisplay)httpServletRequest.getAttribute(
-				WebKeys.THEME_DISPLAY);
-
-		if (themeDisplay == null) {
-			return StringPool.BLANK;
-		}
-
-		JSONObject layoutJSONObject = jsonObject.getJSONObject("layout");
-
-		long groupId = layoutJSONObject.getLong("groupId");
-
-		Group group = _groupLocalService.fetchGroup(groupId);
-
-		if (group == null) {
-			return StringPool.POUND;
-		}
-
-		Layout layout = _layoutLocalService.fetchLayout(
-			groupId, layoutJSONObject.getBoolean("privateLayout"),
-			layoutJSONObject.getLong("layoutId"));
-
-		if (layout == null) {
-			return StringPool.POUND;
-		}
-
-		return _portal.getLayoutFullURL(layout, themeDisplay);
-	}
-
-	@Override
-	public Object getMappedValue(
-			JSONObject jsonObject,
-			Map<Long, Map<String, Object>> infoDisplaysFieldValues,
+			Map<Long, InfoItemFieldValues> infoItemFieldValuesMap,
 			FragmentEntryProcessorContext fragmentEntryProcessorContext)
 		throws PortalException {
 
@@ -426,22 +378,27 @@ public class FragmentEntryProcessorHelperImpl
 			return null;
 		}
 
-		Map<String, Object> fieldsValues = infoDisplaysFieldValues.get(classPK);
+		InfoItemFieldValues infoItemFieldValues = infoItemFieldValuesMap.get(
+			classPK);
 
-		if (fieldsValues == null) {
-			InfoItemFieldValues infoItemFieldValues =
+		if (infoItemFieldValues == null) {
+			infoItemFieldValues =
 				infoItemFieldValuesProvider.getInfoItemFieldValues(object);
 
-			fieldsValues = infoItemFieldValues.getMap(
-				fragmentEntryProcessorContext.getLocale());
-
-			infoDisplaysFieldValues.put(classPK, fieldsValues);
+			infoItemFieldValuesMap.put(classPK, infoItemFieldValues);
 		}
 
 		String fieldId = jsonObject.getString("fieldId");
 
-		Object fieldValue = fieldsValues.getOrDefault(
-			fieldId, StringPool.BLANK);
+		InfoFieldValue<Object> infoFieldValue =
+			infoItemFieldValues.getInfoFieldValue(fieldId);
+
+		if (infoFieldValue == null) {
+			return null;
+		}
+
+		Object fieldValue = infoFieldValue.getValue(
+			fragmentEntryProcessorContext.getLocale());
 
 		if (fieldValue == null) {
 			return null;
@@ -467,9 +424,9 @@ public class FragmentEntryProcessorHelperImpl
 	}
 
 	@Override
-	public Object getMappedValue(
+	public Object getMappedInfoItemFieldValue(
 			JSONObject jsonObject,
-			Map<Long, Map<String, Object>> infoDisplaysFieldValues, String mode,
+			Map<Long, InfoItemFieldValues> infoDisplaysFieldValues, String mode,
 			Locale locale, long previewClassPK, long previewClassNameId,
 			int previewType)
 		throws PortalException {
@@ -484,9 +441,88 @@ public class FragmentEntryProcessorHelperImpl
 		defaultFragmentEntryProcessorContext.setPreviewClassPK(previewClassPK);
 		defaultFragmentEntryProcessorContext.setPreviewType(previewType);
 
-		return getMappedValue(
+		return getMappedInfoItemFieldValue(
 			jsonObject, infoDisplaysFieldValues,
 			defaultFragmentEntryProcessorContext);
+	}
+
+	@Override
+	public Object getMappedLayoutValue(
+			JSONObject jsonObject,
+			FragmentEntryProcessorContext fragmentEntryProcessorContext)
+		throws PortalException {
+
+		if (!isMappedLayout(jsonObject)) {
+			return StringPool.BLANK;
+		}
+
+		HttpServletRequest httpServletRequest =
+			fragmentEntryProcessorContext.getHttpServletRequest();
+
+		if (httpServletRequest == null) {
+			return StringPool.BLANK;
+		}
+
+		ThemeDisplay themeDisplay =
+			(ThemeDisplay)httpServletRequest.getAttribute(
+				WebKeys.THEME_DISPLAY);
+
+		if (themeDisplay == null) {
+			return StringPool.BLANK;
+		}
+
+		JSONObject layoutJSONObject = jsonObject.getJSONObject("layout");
+
+		long groupId = layoutJSONObject.getLong("groupId");
+
+		Group group = _groupLocalService.fetchGroup(groupId);
+
+		if (group == null) {
+			return StringPool.POUND;
+		}
+
+		Layout layout = _layoutLocalService.fetchLayout(
+			groupId, layoutJSONObject.getBoolean("privateLayout"),
+			layoutJSONObject.getLong("layoutId"));
+
+		if (layout == null) {
+			return StringPool.POUND;
+		}
+
+		return _portal.getLayoutFullURL(layout, themeDisplay);
+	}
+
+	/**
+	 * @deprecated As of Cavanaugh (7.4.x), replaced by {@link #getMappedInfoItemFieldValue(JSONObject, Map, FragmentEntryProcessorContext)}
+	 */
+	@Deprecated
+	@Override
+	public Object getMappedValue(
+		JSONObject jsonObject,
+		Map<Long, Map<String, Object>> infoDisplaysFieldValues,
+		FragmentEntryProcessorContext fragmentEntryProcessorContext) {
+
+		throw new UnsupportedOperationException(
+			"This method is deprecated and replaced by " +
+				"com.liferay.fragment.entry.processor.helper." +
+					"FragmentEntryProcessorHelper.getMappedInfoItemFieldValue");
+	}
+
+	/**
+	 * @deprecated As of Cavanaugh (7.4.x), replaced by {@link #getMappedInfoItemFieldValue(JSONObject, Map, String, Locale, long, long, int)}
+	 */
+	@Deprecated
+	@Override
+	public Object getMappedValue(
+		JSONObject jsonObject,
+		Map<Long, Map<String, Object>> infoDisplaysFieldValues, String mode,
+		Locale locale, long previewClassPK, long previewClassNameId,
+		int previewType) {
+
+		throw new UnsupportedOperationException(
+			"This method is deprecated and replaced by " +
+				"com.liferay.fragment.entry.processor.helper." +
+					"FragmentEntryProcessorHelper.getMappedInfoItemFieldValue");
 	}
 
 	@Override
@@ -600,7 +636,7 @@ public class FragmentEntryProcessorHelperImpl
 		}
 
 		InfoFieldValue<Object> infoFieldValue =
-			infoItemFieldValuesProvider.getInfoItemFieldValue(
+			infoItemFieldValuesProvider.getInfoFieldValue(
 				displayObject, fieldId);
 
 		Object value = StringPool.BLANK;

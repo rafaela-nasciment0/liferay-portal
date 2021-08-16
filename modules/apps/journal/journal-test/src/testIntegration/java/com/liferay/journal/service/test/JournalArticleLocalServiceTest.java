@@ -26,15 +26,19 @@ import com.liferay.dynamic.data.mapping.model.DDMTemplate;
 import com.liferay.dynamic.data.mapping.model.LocalizedValue;
 import com.liferay.dynamic.data.mapping.service.DDMStructureLocalService;
 import com.liferay.dynamic.data.mapping.service.DDMTemplateLinkLocalService;
+import com.liferay.dynamic.data.mapping.storage.Field;
+import com.liferay.dynamic.data.mapping.storage.Fields;
 import com.liferay.dynamic.data.mapping.test.util.DDMFormTestUtil;
 import com.liferay.dynamic.data.mapping.test.util.DDMStructureTestUtil;
 import com.liferay.dynamic.data.mapping.test.util.DDMTemplateTestUtil;
 import com.liferay.journal.constants.JournalFolderConstants;
+import com.liferay.journal.exception.DuplicateArticleExternalReferenceCodeException;
 import com.liferay.journal.exception.DuplicateArticleIdException;
 import com.liferay.journal.model.JournalArticle;
 import com.liferay.journal.model.JournalArticleDisplay;
 import com.liferay.journal.service.JournalArticleLocalService;
 import com.liferay.journal.test.util.JournalTestUtil;
+import com.liferay.journal.util.JournalConverter;
 import com.liferay.layout.page.template.constants.LayoutPageTemplateEntryTypeConstants;
 import com.liferay.layout.page.template.model.LayoutPageTemplateEntry;
 import com.liferay.layout.page.template.service.LayoutPageTemplateEntryLocalService;
@@ -131,13 +135,21 @@ public class JournalArticleLocalServiceTest {
 	public void testCopyArticle() throws Exception {
 		JournalArticle oldArticle = JournalTestUtil.addArticle(
 			_group.getGroupId(),
-			JournalFolderConstants.DEFAULT_PARENT_FOLDER_ID);
+			JournalFolderConstants.DEFAULT_PARENT_FOLDER_ID, "Test-1",
+			RandomTestUtil.randomString());
+
+		JournalArticle thirdArticle = JournalTestUtil.addArticle(
+			_group.getGroupId(),
+			JournalFolderConstants.DEFAULT_PARENT_FOLDER_ID, "Test-2",
+			oldArticle.getContent());
 
 		JournalArticle newArticle = _journalArticleLocalService.copyArticle(
 			oldArticle.getUserId(), oldArticle.getGroupId(),
 			oldArticle.getArticleId(), null, true, oldArticle.getVersion());
 
 		Assert.assertNotEquals(oldArticle, newArticle);
+		Assert.assertNotEquals(
+			thirdArticle.getUrlTitle(), newArticle.getUrlTitle());
 
 		List<ResourcePermission> oldResourcePermissions =
 			_resourcePermissionLocalService.getResourcePermissions(
@@ -244,11 +256,11 @@ public class JournalArticleLocalServiceTest {
 	@Test(expected = DuplicateArticleIdException.class)
 	public void testDuplicatedArticleId() throws Exception {
 		JournalArticle article = JournalTestUtil.addArticle(
-			_group.getGroupId(),
-			JournalFolderConstants.DEFAULT_PARENT_FOLDER_ID);
+			RandomTestUtil.randomString(), _group.getGroupId(),
+			JournalFolderConstants.DEFAULT_PARENT_FOLDER_ID, null, true);
 
 		JournalTestUtil.addArticle(
-			_group.getGroupId(),
+			RandomTestUtil.randomString(), _group.getGroupId(),
 			JournalFolderConstants.DEFAULT_PARENT_FOLDER_ID,
 			article.getArticleId(), false);
 	}
@@ -261,6 +273,18 @@ public class JournalArticleLocalServiceTest {
 
 		JournalTestUtil.addArticle(
 			_group.getGroupId(),
+			JournalFolderConstants.DEFAULT_PARENT_FOLDER_ID,
+			article.getArticleId(), true);
+	}
+
+	@Test(expected = DuplicateArticleExternalReferenceCodeException.class)
+	public void testDuplicatedExternalReferenceCode() throws Exception {
+		JournalArticle article = JournalTestUtil.addArticle(
+			_group.getGroupId(),
+			JournalFolderConstants.DEFAULT_PARENT_FOLDER_ID);
+
+		JournalTestUtil.addArticle(
+			article.getExternalReferenceCode(), _group.getGroupId(),
 			JournalFolderConstants.DEFAULT_PARENT_FOLDER_ID,
 			article.getArticleId(), true);
 	}
@@ -423,26 +447,20 @@ public class JournalArticleLocalServiceTest {
 		Assert.assertEquals(
 			actualDDMStructure.getStructureId(), ddmStructure.getStructureId());
 
-		DDMFormField actualDDMFormField = actualDDMStructure.getDDMFormField(
-			"name");
+		Fields fields = _journalConverter.getDDMFields(
+			ddmStructure, journalArticle.getContent());
 
-		Assert.assertNotNull(actualDDMFormField);
+		Field field = fields.get("name");
 
-		LocalizedValue actualDDMFormFieldPredefinedValue =
-			actualDDMFormField.getPredefinedValue();
+		Assert.assertNotNull(field);
 
 		Assert.assertEquals(
-			"Valor Predefinido",
-			actualDDMFormFieldPredefinedValue.getString(LocaleUtil.BRAZIL));
+			"Valor Predefinido", field.getValue(LocaleUtil.BRAZIL));
 		Assert.assertEquals(
-			"Valeur Prédéfinie",
-			actualDDMFormFieldPredefinedValue.getString(LocaleUtil.FRENCH));
+			"Valeur Prédéfinie", field.getValue(LocaleUtil.FRENCH));
 		Assert.assertEquals(
-			"Valore Predefinito",
-			actualDDMFormFieldPredefinedValue.getString(LocaleUtil.ITALY));
-		Assert.assertEquals(
-			"Predefined Value",
-			actualDDMFormFieldPredefinedValue.getString(LocaleUtil.US));
+			"Valore Predefinito", field.getValue(LocaleUtil.ITALY));
+		Assert.assertEquals("Predefined Value", field.getValue(LocaleUtil.US));
 	}
 
 	private Tuple _createJournalArticleWithPredefinedValues(String title)
@@ -532,6 +550,9 @@ public class JournalArticleLocalServiceTest {
 
 	@Inject
 	private JournalArticleLocalService _journalArticleLocalService;
+
+	@Inject
+	private JournalConverter _journalConverter;
 
 	@Inject
 	private LayoutPageTemplateEntryLocalService

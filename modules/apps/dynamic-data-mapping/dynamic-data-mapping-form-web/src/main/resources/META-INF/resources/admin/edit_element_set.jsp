@@ -94,6 +94,8 @@ renderResponse.setTitle((structure == null) ? LanguageUtil.get(request, "new-ele
 				module="admin/js/App.es"
 				props='<%=
 					HashMapBuilder.<String, Object>put(
+						"availableLanguageIds", ddmFormAdminDisplayContext.getAvailableLanguageIdsJSONArray()
+					).put(
 						"context", formBuilderContextJSONObject
 					).put(
 						"dataProviderInstanceParameterSettingsURL", dataProviderInstanceParameterSettingsURL
@@ -102,9 +104,9 @@ renderResponse.setTitle((structure == null) ? LanguageUtil.get(request, "new-ele
 					).put(
 						"defaultLanguageId", ddmFormAdminDisplayContext.getDefaultLanguageId()
 					).put(
-						"fieldSetDefinitionURL", ddmFormAdminDisplayContext.getFieldSetDefinitionURL()
+						"elementSets", ddmFormAdminDisplayContext.getFieldSetsJSONArray()
 					).put(
-						"fieldSets", ddmFormAdminDisplayContext.getFieldSetsJSONArray()
+						"fieldSetDefinitionURL", ddmFormAdminDisplayContext.getFieldSetDefinitionURL()
 					).put(
 						"fieldTypes", ddmFormAdminDisplayContext.getDDMFormFieldTypesJSONArray()
 					).put(

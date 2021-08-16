@@ -115,20 +115,6 @@ else {
 
 				layoutURL = HttpUtil.addParameter(layoutURL, "layoutSetBranchId", layoutRevision.getLayoutSetBranchId());
 				layoutURL = HttpUtil.addParameter(layoutURL, "layoutRevisionId", layoutRevision.getLayoutRevisionId());
-
-				PortletURL portletURL = PortletURLBuilder.create(
-					PortalUtil.getControlPanelPortletURL(request, PortletKeys.MY_WORKFLOW_TASK, PortletRequest.RENDER_PHASE)
-				).setMVCPath(
-					"/edit_workflow_task.jsp"
-				).setParameter(
-					"workflowTaskId", String.valueOf(workflowTask.getWorkflowTaskId())
-				).setParameter(
-					"closeRedirect", layoutURL
-				).setPortletMode(
-					PortletMode.VIEW
-				).setWindowState(
-					LiferayWindowState.POP_UP
-				).build();
 				%>
 
 				<liferay-ui:icon
@@ -137,7 +123,21 @@ else {
 					id="reviewTaskIcon"
 					message="workflow"
 					method="get"
-					url="<%= portletURL.toString() %>"
+					url='<%=
+						PortletURLBuilder.create(
+							PortalUtil.getControlPanelPortletURL(request, PortletKeys.MY_WORKFLOW_TASK, PortletRequest.RENDER_PHASE)
+						).setMVCPath(
+							"/edit_workflow_task.jsp"
+						).setParameter(
+							"closeRedirect", layoutURL
+						).setParameter(
+							"workflowTaskId", workflowTask.getWorkflowTaskId()
+						).setPortletMode(
+							PortletMode.VIEW
+						).setWindowState(
+							LiferayWindowState.POP_UP
+						).buildString()
+					%>'
 					useDialog="<%= true %>"
 				/>
 			</c:if>
@@ -158,8 +158,8 @@ else {
 
 	<li class="control-menu-nav-item">
 		<div class="d-none d-sm-block dropdown">
-			<a class="dropdown-toggle taglib-icon" data-toggle="liferay-dropdown" href="javascript:;">
-				<aui:icon cssClass="icon-monospaced" image="ellipsis-v" markupView="lexicon" />
+			<a class="component-action dropdown-toggle taglib-icon" data-toggle="liferay-dropdown" href="javascript:;">
+				<aui:icon cssClass="<%= StringPool.BLANK %>" image="ellipsis-v" markupView="lexicon" />
 
 				<span class="sr-only">
 					<liferay-ui:message key="options" />

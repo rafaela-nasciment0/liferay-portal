@@ -25,8 +25,8 @@ import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Role;
-import com.liferay.portal.kernel.model.RoleConstants;
 import com.liferay.portal.kernel.model.UserGroupRole;
+import com.liferay.portal.kernel.model.role.RoleConstants;
 import com.liferay.portal.kernel.service.RoleServiceUtil;
 import com.liferay.portal.kernel.service.UserGroupRoleLocalServiceUtil;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
@@ -38,6 +38,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import javax.servlet.http.HttpServletRequest;
+
 /**
  * @author Fabio Diego Mastrorilli
  */
@@ -45,8 +47,11 @@ public class UserRolesModalTag extends ComponentRendererTag {
 
 	@Override
 	public int doStartTag() {
-		ThemeDisplay themeDisplay = (ThemeDisplay)request.getAttribute(
-			WebKeys.THEME_DISPLAY);
+		HttpServletRequest httpServletRequest = getRequest();
+
+		ThemeDisplay themeDisplay =
+			(ThemeDisplay)httpServletRequest.getAttribute(
+				WebKeys.THEME_DISPLAY);
 
 		putValue("spritemap", themeDisplay.getPathThemeImages() + "/icons.svg");
 
@@ -80,8 +85,8 @@ public class UserRolesModalTag extends ComponentRendererTag {
 			List<AccountRole> availableRoles = new ArrayList<>();
 
 			List<Role> roles = RoleServiceUtil.getRoles(
-				PortalUtil.getCompanyId(request),
-				new int[] {RoleConstants.TYPE_SITE});
+				PortalUtil.getCompanyId(httpServletRequest),
+				new int[] {RoleConstants.TYPE_ACCOUNT});
 
 			for (Role role : roles) {
 				availableRoles.add(

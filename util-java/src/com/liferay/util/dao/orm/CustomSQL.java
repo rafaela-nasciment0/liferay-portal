@@ -369,7 +369,7 @@ public class CustomSQL {
 		String functionIsNull = PortalUtil.getCustomSQLFunctionIsNull();
 		String functionIsNotNull = PortalUtil.getCustomSQLFunctionIsNotNull();
 
-		try (Connection con = DataAccess.getConnection()) {
+		try (Connection connection = DataAccess.getConnection()) {
 			if (Validator.isNotNull(functionIsNull) &&
 				Validator.isNotNull(functionIsNotNull)) {
 
@@ -384,8 +384,8 @@ public class CustomSQL {
 							functionIsNotNull);
 				}
 			}
-			else if (con != null) {
-				DatabaseMetaData metaData = con.getMetaData();
+			else if (connection != null) {
+				DatabaseMetaData metaData = connection.getMetaData();
 
 				String dbName = GetterUtil.getString(
 					metaData.getDatabaseProductName());
@@ -866,8 +866,10 @@ public class CustomSQL {
 			ClassLoader classLoader, String source, Map<String, String> sqlPool)
 		throws Exception {
 
-		try (InputStream is = classLoader.getResourceAsStream(source)) {
-			if (is == null) {
+		try (InputStream inputStream = classLoader.getResourceAsStream(
+				source)) {
+
+			if (inputStream == null) {
 				return;
 			}
 
@@ -875,7 +877,7 @@ public class CustomSQL {
 				_log.debug("Loading " + source);
 			}
 
-			Document document = UnsecureSAXReaderUtil.read(is);
+			Document document = UnsecureSAXReaderUtil.read(inputStream);
 
 			Element rootElement = document.getRootElement();
 

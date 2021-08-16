@@ -153,6 +153,10 @@ public class CommerceChannelLocalServiceUtil {
 		return getService().dslQuery(dslQuery);
 	}
 
+	public static int dslQueryCount(DSLQuery dslQuery) {
+		return getService().dslQueryCount(dslQuery);
+	}
+
 	public static DynamicQuery dynamicQuery() {
 		return getService().dynamicQuery();
 	}
@@ -270,6 +274,13 @@ public class CommerceChannelLocalServiceUtil {
 		long siteGroupId) {
 
 		return getService().fetchCommerceChannelBySiteGroupId(siteGroupId);
+	}
+
+	public static com.liferay.portal.kernel.model.Group
+			fetchCommerceChannelGroup(long commerceChannelId)
+		throws PortalException {
+
+		return getService().fetchCommerceChannelGroup(commerceChannelId);
 	}
 
 	public static com.liferay.portal.kernel.dao.orm.ActionableDynamicQuery

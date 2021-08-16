@@ -201,6 +201,8 @@ public class DefaultDLViewFileVersionDisplayContext
 	public List<ToolbarItem> getToolbarItems() throws PortalException {
 		List<ToolbarItem> toolbarItems = new ArrayList<>();
 
+		_uiItemsBuilder.addCollectDigitalSignatureToolbarItem(toolbarItems);
+
 		_uiItemsBuilder.addDownloadToolbarItem(toolbarItems);
 
 		_uiItemsBuilder.addEditToolbarItem(toolbarItems);
@@ -327,6 +329,7 @@ public class DefaultDLViewFileVersionDisplayContext
 		VersioningStrategy versioningStrategy, DLURLHelper dlURLHelper) {
 
 		try {
+			_httpServletRequest = httpServletRequest;
 			_fileVersion = fileVersion;
 			_dlMimeTypeDisplayContext = dlMimeTypeDisplayContext;
 			_resourceBundle = resourceBundle;
@@ -386,11 +389,15 @@ public class DefaultDLViewFileVersionDisplayContext
 
 			_uiItemsBuilder.addEditMenuItem(menuItems);
 
+			_uiItemsBuilder.addEditImageItem(menuItems);
+
 			_uiItemsBuilder.addCheckoutMenuItem(menuItems);
 
 			_uiItemsBuilder.addCancelCheckoutMenuItem(menuItems);
 
 			_uiItemsBuilder.addCheckinMenuItem(menuItems);
+
+			_uiItemsBuilder.addCollectDigitalSignatureMenuItem(menuItems);
 
 			_uiItemsBuilder.addMoveMenuItem(menuItems);
 
@@ -485,6 +492,7 @@ public class DefaultDLViewFileVersionDisplayContext
 	private final FileVersion _fileVersion;
 	private final FileVersionDisplayContextHelper
 		_fileVersionDisplayContextHelper;
+	private HttpServletRequest _httpServletRequest;
 	private final ResourceBundle _resourceBundle;
 	private final StorageEngine _storageEngine;
 	private final UIItemsBuilder _uiItemsBuilder;

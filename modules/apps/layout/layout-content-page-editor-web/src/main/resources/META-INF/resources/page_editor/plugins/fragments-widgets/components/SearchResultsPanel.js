@@ -16,6 +16,7 @@ import ClayAlert from '@clayui/alert';
 import PropTypes from 'prop-types';
 import React from 'react';
 
+import {FRAGMENTS_DISPLAY_STYLES} from '../../../app/config/constants/fragmentsDisplayStyles';
 import TabCollection from './TabCollection';
 
 export default function SearchResultsPanel({filteredTabs}) {
@@ -45,5 +46,6 @@ export default function SearchResultsPanel({filteredTabs}) {
 }
 
 SearchResultsPanel.proptypes = {
+	displayStyle: PropTypes.oneOf(Object.values(FRAGMENTS_DISPLAY_STYLES)),
 	filteredTabs: PropTypes.object.isRequired,
 };

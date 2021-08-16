@@ -3184,25 +3184,25 @@ public class AssetListEntrySegmentsEntryRelPersistenceImpl
 		ServiceContext serviceContext =
 			ServiceContextThreadLocal.getServiceContext();
 
-		Date now = new Date();
+		Date date = new Date();
 
 		if (isNew && (assetListEntrySegmentsEntryRel.getCreateDate() == null)) {
 			if (serviceContext == null) {
-				assetListEntrySegmentsEntryRel.setCreateDate(now);
+				assetListEntrySegmentsEntryRel.setCreateDate(date);
 			}
 			else {
 				assetListEntrySegmentsEntryRel.setCreateDate(
-					serviceContext.getCreateDate(now));
+					serviceContext.getCreateDate(date));
 			}
 		}
 
 		if (!assetListEntrySegmentsEntryRelModelImpl.hasSetModifiedDate()) {
 			if (serviceContext == null) {
-				assetListEntrySegmentsEntryRel.setModifiedDate(now);
+				assetListEntrySegmentsEntryRel.setModifiedDate(date);
 			}
 			else {
 				assetListEntrySegmentsEntryRel.setModifiedDate(
-					serviceContext.getModifiedDate(now));
+					serviceContext.getModifiedDate(date));
 			}
 		}
 
@@ -3654,7 +3654,8 @@ public class AssetListEntrySegmentsEntryRelPersistenceImpl
 	public Set<String> getCTColumnNames(
 		CTColumnResolutionType ctColumnResolutionType) {
 
-		return _ctColumnNamesMap.get(ctColumnResolutionType);
+		return _ctColumnNamesMap.getOrDefault(
+			ctColumnResolutionType, Collections.emptySet());
 	}
 
 	@Override
@@ -3688,7 +3689,6 @@ public class AssetListEntrySegmentsEntryRelPersistenceImpl
 	static {
 		Set<String> ctControlColumnNames = new HashSet<String>();
 		Set<String> ctIgnoreColumnNames = new HashSet<String>();
-		Set<String> ctMergeColumnNames = new HashSet<String>();
 		Set<String> ctStrictColumnNames = new HashSet<String>();
 
 		ctControlColumnNames.add("mvccVersion");
@@ -3709,7 +3709,6 @@ public class AssetListEntrySegmentsEntryRelPersistenceImpl
 			CTColumnResolutionType.CONTROL, ctControlColumnNames);
 		_ctColumnNamesMap.put(
 			CTColumnResolutionType.IGNORE, ctIgnoreColumnNames);
-		_ctColumnNamesMap.put(CTColumnResolutionType.MERGE, ctMergeColumnNames);
 		_ctColumnNamesMap.put(
 			CTColumnResolutionType.PK,
 			Collections.singleton("alEntrySegmentsEntryRelId"));
@@ -3988,7 +3987,7 @@ public class AssetListEntrySegmentsEntryRelPersistenceImpl
 			return AssetListEntrySegmentsEntryRelTable.INSTANCE.getTableName();
 		}
 
-		private Object[] _getValue(
+		private static Object[] _getValue(
 			AssetListEntrySegmentsEntryRelModelImpl
 				assetListEntrySegmentsEntryRelModelImpl,
 			String[] columnNames, boolean original) {
@@ -4013,8 +4012,8 @@ public class AssetListEntrySegmentsEntryRelPersistenceImpl
 			return arguments;
 		}
 
-		private static Map<FinderPath, Long> _finderPathColumnBitmasksCache =
-			new ConcurrentHashMap<>();
+		private static final Map<FinderPath, Long>
+			_finderPathColumnBitmasksCache = new ConcurrentHashMap<>();
 
 	}
 

@@ -125,7 +125,7 @@ public class Query {
 	/**
 	 * Invoke this method with the command line:
 	 *
-	 * curl -H 'Content-Type: text/plain; charset=utf-8' -X 'POST' 'http://localhost:8080/o/graphql' -d $'{"query": "query {accountByExternalReferenceCode(externalReferenceCode: ___){accountAddresses, accountMembers, accountOrganizations, customFields, dateCreated, dateModified, defaultBillingAccountAddressId, defaultShippingAccountAddressId, emailAddresses, externalReferenceCode, id, logoId, logoURL, name, root, taxId, type}}"}' -u 'test@liferay.com:test'
+	 * curl -H 'Content-Type: text/plain; charset=utf-8' -X 'POST' 'http://localhost:8080/o/graphql' -d $'{"query": "query {accountByExternalReferenceCode(externalReferenceCode: ___){accountAddresses, accountMembers, accountOrganizations, active, customFields, dateCreated, dateModified, defaultBillingAccountAddressId, defaultShippingAccountAddressId, emailAddresses, externalReferenceCode, id, logoId, logoURL, name, root, taxId, type}}"}' -u 'test@liferay.com:test'
 	 */
 	@GraphQLField
 	public Account accountByExternalReferenceCode(
@@ -143,7 +143,7 @@ public class Query {
 	/**
 	 * Invoke this method with the command line:
 	 *
-	 * curl -H 'Content-Type: text/plain; charset=utf-8' -X 'POST' 'http://localhost:8080/o/graphql' -d $'{"query": "query {account(id: ___){accountAddresses, accountMembers, accountOrganizations, customFields, dateCreated, dateModified, defaultBillingAccountAddressId, defaultShippingAccountAddressId, emailAddresses, externalReferenceCode, id, logoId, logoURL, name, root, taxId, type}}"}' -u 'test@liferay.com:test'
+	 * curl -H 'Content-Type: text/plain; charset=utf-8' -X 'POST' 'http://localhost:8080/o/graphql' -d $'{"query": "query {account(id: ___){accountAddresses, accountMembers, accountOrganizations, active, customFields, dateCreated, dateModified, defaultBillingAccountAddressId, defaultShippingAccountAddressId, emailAddresses, externalReferenceCode, id, logoId, logoURL, name, root, taxId, type}}"}' -u 'test@liferay.com:test'
 	 */
 	@GraphQLField
 	public Account account(@GraphQLName("id") Long id) throws Exception {
@@ -369,8 +369,8 @@ public class Query {
 	@GraphQLField
 	public AccountOrganizationPage
 			accountByExternalReferenceCodeAccountOrganizations(
-				@GraphQLName("externalReferenceCode")
-					String externalReferenceCode,
+				@GraphQLName("externalReferenceCode") String
+					externalReferenceCode,
 				@GraphQLName("pageSize") int pageSize,
 				@GraphQLName("page") int page)
 		throws Exception {
@@ -392,8 +392,8 @@ public class Query {
 	@GraphQLField
 	public AccountOrganization
 			accountByExternalReferenceCodeAccountOrganization(
-				@GraphQLName("externalReferenceCode")
-					String externalReferenceCode,
+				@GraphQLName("externalReferenceCode") String
+					externalReferenceCode,
 				@GraphQLName("organizationId") Long organizationId)
 		throws Exception {
 

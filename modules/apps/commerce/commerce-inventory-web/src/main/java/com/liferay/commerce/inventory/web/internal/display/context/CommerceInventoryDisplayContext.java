@@ -34,7 +34,6 @@ import com.liferay.portal.kernel.security.auth.PrincipalException;
 import com.liferay.portal.kernel.security.permission.PermissionThreadLocal;
 import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermission;
 import com.liferay.portal.kernel.security.permission.resource.PortletResourcePermission;
-import com.liferay.portal.kernel.util.Constants;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.Validator;
 
@@ -276,13 +275,13 @@ public class CommerceInventoryDisplayContext {
 			_cpRequestHelper.getLiferayPortletResponse()
 		).setActionName(
 			"/commerce_inventory/edit_commerce_inventory_item"
+		).setCMD(
+			"transition"
 		).setRedirect(
 			_cpRequestHelper.getCurrentURL()
 		).setParameter(
-			Constants.CMD, "transition"
-		).setParameter(
 			"sku", _sku
-		).build();
+		).buildPortletURL();
 	}
 
 	public CreationMenu getWarehousesCreationMenu() throws Exception {

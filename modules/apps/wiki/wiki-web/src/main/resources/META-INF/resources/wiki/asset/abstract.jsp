@@ -26,12 +26,12 @@ PortletURL viewPageURL = PortletURLBuilder.create(
 ).setActionName(
 	"/wiki/view"
 ).setParameter(
-	"nodeId", String.valueOf(wikiPage.getNodeId())
+	"nodeId", wikiPage.getNodeId()
 ).setPortletMode(
 	PortletMode.VIEW
 ).setWindowState(
 	WindowState.MAXIMIZED
-).build();
+).buildPortletURL();
 
 StringBundler sb = new StringBundler(8);
 
@@ -60,8 +60,8 @@ WikiPageDisplay pageDisplay = WikiPageLocalServiceUtil.getPageDisplay(
 			).setRedirect(
 				redirectURL
 			).setParameter(
-				"nodeId", String.valueOf(wikiPage.getNodeId())
-			).build();
+				"nodeId", wikiPage.getNodeId()
+			).buildPortletURL();
 
 			try {
 				editPageURL.setPortletMode(PortletMode.VIEW);

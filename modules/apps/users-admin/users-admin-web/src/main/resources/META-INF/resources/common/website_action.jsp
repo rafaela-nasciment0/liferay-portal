@@ -34,26 +34,23 @@ long websiteId = website.getWebsiteId();
 	message="<%= StringPool.BLANK %>"
 	showWhenSingleIcon="<%= true %>"
 >
-
-	<%
-	PortletURL editURL = PortletURLBuilder.createRenderURL(
-		liferayPortletResponse
-	).setMVCPath(
-		"/common/edit_website.jsp"
-	).setRedirect(
-		currentURL
-	).setParameter(
-		"className", className
-	).setParameter(
-		"classPK", String.valueOf(classPK)
-	).setParameter(
-		"primaryKey", String.valueOf(websiteId)
-	).build();
-	%>
-
 	<liferay-ui:icon
 		message="edit"
-		url="<%= editURL.toString() %>"
+		url='<%=
+			PortletURLBuilder.createRenderURL(
+				liferayPortletResponse
+			).setMVCPath(
+				"/common/edit_website.jsp"
+			).setRedirect(
+				currentURL
+			).setParameter(
+				"className", className
+			).setParameter(
+				"classPK", classPK
+			).setParameter(
+				"primaryKey", websiteId
+			).buildString()
+		%>'
 	/>
 
 	<%
@@ -66,35 +63,33 @@ long websiteId = website.getWebsiteId();
 	).setParameter(
 		"className", className
 	).setParameter(
-		"classPK", String.valueOf(classPK)
+		"classPK", classPK
 	).setParameter(
 		"listType", ListTypeConstants.WEBSITE
 	).setParameter(
-		"primaryKey", String.valueOf(websiteId)
-	).build();
-
-	PortletURL makePrimaryURL = PortletURLBuilder.create(
-		PortletURLUtil.clone(portletURL, renderResponse)
-	).setParameter(
-		Constants.CMD, "makePrimary"
-	).build();
+		"primaryKey", websiteId
+	).buildPortletURL();
 	%>
 
 	<liferay-ui:icon
 		message="make-primary"
-		url="<%= makePrimaryURL.toString() %>"
+		url='<%=
+			PortletURLBuilder.create(
+				PortletURLUtil.clone(portletURL, renderResponse)
+			).setCMD(
+				"makePrimary"
+			).buildString()
+		%>'
 	/>
-
-	<%
-	PortletURL removeWebsiteURL = PortletURLBuilder.create(
-		PortletURLUtil.clone(portletURL, renderResponse)
-	).setParameter(
-		Constants.CMD, Constants.DELETE
-	).build();
-	%>
 
 	<liferay-ui:icon
 		message="remove"
-		url="<%= removeWebsiteURL.toString() %>"
+		url="<%=
+			PortletURLBuilder.create(
+				PortletURLUtil.clone(portletURL, renderResponse)
+			).setCMD(
+				Constants.DELETE
+			).buildString()
+		%>"
 	/>
 </liferay-ui:icon-menu>

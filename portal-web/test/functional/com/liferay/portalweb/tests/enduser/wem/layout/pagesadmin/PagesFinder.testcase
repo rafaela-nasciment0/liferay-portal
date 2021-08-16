@@ -53,7 +53,6 @@ definition {
 	@description = "This is the test for LPS-107774. Can create a Collection Page based on Collections or Collection Providers in Pages Tree panel."
 	@priority = "5"
 	test AddCollectionPageViaPageFinder {
-		property osgi.app.includes = "bookmarks,document-library-google-docs";
 		property portal.acceptance = "true";
 
 		task ("Add three Web Content Articles based on Basic Web Content") {
@@ -68,12 +67,13 @@ definition {
 		task ("Add a dynamic Collections and select Web Content Article as Asset Entry Type") {
 			JSONAssetlist.addDynamicAssetListEntryWithItemType(
 				groupName = "Test Site Name",
+				itemSubtype = "Basic Web Content",
 				itemType = "Web Content Article",
 				title = "Dynamic Collection");
 		}
 
 		task ("Add a Collection Page based on Dynamic Collection via Pages Tree Panel") {
-			SitePages.openPagesAdmin(siteURLKey = "test-site-name");
+			ApplicationsMenu.gotoSite(site = "Test Site Name");
 
 			PagesFinder.goToFindAPage();
 
@@ -210,6 +210,10 @@ definition {
 
 		PageEditor.clickPublish();
 
+		Click(locator1 = "ProductMenu#GO_TO_SITES_LINK");
+
+		PagesFinder.goToFindAPage();
+
 		PagesFinder.addPrivatePage(
 			pageName = "Private Widget Page",
 			sitePageType = "Widget Page");
@@ -259,6 +263,8 @@ definition {
 		}
 
 		task ("Configure page via Page Tree panel") {
+			Click(locator1 = "ProductMenu#GO_TO_SITES_LINK");
+
 			PagesFinder.goToFindAPage();
 
 			PagesFinder.gotoPageEllipsisItem(
@@ -273,9 +279,7 @@ definition {
 		task ("View the renamed page is shown in Pages admin") {
 			Click(locator1 = "Icon#ANGLE_LEFT_BACK");
 
-			AssertVisible(
-				key_itemName = "New Test Page Name",
-				locator1 = "SitePages#LIST_GROUP_ITEM");
+			ControlMenu.viewHeaderTitle(headerTitle = "New Test Page Name");
 		}
 
 		task ("View the renamed page is shown in Page Tree panel") {
@@ -360,6 +364,174 @@ definition {
 		}
 	}
 
+	@description = "This is a test for LPS-133709. The user can navigate to private and public pages defined in navigation menu via the Page Tree."
+	@priority = "4"
+	test NavigateToPrivateAndPublicPagesDefinedInNavigationMenuViaPageTree {
+		task ("Add a public content page") {
+			JSONLayout.addPublicLayout(
+				groupName = "Test Site Name",
+				layoutName = "Test Parent Page 1",
+				type = "content");
+
+			JSONLayout.publishLayout(
+				groupName = "Test Site Name",
+				layoutName = "Test Parent Page 1");
+		}
+
+		task ("Add a child widget page under content page") {
+			JSONLayout.addPublicLayout(
+				groupName = "Test Site Name",
+				layoutName = "Test Child Page 1",
+				parentPageName = "Test Parent Page 1");
+		}
+
+		task ("Add a private content page") {
+			JSONLayout.addPrivateLayout(
+				groupName = "Test Site Name",
+				layoutName = "Test Parent Page 2",
+				type = "content");
+
+			JSONLayout.publishLayout(
+				groupName = "Test Site Name",
+				layoutName = "Test Parent Page 2",
+				privateLayout = "true");
+		}
+
+		task ("Add a child widget page under content page") {
+			JSONLayout.addPrivateLayout(
+				groupName = "Test Site Name",
+				layoutName = "Test Child Page 2",
+				parentPageName = "Test Parent Page 2");
+		}
+
+		task ("Add a navigation menu") {
+			JSONSitenavigation.addSiteNavigationMenu(
+				groupName = "Test Site Name",
+				siteNavigationMenuName = "Navigation Menu Name");
+		}
+
+		task ("Add two content pages as parent page items to the navigation menu") {
+			JSONSitenavigation.addSiteNavigationMenuItem(
+				groupName = "Test Site Name",
+				privateLayout = "false",
+				siteNavigationMenuItemName = "Test Parent Page 1",
+				siteNavigationMenuName = "Navigation Menu Name",
+				type = "layout");
+
+			JSONSitenavigation.addSiteNavigationMenuItem(
+				groupName = "Test Site Name",
+				privateLayout = "true",
+				siteNavigationMenuItemName = "Test Parent Page 2",
+				siteNavigationMenuName = "Navigation Menu Name",
+				type = "layout");
+		}
+
+		task ("Add a child widget page item under each parent page item") {
+			JSONSitenavigation.addSiteNavigationMenuItem(
+				groupName = "Test Site Name",
+				parentSiteNavigationMenuItem = "Test Parent Page 1",
+				privateLayout = "false",
+				siteNavigationMenuItemName = "Test Child Page 1",
+				siteNavigationMenuName = "Navigation Menu Name",
+				type = "layout");
+
+			JSONSitenavigation.addSiteNavigationMenuItem(
+				groupName = "Test Site Name",
+				parentSiteNavigationMenuItem = "Test Parent Page 2",
+				privateLayout = "true",
+				siteNavigationMenuItemName = "Test Child Page 2",
+				siteNavigationMenuName = "Navigation Menu Name",
+				type = "layout");
+		}
+
+		task ("Select the navigation menu in page type selctor of Page Tree") {
+			Navigator.openSiteURL(siteName = "Test Site Name");
+
+			PagesFinder.goToFindAPage();
+
+			PagesFinder.selectPageType(optionValue = "Navigation Menu Name");
+		}
+
+		task ("Navigate to each page via Page Tree") {
+			for (var pageName : list "Test Parent Page 1,Test Parent Page 2,Test Child Page 1,Test Child Page 2") {
+				Portlet.expandTree();
+
+				PagesFinder.navigateToPage(pageName = "${pageName}");
+			}
+		}
+	}
+
+	@description = "This is a test for LPS-133709. The user can navigate to public pages defined in navigation menu via the Page Tree."
+	@priority = "4"
+	test NavigateToPublicPagesDefinedInNavigationMenuViaPageTree {
+		task ("Add two public widget pages") {
+			for (var n : list "1,2") {
+				JSONLayout.addPublicLayout(
+					groupName = "Test Site Name",
+					layoutName = "Test Parent Page ${n}");
+			}
+		}
+
+		task ("Add a child content page under each widget page") {
+			for (var n : list "1,2") {
+				JSONLayout.addPublicLayout(
+					groupName = "Test Site Name",
+					layoutName = "Test Child Page ${n}",
+					parentPageName = "Test Parent Page ${n}",
+					type = "content");
+
+				JSONLayout.publishLayout(
+					groupName = "Test Site Name",
+					layoutName = "Test Child Page ${n}");
+			}
+		}
+
+		task ("Add a navigation menu") {
+			JSONSitenavigation.addSiteNavigationMenu(
+				groupName = "Test Site Name",
+				siteNavigationMenuName = "Navigation Menu Name");
+		}
+
+		task ("Add two widget pages as parent page items to the navigation menu") {
+			for (var n : list "1,2") {
+				JSONSitenavigation.addSiteNavigationMenuItem(
+					groupName = "Test Site Name",
+					privateLayout = "false",
+					siteNavigationMenuItemName = "Test Parent Page ${n}",
+					siteNavigationMenuName = "Navigation Menu Name",
+					type = "layout");
+			}
+		}
+
+		task ("Add a child content page item under each parent page item") {
+			for (var n : list "1,2") {
+				JSONSitenavigation.addSiteNavigationMenuItem(
+					groupName = "Test Site Name",
+					parentSiteNavigationMenuItem = "Test Parent Page ${n}",
+					privateLayout = "false",
+					siteNavigationMenuItemName = "Test Child Page ${n}",
+					siteNavigationMenuName = "Navigation Menu Name",
+					type = "layout");
+			}
+		}
+
+		task ("Select the navigation menu in page type selctor of Page Tree") {
+			Navigator.openSiteURL(siteName = "Test Site Name");
+
+			PagesFinder.goToFindAPage();
+
+			PagesFinder.selectPageType(optionValue = "Navigation Menu Name");
+		}
+
+		task ("Navigate to each page via Page Tree") {
+			for (var pageName : list "Test Parent Page 1,Test Parent Page 2,Test Child Page 1,Test Child Page 2") {
+				Portlet.expandTree();
+
+				PagesFinder.navigateToPage(pageName = "${pageName}");
+			}
+		}
+	}
+
 	@description = "This is a test for LPS-116428. Can reorganize the pages via Page Tree panel."
 	@priority = "4"
 	test ReorganizePagesViaPageFinder {
@@ -401,7 +573,7 @@ definition {
 			DragAndDrop.dragAndDropReorganizeObjects(
 				locator1 = "//ul[contains(@class,'tree-container')]/li[contains(@class,'tree-node')][2][contains(.,'Test Content Page')]",
 				locator2 = "//ul[contains(@class,'tree-container')]/li[contains(@class,'tree-node')][1][contains(.,'Test Portlet Page')]",
-				position = "0,2");
+				position = "0,-4");
 		}
 
 		task ("Assert the order of Pages in Page Tree panel") {
@@ -506,6 +678,88 @@ definition {
 			AssertElementNotPresent(
 				key_pageName = "Test Content Page",
 				locator1 = "PagesFinder#PAGE_SEARCH_RESULT");
+		}
+	}
+
+	@description = "This is a test for LPS-133709. The user can switch site navigation menus via page type selector in Page Tree."
+	@priority = "4"
+	test SwitchNavigationMenusViaPageTypeSelector {
+		task ("Add two public pages") {
+			for (var n : list "1,2") {
+				JSONLayout.addPublicLayout(
+					groupName = "Test Site Name",
+					layoutName = "Test Public Page ${n}");
+			}
+		}
+
+		task ("Add two private pages") {
+			for (var n : list "1,2") {
+				JSONLayout.addPrivateLayout(
+					groupName = "Test Site Name",
+					layoutName = "Test Private Page ${n}");
+			}
+		}
+
+		task ("Add the first navigation menu") {
+			JSONSitenavigation.addSiteNavigationMenu(
+				groupName = "Test Site Name",
+				siteNavigationMenuName = "Navigation Menu Name 1");
+		}
+
+		task ("Add two public pages to the first navigation menu") {
+			for (var n : list "1,2") {
+				JSONSitenavigation.addSiteNavigationMenuItem(
+					groupName = "Test Site Name",
+					privateLayout = "false",
+					siteNavigationMenuItemName = "Test Public Page ${n}",
+					siteNavigationMenuName = "Navigation Menu Name 1",
+					type = "layout");
+			}
+		}
+
+		task ("Add the second navigation menu") {
+			JSONSitenavigation.addSiteNavigationMenu(
+				groupName = "Test Site Name",
+				siteNavigationMenuName = "Navigation Menu Name 2");
+		}
+
+		task ("Add two private pages to the second navigation menu") {
+			for (var n : list "1,2") {
+				JSONSitenavigation.addSiteNavigationMenuItem(
+					groupName = "Test Site Name",
+					privateLayout = "true",
+					siteNavigationMenuItemName = "Test Private Page ${n}",
+					siteNavigationMenuName = "Navigation Menu Name 2",
+					type = "layout");
+			}
+		}
+
+		task ("Select the first navigation menu in page type selctor of Page Tree") {
+			Navigator.openSiteURL(siteName = "Test Site Name");
+
+			PagesFinder.goToFindAPage();
+
+			PagesFinder.selectPageType(optionValue = "Navigation Menu Name 1");
+		}
+
+		task ("Navigate to each page via Page Tree") {
+			for (var pageName : list "Test Public Page 1,Test Public Page 2") {
+				PagesFinder.navigateToPage(pageName = "${pageName}");
+			}
+		}
+
+		task ("Select the second navigation menu in page type selctor of Page Tree") {
+			Navigator.openSiteURL(siteName = "Test Site Name");
+
+			PagesFinder.goToFindAPage();
+
+			PagesFinder.selectPageType(optionValue = "Navigation Menu Name 2");
+		}
+
+		task ("Navigate to each page via Page Tree") {
+			for (var pageName : list "Test Private Page 1,Test Private Page 2") {
+				PagesFinder.navigateToPage(pageName = "${pageName}");
+			}
 		}
 	}
 

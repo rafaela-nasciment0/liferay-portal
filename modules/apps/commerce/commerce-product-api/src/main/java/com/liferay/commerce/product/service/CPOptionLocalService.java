@@ -92,6 +92,13 @@ public interface CPOptionLocalService
 			boolean skuContributor, String key, ServiceContext serviceContext)
 		throws PortalException;
 
+	public CPOption addOrUpdateCPOption(
+			String externalReferenceCode, long userId,
+			Map<Locale, String> nameMap, Map<Locale, String> descriptionMap,
+			String ddmFormFieldTypeName, boolean facetable, boolean required,
+			boolean skuContributor, String key, ServiceContext serviceContext)
+		throws PortalException;
+
 	/**
 	 * Creates a new cp option with the primary key. Does not add the cp option to the database.
 	 *
@@ -147,6 +154,9 @@ public interface CPOptionLocalService
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public <T> T dslQuery(DSLQuery dslQuery);
+
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public int dslQueryCount(DSLQuery dslQuery);
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public DynamicQuery dynamicQuery();
@@ -377,13 +387,6 @@ public interface CPOptionLocalService
 	@Indexable(type = IndexableType.REINDEX)
 	public CPOption updateCPOptionExternalReferenceCode(
 			String externalReferenceCode, long cpOptionId)
-		throws PortalException;
-
-	public CPOption upsertCPOption(
-			String externalReferenceCode, long userId,
-			Map<Locale, String> nameMap, Map<Locale, String> descriptionMap,
-			String ddmFormFieldTypeName, boolean facetable, boolean required,
-			boolean skuContributor, String key, ServiceContext serviceContext)
 		throws PortalException;
 
 }

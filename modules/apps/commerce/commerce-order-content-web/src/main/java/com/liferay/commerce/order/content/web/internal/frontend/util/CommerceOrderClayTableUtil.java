@@ -31,7 +31,6 @@ import com.liferay.portal.kernel.portlet.PortletQName;
 import com.liferay.portal.kernel.portlet.PortletURLFactoryUtil;
 import com.liferay.portal.kernel.theme.PortletDisplay;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
-import com.liferay.portal.kernel.util.Constants;
 import com.liferay.portal.kernel.util.FastDateFormatFactoryUtil;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
@@ -77,12 +76,12 @@ public class CommerceOrderClayTableUtil {
 				themeDisplay.getPlid(), PortletRequest.ACTION_PHASE)
 		).setActionName(
 			"/commerce_open_order_content/edit_commerce_order"
+		).setCMD(
+			"setCurrent"
 		).setRedirect(
 			ParamUtil.getString(
 				httpServletRequest, "currentUrl",
 				PortalUtil.getCurrentURL(httpServletRequest))
-		).setParameter(
-			Constants.CMD, "setCurrent"
 		).setParameter(
 			"commerceOrderId", commerceOrderId
 		).buildString();
@@ -154,21 +153,21 @@ public class CommerceOrderClayTableUtil {
 			themeDisplay.getRequest(), portletDisplay.getId(),
 			themeDisplay.getPlid(), PortletRequest.RENDER_PHASE);
 
-		PortletURL backURL = PortletURLBuilder.create(
-			portletURL
-		).setParameter(
-			"itemsPerPage",
-			ParamUtil.getString(themeDisplay.getRequest(), "pageSize")
-		).setParameter(
-			"pageNumber", ParamUtil.getString(themeDisplay.getRequest(), "page")
-		).setParameter(
-			"tableName",
-			CommerceOrderDataSetConstants.COMMERCE_DATA_SET_KEY_PLACED_ORDERS
-		).build();
-
 		portletURL.setParameter(
 			PortletQName.PUBLIC_RENDER_PARAMETER_NAMESPACE + "backURL",
-			backURL.toString());
+			PortletURLBuilder.create(
+				portletURL
+			).setParameter(
+				"itemsPerPage",
+				ParamUtil.getString(themeDisplay.getRequest(), "pageSize")
+			).setParameter(
+				"pageNumber",
+				ParamUtil.getString(themeDisplay.getRequest(), "page")
+			).setParameter(
+				"tableName",
+				CommerceOrderDataSetConstants.
+					COMMERCE_DATA_SET_KEY_PLACED_ORDERS
+			).buildString());
 
 		portletURL.setParameter(
 			"mvcRenderCommandName",
@@ -192,7 +191,7 @@ public class CommerceOrderClayTableUtil {
 			"/commerce_order_content/view_commerce_order_shipments"
 		).setParameter(
 			"commerceOrderItemId", commerceOrderItemId
-		).build();
+		).buildPortletURL();
 
 		try {
 			portletURL.setWindowState(LiferayWindowState.POP_UP);

@@ -16,8 +16,6 @@ package com.liferay.jenkins.results.parser.testray;
 
 import com.liferay.jenkins.results.parser.JenkinsResultsParserUtil;
 
-import java.io.IOException;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -31,9 +29,16 @@ import java.util.regex.Pattern;
  */
 public class TestrayRun {
 
-	public TestrayRun(TestrayBuild testrayBuild, String batchName) {
+	public TestrayRun(
+		TestrayBuild testrayBuild, String batchName,
+		List<Properties> propertiesList) {
+
 		_testrayBuild = testrayBuild;
 		_batchName = batchName;
+
+		for (int i = propertiesList.size() - 1; i >= 0; i--) {
+			_properties.putAll(propertiesList.get(i));
+		}
 	}
 
 	public String getBatchName() {
@@ -99,29 +104,22 @@ public class TestrayRun {
 	}
 
 	private String _getFactorName(String factorNameKey) {
-		try {
-			return JenkinsResultsParserUtil.getBuildProperty(
-				JenkinsResultsParserUtil.combine(
-					_PROPERTY_KEY_FACTOR_NAME, "[", factorNameKey, "]"));
+		String factorName = JenkinsResultsParserUtil.getProperty(
+			_properties,
+			JenkinsResultsParserUtil.combine(
+				_PROPERTY_KEY_FACTOR_NAME, "[", factorNameKey, "]"));
+
+		if (!JenkinsResultsParserUtil.isNullOrEmpty(factorName)) {
+			return factorName;
 		}
-		catch (IOException ioException) {
-			throw new RuntimeException(ioException);
-		}
+
+		return null;
 	}
 
 	private Set<String> _getFactorNameKeys() {
 		Set<String> factorNameKeys = new TreeSet<>();
 
-		Properties buildProperties;
-
-		try {
-			buildProperties = JenkinsResultsParserUtil.getBuildProperties();
-		}
-		catch (IOException ioException) {
-			throw new RuntimeException(ioException);
-		}
-
-		for (String propertyName : buildProperties.stringPropertyNames()) {
+		for (String propertyName : _properties.stringPropertyNames()) {
 			Matcher matcher = _factorNamePattern.matcher(propertyName);
 
 			if (!matcher.find()) {
@@ -135,19 +133,10 @@ public class TestrayRun {
 	}
 
 	private String _getFactorValue(String factorNameKey) {
-		Properties buildProperties;
-
-		try {
-			buildProperties = JenkinsResultsParserUtil.getBuildProperties();
-		}
-		catch (IOException ioException) {
-			throw new RuntimeException(ioException);
-		}
-
 		String matchingValueKey = null;
 		String matchingPropertyName = null;
 
-		for (String propertyName : buildProperties.stringPropertyNames()) {
+		for (String propertyName : _properties.stringPropertyNames()) {
 			Matcher matcher = _factorValuePattern.matcher(propertyName);
 
 			if (!matcher.find()) {
@@ -176,13 +165,19 @@ public class TestrayRun {
 
 		if (!JenkinsResultsParserUtil.isNullOrEmpty(matchingPropertyName)) {
 			return JenkinsResultsParserUtil.getProperty(
-				buildProperties, matchingPropertyName);
+				_properties, matchingPropertyName);
 		}
 
-		return JenkinsResultsParserUtil.getProperty(
-			buildProperties,
+		String factorValue = JenkinsResultsParserUtil.getProperty(
+			_properties,
 			JenkinsResultsParserUtil.combine(
 				_PROPERTY_KEY_FACTOR_VALUE, "[", factorNameKey, "]"));
+
+		if (JenkinsResultsParserUtil.isNullOrEmpty(factorValue)) {
+			return null;
+		}
+
+		return factorValue;
 	}
 
 	private static final String _PROPERTY_KEY_FACTOR_NAME =
@@ -198,6 +193,7 @@ public class TestrayRun {
 			"\\[(?<nameKey>[^\\]]+)\\](\\[(?<valueKey>[^\\]]+)\\])?");
 
 	private final String _batchName;
+	private final Properties _properties = new Properties();
 	private final TestrayBuild _testrayBuild;
 
 }

@@ -249,6 +249,11 @@ public class FragmentEntryLinkUtil {
 				"icon", icon
 			).put(
 				"name", name
+			).put(
+				"portletId", portletId
+			).put(
+				"segmentsExperienceId",
+				String.valueOf(fragmentEntryLink.getSegmentsExperienceId())
 			);
 		}
 		finally {

@@ -3630,23 +3630,23 @@ public class KaleoLogPersistenceImpl
 		ServiceContext serviceContext =
 			ServiceContextThreadLocal.getServiceContext();
 
-		Date now = new Date();
+		Date date = new Date();
 
 		if (isNew && (kaleoLog.getCreateDate() == null)) {
 			if (serviceContext == null) {
-				kaleoLog.setCreateDate(now);
+				kaleoLog.setCreateDate(date);
 			}
 			else {
-				kaleoLog.setCreateDate(serviceContext.getCreateDate(now));
+				kaleoLog.setCreateDate(serviceContext.getCreateDate(date));
 			}
 		}
 
 		if (!kaleoLogModelImpl.hasSetModifiedDate()) {
 			if (serviceContext == null) {
-				kaleoLog.setModifiedDate(now);
+				kaleoLog.setModifiedDate(date);
 			}
 			else {
-				kaleoLog.setModifiedDate(serviceContext.getModifiedDate(now));
+				kaleoLog.setModifiedDate(serviceContext.getModifiedDate(date));
 			}
 		}
 
@@ -4210,6 +4210,13 @@ public class KaleoLogPersistenceImpl
 						kaleoLogModelImpl.getColumnBitmask(columnName);
 				}
 
+				if (finderPath.isBaseModelResult() &&
+					(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION ==
+						finderPath.getCacheName())) {
+
+					finderPathColumnBitmask |= _ORDER_BY_COLUMNS_BITMASK;
+				}
+
 				_finderPathColumnBitmasksCache.put(
 					finderPath, finderPathColumnBitmask);
 			}
@@ -4231,7 +4238,7 @@ public class KaleoLogPersistenceImpl
 			return KaleoLogTable.INSTANCE.getTableName();
 		}
 
-		private Object[] _getValue(
+		private static Object[] _getValue(
 			KaleoLogModelImpl kaleoLogModelImpl, String[] columnNames,
 			boolean original) {
 
@@ -4252,8 +4259,16 @@ public class KaleoLogPersistenceImpl
 			return arguments;
 		}
 
-		private static Map<FinderPath, Long> _finderPathColumnBitmasksCache =
-			new ConcurrentHashMap<>();
+		private static final Map<FinderPath, Long>
+			_finderPathColumnBitmasksCache = new ConcurrentHashMap<>();
+
+		private static final long _ORDER_BY_COLUMNS_BITMASK;
+
+		static {
+			long orderByColumnsBitmask = 0;
+
+			_ORDER_BY_COLUMNS_BITMASK = orderByColumnsBitmask;
+		}
 
 	}
 

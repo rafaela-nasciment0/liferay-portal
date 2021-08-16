@@ -15,11 +15,14 @@
 import PropTypes from 'prop-types';
 import React from 'react';
 
-import {VIEWPORT_SIZES} from '../../../../../../app/config/constants/viewportSizes';
+import {LAYOUT_DATA_ITEM_TYPES} from '../../../../../../app/config/constants/layoutDataItemTypes';
 import {config} from '../../../../../../app/config/index';
+import {
+	useDispatch,
+	useSelector,
+} from '../../../../../../app/contexts/StoreContext';
 import selectSegmentsExperienceId from '../../../../../../app/selectors/selectSegmentsExperienceId';
-import {useDispatch, useSelector} from '../../../../../../app/store/index';
-import updateItemConfig from '../../../../../../app/thunks/updateItemConfig';
+import updateItemStyle from '../../../../../../app/utils/updateItemStyle';
 import {FieldSet} from './FieldSet';
 
 export const CommonStyles = ({commonStylesValues, item}) => {
@@ -30,50 +33,44 @@ export const CommonStyles = ({commonStylesValues, item}) => {
 		(state) => state.selectedViewportSize
 	);
 
-	const onCommonStylesValueSelect = (name, value) => {
-		let itemConfig = {
-			styles: {
-				[name]: value,
-			},
-		};
+	let styles = commonStyles;
 
-		if (selectedViewportSize !== VIEWPORT_SIZES.desktop) {
-			itemConfig = {
-				[selectedViewportSize]: {
-					styles: {
-						[name]: value,
-					},
-				},
-			};
-		}
-
-		dispatch(
-			updateItemConfig({
-				itemConfig,
-				itemId: item.itemId,
-				segmentsExperienceId,
-			})
+	if (item.type === LAYOUT_DATA_ITEM_TYPES.collection) {
+		styles = styles.filter(
+			(fieldSet) =>
+				config.fragmentsHidingEnabled &&
+				fieldSet.styles.find((field) => field.name === 'display')
 		);
-	};
+	}
 
 	return (
-		<div className="page-editor__row-styles-panel__common-styles">
+		<>
 			<h1 className="sr-only">{Liferay.Language.get('common-styles')}</h1>
-
-			{commonStyles.map((fieldSet, index) => {
-				return (
-					<FieldSet
-						fields={fieldSet.styles}
-						item={item}
-						key={index}
-						label={fieldSet.label}
-						languageId={config.defaultLanguageId}
-						onValueSelect={onCommonStylesValueSelect}
-						values={commonStylesValues}
-					/>
-				);
-			})}
-		</div>
+			<div className="page-editor__row-styles-panel__common-styles">
+				{styles.map((fieldSet, index) => {
+					return (
+						<FieldSet
+							fields={fieldSet.styles}
+							item={item}
+							key={index}
+							label={fieldSet.label}
+							languageId={config.defaultLanguageId}
+							onValueSelect={(name, value) =>
+								updateItemStyle({
+									dispatch,
+									itemId: item.itemId,
+									segmentsExperienceId,
+									selectedViewportSize,
+									styleName: name,
+									styleValue: value,
+								})
+							}
+							values={commonStylesValues}
+						/>
+					);
+				})}
+			</div>
+		</>
 	);
 };
 

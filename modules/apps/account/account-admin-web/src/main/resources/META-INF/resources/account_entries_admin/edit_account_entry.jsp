@@ -29,7 +29,7 @@ AccountEntryDisplay accountEntryDisplay = (AccountEntryDisplay)request.getAttrib
 		).setMVCRenderCommandName(
 			"/account_admin/edit_account_entry"
 		).setParameter(
-			"accountEntryId", String.valueOf(accountEntryDisplay.getAccountEntryId())
-		).build()
+			"accountEntryId", accountEntryDisplay.getAccountEntryId()
+		).buildPortletURL()
 	%>'
 />

@@ -24,8 +24,6 @@ CPCatalogEntry cpCatalogEntry = cpContentHelper.getCPCatalogEntry(request);
 CPSku cpSku = cpContentHelper.getDefaultCPSku(cpCatalogEntry);
 
 long cpDefinitionId = cpCatalogEntry.getCPDefinitionId();
-
-String productContentAuthToken = AuthTokenUtil.getToken(request, plid, CPPortletKeys.CP_CONTENT_WEB);
 %>
 
 <div class="container-fluid product-detail" id="<portlet:namespace /><%= cpCatalogEntry.getCPDefinitionId() %>ProductContent">
@@ -40,8 +38,8 @@ String productContentAuthToken = AuthTokenUtil.getToken(request, plid, CPPortlet
 							for (CPMedia cpMedia : cpContentHelper.getImages(cpDefinitionId, themeDisplay)) {
 							%>
 
-								<div class="card thumb" data-url="<%= cpMedia.getUrl() %>">
-									<img class="center-block img-fluid" src="<%= cpMedia.getUrl() %>" />
+								<div class="card thumb" data-url="<%= HtmlUtil.escapeAttribute(cpMedia.getURL()) %>">
+									<img class="center-block img-fluid" src="<%= HtmlUtil.escapeAttribute(cpMedia.getURL()) %>" />
 								</div>
 
 							<%
@@ -53,7 +51,7 @@ String productContentAuthToken = AuthTokenUtil.getToken(request, plid, CPPortlet
 
 					<div class="col-10 col-lg-10 col-md-9 full-image">
 						<c:if test="<%= Validator.isNotNull(cpCatalogEntry.getDefaultImageFileUrl()) %>">
-							<img class="center-block img-fluid" id="<portlet:namespace />full-image" src="<%= cpCatalogEntry.getDefaultImageFileUrl() %>" />
+							<img class="center-block img-fluid" id="<portlet:namespace />full-image" src="<%= HtmlUtil.escapeAttribute(cpCatalogEntry.getDefaultImageFileUrl()) %>" />
 						</c:if>
 					</div>
 				</div>
@@ -70,11 +68,11 @@ String productContentAuthToken = AuthTokenUtil.getToken(request, plid, CPPortlet
 
 						<div class="subscription-info"><commerce-ui:product-subscription-info CPInstanceId="<%= cpSku.getCPInstanceId() %>" /></div>
 
-						<div class="availability"><%= cpContentHelper.getAvailabilityLabel(request) %></div>
+						<div class="availability"><%= HtmlUtil.escape(cpContentHelper.getAvailabilityLabel(request)) %></div>
 
-						<div class="availabilityEstimate"><%= cpContentHelper.getAvailabilityEstimateLabel(request) %></div>
+						<div class="availabilityEstimate"><%= HtmlUtil.escape(cpContentHelper.getAvailabilityEstimateLabel(request)) %></div>
 
-						<div class="stockQuantity"><%= cpContentHelper.getStockQuantityLabel(request) %></div>
+						<div class="stockQuantity"><%= HtmlUtil.escape(cpContentHelper.getStockQuantityLabel(request)) %></div>
 					</c:when>
 					<c:otherwise>
 						<h4 class="sku" data-text-cp-instance-sku=""></h4>
@@ -153,7 +151,7 @@ String productContentAuthToken = AuthTokenUtil.getToken(request, plid, CPPortlet
 
 				<div class="tab-content">
 					<div class="active tab-pane" id="<portlet:namespace />description">
-						<p><%= cpCatalogEntry.getDescription() %></p>
+						<p><%= HtmlUtil.escape(cpCatalogEntry.getDescription()) %></p>
 					</div>
 
 					<c:if test="<%= cpContentHelper.hasCPDefinitionSpecificationOptionValues(cpDefinitionId) %>">
@@ -189,7 +187,7 @@ String productContentAuthToken = AuthTokenUtil.getToken(request, plid, CPPortlet
 									<div class="table-responsive">
 										<table class="table table-bordered table-striped">
 											<tr>
-												<th><%= cpOptionCategory.getTitle(languageId) %></th>
+												<th><%= HtmlUtil.escape(cpOptionCategory.getTitle(languageId)) %></th>
 												<th></th>
 											</tr>
 
@@ -229,10 +227,10 @@ String productContentAuthToken = AuthTokenUtil.getToken(request, plid, CPPortlet
 
 										<tr>
 											<td>
-												<span><%= curCPMedia.getTitle() %></span>
+												<span><%= HtmlUtil.escape(curCPMedia.getTitle()) %></span>
 
 												<span>
-													<aui:icon cssClass="icon-monospaced" image="download" markupView="lexicon" target="_blank" url="<%= curCPMedia.getDownloadUrl() %>" />
+													<aui:icon cssClass="icon-monospaced" image="download" markupView="lexicon" target="_blank" url="<%= curCPMedia.getDownloadURL() %>" />
 												</span>
 											</td>
 										</tr>
@@ -279,7 +277,8 @@ String productContentAuthToken = AuthTokenUtil.getToken(request, plid, CPPortlet
 		cpDefinitionId: <%= cpDefinitionId %>,
 		fullImageSelector: '#<portlet:namespace />full-image',
 		namespace: '<portlet:namespace />',
-		productContentAuthToken: '<%= productContentAuthToken %>',
+		productContentAuthToken:
+			'<%= AuthTokenUtil.getToken(request, plid, CPPortletKeys.CP_CONTENT_WEB) %>',
 		productContentSelector:
 			'#<portlet:namespace /><%= cpDefinitionId %>ProductContent',
 		thumbsContainerSelector: '#<portlet:namespace />thumbs-container',

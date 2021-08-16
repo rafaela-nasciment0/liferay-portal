@@ -137,6 +137,10 @@ public class RemoteAppEntryLocalServiceUtil {
 		return getService().dslQuery(dslQuery);
 	}
 
+	public static int dslQueryCount(DSLQuery dslQuery) {
+		return getService().dslQueryCount(dslQuery);
+	}
+
 	public static DynamicQuery dynamicQuery() {
 		return getService().dynamicQuery();
 	}
@@ -324,20 +328,18 @@ public class RemoteAppEntryLocalServiceUtil {
 			uuid, companyId);
 	}
 
-	public static List<RemoteAppEntry> searchRemoteAppEntries(
+	public static List<RemoteAppEntry> search(
 			long companyId, String keywords, int start, int end,
 			com.liferay.portal.kernel.search.Sort sort)
 		throws PortalException {
 
-		return getService().searchRemoteAppEntries(
-			companyId, keywords, start, end, sort);
+		return getService().search(companyId, keywords, start, end, sort);
 	}
 
-	public static int searchRemoteAppEntriesCount(
-			long companyId, String keywords)
+	public static int searchCount(long companyId, String keywords)
 		throws PortalException {
 
-		return getService().searchRemoteAppEntriesCount(companyId, keywords);
+		return getService().searchCount(companyId, keywords);
 	}
 
 	public static RemoteAppEntry updateRemoteAppEntry(

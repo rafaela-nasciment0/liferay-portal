@@ -197,10 +197,10 @@ public class UsersManagementToolbarDisplayContext
 	public String getClearResultsURL() {
 		return PortletURLBuilder.create(
 			getPortletURL()
-		).setParameter(
-			"navigation", "all"
-		).setParameter(
-			"keywords", StringPool.BLANK
+		).setKeywords(
+			StringPool.BLANK
+		).setNavigation(
+			"all"
 		).setParameter(
 			"roleId", "0"
 		).buildString();
@@ -367,10 +367,10 @@ public class UsersManagementToolbarDisplayContext
 						"/view.jsp"
 					).setRedirect(
 						themeDisplay.getURLCurrent()
-					).setParameter(
-						"tabs1", "users"
-					).setParameter(
-						"navigation", "roles"
+					).setNavigation(
+						"roles"
+					).setTabs1(
+						"users"
 					).setParameter(
 						"groupId", _usersDisplayContext.getGroupId()
 					).buildString());
@@ -395,7 +395,7 @@ public class UsersManagementToolbarDisplayContext
 			mvcPath
 		).setParameter(
 			"groupId", _usersDisplayContext.getGroupId()
-		).build();
+		).buildPortletURL();
 
 		ThemeDisplay themeDisplay =
 			(ThemeDisplay)httpServletRequest.getAttribute(

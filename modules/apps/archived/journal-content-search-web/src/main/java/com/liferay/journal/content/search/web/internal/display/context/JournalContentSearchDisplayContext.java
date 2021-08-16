@@ -125,9 +125,9 @@ public class JournalContentSearchDisplayContext {
 			_liferayPortletResponse
 		).setMVCPath(
 			"/search.jsp"
-		).setParameter(
-			"keywords", getKeywords()
-		).build();
+		).setKeywords(
+			getKeywords()
+		).buildPortletURL();
 
 		String originalKeywords = ParamUtil.getString(
 			_httpServletRequest, "keywords", getKeywords());

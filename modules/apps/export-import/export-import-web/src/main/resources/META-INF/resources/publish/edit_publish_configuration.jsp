@@ -93,15 +93,15 @@ if (group.isStaged() && group.isStagedRemotely()) {
 
 PortletURL portletURL = PortletURLBuilder.createActionURL(
 	renderResponse
-).setMVCRenderCommandName(
-	"/export_import/publish_layouts"
 ).setActionName(
+	"/export_import/publish_layouts"
+).setMVCRenderCommandName(
 	"/export_import/publish_layouts"
 ).setParameter(
 	"closeRedirect", closeRedirect
 ).setParameter(
-	"stagingGroupId", String.valueOf(stagingGroupId)
-).build();
+	"stagingGroupId", stagingGroupId
+).buildPortletURL();
 
 PortletURL redirectURL = PortletURLBuilder.createRenderURL(
 	renderResponse
@@ -110,14 +110,14 @@ PortletURL redirectURL = PortletURLBuilder.createRenderURL(
 ).setParameter(
 	"closeRedirect", closeRedirect
 ).setParameter(
-	"groupId", String.valueOf(stagingGroupId)
+	"groupId", stagingGroupId
 ).setParameter(
-	"layoutSetBranchId", String.valueOf(layoutSetBranchId)
+	"layoutSetBranchId", layoutSetBranchId
 ).setParameter(
 	"layoutSetBranchName", layoutSetBranchName
 ).setParameter(
-	"privateLayout", String.valueOf(privateLayout)
-).build();
+	"privateLayout", privateLayout
+).buildPortletURL();
 
 response.setHeader("Ajax-ID", request.getHeader("Ajax-ID"));
 %>
@@ -166,9 +166,7 @@ response.setHeader("Ajax-ID", request.getHeader("Ajax-ID"));
 			<ul>
 
 				<%
-				List<Tuple> missingLayoutPrototypes = lpe.getMissingLayoutPrototypes();
-
-				for (Tuple missingLayoutPrototype : missingLayoutPrototypes) {
+				for (Tuple missingLayoutPrototype : lpe.getMissingLayoutPrototypes()) {
 					String layoutPrototypeClassName = (String)missingLayoutPrototype.getObject(0);
 					String layoutPrototypeUuid = (String)missingLayoutPrototype.getObject(1);
 					String layoutPrototypeName = (String)missingLayoutPrototype.getObject(2);

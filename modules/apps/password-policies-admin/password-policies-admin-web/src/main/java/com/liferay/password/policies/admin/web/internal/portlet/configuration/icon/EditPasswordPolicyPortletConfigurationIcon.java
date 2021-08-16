@@ -64,10 +64,10 @@ public class EditPasswordPolicyPortletConfigurationIcon
 				PortletRequest.RENDER_PHASE)
 		).setMVCPath(
 			"/edit_password_policy.jsp"
+		).setTabs1(
+			"details"
 		).setParameter(
 			"passwordPolicyId", _getPasswordPolicyId(portletRequest)
-		).setParameter(
-			"tabs1", "details"
 		).buildString();
 	}
 

@@ -55,9 +55,13 @@ import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Layout;
+import com.liferay.portal.kernel.model.Role;
 import com.liferay.portal.kernel.model.User;
+import com.liferay.portal.kernel.model.role.RoleConstants;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.service.GroupLocalService;
+import com.liferay.portal.kernel.service.RoleLocalService;
+import com.liferay.portal.kernel.service.UserLocalService;
 import com.liferay.portal.kernel.service.WorkflowDefinitionLinkLocalService;
 import com.liferay.portal.kernel.service.permission.PortletPermissionUtil;
 import com.liferay.portal.kernel.servlet.SessionErrors;
@@ -100,7 +104,6 @@ import javax.servlet.http.HttpServletRequest;
 public class DDMFormDisplayContext {
 
 	public DDMFormDisplayContext(
-		RenderRequest renderRequest, RenderResponse renderResponse,
 		DDMFormFieldTypeServicesTracker ddmFormFieldTypeServicesTracker,
 		DDMFormInstanceLocalService ddmFormInstanceLocalService,
 		DDMFormInstanceRecordLocalService ddmFormInstanceRecordLocalService,
@@ -114,11 +117,11 @@ public class DDMFormDisplayContext {
 		DDMFormWebConfiguration ddmFormWebConfiguration,
 		DDMStorageAdapterTracker ddmStorageAdapterTracker,
 		GroupLocalService groupLocalService, JSONFactory jsonFactory,
-		WorkflowDefinitionLinkLocalService workflowDefinitionLinkLocalService,
-		Portal portal) {
+		Portal portal, RenderRequest renderRequest,
+		RenderResponse renderResponse, RoleLocalService roleLocalService,
+		UserLocalService userLocalService,
+		WorkflowDefinitionLinkLocalService workflowDefinitionLinkLocalService) {
 
-		_renderRequest = renderRequest;
-		_renderResponse = renderResponse;
 		_ddmFormFieldTypeServicesTracker = ddmFormFieldTypeServicesTracker;
 		_ddmFormInstanceLocalService = ddmFormInstanceLocalService;
 		_ddmFormInstanceRecordLocalService = ddmFormInstanceRecordLocalService;
@@ -134,9 +137,13 @@ public class DDMFormDisplayContext {
 		_ddmStorageAdapterTracker = ddmStorageAdapterTracker;
 		_groupLocalService = groupLocalService;
 		_jsonFactory = jsonFactory;
+		_portal = portal;
+		_renderRequest = renderRequest;
+		_renderResponse = renderResponse;
+		_roleLocalService = roleLocalService;
+		_userLocalService = userLocalService;
 		_workflowDefinitionLinkLocalService =
 			workflowDefinitionLinkLocalService;
-		_portal = portal;
 
 		_containerId = "ddmForm".concat(StringUtil.randomString());
 
@@ -161,7 +168,7 @@ public class DDMFormDisplayContext {
 	public String[] getAvailableLanguageIds() throws PortalException {
 		ThemeDisplay themeDisplay = getThemeDisplay();
 
-		Set<Locale> siteAvailablesLocales = LanguageUtil.getAvailableLocales(
+		Set<Locale> siteAvailableLocales = LanguageUtil.getAvailableLocales(
 			themeDisplay.getSiteGroupId());
 
 		DDMForm ddmForm = getDDMForm();
@@ -171,7 +178,7 @@ public class DDMFormDisplayContext {
 		Stream<Locale> availableLocalesStream = availableLocales.stream();
 
 		return availableLocalesStream.filter(
-			locale -> siteAvailablesLocales.contains(locale)
+			locale -> siteAvailableLocales.contains(locale)
 		).map(
 			locale -> LanguageUtil.getLanguageId(locale)
 		).toArray(
@@ -223,6 +230,8 @@ public class DDMFormDisplayContext {
 		DDMFormRenderingContext ddmFormRenderingContext =
 			createDDMFormRenderingContext(ddmForm);
 
+		ddmFormRenderingContext.setDDMFormInstanceId(
+			ddmFormInstance.getFormInstanceId());
 		ddmFormRenderingContext.setGroupId(ddmFormInstance.getGroupId());
 
 		DDMFormInstanceRecordVersion ddmFormInstanceRecordVersion = null;
@@ -509,10 +518,15 @@ public class DDMFormDisplayContext {
 			if ((group != null) && group.isStagedRemotely()) {
 				ThemeDisplay themeDisplay = getThemeDisplay();
 
+				Role role = _roleLocalService.getRole(
+					themeDisplay.getCompanyId(), RoleConstants.ADMINISTRATOR);
+
+				List<User> users = _userLocalService.getRoleUsers(
+					role.getRoleId());
+
 				if (!DDMFormInstanceStagingUtil.
 						isFormInstancePublishedToRemoteLive(
-							group, themeDisplay.getUser(),
-							formInstance.getUuid())) {
+							group, users.get(0), formInstance.getUuid())) {
 
 					return false;
 				}
@@ -625,7 +639,8 @@ public class DDMFormDisplayContext {
 
 	public boolean isShowSuccessPage() throws PortalException {
 		if (!SessionErrors.isEmpty(_renderRequest) ||
-			SessionMessages.isEmpty(_renderRequest)) {
+			SessionMessages.isEmpty(_renderRequest) ||
+			Validator.isNotNull(getRedirectURL())) {
 
 			return false;
 		}
@@ -969,7 +984,9 @@ public class DDMFormDisplayContext {
 	private final Portal _portal;
 	private final RenderRequest _renderRequest;
 	private final RenderResponse _renderResponse;
+	private final RoleLocalService _roleLocalService;
 	private Boolean _showConfigurationIcon;
+	private final UserLocalService _userLocalService;
 	private final WorkflowDefinitionLinkLocalService
 		_workflowDefinitionLinkLocalService;
 

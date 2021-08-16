@@ -15,6 +15,8 @@
 package com.liferay.headless.commerce.delivery.catalog.internal.resource.v1_0;
 
 import com.liferay.commerce.account.exception.NoSuchAccountException;
+import com.liferay.commerce.account.model.CommerceAccount;
+import com.liferay.commerce.account.service.CommerceAccountLocalService;
 import com.liferay.commerce.account.util.CommerceAccountHelper;
 import com.liferay.commerce.context.CommerceContext;
 import com.liferay.commerce.context.CommerceContextFactory;
@@ -64,15 +66,15 @@ public class SkuResourceImpl
 			Long accountId, Pagination pagination)
 		throws Exception {
 
-		CommerceChannel commerceChannel =
-			_commerceChannelLocalService.getCommerceChannel(channelId);
-
 		CPDefinition cpDefinition =
 			_cpDefinitionLocalService.fetchCPDefinitionByCProductId(productId);
 
 		if (cpDefinition == null) {
 			throw new NoSuchCProductException();
 		}
+
+		CommerceChannel commerceChannel =
+			_commerceChannelLocalService.getCommerceChannel(channelId);
 
 		int countUserCommerceAccounts =
 			_commerceAccountHelper.countUserCommerceAccounts(
@@ -87,6 +89,16 @@ public class SkuResourceImpl
 			long[] commerceAccountIds =
 				_commerceAccountHelper.getUserCommerceAccountIds(
 					contextUser.getUserId(), commerceChannel.getGroupId());
+
+			if (commerceAccountIds.length == 0) {
+				CommerceAccount commerceAccount =
+					_commerceAccountLocalService.getGuestCommerceAccount(
+						contextUser.getCompanyId());
+
+				commerceAccountIds = new long[] {
+					commerceAccount.getCommerceAccountId()
+				};
+			}
 
 			accountId = commerceAccountIds[0];
 		}
@@ -119,8 +131,6 @@ public class SkuResourceImpl
 		CommerceChannel commerceChannel =
 			_commerceChannelLocalService.getCommerceChannel(channelId);
 
-		List<Sku> skus = new ArrayList<>();
-
 		int countUserCommerceAccounts =
 			_commerceAccountHelper.countUserCommerceAccounts(
 				contextUser.getUserId(), commerceChannel.getGroupId());
@@ -141,10 +151,22 @@ public class SkuResourceImpl
 				_commerceAccountHelper.getUserCommerceAccountIds(
 					contextUser.getUserId(), commerceChannel.getGroupId());
 
+			if (commerceAccountIds.length == 0) {
+				CommerceAccount commerceAccount =
+					_commerceAccountLocalService.getGuestCommerceAccount(
+						contextUser.getCompanyId());
+
+				commerceAccountIds = new long[] {
+					commerceAccount.getCommerceAccountId()
+				};
+			}
+
 			commerceContext = _commerceContextFactory.create(
 				contextCompany.getCompanyId(), commerceChannel.getGroupId(),
 				contextUser.getUserId(), 0, commerceAccountIds[0]);
 		}
+
+		List<Sku> skus = new ArrayList<>();
 
 		for (CPInstance cpInstance : cpInstances) {
 			skus.add(
@@ -160,6 +182,9 @@ public class SkuResourceImpl
 
 	@Reference
 	private CommerceAccountHelper _commerceAccountHelper;
+
+	@Reference
+	private CommerceAccountLocalService _commerceAccountLocalService;
 
 	@Reference
 	private CommerceChannelLocalService _commerceChannelLocalService;

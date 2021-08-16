@@ -14,14 +14,14 @@
 
 package com.liferay.taglib.aui;
 
+import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.model.Portlet;
+import com.liferay.portal.kernel.servlet.FileAvailabilityUtil;
 import com.liferay.portal.kernel.servlet.taglib.BodyContentWrapper;
 import com.liferay.portal.kernel.servlet.taglib.aui.ScriptData;
-import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.WebKeys;
-import com.liferay.taglib.FileAvailabilityUtil;
 import com.liferay.taglib.aui.base.BaseScriptTag;
 import com.liferay.taglib.util.PortalIncludeUtil;
 
@@ -114,8 +114,6 @@ public class ScriptTag extends BaseScriptTag {
 				portletId = portlet.getPortletId();
 			}
 
-			StringBundler bodyContentSB = getBodyContentAsStringBundler();
-
 			String load = getLoad();
 			String require = getRequire();
 			String use = getUse();
@@ -125,6 +123,8 @@ public class ScriptTag extends BaseScriptTag {
 					"Attribute \"use\" cannot be used with \"load\" or " +
 						"\"require\"");
 			}
+
+			StringBundler bodyContentSB = getBodyContentAsStringBundler();
 
 			if (getSandbox() || (require != null) || (use != null)) {
 				StringBundler sb = new StringBundler(4);

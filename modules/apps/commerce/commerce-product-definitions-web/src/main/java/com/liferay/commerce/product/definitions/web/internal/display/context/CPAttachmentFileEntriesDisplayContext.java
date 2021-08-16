@@ -52,7 +52,6 @@ import java.util.Map;
 import javax.portlet.PortletURL;
 import javax.portlet.RenderRequest;
 import javax.portlet.RenderResponse;
-import javax.portlet.RenderURL;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.jsp.PageContext;
@@ -141,20 +140,20 @@ public class CPAttachmentFileEntriesDisplayContext
 	}
 
 	public CreationMenu getCreationMenu(int type) throws Exception {
-		RenderURL portletURL = liferayPortletResponse.createRenderURL();
-
-		portletURL.setParameter(
-			"mvcRenderCommandName",
-			"/cp_definitions/edit_cp_attachment_file_entry");
-		portletURL.setParameter(
-			"cpDefinitionId", String.valueOf(getCPDefinitionId()));
-		portletURL.setParameter("type", String.valueOf(type));
-
-		portletURL.setWindowState(LiferayWindowState.POP_UP);
-
 		return CreationMenuBuilder.addDropdownItem(
 			dropdownItem -> {
-				dropdownItem.setHref(portletURL.toString());
+				dropdownItem.setHref(
+					PortletURLBuilder.createRenderURL(
+						liferayPortletResponse
+					).setMVCRenderCommandName(
+						"/cp_definitions/edit_cp_attachment_file_entry"
+					).setParameter(
+						"cpDefinitionId", getCPDefinitionId()
+					).setParameter(
+						"type", type
+					).setWindowState(
+						LiferayWindowState.POP_UP
+					).buildString());
 				dropdownItem.setLabel(_getTypeLabel(type));
 				dropdownItem.setTarget("sidePanel");
 			}
@@ -174,7 +173,7 @@ public class CPAttachmentFileEntriesDisplayContext
 		CPAttachmentFileEntry cpAttachmentFileEntry =
 			getCPAttachmentFileEntry();
 
-		FileEntry fileEntry = cpAttachmentFileEntry.getFileEntry();
+		FileEntry fileEntry = cpAttachmentFileEntry.fetchFileEntry();
 
 		if (fileEntry == null) {
 			return StringPool.BLANK;
@@ -218,7 +217,7 @@ public class CPAttachmentFileEntriesDisplayContext
 			"/cp_definitions/edit_cp_definition"
 		).setParameter(
 			"screenNavigationCategoryKey", getScreenNavigationCategoryKey()
-		).build();
+		).buildPortletURL();
 	}
 
 	@Override

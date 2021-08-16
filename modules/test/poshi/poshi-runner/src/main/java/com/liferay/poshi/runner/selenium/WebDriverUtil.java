@@ -31,6 +31,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.openqa.selenium.MutableCapabilities;
+import org.openqa.selenium.UnexpectedAlertBehaviour;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
@@ -232,9 +233,7 @@ public class WebDriverUtil extends PropsValues {
 	}
 
 	private WebDriver _getSafariDriver() {
-		SafariOptions safariOptions = new SafariOptions();
-
-		_setGenericCapabilities(safariOptions);
+		_setGenericCapabilities(new SafariOptions());
 
 		return new SafariDriver();
 	}
@@ -331,10 +330,17 @@ public class WebDriverUtil extends PropsValues {
 		new HashMap<String, Object>() {
 			{
 				if (PropsValues.PROXY_SERVER_ENABLED) {
+					put(CapabilityType.ACCEPT_INSECURE_CERTS, true);
+					put(CapabilityType.ACCEPT_SSL_CERTS, true);
 					put(CapabilityType.PROXY, ProxyUtil.getSeleniumProxy());
 				}
+
+				put(
+					CapabilityType.UNEXPECTED_ALERT_BEHAVIOUR,
+					UnexpectedAlertBehaviour.IGNORE);
 			}
 		};
+
 	private static final WebDriverUtil _webDriverUtil = new WebDriverUtil();
 
 	static {

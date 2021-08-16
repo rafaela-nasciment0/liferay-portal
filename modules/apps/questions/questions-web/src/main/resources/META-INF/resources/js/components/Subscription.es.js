@@ -12,20 +12,16 @@
  * details.
  */
 
-import {useMutation} from '@apollo/client';
 import ClayButton from '@clayui/button';
 import ClayIcon from '@clayui/icon';
+import {useMutation} from 'graphql-hooks';
 import React, {useEffect, useState} from 'react';
 
-import {
-	getThreadQuery,
-	subscribeQuery,
-	unsubscribeQuery,
-} from '../utils/client.es';
+import {subscribeQuery, unsubscribeQuery} from '../utils/client.es';
 
 export default ({
-	question: {friendlyUrlPath, id: messageBoardThreadId, subscribed},
-	siteKey,
+	onSubscription,
+	question: {id: messageBoardThreadId, subscribed},
 }) => {
 	const [subscription, setSubscription] = useState(false);
 
@@ -33,49 +29,15 @@ export default ({
 		setSubscription(subscribed);
 	}, [subscribed]);
 
-	const onCompleted = () => {
-		setSubscription(!subscription);
-	};
-
-	const update = (cache) => {
-		var question = cache.readQuery({
-			query: getThreadQuery,
-			variables: {
-				friendlyUrlPath,
-				siteKey,
-			},
-		});
-
-		const newQuestion = {
-			messageBoardThreadByFriendlyUrlPath: {
-				...question.messageBoardThreadByFriendlyUrlPath,
-				subscribed: !subscription,
-			},
-		};
-
-		cache.writeQuery({
-			context: {
-				uri: '/o/graphql?nestedFields=lastPostDate',
-			},
-			data: {...newQuestion},
-			query: getThreadQuery,
-			variables: {
-				friendlyUrlPath,
-				siteKey,
-			},
-		});
-	};
-
-	const [subscribe] = useMutation(subscribeQuery, {onCompleted, update});
-	const [unsubscribe] = useMutation(unsubscribeQuery, {onCompleted, update});
+	const [subscribe] = useMutation(subscribeQuery);
+	const [unsubscribe] = useMutation(unsubscribeQuery);
 
 	const changeSubscription = () => {
-		if (subscription) {
-			unsubscribe({variables: {messageBoardThreadId}});
-		}
-		else {
-			subscribe({variables: {messageBoardThreadId}});
-		}
+		const fn = subscription ? unsubscribe : subscribe;
+		fn({variables: {messageBoardThreadId}}).then((_) => {
+			setSubscription(!subscription);
+			onSubscription?.();
+		});
 	};
 
 	return (

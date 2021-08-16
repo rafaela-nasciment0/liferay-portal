@@ -81,7 +81,7 @@ public class ViewAccountOrganizationsManagementToolbarDisplayContext
 					).setActionName(
 						"/account_admin/remove_account_organizations"
 					).setRedirect(
-						currentURLObj.toString()
+						currentURLObj
 					).buildString());
 
 				dropdownItem.setIcon("times-circle");
@@ -97,8 +97,8 @@ public class ViewAccountOrganizationsManagementToolbarDisplayContext
 	public String getClearResultsURL() {
 		return PortletURLBuilder.create(
 			getPortletURL()
-		).setParameter(
-			"keywords", StringPool.BLANK
+		).setKeywords(
+			StringPool.BLANK
 		).buildString();
 	}
 
@@ -117,18 +117,15 @@ public class ViewAccountOrganizationsManagementToolbarDisplayContext
 						"accountEntryName", accountEntry.getName());
 				}
 
-				PortletURL assignAccountOrganizationsURL =
+				dropdownItem.putData(
+					"assignAccountOrganizationsURL",
 					PortletURLBuilder.createActionURL(
 						liferayPortletResponse
 					).setActionName(
 						"/account_admin/assign_account_organizations"
 					).setRedirect(
-						currentURLObj.toString()
-					).build();
-
-				dropdownItem.putData(
-					"assignAccountOrganizationsURL",
-					assignAccountOrganizationsURL.toString());
+						currentURLObj
+					).buildString());
 
 				dropdownItem.putData(
 					"selectAccountOrganizationsURL",

@@ -312,7 +312,7 @@ public class CartResourceImpl extends BaseCartResourceImpl {
 				cartItem.getSkuId());
 		}
 
-		_commerceOrderItemService.upsertCommerceOrderItem(
+		_commerceOrderItemService.addOrUpdateCommerceOrderItem(
 			commerceOrder.getCommerceOrderId(), cpInstance.getCPInstanceId(),
 			cartItem.getOptions(), GetterUtil.get(cartItem.getQuantity(), 1), 0,
 			commerceContext, serviceContext);
@@ -338,6 +338,9 @@ public class CartResourceImpl extends BaseCartResourceImpl {
 				_addOrUpdateCommerceOrderItem(
 					cartItem, commerceOrder, commerceContext, serviceContext);
 			}
+
+			commerceOrder = _commerceOrderService.recalculatePrice(
+				commerceOrder.getCommerceOrderId(), commerceContext);
 		}
 
 		commerceOrder.setBillingAddressId(
@@ -379,13 +382,13 @@ public class CartResourceImpl extends BaseCartResourceImpl {
 
 			// Billing Address
 
-			type = CommerceAddressConstants.ADDRESS_TYPE_BILLING;
 			Address billingAddress = cart.getBillingAddress();
 
 			if (billingAddress != null) {
 				_addOrUpdateBillingAddress(
-					commerceOrder, billingAddress, type, commerceContext,
-					serviceContext);
+					commerceOrder, billingAddress,
+					CommerceAddressConstants.ADDRESS_TYPE_BILLING,
+					commerceContext, serviceContext);
 			}
 		}
 	}

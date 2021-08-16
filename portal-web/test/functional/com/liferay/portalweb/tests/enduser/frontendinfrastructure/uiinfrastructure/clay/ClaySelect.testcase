@@ -1,6 +1,7 @@
 @component-name = "portal-frontend-infrastructure"
 definition {
 
+	property osgi.modules.includes = "frontend-taglib-clay-sample-web";
 	property portal.release = "true";
 	property portal.upstream = "true";
 	property testray.component.names = "Clay";
@@ -36,8 +37,10 @@ definition {
 		}
 	}
 
+	@description = "Verify clay multiple select API options can be configured"
 	@priority = "5"
-	test SmokeMultipleSelect {
+	@refactorneeded
+	test MultipleCanBeConfigured {
 		Navigator.gotoNavTab(navTab = "Form Elements");
 
 		AssertEditable(
@@ -65,8 +68,10 @@ definition {
 			locator1 = "ClaySamplePortlet#SELECTOR");
 	}
 
+	@description = "Verify clay regular select API options can be configured"
 	@priority = "5"
-	test SmokeRegularSelect {
+	@refactorneeded
+	test RegularCanBeConfigured {
 		Navigator.gotoNavTab(navTab = "Form Elements");
 
 		ScrollWebElementIntoView(
@@ -77,14 +82,10 @@ definition {
 			key_label = "Regular Select Element",
 			locator1 = "ClaySamplePortlet#SELECTOR");
 
-		Click(
+		Select(
 			key_label = "Regular Select Element",
-			key_option = "Sample 1",
-			locator1 = "ClaySamplePortlet#SELECTOR_OPTION");
-
-		Click(
-			key_label = "Regular Select Element",
-			locator1 = "ClaySamplePortlet#SELECTOR");
+			locator1 = "ClaySamplePortlet#SELECTOR",
+			value1 = "Sample 1");
 
 		takeScreenshot();
 

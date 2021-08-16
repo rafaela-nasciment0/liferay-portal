@@ -94,8 +94,8 @@ public class ViewOrganizationsManagementToolbarDisplayContext {
 	public String getClearResultsURL() {
 		return PortletURLBuilder.create(
 			getPortletURL()
-		).setParameter(
-			"keywords", StringPool.BLANK
+		).setKeywords(
+			StringPool.BLANK
 		).buildString();
 	}
 
@@ -155,7 +155,7 @@ public class ViewOrganizationsManagementToolbarDisplayContext {
 				"orderByCol", getOrderByCol()
 			).setParameter(
 				"orderByType", getOrderByType()
-			).build();
+			).buildPortletURL();
 		}
 		catch (Exception exception) {
 			if (_log.isWarnEnabled()) {

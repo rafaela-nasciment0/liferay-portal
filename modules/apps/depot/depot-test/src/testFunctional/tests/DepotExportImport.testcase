@@ -32,6 +32,7 @@ definition {
 
 	@description = "This ensures that the user can import the asset library lar to an asset library."
 	@priority = "5"
+	@refactorneeded
 	test ImportDepotLARToDepot {
 		DepotNavigator.openDepotWebContentAdmin(depotName = "Test Depot Name");
 
@@ -109,8 +110,10 @@ definition {
 			numericValue = "1234",
 			textContent = "Text");
 
-		JSONAssetlist.addManualAssetListEntry(
+		JSONAssetlist.addManualAssetListEntryWithItemType(
 			groupName = "Test Depot Name",
+			itemSubtype = "DM Document Type Name",
+			itemType = "Document",
 			site = "false",
 			title = "Depot Manual Asset List");
 
@@ -125,9 +128,7 @@ definition {
 		AssetListsAdmin.selectAsset(
 			assetListName = "Depot Manual Asset List",
 			assetName = "DM Document Title",
-			assetType = "DM Document Type Name",
-			itemSubtype = "DM Document Type Name",
-			itemType = "Document");
+			assetType = "DM Document Type Name");
 
 		DepotNavigator.openDepotAdmin();
 
@@ -195,6 +196,7 @@ definition {
 
 	@description = "This ensures that the user can import the asset library lar to a site."
 	@priority = "5"
+	@refactorneeded
 	test ImportDepotLARToSite {
 		JSONWebcontent.addWebContent(
 			content = "WC WebContent Content",
@@ -265,6 +267,7 @@ definition {
 
 	@description = "This ensures that the user can import the site lar to an asset library."
 	@priority = "5"
+	@refactorneeded
 	test ImportSiteLARToDepot {
 		JSONGroup.addGroup(groupName = "Site Name");
 

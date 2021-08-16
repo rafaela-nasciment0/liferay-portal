@@ -32,6 +32,7 @@ definition {
 
 	@description = "This ensures that the expired entries can be removed automatically in the recycle bin."
 	@priority = "5"
+	@refactorneeded
 	test CheckExpiredEntries {
 		property custom.properties = "trash.entry.check.interval=1${line.separator}trash.entries.max.age=1";
 
@@ -85,6 +86,7 @@ definition {
 
 	@description = "This ensures that the document can be deleted after the recycle bin is disabled."
 	@priority = "5"
+	@refactorneeded
 	test DeleteDocumentAfterDisabling {
 		JSONDocument.addFile(
 			dmDocumentDescription = "DM Document Description",
@@ -112,6 +114,7 @@ definition {
 
 	@description = "This ensures that the web content can be deleted after the recycle bin is disabled."
 	@priority = "5"
+	@refactorneeded
 	test DeleteWCAfterDisabling {
 		DepotNavigator.openDepotAdmin();
 
@@ -123,13 +126,7 @@ definition {
 			site = "false",
 			title = "WC WebContent Title");
 
-		DepotNavigator.openDepotAdmin();
-
-		DepotNavigator.gotoDepotPortlet(
-			depotName = "Test Depot Name",
-			portlet = "Settings");
-
-		Navigator.gotoNavTab(navTab = "General");
+		DepotNavigator.openDepotSettingsGeneral(depotName = "Test Depot Name");
 
 		Depot.configureRecycleBin(recycleBin = "Disabled");
 
@@ -144,6 +141,7 @@ definition {
 
 	@description = "This ensures that the documents can be restored from recycle bin."
 	@priority = "5"
+	@refactorneeded
 	test RestoreDocuments {
 		DepotNavigator.openDepotDocumentsAndMediaAdmin(depotName = "Test Depot Name");
 
@@ -189,6 +187,7 @@ definition {
 
 	@description = "This ensures that the web content can be restored from recycle bin."
 	@priority = "5"
+	@refactorneeded
 	test RestoreWebContent {
 		property portal.acceptance = "true";
 

@@ -105,8 +105,8 @@ public class EditPasswordPolicyAssignmentsManagementToolbarDisplayContext {
 	public String getClearResultsURL() {
 		return PortletURLBuilder.create(
 			getPortletURL()
-		).setParameter(
-			"keywords", StringPool.BLANK
+		).setKeywords(
+			StringPool.BLANK
 		).buildString();
 	}
 
@@ -216,22 +216,27 @@ public class EditPasswordPolicyAssignmentsManagementToolbarDisplayContext {
 			_mvcPath
 		).setRedirect(
 			ParamUtil.getString(_httpServletRequest, "redirect")
-		).setParameter(
-			"tabs1", "assignees"
-		).setParameter(
-			"tabs2", getTabs2()
-		).setParameter(
-			"passwordPolicyId", _passwordPolicy.getPasswordPolicyId()
+		).setKeywords(
+			() -> {
+				if (Validator.isNotNull(getKeywords())) {
+					return getKeywords();
+				}
+
+				return null;
+			}
+		).setTabs1(
+			"assignees"
+		).setTabs2(
+			getTabs2()
 		).setParameter(
 			"displayStyle", _displayStyle
-		).build();
-
-		if (Validator.isNotNull(getKeywords())) {
-			portletURL.setParameter("keywords", getKeywords());
-		}
-
-		portletURL.setParameter("orderByCol", getOrderByCol());
-		portletURL.setParameter("orderByType", getOrderByType());
+		).setParameter(
+			"orderByCol", getOrderByCol()
+		).setParameter(
+			"orderByType", getOrderByType()
+		).setParameter(
+			"passwordPolicyId", _passwordPolicy.getPasswordPolicyId()
+		).buildPortletURL();
 
 		if (_searchContainer != null) {
 			portletURL.setParameter(

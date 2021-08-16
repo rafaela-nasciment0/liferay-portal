@@ -3,7 +3,7 @@ definition {
 
 	property portal.release = "true";
 	property portal.upstream = "true";
-	property testray.main.component.name = "Commerce";
+	property testray.main.component.name = "Shopping Experience";
 
 	setUp {
 		TestCase.setUpPortalInstance();
@@ -11,13 +11,6 @@ definition {
 		User.firstLoginPG();
 
 		CommerceConfiguration.commerceStoreFrontSetUp();
-
-		ApplicationsMenu.gotoPortlet(
-			category = "Configuration",
-			panel = "Control Panel",
-			portlet = "Search");
-
-		SearchAdministration.executeSearchActions(actionsDescription = "Reindex all search indexes.");
 	}
 
 	tearDown {
@@ -34,7 +27,8 @@ definition {
 	}
 
 	test ViewStoreFrontSimpleProduct {
-		property portal.acceptance = "true";
+		property portal.acceptance = "quarantine";
+		property portal.upstream = "quarantine";
 		property test.name.skip.portal.instance = "CommerceFrontStore#ViewStoreFrontSimpleProduct";
 
 		CommerceNavigator.gotoPortlet(
@@ -84,7 +78,7 @@ definition {
 
 		CommerceProductImages.addProductImages(
 			imageTitles = "Black,Blue,White",
-			optionValuesList = "Black,Blue,White");
+			optionValues = "Black,Blue,White");
 
 		echo("Asserting all the attributes are correctly shown in Front Store...");
 

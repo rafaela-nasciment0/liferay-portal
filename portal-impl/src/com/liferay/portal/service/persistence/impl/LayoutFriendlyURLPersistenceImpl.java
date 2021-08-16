@@ -5604,25 +5604,25 @@ public class LayoutFriendlyURLPersistenceImpl
 		ServiceContext serviceContext =
 			ServiceContextThreadLocal.getServiceContext();
 
-		Date now = new Date();
+		Date date = new Date();
 
 		if (isNew && (layoutFriendlyURL.getCreateDate() == null)) {
 			if (serviceContext == null) {
-				layoutFriendlyURL.setCreateDate(now);
+				layoutFriendlyURL.setCreateDate(date);
 			}
 			else {
 				layoutFriendlyURL.setCreateDate(
-					serviceContext.getCreateDate(now));
+					serviceContext.getCreateDate(date));
 			}
 		}
 
 		if (!layoutFriendlyURLModelImpl.hasSetModifiedDate()) {
 			if (serviceContext == null) {
-				layoutFriendlyURL.setModifiedDate(now);
+				layoutFriendlyURL.setModifiedDate(date);
 			}
 			else {
 				layoutFriendlyURL.setModifiedDate(
-					serviceContext.getModifiedDate(now));
+					serviceContext.getModifiedDate(date));
 			}
 		}
 
@@ -6054,7 +6054,8 @@ public class LayoutFriendlyURLPersistenceImpl
 	public Set<String> getCTColumnNames(
 		CTColumnResolutionType ctColumnResolutionType) {
 
-		return _ctColumnNamesMap.get(ctColumnResolutionType);
+		return _ctColumnNamesMap.getOrDefault(
+			ctColumnResolutionType, Collections.emptySet());
 	}
 
 	@Override
@@ -6088,7 +6089,6 @@ public class LayoutFriendlyURLPersistenceImpl
 	static {
 		Set<String> ctControlColumnNames = new HashSet<String>();
 		Set<String> ctIgnoreColumnNames = new HashSet<String>();
-		Set<String> ctMergeColumnNames = new HashSet<String>();
 		Set<String> ctStrictColumnNames = new HashSet<String>();
 
 		ctControlColumnNames.add("mvccVersion");
@@ -6110,7 +6110,6 @@ public class LayoutFriendlyURLPersistenceImpl
 			CTColumnResolutionType.CONTROL, ctControlColumnNames);
 		_ctColumnNamesMap.put(
 			CTColumnResolutionType.IGNORE, ctIgnoreColumnNames);
-		_ctColumnNamesMap.put(CTColumnResolutionType.MERGE, ctMergeColumnNames);
 		_ctColumnNamesMap.put(
 			CTColumnResolutionType.PK,
 			Collections.singleton("layoutFriendlyURLId"));
@@ -6445,7 +6444,7 @@ public class LayoutFriendlyURLPersistenceImpl
 			return LayoutFriendlyURLTable.INSTANCE.getTableName();
 		}
 
-		private Object[] _getValue(
+		private static Object[] _getValue(
 			LayoutFriendlyURLModelImpl layoutFriendlyURLModelImpl,
 			String[] columnNames, boolean original) {
 
@@ -6468,8 +6467,8 @@ public class LayoutFriendlyURLPersistenceImpl
 			return arguments;
 		}
 
-		private static Map<FinderPath, Long> _finderPathColumnBitmasksCache =
-			new ConcurrentHashMap<>();
+		private static final Map<FinderPath, Long>
+			_finderPathColumnBitmasksCache = new ConcurrentHashMap<>();
 
 	}
 

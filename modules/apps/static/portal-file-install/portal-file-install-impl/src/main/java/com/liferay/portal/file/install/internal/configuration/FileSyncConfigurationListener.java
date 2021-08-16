@@ -16,7 +16,7 @@ package com.liferay.portal.file.install.internal.configuration;
 
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.file.install.internal.DirectoryWatcher;
-import com.liferay.portal.file.install.internal.FileInstallImplBundleActivator;
+import com.liferay.portal.file.install.internal.activator.FileInstallImplBundleActivator;
 import com.liferay.portal.file.install.internal.properties.ConfigurationProperties;
 import com.liferay.portal.file.install.internal.properties.ConfigurationPropertiesFactory;
 import com.liferay.portal.kernel.log.Log;
@@ -116,6 +116,7 @@ public class FileSyncConfigurationListener implements ConfigurationListener {
 
 				if ((file != null) && file.isFile()) {
 					_pidToFile.put(configuration.getPid(), fileName);
+
 					ConfigurationProperties configurationProperties =
 						ConfigurationPropertiesFactory.create(file, _encoding);
 

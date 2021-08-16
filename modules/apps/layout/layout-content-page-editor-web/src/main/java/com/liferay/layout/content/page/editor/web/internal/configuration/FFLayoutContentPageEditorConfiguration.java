@@ -19,7 +19,7 @@ import aQute.bnd.annotation.metatype.Meta;
 import com.liferay.portal.configuration.metatype.annotations.ExtendedObjectClassDefinition;
 
 /**
- * @author Víctor Galán
+ * @author Sandro Chinea
  */
 @ExtendedObjectClassDefinition(generateUI = false)
 @Meta.OCD(
@@ -28,15 +28,6 @@ import com.liferay.portal.configuration.metatype.annotations.ExtendedObjectClass
 public interface FFLayoutContentPageEditorConfiguration {
 
 	@Meta.AD(deflt = "false", required = false)
-	public boolean contentBrowsingEnabled();
-
-	@Meta.AD(deflt = "false", required = false)
-	public boolean containerItemFlexEnabled();
-
-	@Meta.AD(deflt = "false", required = false)
-	public boolean dropdownFragmentEnabled();
-
-	@Meta.AD(deflt = "false", required = false)
-	public boolean layoutMappingEnabled();
+	public boolean fragmentsHidingEnabled();
 
 }

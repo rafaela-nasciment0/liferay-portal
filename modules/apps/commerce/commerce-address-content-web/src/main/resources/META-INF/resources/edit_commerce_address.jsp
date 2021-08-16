@@ -74,9 +74,7 @@ CommerceAccount commerceAccount = commerceAddressDisplayContext.getCommerceAccou
 				<aui:select label="country" name="countryId" showEmptyOption="<%= true %>">
 
 					<%
-					List<Country> countries = commerceAddressDisplayContext.getCountries();
-
-					for (Country country : countries) {
+					for (Country country : commerceAddressDisplayContext.getCountries()) {
 					%>
 
 						<aui:option label="<%= country.getTitle(languageId) %>" selected="<%= (commerceAddress != null) && (commerceAddress.getCountryId() == country.getCountryId()) %>" value="<%= country.getCountryId() %>" />
@@ -90,9 +88,7 @@ CommerceAccount commerceAccount = commerceAddressDisplayContext.getCommerceAccou
 				<aui:select label="region" name="regionId" showEmptyOption="<%= true %>">
 
 					<%
-					List<Region> regions = commerceAddressDisplayContext.getRegions();
-
-					for (Region region : regions) {
+					for (Region region : commerceAddressDisplayContext.getRegions()) {
 					%>
 
 						<aui:option label="<%= region.getName() %>" selected="<%= (commerceAddress != null) && (commerceAddress.getRegionId() == region.getRegionId()) %>" value="<%= region.getRegionId() %>" />
@@ -105,9 +101,9 @@ CommerceAccount commerceAccount = commerceAddressDisplayContext.getCommerceAccou
 
 				<aui:input name="phoneNumber" />
 
-				<aui:input name="defaultBilling" />
+				<aui:input checked="<%= (commerceAddress != null) && ((commerceAddress.getType() == CommerceAddressConstants.ADDRESS_TYPE_BILLING) || (commerceAddress.getType() == CommerceAddressConstants.ADDRESS_TYPE_BILLING_AND_SHIPPING)) %>" name="defaultBilling" type="checkbox" />
 
-				<aui:input name="defaultShipping" />
+				<aui:input checked="<%= (commerceAddress != null) && ((commerceAddress.getType() == CommerceAddressConstants.ADDRESS_TYPE_BILLING_AND_SHIPPING) || (commerceAddress.getType() == CommerceAddressConstants.ADDRESS_TYPE_SHIPPING)) %>" name="defaultShipping" type="checkbox" />
 			</div>
 		</aui:fieldset>
 

@@ -47,19 +47,13 @@
 
 		PortletURL searchEverywhereURL = PortletURLBuilder.create(
 			PortletURLUtil.clone(portletURL, liferayPortletResponse)
+		).setKeywords(
+			keywords
 		).setParameter(
-			"folderId", String.valueOf(DLFolderConstants.DEFAULT_PARENT_FOLDER_ID)
+			"folderId", DLFolderConstants.DEFAULT_PARENT_FOLDER_ID
 		).setParameter(
-			"searchFolderId", String.valueOf(folderId)
-		).setParameter(
-			"keywords", keywords
-		).build();
-
-		PortletURL searchFolderURL = PortletURLBuilder.create(
-			PortletURLUtil.clone(searchEverywhereURL, liferayPortletResponse)
-		).setParameter(
-			"folderId", String.valueOf(folderId)
-		).build();
+			"searchFolderId", folderId
+		).buildPortletURL();
 		%>
 
 		<liferay-util:whitespace-remover>
@@ -81,7 +75,13 @@
 			<clay:link
 				cssClass='<%= !searchEverywhere ? "active" : "" %>'
 				displayType="secondary"
-				href="<%= searchFolderURL.toString() %>"
+				href='<%=
+					PortletURLBuilder.create(
+						PortletURLUtil.clone(searchEverywhereURL, liferayPortletResponse)
+					).setParameter(
+						"folderId", folderId
+					).buildString()
+				%>'
 				icon="folder"
 				label="<%= folder.getName() %>"
 				type="button"

@@ -27,7 +27,6 @@ definition {
 	@description = "This is use case for LPS-107776. Can add collection items in a collection page based on dynamic collection with all types."
 	@priority = "5"
 	test AddCollectionItemsInCollectionPageBasedOnDynamicCollection {
-		property osgi.app.includes = "bookmarks,document-library-google-docs";
 		property portal.acceptance = "true";
 
 		task ("Add a dynamic collection with All Types") {
@@ -49,7 +48,7 @@ definition {
 		task ("Assert there is no collection items shown in Collection Display") {
 			AssertVisible(
 				key_colPosition = "1",
-				key_entryTitle = "Title",
+				key_entryTitle = "",
 				key_fragmentName = "Collection Display",
 				key_rowPosition = "1",
 				locator1 = "PageEditor#COLLECTION_ITEM_TITLE");
@@ -255,19 +254,11 @@ definition {
 	@priority = "4"
 	test AddSingleTypeCollectionItemsInCollectionPageBasedOnManualCollectionWithSingleItemType {
 		task ("Add a manual collection with Web Content Article item type") {
-			JSONAssetlist.addManualAssetListEntry(
+			JSONAssetlist.addManualAssetListEntryWithItemType(
 				groupName = "Test Site Name",
-				title = "Manual Collection");
-
-			AssetListsAdmin.openAssetListsAdmin(siteURLKey = "test-site-name");
-
-			Click(
-				key_title = "Manual Collection",
-				locator1 = "AssetLists#ASSET_LIST_ENTRY_TITLE");
-
-			AssetListsAdmin.configureItemTypeInManualCollection(
 				itemSubtype = "All Subtypes",
-				itemType = "Web Content Article");
+				itemType = "Web Content Article",
+				title = "Manual Collection");
 		}
 
 		task ("Add a collection page based on maual collection") {
@@ -282,7 +273,7 @@ definition {
 		task ("Assert there is no collection items shown in Collection Display") {
 			AssertVisible(
 				key_colPosition = "1",
-				key_entryTitle = "Title",
+				key_entryTitle = "",
 				key_fragmentName = "Collection Display",
 				key_rowPosition = "1",
 				locator1 = "PageEditor#COLLECTION_ITEM_TITLE");
@@ -313,6 +304,137 @@ definition {
 			AssertTextEquals(
 				locator1 = "ControlMenu#VIEW_COLLECTION_ITEMS_BUTTON",
 				value1 = "(1 Items)");
+		}
+	}
+
+	@description = "This is a test for LPS-129406. The user that has all permissions for Web Content in Content & Data role can not add a page via Page Tree Panel."
+	@priority = "4"
+	test CannotAddPageViaPageTreeWithAllWebContentPermissions {
+		task ("Add a new user") {
+			JSONUser.addUser(
+				userEmailAddress = "userea@liferay.com",
+				userFirstName = "Userfn",
+				userLastName = "Userln",
+				userScreenName = "usersn");
+		}
+
+		task ("Assign the user to site") {
+			JSONUser.addUserToSite(
+				groupName = "Guest",
+				userEmailAddress = "userea@liferay.com");
+		}
+
+		task ("Add a new regular role") {
+			JSONRole.addRegularRole(roleTitle = "Regular Role Name");
+		}
+
+		task ("Define the permissions of new role") {
+			Permissions.definePermissionViaJSONAPI(
+				resourceAction = "VIEW_SITE_ADMINISTRATION",
+				resourceName = "com.liferay.portal.kernel.model.Group",
+				roleTitle = "Regular Role Name",
+				roleType = "regular");
+
+			Permissions.definePermissionViaJSONAPI(
+				resourceAction = "VIEW_CONTROL_PANEL",
+				resourceName = "90",
+				roleTitle = "Regular Role Name");
+
+			for (var resourceActionIndex : list "ACCESS_IN_CONTROL_PANEL,ADD_TO_PAGE,CONFIGURATION,PERMISSIONS,PREFERENCES,VIEW") {
+				Permissions.definePermissionViaJSONAPI(
+					resourceAction = "${resourceActionIndex}",
+					resourceName = "com_liferay_journal_web_portlet_JournalPortlet",
+					roleTitle = "Regular Role Name",
+					roleType = "regular");
+			}
+
+			for (var resourceActionIndex : list "ADD_ARTICLE,ADD_FEED,ADD_FOLDER,ADD_STRUCTURE,ADD_TEMPLATE,PERMISSIONS,SUBSCRIBE,UPDATE,VIEW") {
+				Permissions.definePermissionViaJSONAPI(
+					resourceAction = "${resourceActionIndex}",
+					resourceName = "com.liferay.journal",
+					roleTitle = "Regular Role Name",
+					roleType = "regular");
+			}
+
+			for (var resourceActionIndex : list "ACCESS,ADD_SUBFOLDER,ADD_ARTICLE,DELETE,PERMISSIONS,SUBSCRIBE,UPDATE,VIEW") {
+				Permissions.definePermissionViaJSONAPI(
+					resourceAction = "${resourceActionIndex}",
+					resourceName = "com.liferay.journal.model.JournalFolder",
+					roleTitle = "Regular Role Name",
+					roleType = "regular");
+			}
+
+			for (var resourceActionIndex : list "ADD_DISCUSSION,DELETE,DELETE_DISCUSSION,EXPIRE,PERMISSIONS,SUBSCRIBE,UPDATE,UPDATE_DISCUSSION,VIEW") {
+				Permissions.definePermissionViaJSONAPI(
+					resourceAction = "${resourceActionIndex}",
+					resourceName = "com.liferay.journal.model.JournalArticle",
+					roleTitle = "Regular Role Name",
+					roleType = "regular");
+			}
+
+			for (var resourceActionIndex : list "DELETE,PERMISSIONS,UPDATE,VIEW") {
+				Permissions.definePermissionViaJSONAPI(
+					resourceAction = "${resourceActionIndex}",
+					resourceName = "com.liferay.journal.model.JournalFeed",
+					roleTitle = "Regular Role Name",
+					roleType = "regular");
+			}
+
+			for (var resourceActionIndex : list "DELETE,PERMISSIONS,UPDATE,VIEW") {
+				Permissions.definePermissionViaJSONAPI(
+					resourceAction = "${resourceActionIndex}",
+					resourceName = "com.liferay.dynamic.data.mapping.model.DDMStructure-com.liferay.journal.model.JournalArticle",
+					roleTitle = "Regular Role Name",
+					roleType = "regular");
+			}
+
+			for (var resourceActionIndex : list "DELETE,PERMISSIONS,UPDATE,VIEW") {
+				Permissions.definePermissionViaJSONAPI(
+					resourceAction = "${resourceActionIndex}",
+					resourceName = "com.liferay.dynamic.data.mapping.model.DDMTemplate-com.liferay.journal.model.JournalArticle",
+					roleTitle = "Regular Role Name",
+					roleType = "regular");
+			}
+		}
+
+		task ("Assign the regular role to new user") {
+			JSONRole.assignRoleToUser(
+				roleTitle = "Regular Role Name",
+				userEmailAddress = "userea@liferay.com");
+		}
+
+		task ("Sign in as new user") {
+			User.logoutAndLoginPG(
+				userLoginEmailAddress = "userea@liferay.com",
+				userLoginFullName = "userfn userln");
+		}
+
+		task ("View the new user cannot add a page via Page Tree panel") {
+			ProductMenuHelper.openProductMenu();
+
+			PagesFinder.goToFindAPage();
+
+			AssertNotVisible(locator1 = "Icon#PLUS");
+		}
+
+		task ("View the new user is able to navigate and add a Web Content") {
+			ProductMenu.gotoPortlet(
+				category = "Content & Data",
+				portlet = "Web Content");
+
+			AssertElementPresent(locator1 = "Icon#PLUS");
+		}
+
+		task ("View the new user is able to navigate and add a Structure") {
+			NavItem.gotoStructures();
+
+			AssertElementPresent(locator1 = "Icon#PLUS");
+		}
+
+		task ("View the new user is able to navigate and add a Template") {
+			NavItem.gotoTemplates();
+
+			AssertElementPresent(locator1 = "Icon#PLUS");
 		}
 	}
 
@@ -386,8 +508,10 @@ definition {
 			PortletEntry.publish();
 		}
 
-		JSONAssetlist.addManualAssetListEntry(
+		JSONAssetlist.addManualAssetListEntryWithItemType(
 			groupName = "Test Site Name",
+			itemSubtype = "Basic Web Content",
+			itemType = "Web Content Article",
 			title = "Manual Collection");
 
 		AssetListsAdmin.openAssetListsAdmin(siteURLKey = "test-site-name");
@@ -395,9 +519,7 @@ definition {
 		AssetListsAdmin.selectAsset(
 			assetListName = "Manual Collection",
 			assetType = "Basic Web Content",
-			entryList = "WC WebContent Title 1,WC WebContent Title 2,WC WebContent Title 3",
-			itemSubtype = "Basic Web Content",
-			itemType = "Web Content Article");
+			entryList = "WC WebContent Title 1,WC WebContent Title 2,WC WebContent Title 3");
 
 		SitePages.openPagesAdmin(siteURLKey = "test-site-name");
 
@@ -427,6 +549,8 @@ definition {
 				item = "View Display Page",
 				tableEntry = "WC WebContent Title ${i}");
 
+			SelectFrameTop();
+
 			AssertVisible(
 				key_content = "WC WebContent Content ${i}",
 				locator1 = "Fragment#FRAGMENT_SECTION_CONTENT");
@@ -437,6 +561,8 @@ definition {
 		AssertVisible(
 			key_itemName = "Content Collection Page Name",
 			locator1 = "SitePages#LIST_GROUP_ITEM");
+
+		Click(locator1 = "ProductMenu#GO_TO_SITES_LINK");
 
 		PagesFinder.goToFindAPage();
 
@@ -455,16 +581,15 @@ definition {
 				item = "View Display Page",
 				tableEntry = "WC WebContent Title ${i}");
 
+			SelectFrameTop();
+
 			AssertVisible(
 				key_content = "WC WebContent Content ${i}",
-				locator1 = "Fragment#FRAGMENT_SECTION_CONTENT",
-				pageName = "Content Collection Page Name");
+				locator1 = "Fragment#FRAGMENT_SECTION_CONTENT");
 
 			Click(locator1 = "Icon#ANGLE_LEFT_BACK");
 
-			AssertVisible(
-				key_itemName = "Content Collection Page Name",
-				locator1 = "SitePages#LIST_GROUP_ITEM");
+			ControlMenu.viewHeaderTitle(headerTitle = "Content Collection Page Name");
 		}
 	}
 
@@ -561,6 +686,8 @@ definition {
 			key_pageName = "Content Collection Page Name",
 			locator1 = "SitePages#LIST_GROUP_ITEM_ENTRY_TITLE");
 
+		Click(locator1 = "ProductMenu#GO_TO_SITES_LINK");
+
 		PagesFinder.goToFindAPage();
 
 		WaitForLiferayEvent.initializeLiferayEventLog();
@@ -581,9 +708,7 @@ definition {
 
 		Click(locator1 = "Icon#ANGLE_LEFT_BACK");
 
-		AssertVisible(
-			key_pageName = "Content Collection Page Name",
-			locator1 = "SitePages#LIST_GROUP_ITEM_ENTRY_TITLE");
+		ControlMenu.viewHeaderTitle(headerTitle = "Content Collection Page Name");
 
 		WaitForLiferayEvent.initializeLiferayEventLog();
 
@@ -606,9 +731,7 @@ definition {
 
 		Click(locator1 = "Icon#ANGLE_LEFT_BACK");
 
-		AssertVisible(
-			key_pageName = "Content Collection Page Name",
-			locator1 = "SitePages#LIST_GROUP_ITEM_ENTRY_TITLE");
+		ControlMenu.viewHeaderTitle(headerTitle = "Content Collection Page Name");
 
 		WaitForLiferayEvent.initializeLiferayEventLog();
 
@@ -630,9 +753,7 @@ definition {
 
 		Click(locator1 = "Icon#ANGLE_LEFT_BACK");
 
-		AssertVisible(
-			key_pageName = "Content Collection Page Name",
-			locator1 = "SitePages#LIST_GROUP_ITEM_ENTRY_TITLE");
+		ControlMenu.viewHeaderTitle(headerTitle = "Content Collection Page Name");
 
 		PagesFinder.viewPageNameInPagesFinder(pageName = "Content Collection Page Name");
 	}
@@ -649,11 +770,9 @@ definition {
 				layoutName = "Test Content Page Name ${n}",
 				type = "content");
 
-			ContentPagesNavigator.openEditContentPage(
-				pageName = "Test Content Page Name ${n}",
-				siteName = "Test Site Name");
-
-			PageEditor.clickPublish();
+			JSONLayout.publishLayout(
+				groupName = "Test Site Name",
+				layoutName = "Test Content Page Name ${n}");
 		}
 
 		JSONLayout.addPublicLayout(
@@ -662,11 +781,9 @@ definition {
 			parentLayoutName = "Test Content Page Name 1",
 			type = "content");
 
-		ContentPagesNavigator.openEditContentPage(
-			pageName = "Child Content Page Name 1",
-			siteName = "Test Site Name");
-
-		PageEditor.clickPublish();
+		JSONLayout.publishLayout(
+			groupName = "Test Site Name",
+			layoutName = "Child Content Page Name 1");
 
 		SitePages.openPagesAdmin(siteURLKey = "test-site-name");
 
@@ -760,17 +877,15 @@ definition {
 				layoutName = "Test Page Name 2",
 				type = "content");
 
-			ContentPagesNavigator.openEditContentPage(
-				pageName = "Test Page Name 2",
-				siteName = "Test Site Name");
-
-			PageEditor.clickPublish();
+			JSONLayout.publishLayout(
+				groupName = "Test Site Name",
+				layoutName = "Test Page Name 2");
 		}
 
 		task ("Move Test Page Name 2 and Child Child Page Name 1 to the same level with Child Page Name 1") {
 			SitePages.openPagesAdmin(siteURLKey = "test-site-name");
 
-			MetalComponent.waitForManagementBar();
+			WaitForPageLoad();
 
 			Click(
 				key_itemName = "Test Page Name 1",
@@ -815,17 +930,15 @@ definition {
 				layoutName = "Test Page Name 3",
 				type = "content");
 
-			ContentPagesNavigator.openEditContentPage(
-				pageName = "Test Page Name 3",
-				siteName = "Test Site Name");
-
-			PageEditor.clickPublish();
+			JSONLayout.publishLayout(
+				groupName = "Test Site Name",
+				layoutName = "Test Page Name 3");
 		}
 
 		task ("Assert pages order") {
 			SitePages.openPagesAdmin(siteURLKey = "test-site-name");
 
-			MetalComponent.waitForManagementBar();
+			WaitForPageLoad();
 
 			Page.viewPagesOrder(
 				depth = "2",
@@ -868,17 +981,15 @@ definition {
 				layoutName = "Test Page Name 3",
 				type = "content");
 
-			ContentPagesNavigator.openEditContentPage(
-				pageName = "Test Page Name 3",
-				siteName = "Test Site Name");
-
-			PageEditor.clickPublish();
+			JSONLayout.publishLayout(
+				groupName = "Test Site Name",
+				layoutName = "Test Page Name 3");
 		}
 
 		task ("Move Test Page Name 1 and 2 to child level of Test Page Name 3") {
 			SitePages.openPagesAdmin(siteURLKey = "test-site-name");
 
-			MetalComponent.waitForManagementBar();
+			WaitForPageLoad();
 
 			Click(
 				key_itemName = "Test Page Name 3",
@@ -909,27 +1020,16 @@ definition {
 		property portal.acceptance = "true";
 		property testray.component.names = "Site Pages Administration";
 
-		JSONLayout.addPublicLayout(
-			groupName = "Test Site Name",
-			layoutName = "Test Content Page Name 1",
-			type = "content");
+		for (var n : list "1,2") {
+			JSONLayout.addPublicLayout(
+				groupName = "Test Site Name",
+				layoutName = "Test Content Page Name ${n}",
+				type = "content");
 
-		ContentPagesNavigator.openEditContentPage(
-			pageName = "Test Content Page Name 1",
-			siteName = "Test Site Name");
-
-		PageEditor.clickPublish();
-
-		JSONLayout.addPublicLayout(
-			groupName = "Test Site Name",
-			layoutName = "Test Content Page Name 2",
-			type = "content");
-
-		ContentPagesNavigator.openEditContentPage(
-			pageName = "Test Content Page Name 2",
-			siteName = "Test Site Name");
-
-		PageEditor.clickPublish();
+			JSONLayout.publishLayout(
+				groupName = "Test Site Name",
+				layoutName = "Test Content Page Name ${n}");
+		}
 
 		SitePages.openPagesAdmin(siteURLKey = "test-site-name");
 
@@ -953,27 +1053,16 @@ definition {
 	test MoveParentPageToChildLevel {
 		property testray.component.names = "Site Pages Administration";
 
-		JSONLayout.addPublicLayout(
-			groupName = "Test Site Name",
-			layoutName = "Test Content Page Name 1",
-			type = "content");
+		for (var n : list "1,2") {
+			JSONLayout.addPublicLayout(
+				groupName = "Test Site Name",
+				layoutName = "Test Content Page Name ${n}",
+				type = "content");
 
-		ContentPagesNavigator.openEditContentPage(
-			pageName = "Test Content Page Name 1",
-			siteName = "Test Site Name");
-
-		PageEditor.clickPublish();
-
-		JSONLayout.addPublicLayout(
-			groupName = "Test Site Name",
-			layoutName = "Test Content Page Name 2",
-			type = "content");
-
-		ContentPagesNavigator.openEditContentPage(
-			pageName = "Test Content Page Name 2",
-			siteName = "Test Site Name");
-
-		PageEditor.clickPublish();
+			JSONLayout.publishLayout(
+				groupName = "Test Site Name",
+				layoutName = "Test Content Page Name ${n}");
+		}
 
 		JSONLayout.addPublicLayout(
 			groupName = "Test Site Name",
@@ -981,11 +1070,9 @@ definition {
 			parentLayoutName = "Test Content Page Name 1",
 			type = "content");
 
-		ContentPagesNavigator.openEditContentPage(
-			pageName = "Child Content Page Name 1",
-			siteName = "Test Site Name");
-
-		PageEditor.clickPublish();
+		JSONLayout.publishLayout(
+			groupName = "Test Site Name",
+			layoutName = "Child Content Page Name 1");
 
 		SitePages.openPagesAdmin(siteURLKey = "test-site-name");
 
@@ -1007,8 +1094,6 @@ definition {
 	@description = "This is a test for LPS-76825. A user can search for a page from pages admin."
 	@priority = "5"
 	test SearchPages {
-		property portal.acceptance = "true";
-
 		task ("Add two pages to root and add one child page") {
 			JSONLayout.addPublicLayout(
 				groupName = "Test Site Name",
@@ -1099,11 +1184,9 @@ definition {
 			layoutName = "Test Content Page Name",
 			type = "content");
 
-		ContentPagesNavigator.openEditContentPage(
-			pageName = "Test Content Page Name",
-			siteName = "Test Site Name");
-
-		PageEditor.clickPublish();
+		JSONLayout.publishLayout(
+			groupName = "Test Site Name",
+			layoutName = "Test Content Page Name");
 
 		JSONLayout.addPublicLayout(
 			groupName = "Test Site Name",
@@ -1111,11 +1194,9 @@ definition {
 			parentLayoutName = "Test Content Page Name",
 			type = "content");
 
-		ContentPagesNavigator.openEditContentPage(
-			pageName = "Child Content Page Name",
-			siteName = "Test Site Name");
-
-		PageEditor.clickPublish();
+		JSONLayout.publishLayout(
+			groupName = "Test Site Name",
+			layoutName = "Child Content Page Name");
 
 		SitePages.openPagesAdmin(siteURLKey = "test-site-name");
 
@@ -1137,7 +1218,6 @@ definition {
 	@description = "This is a test for LPS-110183. Can view information about collection items of collection page."
 	@priority = "5"
 	test ViewCollectionItemViaPageFinderAndPageAdmin {
-		property osgi.app.includes = "bookmarks,document-library-google-docs";
 		property portal.acceptance = "true";
 
 		JSONWebcontent.addWebContent(
@@ -1167,8 +1247,6 @@ definition {
 			collectionName = "Dynamic Collection",
 			pageName = "Content Collection Page Name",
 			tabName = "Collections");
-
-		SitePages.openPagesAdmin(siteURLKey = "test-site-name");
 
 		PagesFinder.goToFindAPage();
 
@@ -1278,9 +1356,7 @@ definition {
 				key_rowNumber = "${rowNumber}");
 		}
 
-		AssertElementNotPresent(
-			key_rowNumber = "5",
-			locator1 = "ContentRow#ENTRY_CONTENT_ROW_NUMBER");
+		LexiconTable.viewTableEntryNotPresent(tableEntry = "Web Content Title 5");
 
 		Click(locator1 = "Pagination#NEXT_LINK");
 

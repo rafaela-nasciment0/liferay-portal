@@ -13,7 +13,7 @@ import ClayAlert from '@clayui/alert';
 import PropTypes from 'prop-types';
 import React, {useCallback, useContext, useState} from 'react';
 
-import {useChartState} from '../context/ChartStateContext';
+import {ChartStateContext} from '../context/ChartStateContext';
 import ConnectionContext from '../context/ConnectionContext';
 import {StoreStateContext} from '../context/StoreContext';
 import APIService from '../utils/APIService';
@@ -43,9 +43,7 @@ export default function Navigation({
 
 	const [trafficSourceName, setTrafficSourceName] = useState('');
 
-	const chartState = useChartState();
-
-	const {timeSpanKey, timeSpanOffset} = chartState;
+	const {timeSpanKey, timeSpanOffset} = useContext(ChartStateContext);
 
 	const handleCurrentPage = useCallback((currentPage) => {
 		setCurrentPage({view: currentPage.view});
@@ -134,13 +132,21 @@ export default function Navigation({
 	return (
 		<>
 			{!validAnalyticsConnection && (
-				<ClayAlert displayType="danger" variant="stripe">
+				<ClayAlert
+					className="mb-3"
+					displayType="danger"
+					variant="stripe"
+				>
 					{Liferay.Language.get('an-unexpected-error-occurred')}
 				</ClayAlert>
 			)}
 
 			{validAnalyticsConnection && warning && (
-				<ClayAlert displayType="warning" variant="stripe">
+				<ClayAlert
+					className="mb-3"
+					displayType="warning"
+					variant="stripe"
+				>
 					{Liferay.Language.get(
 						'some-data-is-temporarily-unavailable'
 					)}
@@ -149,6 +155,7 @@ export default function Navigation({
 
 			{validAnalyticsConnection && publishedToday && !warning && (
 				<ClayAlert
+					className="mb-3"
 					displayType="info"
 					title={Liferay.Language.get('no-data-is-available-yet')}
 					variant="stripe"
@@ -197,7 +204,7 @@ export default function Navigation({
 	);
 }
 
-Navigation.proptypes = {
+Navigation.propTypes = {
 	author: PropTypes.object.isRequired,
 	canonicalURL: PropTypes.string.isRequired,
 	onSelectedLanguageClick: PropTypes.func.isRequired,

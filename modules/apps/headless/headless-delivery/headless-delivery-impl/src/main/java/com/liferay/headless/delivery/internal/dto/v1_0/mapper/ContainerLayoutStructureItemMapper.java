@@ -20,6 +20,7 @@ import com.liferay.headless.delivery.dto.v1_0.Layout;
 import com.liferay.headless.delivery.dto.v1_0.PageElement;
 import com.liferay.headless.delivery.dto.v1_0.PageSectionDefinition;
 import com.liferay.headless.delivery.internal.dto.v1_0.mapper.util.FragmentMappedValueUtil;
+import com.liferay.headless.delivery.internal.dto.v1_0.mapper.util.LocalizedValueUtil;
 import com.liferay.layout.page.template.util.AlignConverter;
 import com.liferay.layout.page.template.util.BorderRadiusConverter;
 import com.liferay.layout.page.template.util.JustifyConverter;
@@ -59,14 +60,6 @@ public class ContainerLayoutStructureItemMapper
 			{
 				definition = new PageSectionDefinition() {
 					{
-						backgroundColor = GetterUtil.getString(
-							containerStyledLayoutStructureItem.
-								getBackgroundColorCssClass(),
-							null);
-						backgroundFragmentImage = toBackgroundFragmentImage(
-							containerStyledLayoutStructureItem.
-								getBackgroundImageJSONObject(),
-							saveMappingConfiguration);
 						fragmentLink = _toFragmentLink(
 							containerStyledLayoutStructureItem.
 								getLinkJSONObject(),
@@ -128,7 +121,9 @@ public class ContainerLayoutStructureItemMapper
 
 						return new FragmentInlineValue() {
 							{
-								value = jsonObject.getString("href");
+								value_i18n =
+									LocalizedValueUtil.toLocalizedValues(
+										jsonObject.getJSONObject("href"));
 							}
 						};
 					});
@@ -165,28 +160,9 @@ public class ContainerLayoutStructureItemMapper
 				borderRadius = BorderRadius.create(
 					BorderRadiusConverter.convertToExternalValue(
 						containerStyledLayoutStructureItem.getBorderRadius()));
-				borderWidth =
-					containerStyledLayoutStructureItem.getBorderWidth();
 				justify = Justify.create(
 					JustifyConverter.convertToExternalValue(
 						containerStyledLayoutStructureItem.getJustify()));
-				marginBottom = MarginConverter.convertToExternalValue(
-					containerStyledLayoutStructureItem.getMarginBottom());
-				marginLeft = MarginConverter.convertToExternalValue(
-					containerStyledLayoutStructureItem.getMarginLeft());
-				marginRight = MarginConverter.convertToExternalValue(
-					containerStyledLayoutStructureItem.getMarginRight());
-				marginTop = MarginConverter.convertToExternalValue(
-					containerStyledLayoutStructureItem.getMarginTop());
-				opacity = containerStyledLayoutStructureItem.getOpacity();
-				paddingBottom = PaddingConverter.convertToExternalValue(
-					containerStyledLayoutStructureItem.getPaddingBottom());
-				paddingLeft = PaddingConverter.convertToExternalValue(
-					containerStyledLayoutStructureItem.getPaddingLeft());
-				paddingRight = PaddingConverter.convertToExternalValue(
-					containerStyledLayoutStructureItem.getPaddingRight());
-				paddingTop = PaddingConverter.convertToExternalValue(
-					containerStyledLayoutStructureItem.getPaddingTop());
 				shadow = Shadow.create(
 					ShadowConverter.convertToExternalValue(
 						containerStyledLayoutStructureItem.getShadow()));
@@ -202,6 +178,17 @@ public class ContainerLayoutStructureItemMapper
 
 						return borderColor;
 					});
+				setBorderWidth(
+					() -> {
+						String borderWidth =
+							containerStyledLayoutStructureItem.getBorderWidth();
+
+						if (Validator.isNull(borderWidth)) {
+							return null;
+						}
+
+						return GetterUtil.getInteger(borderWidth);
+					});
 				setContentDisplay(
 					() -> {
 						String contentDisplay =
@@ -214,6 +201,122 @@ public class ContainerLayoutStructureItemMapper
 
 						return ContentDisplay.create(
 							StringUtil.upperCaseFirstLetter(contentDisplay));
+					});
+				setMarginBottom(
+					() -> {
+						String marginBottom =
+							containerStyledLayoutStructureItem.
+								getMarginBottom();
+
+						if (Validator.isNull(marginBottom)) {
+							return null;
+						}
+
+						return GetterUtil.getInteger(
+							MarginConverter.convertToExternalValue(
+								marginBottom));
+					});
+				setMarginLeft(
+					() -> {
+						String marginLeft =
+							containerStyledLayoutStructureItem.getMarginLeft();
+
+						if (Validator.isNull(marginLeft)) {
+							return null;
+						}
+
+						return GetterUtil.getInteger(
+							MarginConverter.convertToExternalValue(marginLeft));
+					});
+				setMarginRight(
+					() -> {
+						String marginRight =
+							containerStyledLayoutStructureItem.getMarginRight();
+
+						if (Validator.isNull(marginRight)) {
+							return null;
+						}
+
+						return GetterUtil.getInteger(
+							MarginConverter.convertToExternalValue(
+								marginRight));
+					});
+				setMarginTop(
+					() -> {
+						String marginTop =
+							containerStyledLayoutStructureItem.getMarginTop();
+
+						if (Validator.isNull(marginTop)) {
+							return null;
+						}
+
+						return GetterUtil.getInteger(
+							MarginConverter.convertToExternalValue(marginTop));
+					});
+				setOpacity(
+					() -> {
+						String opacity =
+							containerStyledLayoutStructureItem.getOpacity();
+
+						if (Validator.isNull(opacity)) {
+							return null;
+						}
+
+						return GetterUtil.getInteger(opacity, 100);
+					});
+				setPaddingBottom(
+					() -> {
+						String paddingBottom =
+							containerStyledLayoutStructureItem.
+								getPaddingBottom();
+
+						if (Validator.isNull(paddingBottom)) {
+							return null;
+						}
+
+						return GetterUtil.getInteger(
+							PaddingConverter.convertToExternalValue(
+								paddingBottom));
+					});
+				setPaddingLeft(
+					() -> {
+						String paddingLeft =
+							containerStyledLayoutStructureItem.getPaddingLeft();
+
+						if (Validator.isNull(paddingLeft)) {
+							return null;
+						}
+
+						return GetterUtil.getInteger(
+							PaddingConverter.convertToExternalValue(
+								paddingLeft));
+					});
+				setPaddingRight(
+					() -> {
+						String paddingRight =
+							containerStyledLayoutStructureItem.
+								getPaddingRight();
+
+						if (Validator.isNull(paddingRight)) {
+							return null;
+						}
+
+						return GetterUtil.getInteger(
+							PaddingConverter.convertToExternalValue(
+								paddingRight));
+					});
+				setPaddingTop(
+					() -> {
+						String paddingTop =
+							containerStyledLayoutStructureItem.getPaddingTop();
+
+						if (Validator.isNull(paddingTop)) {
+							return null;
+						}
+
+						return GetterUtil.getInteger(
+							PaddingConverter.convertToExternalValue(
+								paddingTop));
 					});
 				setWidthType(
 					() -> {

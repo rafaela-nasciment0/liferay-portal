@@ -2286,25 +2286,25 @@ public class SegmentsEntryRelPersistenceImpl
 		ServiceContext serviceContext =
 			ServiceContextThreadLocal.getServiceContext();
 
-		Date now = new Date();
+		Date date = new Date();
 
 		if (isNew && (segmentsEntryRel.getCreateDate() == null)) {
 			if (serviceContext == null) {
-				segmentsEntryRel.setCreateDate(now);
+				segmentsEntryRel.setCreateDate(date);
 			}
 			else {
 				segmentsEntryRel.setCreateDate(
-					serviceContext.getCreateDate(now));
+					serviceContext.getCreateDate(date));
 			}
 		}
 
 		if (!segmentsEntryRelModelImpl.hasSetModifiedDate()) {
 			if (serviceContext == null) {
-				segmentsEntryRel.setModifiedDate(now);
+				segmentsEntryRel.setModifiedDate(date);
 			}
 			else {
 				segmentsEntryRel.setModifiedDate(
-					serviceContext.getModifiedDate(now));
+					serviceContext.getModifiedDate(date));
 			}
 		}
 
@@ -2729,7 +2729,8 @@ public class SegmentsEntryRelPersistenceImpl
 	public Set<String> getCTColumnNames(
 		CTColumnResolutionType ctColumnResolutionType) {
 
-		return _ctColumnNamesMap.get(ctColumnResolutionType);
+		return _ctColumnNamesMap.getOrDefault(
+			ctColumnResolutionType, Collections.emptySet());
 	}
 
 	@Override
@@ -2763,7 +2764,6 @@ public class SegmentsEntryRelPersistenceImpl
 	static {
 		Set<String> ctControlColumnNames = new HashSet<String>();
 		Set<String> ctIgnoreColumnNames = new HashSet<String>();
-		Set<String> ctMergeColumnNames = new HashSet<String>();
 		Set<String> ctStrictColumnNames = new HashSet<String>();
 
 		ctControlColumnNames.add("mvccVersion");
@@ -2782,7 +2782,6 @@ public class SegmentsEntryRelPersistenceImpl
 			CTColumnResolutionType.CONTROL, ctControlColumnNames);
 		_ctColumnNamesMap.put(
 			CTColumnResolutionType.IGNORE, ctIgnoreColumnNames);
-		_ctColumnNamesMap.put(CTColumnResolutionType.MERGE, ctMergeColumnNames);
 		_ctColumnNamesMap.put(
 			CTColumnResolutionType.PK,
 			Collections.singleton("segmentsEntryRelId"));
@@ -3028,7 +3027,7 @@ public class SegmentsEntryRelPersistenceImpl
 			return SegmentsEntryRelTable.INSTANCE.getTableName();
 		}
 
-		private Object[] _getValue(
+		private static Object[] _getValue(
 			SegmentsEntryRelModelImpl segmentsEntryRelModelImpl,
 			String[] columnNames, boolean original) {
 
@@ -3051,8 +3050,8 @@ public class SegmentsEntryRelPersistenceImpl
 			return arguments;
 		}
 
-		private static Map<FinderPath, Long> _finderPathColumnBitmasksCache =
-			new ConcurrentHashMap<>();
+		private static final Map<FinderPath, Long>
+			_finderPathColumnBitmasksCache = new ConcurrentHashMap<>();
 
 	}
 

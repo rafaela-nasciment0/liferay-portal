@@ -71,7 +71,8 @@ public class DataLayoutBuilderTag extends BaseDataLayoutBuilderTag {
 			setNamespacedAttribute(
 				httpServletRequest, "fieldTypes",
 				DataLayoutTaglibUtil.getFieldTypesJSONArray(
-					httpServletRequest, getScopes()));
+					httpServletRequest, getScopes(),
+					getSearchableFieldsDisabled()));
 			setNamespacedAttribute(
 				httpServletRequest, "fieldTypesModules",
 				DataLayoutTaglibUtil.resolveFieldTypesModules());
@@ -127,12 +128,12 @@ public class DataLayoutBuilderTag extends BaseDataLayoutBuilderTag {
 	}
 
 	private String _getDefaultLanguageId() {
-		long dataDefinitionId = getDataDefinitionId();
+		Long dataDefinitionId = getDataDefinitionId();
 
 		String languageId = LocaleUtil.toLanguageId(
 			LocaleUtil.getSiteDefault());
 
-		if (dataDefinitionId <= 0) {
+		if ((dataDefinitionId == null) || (dataDefinitionId <= 0)) {
 			return languageId;
 		}
 
@@ -158,11 +159,7 @@ public class DataLayoutBuilderTag extends BaseDataLayoutBuilderTag {
 
 	private String _getModule() {
 		if (Validator.isBlank(getModule())) {
-			if (DataLayoutTaglibUtil.isUsingNewFormProvider()) {
-				return "data_layout_builder/new-js/App";
-			}
-
-			return "data_layout_builder/js/App.es";
+			return "data_layout_builder/js/App";
 		}
 
 		return getModule();
@@ -174,6 +171,12 @@ public class DataLayoutBuilderTag extends BaseDataLayoutBuilderTag {
 		}
 
 		return getModuleServletContext();
+	}
+
+	private String _getPluginEntryPoint(String value) {
+		return DataLayoutTaglibUtil.resolveModule(
+			"data-engine-taglib/data_layout_builder/js/plugins/" + value +
+				"/index");
 	}
 
 	private Map<String, Object> _getSidebarPanels() {
@@ -192,37 +195,35 @@ public class DataLayoutBuilderTag extends BaseDataLayoutBuilderTag {
 				).put(
 					"label", LanguageUtil.get(resourceBundle, "builder")
 				).put(
-					"pluginEntryPoint",
-					DataLayoutTaglibUtil.resolveModule(
-						"data-engine-taglib/data_layout_builder/js/plugins" +
-							"/fields-sidebar/index.es")
+					"pluginEntryPoint", _getPluginEntryPoint("fields-sidebar")
 				).put(
 					"sidebarPanelId", "fields"
 				).build()
-			).build();
-
-		JSONObject dataLayoutConfigJSONObject =
-			DataLayoutTaglibUtil.getDataLayoutConfigJSONObject(
-				getContentType(), httpServletRequest.getLocale());
-
-		if (dataLayoutConfigJSONObject.getBoolean("allowRules")) {
-			sidebarPanels.put(
+			).put(
 				"rules",
-				HashMapBuilder.<String, Object>put(
-					"icon", "rules"
-				).put(
-					"isLink", false
-				).put(
-					"label", LanguageUtil.get(resourceBundle, "rules")
-				).put(
-					"pluginEntryPoint",
-					DataLayoutTaglibUtil.resolveModule(
-						"data-engine-taglib/data_layout_builder/js/plugins" +
-							"/rules-sidebar/index.es")
-				).put(
-					"sidebarPanelId", "rules"
-				).build());
-		}
+				() -> {
+					JSONObject dataLayoutConfigJSONObject =
+						DataLayoutTaglibUtil.getDataLayoutConfigJSONObject(
+							getContentType(), httpServletRequest.getLocale());
+
+					if (dataLayoutConfigJSONObject.getBoolean("allowRules")) {
+						return HashMapBuilder.<String, Object>put(
+							"icon", "rules"
+						).put(
+							"isLink", false
+						).put(
+							"label", LanguageUtil.get(resourceBundle, "rules")
+						).put(
+							"pluginEntryPoint",
+							_getPluginEntryPoint("rules-sidebar")
+						).put(
+							"sidebarPanelId", "rules"
+						).build();
+					}
+
+					return null;
+				}
+			).build();
 
 		List<Map<String, Object>> additionalPanels = getAdditionalPanels();
 

@@ -15,6 +15,7 @@
 package com.liferay.jenkins.results.parser;
 
 import java.io.File;
+import java.io.IOException;
 
 import java.util.HashMap;
 import java.util.List;
@@ -32,7 +33,7 @@ public class JobFactory {
 			topLevelBuild.getJobName(), topLevelBuild.getTestSuiteName(),
 			topLevelBuild.getBranchName(),
 			topLevelBuild.getBaseGitRepositoryName(),
-			topLevelBuild.getBuildProfile());
+			topLevelBuild.getBuildProfile(), topLevelBuild.getProjectNames());
 	}
 
 	public static Job newJob(BuildData buildData) {
@@ -101,6 +102,16 @@ public class JobFactory {
 		String jobName, String testSuiteName, String branchName,
 		String repositoryName, Job.BuildProfile buildProfile) {
 
+		return _newJob(
+			jobName, testSuiteName, branchName, repositoryName, buildProfile,
+			null);
+	}
+
+	private static Job _newJob(
+		String jobName, String testSuiteName, String branchName,
+		String repositoryName, Job.BuildProfile buildProfile,
+		List<String> projectNames) {
+
 		if (buildProfile == null) {
 			buildProfile = Job.BuildProfile.PORTAL;
 		}
@@ -133,6 +144,24 @@ public class JobFactory {
 								System.getProperty("user.dir"));
 					}
 
+					@Override
+					protected void init() {
+						try {
+							setJobProperties(
+								JenkinsResultsParserUtil.getBuildProperties());
+						}
+						catch (IOException ioException) {
+							throw new RuntimeException(ioException);
+						}
+
+						gitWorkingDirectory = getNewGitWorkingDirectory();
+
+						setGitRepositoryDir(
+							gitWorkingDirectory.getWorkingDirectory());
+
+						checkGitRepositoryDir();
+					}
+
 				};
 
 			_jobs.put(jobKey, portalGitRepositoryJob);
@@ -156,6 +185,16 @@ public class JobFactory {
 					jobName, buildProfile, branchName));
 
 			return _jobs.get(jobKey);
+		}
+
+		if (jobName.equals("test-fixpack-builder-pullrequest")) {
+			FixPackBuilderGitRepositoryJob fixPackBuilderGitRepositoryJob =
+				new FixPackBuilderGitRepositoryJob(
+					jobName, buildProfile, testSuiteName, branchName);
+
+			_jobs.put(jobKey, fixPackBuilderGitRepositoryJob);
+
+			return fixPackBuilderGitRepositoryJob;
 		}
 
 		if (jobName.startsWith("test-plugins-acceptance-pullrequest(")) {
@@ -323,12 +362,14 @@ public class JobFactory {
 		}
 
 		if (jobName.equals("test-qa-websites-functional-daily") ||
-			jobName.equals("test-qa-websites-functional-environment")) {
+			jobName.equals("test-qa-websites-functional-environment") ||
+			jobName.equals("test-qa-websites-functional-weekly")) {
 
 			_jobs.put(
 				jobKey,
 				new QAWebsitesGitRepositoryJob(
-					jobName, buildProfile, testSuiteName, branchName));
+					jobName, buildProfile, testSuiteName, branchName,
+					projectNames));
 
 			return _jobs.get(jobKey);
 		}

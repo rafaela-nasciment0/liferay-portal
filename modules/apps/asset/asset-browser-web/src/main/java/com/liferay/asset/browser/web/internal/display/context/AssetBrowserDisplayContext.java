@@ -222,9 +222,11 @@ public class AssetBrowserDisplayContext {
 			return _groupId;
 		}
 
-		_groupId = ParamUtil.getLong(
-			_renderRequest, "groupId",
-			ParamUtil.getLong(_httpServletRequest, "groupId"));
+		_groupId = ParamUtil.getLong(_renderRequest, "groupId");
+
+		if (_groupId == 0) {
+			_groupId = ParamUtil.getLong(_httpServletRequest, "groupId");
+		}
 
 		return _groupId;
 	}
@@ -245,55 +247,75 @@ public class AssetBrowserDisplayContext {
 	}
 
 	public PortletURL getPortletURL() throws PortletException {
-		PortletURL portletURL = PortletURLBuilder.create(
+		return PortletURLBuilder.create(
 			PortletURLUtil.clone(
 				_portletURL,
 				PortalUtil.getLiferayPortletResponse(_renderResponse))
 		).setParameter(
+			"eventName", getEventName()
+		).setParameter(
 			"groupId", getGroupId()
-		).build();
+		).setParameter(
+			"listable",
+			() -> {
+				if (_getListable() != null) {
+					return _getListable();
+				}
 
-		long selectedGroupId = ParamUtil.getLong(
-			_httpServletRequest, "selectedGroupId");
+				return null;
+			}
+		).setParameter(
+			"multipleSelection",
+			() -> {
+				if (isMultipleSelection()) {
+					return Boolean.TRUE.toString();
+				}
 
-		if (selectedGroupId > 0) {
-			portletURL.setParameter(
-				"selectedGroupId", String.valueOf(selectedGroupId));
-		}
+				return null;
+			}
+		).setParameter(
+			"refererAssetEntryId", getRefererAssetEntryId()
+		).setParameter(
+			"selectedGroupId",
+			() -> {
+				long selectedGroupId = ParamUtil.getLong(
+					_httpServletRequest, "selectedGroupId");
 
-		long[] selectedGroupIds = getSelectedGroupIds();
+				if (selectedGroupId > 0) {
+					return selectedGroupId;
+				}
 
-		if (selectedGroupIds.length > 0) {
-			portletURL.setParameter(
-				"selectedGroupIds", StringUtil.merge(selectedGroupIds));
-		}
+				return null;
+			}
+		).setParameter(
+			"selectedGroupIds",
+			() -> {
+				long[] selectedGroupIds = getSelectedGroupIds();
 
-		portletURL.setParameter(
-			"refererAssetEntryId", String.valueOf(getRefererAssetEntryId()));
-		portletURL.setParameter("typeSelection", getTypeSelection());
-		portletURL.setParameter(
-			"subtypeSelectionId", String.valueOf(getSubtypeSelectionId()));
+				if (selectedGroupIds.length > 0) {
+					return StringUtil.merge(selectedGroupIds);
+				}
 
-		if (_getListable() != null) {
-			portletURL.setParameter("listable", String.valueOf(_getListable()));
-		}
+				return null;
+			}
+		).setParameter(
+			"showAddButton",
+			() -> {
+				if (isShowAddButton()) {
+					return Boolean.TRUE.toString();
+				}
 
-		if (isMultipleSelection()) {
-			portletURL.setParameter(
-				"multipleSelection", Boolean.TRUE.toString());
-		}
-
-		if (isShowAddButton()) {
-			portletURL.setParameter("showAddButton", Boolean.TRUE.toString());
-		}
-
-		portletURL.setParameter(
-			"showNonindexable", String.valueOf(_isShowNonindexable()));
-		portletURL.setParameter(
-			"showScheduled", String.valueOf(_isShowScheduled()));
-		portletURL.setParameter("eventName", getEventName());
-
-		return portletURL;
+				return null;
+			}
+		).setParameter(
+			"showNonindexable", _isShowNonindexable()
+		).setParameter(
+			"showScheduled", _isShowScheduled()
+		).setParameter(
+			"subtypeSelectionId", getSubtypeSelectionId()
+		).setParameter(
+			"typeSelection", getTypeSelection()
+		).buildPortletURL();
 	}
 
 	public long getRefererAssetEntryId() {
@@ -356,24 +378,6 @@ public class AssetBrowserDisplayContext {
 			_httpServletRequest, "typeSelection");
 
 		return _typeSelection;
-	}
-
-	public boolean isLegacySingleSelection() {
-		ThemeDisplay themeDisplay =
-			(ThemeDisplay)_httpServletRequest.getAttribute(
-				WebKeys.THEME_DISPLAY);
-
-		PortletDisplay portletDisplay = themeDisplay.getPortletDisplay();
-
-		if (Objects.equals(
-				AssetBrowserPortletKeys.ASSET_BROWSER,
-				portletDisplay.getPortletName()) &&
-			!isMultipleSelection()) {
-
-			return true;
-		}
-
-		return false;
 	}
 
 	public boolean isMultipleSelection() {
@@ -575,7 +579,7 @@ public class AssetBrowserDisplayContext {
 			).setParameter(
 				"groupType", "site"
 			).setParameter(
-				"showGroupSelector", Boolean.TRUE.toString()
+				"showGroupSelector", true
 			).buildString());
 
 		return breadcrumbEntry;

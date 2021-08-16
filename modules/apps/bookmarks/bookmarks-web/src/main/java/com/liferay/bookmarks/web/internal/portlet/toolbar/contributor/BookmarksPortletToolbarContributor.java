@@ -103,8 +103,7 @@ public class BookmarksPortletToolbarContributor
 				"/bookmarks/edit_entry"
 			).setRedirect(
 				_portal.getCurrentURL(portletRequest)
-			).setParameter(
-				"portletResource",
+			).setPortletResource(
 				() -> {
 					PortletDisplay portletDisplay =
 						themeDisplay.getPortletDisplay();
@@ -149,8 +148,7 @@ public class BookmarksPortletToolbarContributor
 				"/bookmarks/edit_folder"
 			).setRedirect(
 				_portal.getCurrentURL(portletRequest)
-			).setParameter(
-				"portletResource",
+			).setPortletResource(
 				() -> {
 					PortletDisplay portletDisplay =
 						themeDisplay.getPortletDisplay();

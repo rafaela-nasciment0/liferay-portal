@@ -28,6 +28,7 @@ import com.liferay.headless.delivery.client.dto.v1_0.StructuredContentFolder;
 import com.liferay.headless.delivery.client.http.HttpInvoker;
 import com.liferay.headless.delivery.client.pagination.Page;
 import com.liferay.headless.delivery.client.pagination.Pagination;
+import com.liferay.headless.delivery.client.permission.Permission;
 import com.liferay.headless.delivery.client.resource.v1_0.StructuredContentFolderResource;
 import com.liferay.headless.delivery.client.serdes.v1_0.StructuredContentFolderSerDes;
 import com.liferay.petra.function.UnsafeTriConsumer;
@@ -42,10 +43,12 @@ import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Company;
 import com.liferay.portal.kernel.model.Group;
+import com.liferay.portal.kernel.model.role.RoleConstants;
 import com.liferay.portal.kernel.service.CompanyLocalServiceUtil;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.test.util.GroupTestUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
+import com.liferay.portal.kernel.test.util.RoleTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.DateFormatFactoryUtil;
@@ -619,6 +622,76 @@ public abstract class BaseStructuredContentFolderResourceTestCase {
 	}
 
 	@Test
+	public void testGetAssetLibraryStructuredContentFolderPermissionsPage()
+		throws Exception {
+
+		Page<Permission> page =
+			structuredContentFolderResource.
+				getAssetLibraryStructuredContentFolderPermissionsPage(
+					testDepotEntry.getDepotEntryId(), RoleConstants.GUEST);
+
+		Assert.assertNotNull(page);
+	}
+
+	protected StructuredContentFolder
+			testGetAssetLibraryStructuredContentFolderPermissionsPage_addStructuredContentFolder()
+		throws Exception {
+
+		return testPostAssetLibraryStructuredContentFolder_addStructuredContentFolder(
+			randomStructuredContentFolder());
+	}
+
+	@Test
+	public void testPutAssetLibraryStructuredContentFolderPermission()
+		throws Exception {
+
+		@SuppressWarnings("PMD.UnusedLocalVariable")
+		StructuredContentFolder structuredContentFolder =
+			testPutAssetLibraryStructuredContentFolderPermission_addStructuredContentFolder();
+
+		com.liferay.portal.kernel.model.Role role = RoleTestUtil.addRole(
+			RoleConstants.TYPE_REGULAR);
+
+		assertHttpResponseStatusCode(
+			200,
+			structuredContentFolderResource.
+				putAssetLibraryStructuredContentFolderPermissionHttpResponse(
+					testDepotEntry.getDepotEntryId(),
+					new Permission[] {
+						new Permission() {
+							{
+								setActionIds(new String[] {"PERMISSIONS"});
+								setRoleName(role.getName());
+							}
+						}
+					}));
+
+		assertHttpResponseStatusCode(
+			404,
+			structuredContentFolderResource.
+				putAssetLibraryStructuredContentFolderPermissionHttpResponse(
+					testDepotEntry.getDepotEntryId(),
+					new Permission[] {
+						new Permission() {
+							{
+								setActionIds(new String[] {"-"});
+								setRoleName("-");
+							}
+						}
+					}));
+	}
+
+	protected StructuredContentFolder
+			testPutAssetLibraryStructuredContentFolderPermission_addStructuredContentFolder()
+		throws Exception {
+
+		return structuredContentFolderResource.
+			postAssetLibraryStructuredContentFolder(
+				testDepotEntry.getDepotEntryId(),
+				randomStructuredContentFolder());
+	}
+
+	@Test
 	public void testGetSiteStructuredContentFoldersPage() throws Exception {
 		Page<StructuredContentFolder> page =
 			structuredContentFolderResource.getSiteStructuredContentFoldersPage(
@@ -1044,6 +1117,143 @@ public abstract class BaseStructuredContentFolderResourceTestCase {
 
 		Assert.assertTrue(
 			equals(randomStructuredContentFolder, structuredContentFolder));
+	}
+
+	@Test
+	public void testGetSiteStructuredContentFolderPermissionsPage()
+		throws Exception {
+
+		Page<Permission> page =
+			structuredContentFolderResource.
+				getSiteStructuredContentFolderPermissionsPage(
+					testGroup.getGroupId(), RoleConstants.GUEST);
+
+		Assert.assertNotNull(page);
+	}
+
+	protected StructuredContentFolder
+			testGetSiteStructuredContentFolderPermissionsPage_addStructuredContentFolder()
+		throws Exception {
+
+		return testPostSiteStructuredContentFolder_addStructuredContentFolder(
+			randomStructuredContentFolder());
+	}
+
+	@Test
+	public void testPutSiteStructuredContentFolderPermission()
+		throws Exception {
+
+		@SuppressWarnings("PMD.UnusedLocalVariable")
+		StructuredContentFolder structuredContentFolder =
+			testPutSiteStructuredContentFolderPermission_addStructuredContentFolder();
+
+		com.liferay.portal.kernel.model.Role role = RoleTestUtil.addRole(
+			RoleConstants.TYPE_REGULAR);
+
+		assertHttpResponseStatusCode(
+			200,
+			structuredContentFolderResource.
+				putSiteStructuredContentFolderPermissionHttpResponse(
+					structuredContentFolder.getSiteId(),
+					new Permission[] {
+						new Permission() {
+							{
+								setActionIds(new String[] {"PERMISSIONS"});
+								setRoleName(role.getName());
+							}
+						}
+					}));
+
+		assertHttpResponseStatusCode(
+			404,
+			structuredContentFolderResource.
+				putSiteStructuredContentFolderPermissionHttpResponse(
+					structuredContentFolder.getSiteId(),
+					new Permission[] {
+						new Permission() {
+							{
+								setActionIds(new String[] {"-"});
+								setRoleName("-");
+							}
+						}
+					}));
+	}
+
+	protected StructuredContentFolder
+			testPutSiteStructuredContentFolderPermission_addStructuredContentFolder()
+		throws Exception {
+
+		return structuredContentFolderResource.postSiteStructuredContentFolder(
+			testGroup.getGroupId(), randomStructuredContentFolder());
+	}
+
+	@Test
+	public void testGetStructuredContentFolderPermissionsPage()
+		throws Exception {
+
+		StructuredContentFolder postStructuredContentFolder =
+			testGetStructuredContentFolderPermissionsPage_addStructuredContentFolder();
+
+		Page<Permission> page =
+			structuredContentFolderResource.
+				getStructuredContentFolderPermissionsPage(
+					postStructuredContentFolder.getId(), RoleConstants.GUEST);
+
+		Assert.assertNotNull(page);
+	}
+
+	protected StructuredContentFolder
+			testGetStructuredContentFolderPermissionsPage_addStructuredContentFolder()
+		throws Exception {
+
+		return testPostStructuredContentFolderStructuredContentFolder_addStructuredContentFolder(
+			randomStructuredContentFolder());
+	}
+
+	@Test
+	public void testPutStructuredContentFolderPermission() throws Exception {
+		@SuppressWarnings("PMD.UnusedLocalVariable")
+		StructuredContentFolder structuredContentFolder =
+			testPutStructuredContentFolderPermission_addStructuredContentFolder();
+
+		com.liferay.portal.kernel.model.Role role = RoleTestUtil.addRole(
+			RoleConstants.TYPE_REGULAR);
+
+		assertHttpResponseStatusCode(
+			200,
+			structuredContentFolderResource.
+				putStructuredContentFolderPermissionHttpResponse(
+					structuredContentFolder.getId(),
+					new Permission[] {
+						new Permission() {
+							{
+								setActionIds(new String[] {"VIEW"});
+								setRoleName(role.getName());
+							}
+						}
+					}));
+
+		assertHttpResponseStatusCode(
+			404,
+			structuredContentFolderResource.
+				putStructuredContentFolderPermissionHttpResponse(
+					0L,
+					new Permission[] {
+						new Permission() {
+							{
+								setActionIds(new String[] {"-"});
+								setRoleName("-");
+							}
+						}
+					}));
+	}
+
+	protected StructuredContentFolder
+			testPutStructuredContentFolderPermission_addStructuredContentFolder()
+		throws Exception {
+
+		return structuredContentFolderResource.postSiteStructuredContentFolder(
+			testGroup.getGroupId(), randomStructuredContentFolder());
 	}
 
 	@Test
@@ -1724,10 +1934,7 @@ public abstract class BaseStructuredContentFolderResourceTestCase {
 
 				Class<?> clazz = object.getClass();
 
-				for (Field field :
-						ReflectionUtil.getDeclaredFields(
-							clazz.getSuperclass())) {
-
+				for (Field field : getDeclaredFields(clazz.getSuperclass())) {
 					arraySB.append(field.getName());
 					arraySB.append(": ");
 
@@ -1773,10 +1980,7 @@ public abstract class BaseStructuredContentFolderResourceTestCase {
 
 		StringBuilder sb = new StringBuilder("{");
 
-		for (Field field :
-				ReflectionUtil.getDeclaredFields(
-					StructuredContentFolder.class)) {
-
+		for (Field field : getDeclaredFields(StructuredContentFolder.class)) {
 			if (!ArrayUtil.contains(
 					getAdditionalAssertFieldNames(), field.getName())) {
 
@@ -2053,7 +2257,7 @@ public abstract class BaseStructuredContentFolderResourceTestCase {
 		graphQLFields.add(new GraphQLField("siteId"));
 
 		for (Field field :
-				ReflectionUtil.getDeclaredFields(
+				getDeclaredFields(
 					com.liferay.headless.delivery.dto.v1_0.
 						StructuredContentFolder.class)) {
 
@@ -2088,7 +2292,7 @@ public abstract class BaseStructuredContentFolderResourceTestCase {
 				}
 
 				List<GraphQLField> childrenGraphQLFields = getGraphQLFields(
-					ReflectionUtil.getDeclaredFields(clazz));
+					getDeclaredFields(clazz));
 
 				graphQLFields.add(
 					new GraphQLField(field.getName(), childrenGraphQLFields));
@@ -2302,6 +2506,17 @@ public abstract class BaseStructuredContentFolderResourceTestCase {
 		}
 
 		return false;
+	}
+
+	protected Field[] getDeclaredFields(Class clazz) throws Exception {
+		Stream<Field> stream = Stream.of(
+			ReflectionUtil.getDeclaredFields(clazz));
+
+		return stream.filter(
+			field -> !field.isSynthetic()
+		).toArray(
+			Field[]::new
+		);
 	}
 
 	protected java.util.Collection<EntityField> getEntityFields()

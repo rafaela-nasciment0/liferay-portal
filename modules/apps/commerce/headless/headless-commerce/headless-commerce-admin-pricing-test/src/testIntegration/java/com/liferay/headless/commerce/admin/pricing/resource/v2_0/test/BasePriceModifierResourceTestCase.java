@@ -358,23 +358,6 @@ public abstract class BasePriceModifierResourceTestCase {
 
 		assertEquals(randomPriceModifier, postPriceModifier);
 		assertValid(postPriceModifier);
-
-		randomPriceModifier = randomPriceModifier();
-
-		assertHttpResponseStatusCode(
-			404,
-			priceModifierResource.
-				getPriceModifierByExternalReferenceCodeHttpResponse(
-					randomPriceModifier.getExternalReferenceCode()));
-
-		testPostPriceListByExternalReferenceCodePriceModifier_addPriceModifier(
-			randomPriceModifier);
-
-		assertHttpResponseStatusCode(
-			200,
-			priceModifierResource.
-				getPriceModifierByExternalReferenceCodeHttpResponse(
-					randomPriceModifier.getExternalReferenceCode()));
 	}
 
 	protected PriceModifier
@@ -713,22 +696,6 @@ public abstract class BasePriceModifierResourceTestCase {
 
 		assertEquals(randomPriceModifier, postPriceModifier);
 		assertValid(postPriceModifier);
-
-		randomPriceModifier = randomPriceModifier();
-
-		assertHttpResponseStatusCode(
-			404,
-			priceModifierResource.
-				getPriceModifierByExternalReferenceCodeHttpResponse(
-					randomPriceModifier.getExternalReferenceCode()));
-
-		testPostPriceListIdPriceModifier_addPriceModifier(randomPriceModifier);
-
-		assertHttpResponseStatusCode(
-			200,
-			priceModifierResource.
-				getPriceModifierByExternalReferenceCodeHttpResponse(
-					randomPriceModifier.getExternalReferenceCode()));
 	}
 
 	protected PriceModifier testPostPriceListIdPriceModifier_addPriceModifier(
@@ -1229,7 +1196,7 @@ public abstract class BasePriceModifierResourceTestCase {
 		List<GraphQLField> graphQLFields = new ArrayList<>();
 
 		for (Field field :
-				ReflectionUtil.getDeclaredFields(
+				getDeclaredFields(
 					com.liferay.headless.commerce.admin.pricing.dto.v2_0.
 						PriceModifier.class)) {
 
@@ -1264,7 +1231,7 @@ public abstract class BasePriceModifierResourceTestCase {
 				}
 
 				List<GraphQLField> childrenGraphQLFields = getGraphQLFields(
-					ReflectionUtil.getDeclaredFields(clazz));
+					getDeclaredFields(clazz));
 
 				graphQLFields.add(
 					new GraphQLField(field.getName(), childrenGraphQLFields));
@@ -1516,6 +1483,17 @@ public abstract class BasePriceModifierResourceTestCase {
 		}
 
 		return false;
+	}
+
+	protected Field[] getDeclaredFields(Class clazz) throws Exception {
+		Stream<Field> stream = Stream.of(
+			ReflectionUtil.getDeclaredFields(clazz));
+
+		return stream.filter(
+			field -> !field.isSynthetic()
+		).toArray(
+			Field[]::new
+		);
 	}
 
 	protected java.util.Collection<EntityField> getEntityFields()

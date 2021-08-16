@@ -49,8 +49,8 @@ public abstract class FragmentManagementToolbarDisplayContext
 	public String getClearResultsURL() {
 		return PortletURLBuilder.create(
 			getPortletURL()
-		).setParameter(
-			"keywords", StringPool.BLANK
+		).setKeywords(
+			StringPool.BLANK
 		).buildString();
 	}
 
@@ -60,11 +60,6 @@ public abstract class FragmentManagementToolbarDisplayContext
 	public String getComponentId() {
 		return "fragmentEntriesManagementToolbar" +
 			fragmentDisplayContext.getFragmentCollectionId();
-	}
-
-	@Override
-	public String getDefaultEventHandler() {
-		return "FRAGMENT_ENTRIES_MANAGEMENT_TOOLBAR_DEFAULT_EVENT_HANDLER";
 	}
 
 	@Override

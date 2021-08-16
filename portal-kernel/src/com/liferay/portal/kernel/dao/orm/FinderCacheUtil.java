@@ -33,11 +33,15 @@ public class FinderCacheUtil {
 
 	/**
 	 * @deprecated As of Cavanaugh (7.4.x), replaced by {@link
-	 * 			#clearCache(Class)}
+	 *             #clearCache(Class)}
 	 */
 	@Deprecated
 	public static void clearCache(String className) {
 		_finderCache.clearCache(className);
+	}
+
+	public static void clearDSLQueryCache(String tableName) {
+		_finderCache.clearDSLQueryCache(tableName);
 	}
 
 	public static void clearLocalCache() {
@@ -54,7 +58,7 @@ public class FinderCacheUtil {
 
 	/**
 	 * @deprecated As of Cavanaugh (7.4.x), replaced by {@link
-	 * 			#getResult(FinderPath, Object[])}
+	 *             #getResult(FinderPath, Object[])}
 	 */
 	@Deprecated
 	public static Object getResult(
@@ -65,7 +69,7 @@ public class FinderCacheUtil {
 	}
 
 	public static void invalidate() {
-		getFinderCache().invalidate();
+		_finderCache.invalidate();
 	}
 
 	public static void putResult(
@@ -76,7 +80,7 @@ public class FinderCacheUtil {
 
 	/**
 	 * @deprecated As of Cavanaugh (7.4.x), replaced by {@link
-	 * 			#putResult(FinderPath, Object[], Object)}
+	 *             #putResult(FinderPath, Object[], Object)}
 	 */
 	@Deprecated
 	public static void putResult(

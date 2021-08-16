@@ -104,14 +104,14 @@ public class ViewModuleManagementToolbarDisplayContext
 		).setParameter(
 			"app", getApp()
 		).setParameter(
-			"symbolicName", bundle.getSymbolicName()
-		).setParameter(
-			"version", bundle.getVersion()
+			"orderByType", getOrderByType()
 		).setParameter(
 			"pluginType", getPluginType()
 		).setParameter(
-			"orderByType", getOrderByType()
-		).build();
+			"symbolicName", bundle.getSymbolicName()
+		).setParameter(
+			"version", bundle.getVersion()
+		).buildPortletURL();
 
 		if (_searchContainer != null) {
 			portletURL.setParameter(

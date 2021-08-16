@@ -60,6 +60,7 @@ import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MultivaluedHashMap;
 import javax.ws.rs.core.MultivaluedMap;
@@ -86,6 +87,7 @@ public abstract class BaseAttachmentResourceImpl
 		value = {
 			@Parameter(in = ParameterIn.PATH, name = "channelId"),
 			@Parameter(in = ParameterIn.PATH, name = "productId"),
+			@Parameter(in = ParameterIn.QUERY, name = "accountId"),
 			@Parameter(in = ParameterIn.QUERY, name = "page"),
 			@Parameter(in = ParameterIn.QUERY, name = "pageSize")
 		}
@@ -94,10 +96,11 @@ public abstract class BaseAttachmentResourceImpl
 	@Produces({"application/json", "application/xml"})
 	@Tags(value = {@Tag(name = "Attachment")})
 	public Page<Attachment> getChannelProductAttachmentsPage(
-			@NotNull @Parameter(hidden = true) @PathParam("channelId")
-				Long channelId,
-			@NotNull @Parameter(hidden = true) @PathParam("productId")
-				Long productId,
+			@NotNull @Parameter(hidden = true) @PathParam("channelId") Long
+				channelId,
+			@NotNull @Parameter(hidden = true) @PathParam("productId") Long
+				productId,
+			@Parameter(hidden = true) @QueryParam("accountId") Long accountId,
 			@Context Pagination pagination)
 		throws Exception {
 
@@ -115,6 +118,7 @@ public abstract class BaseAttachmentResourceImpl
 		value = {
 			@Parameter(in = ParameterIn.PATH, name = "channelId"),
 			@Parameter(in = ParameterIn.PATH, name = "productId"),
+			@Parameter(in = ParameterIn.QUERY, name = "accountId"),
 			@Parameter(in = ParameterIn.QUERY, name = "page"),
 			@Parameter(in = ParameterIn.QUERY, name = "pageSize")
 		}
@@ -123,10 +127,11 @@ public abstract class BaseAttachmentResourceImpl
 	@Produces({"application/json", "application/xml"})
 	@Tags(value = {@Tag(name = "Attachment")})
 	public Page<Attachment> getChannelProductImagesPage(
-			@NotNull @Parameter(hidden = true) @PathParam("channelId")
-				Long channelId,
-			@NotNull @Parameter(hidden = true) @PathParam("productId")
-				Long productId,
+			@NotNull @Parameter(hidden = true) @PathParam("channelId") Long
+				channelId,
+			@NotNull @Parameter(hidden = true) @PathParam("productId") Long
+				productId,
+			@Parameter(hidden = true) @QueryParam("accountId") Long accountId,
 			@Context Pagination pagination)
 		throws Exception {
 

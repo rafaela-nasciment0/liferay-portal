@@ -10,6 +10,7 @@
  * distribution rights of the Software.
  */
 
+import ClayButton from '@clayui/button';
 import ClayIcon from '@clayui/icon';
 import ClayLayout from '@clayui/layout';
 import ClayModal from '@clayui/modal';
@@ -17,9 +18,10 @@ import React from 'react';
 
 import ContentView from '../../../../shared/components/content-view/ContentView.es';
 import RetryButton from '../../../../shared/components/list/RetryButton.es';
+import {remainingTimeFormat} from '../../../../shared/util/duration.es';
 import moment from '../../../../shared/util/moment.es';
 
-const Body = ({
+function Body({
 	assetTitle,
 	assetType,
 	assignees = [{name: Liferay.Language.get('unassigned')}],
@@ -31,11 +33,27 @@ const Body = ({
 	id,
 	slaResults = [],
 	taskNames = [],
-}) => {
-	const SLAs = {open: [], resolved: []};
+}) {
+	const SLAs = {notStarted: [], open: [], resolved: []};
 
 	slaResults.forEach((result) => {
-		SLAs[result.status === 'Stopped' ? 'resolved' : 'open'].push(result);
+		let slaGroup = '';
+
+		switch (result.status) {
+			case 'NEW': {
+				slaGroup = 'notStarted';
+				break;
+			}
+			case 'STOPPED': {
+				slaGroup = 'resolved';
+				break;
+			}
+			default: {
+				slaGroup = 'open';
+			}
+		}
+
+		SLAs[slaGroup].push(result);
 	});
 
 	const statesProps = {
@@ -89,6 +107,18 @@ const Body = ({
 				)}
 
 				{SLAs.resolved.map((item) => (
+					<Body.SLAResultItem key={item.id} {...item} />
+				))}
+
+				{SLAs.notStarted.length > 0 && (
+					<Body.SectionSubTitle>
+						{`${Liferay.Language.get(
+							'not-started'
+						).toUpperCase()} (${SLAs.notStarted.length})`}
+					</Body.SectionSubTitle>
+				)}
+
+				{SLAs.notStarted.map((item) => (
 					<Body.SLAResultItem key={item.id} {...item} />
 				))}
 
@@ -152,12 +182,18 @@ const Body = ({
 					/>
 				)}
 
-				<a
-					className="btn btn-secondary btn-sm font-weight-medium mb-1 mt-3"
+				<ClayButton
+					className="mb-1 mt-3"
 					data-tooltip-align="bottom"
 					data-tooltip-delay="0"
-					href={`/group/control_panel/manage/-/workflow_instance/view/${id}`}
-					target="_blank"
+					displayType="secondary"
+					onClick={() =>
+						window.open(
+							`/group/control_panel/manage/-/workflow_instance/view/${id}`,
+							'_blank'
+						)
+					}
+					small
 					title={Liferay.Language.get('open-page-in-a-new-tab')}
 				>
 					{Liferay.Language.get('go-to-submission-page')}
@@ -165,27 +201,27 @@ const Body = ({
 					<span className="inline-item inline-item-after">
 						<ClayIcon symbol="shortcut" />
 					</span>
-				</a>
+				</ClayButton>
 			</ContentView>
 		</ClayModal.Body>
 	);
-};
+}
 
-const SectionTitle = ({children, className = ''}) => {
+function SectionTitle({children, className = ''}) {
 	const classNames = `${className} font-weight-medium mb-4`;
 
 	return <h4 className={classNames}>{children}</h4>;
-};
+}
 
-const SectionSubTitle = ({children}) => {
+function SectionSubTitle({children}) {
 	return (
 		<h5 className="font-weight-medium mb-4 mt-4 text-secondary">
 			{children}
 		</h5>
 	);
-};
+}
 
-const SectionAttribute = ({description, detail}) => {
+function SectionAttribute({description, detail}) {
 	return (
 		<ClayLayout.Row containerElement="p">
 			<ClayLayout.Col
@@ -201,32 +237,36 @@ const SectionAttribute = ({description, detail}) => {
 			</ClayLayout.Col>
 		</ClayLayout.Row>
 	);
-};
+}
 
-const SLAResultItem = ({dateOverdue, name, onTime, remainingTime, status}) => {
-	const bgColor = onTime ? 'success' : 'danger';
-	const iconName = onTime ? 'check-circle' : 'exclamation-circle';
+function getResultItemInfo({onTime, status}) {
+	if (status === 'NEW') {
+		return {bgColor: 'text-info', iconName: 'hr'};
+	}
+
+	if (onTime) {
+		return {bgColor: 'success', iconName: 'check-circle'};
+	}
+
+	return {bgColor: 'danger', iconName: 'exclamation-circle'};
+}
+
+function SLAResultItem({dateOverdue, name, onTime, remainingTime, status}) {
+	const {bgColor, iconName} = getResultItemInfo({onTime, status});
 
 	const getStatusText = (status) => {
 		switch (status) {
-			case 'Paused': {
+			case 'NEW': {
+				return `(${Liferay.Language.get('untracked')})`;
+			}
+			case 'PAUSED': {
 				return `(${Liferay.Language.get('sla-paused')})`;
 			}
-			case 'Running': {
-				const remainingTimePositive = onTime
-					? remainingTime
-					: remainingTime * -1;
-
-				const remainingTimeUTC = moment.utc(remainingTimePositive);
-
-				const durationText =
-					remainingTimeUTC.format('D') -
-					1 +
-					remainingTimeUTC.format('[d] HH[h] mm[min]');
-
-				const onTimeText = onTime
-					? Liferay.Language.get('left')
-					: Liferay.Language.get('overdue');
+			case 'RUNNING': {
+				const [durationText, onTimeText] = remainingTimeFormat(
+					onTime,
+					remainingTime
+				);
 
 				return `${moment
 					.utc(dateOverdue)
@@ -235,7 +275,7 @@ const SLAResultItem = ({dateOverdue, name, onTime, remainingTime, status}) => {
 					)} (${durationText} ${onTimeText})`;
 			}
 			default: {
-				if (status === 'Stopped' && onTime) {
+				if (status === 'STOPPED' && onTime) {
 					return `(${Liferay.Language.get('resolved-on-time')})`;
 				}
 
@@ -257,11 +297,11 @@ const SLAResultItem = ({dateOverdue, name, onTime, remainingTime, status}) => {
 			<span className="small">{getStatusText(status)}</span>
 		</div>
 	);
-};
+}
 
 Body.SLAResultItem = SLAResultItem;
 Body.SectionTitle = SectionTitle;
 Body.SectionSubTitle = SectionSubTitle;
 Body.SectionAttribute = SectionAttribute;
 
-export {Body};
+export default Body;

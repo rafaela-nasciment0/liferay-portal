@@ -22,6 +22,7 @@ import com.liferay.dynamic.data.mapping.storage.DDMFormValues;
 import com.liferay.dynamic.data.mapping.storage.Field;
 import com.liferay.dynamic.data.mapping.storage.Fields;
 import com.liferay.dynamic.data.mapping.storage.constants.FieldConstants;
+import com.liferay.dynamic.data.mapping.util.DDM;
 import com.liferay.dynamic.data.mapping.util.DDMFormValuesToFieldsConverter;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
@@ -32,8 +33,12 @@ import com.liferay.portal.kernel.util.StringUtil;
 
 import java.io.Serializable;
 
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.osgi.service.component.annotations.Component;
 
@@ -52,10 +57,16 @@ public class DDMFormValuesToFieldsConverterImpl
 		Map<String, DDMFormField> ddmFormFieldsMap =
 			ddmStructure.getFullHierarchyDDMFormFieldsMap(true);
 
+		List<DDMFormFieldValue> ddmFormFieldValues = _filterDDMFormFieldValues(
+			ddmFormFieldsMap, ddmFormValues.getDDMFormFieldValues());
+
 		Fields ddmFields = createDDMFields(ddmStructure);
 
-		for (DDMFormFieldValue ddmFormFieldValue :
-				ddmFormValues.getDDMFormFieldValues()) {
+		for (DDMFormFieldValue ddmFormFieldValue : ddmFormFieldValues) {
+			_addMissingRepeatedDDMFormFieldValues(
+				ddmFormFieldValue.getDDMFormField(),
+				ddmFormValues.getDefaultLocale(),
+				ddmFormValues.getAvailableLocales(), ddmFormFieldValue, false);
 
 			addDDMFields(
 				ddmStructure.getStructureId(), ddmFormFieldsMap,
@@ -207,6 +218,68 @@ public class DDMFormValuesToFieldsConverterImpl
 		else {
 			setDDMFieldUnlocalizedValue(ddmField, type, value, defaultLocale);
 		}
+	}
+
+	private void _addMissingRepeatedDDMFormFieldValues(
+			DDMFormField ddmFormField, Locale locale,
+			Set<Locale> availableLocales, DDMFormFieldValue ddmFormFieldValue,
+			boolean repeatableAncestor)
+		throws PortalException {
+
+		if (ddmFormField.isLocalizable() &&
+			(ddmFormField.isRepeatable() || repeatableAncestor) &&
+			!StringUtil.equals(ddmFormField.getType(), "fieldset")) {
+
+			availableLocales.forEach(
+				availableLocale -> {
+					if (!locale.equals(availableLocale)) {
+						Value value = ddmFormFieldValue.getValue();
+
+						if (value != null) {
+							Map<Locale, String> values = value.getValues();
+
+							if (values.get(availableLocale) == null) {
+								value.addString(
+									availableLocale, DDM.FIELD_EMPTY_VALUE);
+							}
+						}
+					}
+				});
+		}
+
+		for (DDMFormFieldValue nestedDDMFormFieldValue :
+				ddmFormFieldValue.getNestedDDMFormFieldValues()) {
+
+			_addMissingRepeatedDDMFormFieldValues(
+				nestedDDMFormFieldValue.getDDMFormField(), locale,
+				availableLocales, nestedDDMFormFieldValue,
+				repeatableAncestor || ddmFormField.isRepeatable());
+		}
+	}
+
+	private List<DDMFormFieldValue> _filterDDMFormFieldValues(
+		Map<String, DDMFormField> ddmFormFieldsMap,
+		List<DDMFormFieldValue> ddmFormFieldValues) {
+
+		Stream<DDMFormFieldValue> stream = ddmFormFieldValues.stream();
+
+		return stream.filter(
+			ddmFormFieldValue -> ddmFormFieldsMap.containsKey(
+				ddmFormFieldValue.getName())
+		).peek(
+			ddmFormFieldValue -> {
+				List<DDMFormFieldValue> nestedDDMFormFieldValues =
+					ddmFormFieldValue.getNestedDDMFormFieldValues();
+
+				if (!nestedDDMFormFieldValues.isEmpty()) {
+					ddmFormFieldValue.setNestedDDMFormFields(
+						_filterDDMFormFieldValues(
+							ddmFormFieldsMap, nestedDDMFormFieldValues));
+				}
+			}
+		).collect(
+			Collectors.toList()
+		);
 	}
 
 }

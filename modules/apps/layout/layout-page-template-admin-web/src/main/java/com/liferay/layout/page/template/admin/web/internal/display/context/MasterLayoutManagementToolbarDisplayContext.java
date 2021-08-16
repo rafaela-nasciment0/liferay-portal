@@ -66,23 +66,38 @@ public class MasterLayoutManagementToolbarDisplayContext
 
 	@Override
 	public List<DropdownItem> getActionDropdownItems() {
-		return DropdownItemListBuilder.add(
-			dropdownItem -> {
-				dropdownItem.putData("action", "deleteSelectedMasterLayouts");
-				dropdownItem.setIcon("times-circle");
-				dropdownItem.setLabel(
-					LanguageUtil.get(httpServletRequest, "delete"));
-				dropdownItem.setQuickAction(true);
+		return DropdownItemListBuilder.addGroup(
+			dropdownGroupItem -> {
+				dropdownGroupItem.setDropdownItems(
+					DropdownItemListBuilder.add(
+						dropdownItem -> {
+							dropdownItem.putData(
+								"action", "exportMasterLayouts");
+							dropdownItem.putData(
+								"exportMasterLayoutURL",
+								_getExportMasterLayoutURL());
+							dropdownItem.setIcon("download");
+							dropdownItem.setLabel(
+								LanguageUtil.get(httpServletRequest, "export"));
+							dropdownItem.setQuickAction(true);
+						}
+					).build());
+				dropdownGroupItem.setSeparator(true);
 			}
-		).add(
-			dropdownItem -> {
-				dropdownItem.putData("action", "exportMasterLayouts");
-				dropdownItem.putData(
-					"exportMasterLayoutURL", _getExportMasterLayoutURL());
-				dropdownItem.setIcon("download");
-				dropdownItem.setLabel(
-					LanguageUtil.get(httpServletRequest, "export"));
-				dropdownItem.setQuickAction(true);
+		).addGroup(
+			dropdownGroupItem -> {
+				dropdownGroupItem.setDropdownItems(
+					DropdownItemListBuilder.add(
+						dropdownItem -> {
+							dropdownItem.putData(
+								"action", "deleteSelectedMasterLayouts");
+							dropdownItem.setIcon("times-circle");
+							dropdownItem.setLabel(
+								LanguageUtil.get(httpServletRequest, "delete"));
+							dropdownItem.setQuickAction(true);
+						}
+					).build());
+				dropdownGroupItem.setSeparator(true);
 			}
 		).build();
 	}
@@ -113,8 +128,8 @@ public class MasterLayoutManagementToolbarDisplayContext
 	public String getClearResultsURL() {
 		return PortletURLBuilder.create(
 			getPortletURL()
-		).setParameter(
-			"keywords", StringPool.BLANK
+		).setKeywords(
+			StringPool.BLANK
 		).buildString();
 	}
 
@@ -136,8 +151,8 @@ public class MasterLayoutManagementToolbarDisplayContext
 							liferayPortletResponse
 						).setActionName(
 							"/layout_page_template_admin/add_master_layout"
-						).setParameter(
-							"backURL", _themeDisplay.getURLCurrent()
+						).setBackURL(
+							_themeDisplay.getURLCurrent()
 						).setParameter(
 							"type",
 							LayoutPageTemplateEntryTypeConstants.

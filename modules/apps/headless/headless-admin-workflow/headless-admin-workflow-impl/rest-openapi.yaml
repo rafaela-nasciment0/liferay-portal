@@ -78,6 +78,25 @@ components:
                     readOnly: true
                     type: string
             type: object
+        Node:
+            # @review
+            description:
+                Represents a node in a workflow.
+            properties:
+                label:
+                    readOnly: true
+                    type: string
+                name:
+                    readOnly: true
+                    type: string
+                type:
+                    # @review
+                    description:
+                        The workflow's node types.
+                    enum: [CONDITION, FORK, INITIAL_STATE, JOIN, JOIN_XOR, STATE, TASK, TERMINAL_STATE]
+                    readOnly: true
+                    type: string
+            type: object
         ObjectReviewed:
             description:
                 Represents the resource modified by the current workflow.
@@ -172,6 +191,12 @@ components:
                 name:
                     readOnly: true
                     type: string
+                sourceNodeName:
+                    readOnly: true
+                    type: string
+                targetNodeName:
+                    readOnly: true
+                    type: string
             type: object
         WorkflowDefinition:
             properties:
@@ -192,6 +217,11 @@ components:
                     type: string
                 name:
                     type: string
+                nodes:
+                    items:
+                        $ref: "#/components/schemas/Node"
+                    readOnly: true
+                    type: array
                 title:
                     type: string
                 title_i18n:
@@ -199,6 +229,11 @@ components:
                         type: string
                     readOnly: true
                     type: object
+                transitions:
+                    items:
+                        $ref: "#/components/schemas/Transition"
+                    readOnly: true
+                    type: array
                 version:
                     type: string
             type: object
@@ -337,7 +372,7 @@ components:
                 type:
                     description:
                         The workflow log's type.
-                    enum: [TaskAssign, TaskCompletion, TaskUpdate, Transition]
+                    enum: [NodeEntry, TaskAssign, TaskCompletion, TaskUpdate, Transition]
                     readOnly: true
                     type: string
                 workflowTaskId:
@@ -579,7 +614,7 @@ components:
 info:
     description:
         "A Java client JAR is available for use with the group ID 'com.liferay', artifact ID
-        'com.liferay.headless.admin.workflow.client', and version '4.0.1'."
+        'com.liferay.headless.admin.workflow.client', and version '4.0.6'."
     license:
         name: "Apache 2.0"
         url: "http://www.apache.org/licenses/LICENSE-2.0.html"
@@ -925,7 +960,7 @@ paths:
                   name: types
                   schema:
                       items:
-                          enum: [TaskAssign, TaskCompletion, TaskUpdate, Transition]
+                          enum: [NodeEntry, TaskAssign, TaskCompletion, TaskUpdate, Transition]
                           type: string
                       type: array
                 - in: query

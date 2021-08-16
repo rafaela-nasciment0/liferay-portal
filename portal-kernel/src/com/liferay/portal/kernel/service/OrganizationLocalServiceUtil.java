@@ -181,6 +181,14 @@ public class OrganizationLocalServiceUtil {
 		getService().addUserOrganization(userId, organization);
 	}
 
+	public static void addUserOrganizationByEmailAddress(
+			String emailAddress, long organizationId)
+		throws PortalException {
+
+		getService().addUserOrganizationByEmailAddress(
+			emailAddress, organizationId);
+	}
+
 	public static void addUserOrganizations(
 		long userId, List<Organization> organizations) {
 
@@ -310,6 +318,14 @@ public class OrganizationLocalServiceUtil {
 		getService().deleteUserOrganization(userId, organization);
 	}
 
+	public static void deleteUserOrganizationByEmailAddress(
+			String emailAddress, long organizationId)
+		throws PortalException {
+
+		getService().deleteUserOrganizationByEmailAddress(
+			emailAddress, organizationId);
+	}
+
 	public static void deleteUserOrganizations(
 		long userId, List<Organization> organizations) {
 
@@ -324,6 +340,10 @@ public class OrganizationLocalServiceUtil {
 
 	public static <T> T dslQuery(DSLQuery dslQuery) {
 		return getService().dslQuery(dslQuery);
+	}
+
+	public static int dslQueryCount(DSLQuery dslQuery) {
+		return getService().dslQueryCount(dslQuery);
 	}
 
 	public static DynamicQuery dynamicQuery() {

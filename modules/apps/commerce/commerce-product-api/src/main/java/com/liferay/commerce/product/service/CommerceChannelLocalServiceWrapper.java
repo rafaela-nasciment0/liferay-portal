@@ -161,6 +161,13 @@ public class CommerceChannelLocalServiceWrapper
 	}
 
 	@Override
+	public int dslQueryCount(
+		com.liferay.petra.sql.dsl.query.DSLQuery dslQuery) {
+
+		return _commerceChannelLocalService.dslQueryCount(dslQuery);
+	}
+
+	@Override
 	public com.liferay.portal.kernel.dao.orm.DynamicQuery dynamicQuery() {
 		return _commerceChannelLocalService.dynamicQuery();
 	}
@@ -304,6 +311,15 @@ public class CommerceChannelLocalServiceWrapper
 
 		return _commerceChannelLocalService.fetchCommerceChannelBySiteGroupId(
 			siteGroupId);
+	}
+
+	@Override
+	public com.liferay.portal.kernel.model.Group fetchCommerceChannelGroup(
+			long commerceChannelId)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return _commerceChannelLocalService.fetchCommerceChannelGroup(
+			commerceChannelId);
 	}
 
 	@Override

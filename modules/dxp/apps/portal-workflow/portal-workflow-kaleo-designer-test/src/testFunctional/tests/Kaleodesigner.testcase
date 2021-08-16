@@ -147,9 +147,7 @@ definition {
 
 	@priority = "5"
 	test AddJoinXORWorkflowDefinitionViaViewTab {
-		property portal.acceptance = "true";
 		property test.name.skip.portal.instance = "Kaleodesigner#AddJoinXORNodeEditNameAndDesciptionAndDeleteViaViewTab";
-		property testray.component.names = "Training";
 
 		ApplicationsMenu.gotoPortlet(
 			category = "Workflow",
@@ -233,6 +231,7 @@ definition {
 
 	@priority = "5"
 	test AddNewWorkflowDefinitionViaViewTab {
+		property portal.acceptance = "true";
 		property test.name.skip.portal.instance = "Kaleodesigner#AddNewWorkflowDefinitionViaViewTab";
 
 		ApplicationsMenu.gotoPortlet(
@@ -426,19 +425,18 @@ definition {
 	@description = "This is a use case for LPS-37209."
 	@priority = "4"
 	test ConfigureTaskTimersViaSourceTab {
-		property portal.upstream = "quarantine";
 		property test.name.skip.portal.instance = "Kaleodesigner#ConfigureTaskTimersViaSourceTab";
-
-		var fileContent = TestCase.getFileContent(fileName = "workflow_definition_task_timers.xml");
 
 		ApplicationsMenu.gotoPortlet(
 			category = "Workflow",
 			panel = "Applications",
 			portlet = "Process Builder");
 
-		Workflow.addNewDefinition(workflowDefinitionTitle = "New Workflow Definition Title");
+		Workflow.uploadDefinition(
+			workflowDefinitionFile = "workflow_definition_task_timers.xml",
+			workflowDefinitionTitle = "New Workflow Definition Title");
 
-		KaleoDesigner.addNodeViaSourceXML(sourceXML = "${fileContent}");
+		Workflow.gotoEditWorkflowDefinition(workflowDefinitionTitle = "New Workflow Definition Title");
 
 		KaleoDesigner.selectNode(nodeNodeLabel = "__TIMER_REVIEW__");
 
@@ -546,8 +544,8 @@ definition {
 
 	@priority = "5"
 	test DeleteConnectors {
+		property portal.acceptance = "true";
 		property test.name.skip.portal.instance = "Kaleodesigner#DeleteConnectors";
-		property testray.component.names = "Training";
 
 		ApplicationsMenu.gotoPortlet(
 			category = "Workflow",
@@ -647,7 +645,6 @@ definition {
 	test EditAssignmentsForTaskNodeKDCP {
 		property portal.acceptance = "true";
 		property test.name.skip.portal.instance = "Kaleodesigner#EditAssignmentsForTaskNodeKDCP";
-		property testray.component.names = "Training";
 
 		ApplicationsMenu.gotoPortlet(
 			category = "Workflow",
@@ -680,6 +677,7 @@ definition {
 	@description = "This is a use case for LPS-71924."
 	@priority = "5"
 	test PublishDefaultWorkflowDefinition {
+		property portal.acceptance = "true";
 		property test.name.skip.portal.instance = "Kaleodesigner#PublishDefaultWorkflowDefinition";
 
 		ApplicationsMenu.gotoPortlet(

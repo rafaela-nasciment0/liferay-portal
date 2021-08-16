@@ -32,6 +32,10 @@ definition {
 
 		Site.openSiteSettingsAdmin(siteURLKey = "site-name");
 
+		Click(
+			key_itemName = "Site Configuration",
+			locator1 = "ListGroupItem#ITEM_TEXT");
+
 		PortletEntry.inputLocalizedName(
 			language = "es_ES",
 			localizedName = "Nombre del Sitio");
@@ -364,6 +368,10 @@ definition {
 
 		Site.openSiteSettingsAdmin(siteURLKey = "site-name");
 
+		Click(
+			key_itemName = "Site Configuration",
+			locator1 = "ListGroupItem#ITEM_TEXT");
+
 		PortletEntry.inputLocalizedName(
 			language = "es_ES",
 			localizedName = "Nombre del Sitio");
@@ -460,6 +468,7 @@ definition {
 			portlet = "Ajustes del sitio");
 
 		Site.configureCurrentLanguagesCP(
+			category = "Localización",
 			currentSiteLanguages = "español (España),alemán (Alemania)",
 			defaultSiteLanguage = "español (España)",
 			displaySettings = "Display Settings",
@@ -497,6 +506,7 @@ definition {
 			portlet = "Ajustes del sitio");
 
 		Site.configureCurrentLanguagesCP(
+			category = "Localización",
 			currentSiteLanguages = "español (España),alemán (Alemania),inglés (Estados Unidos)",
 			defaultSiteLanguage = "español (España)",
 			displaySettings = "Display Settings",
@@ -683,8 +693,6 @@ definition {
 			currentSiteLanguages = "English (United States),Hungarian (Hungary)",
 			defaultSiteLanguage = "English (United States)");
 
-		Navigator.gotoNavTab(navTab = "General");
-
 		User.logoutPG();
 
 		Navigator.openSpecificURL(url = "${portalURL}/fr/web/site-name/language-page");
@@ -707,7 +715,10 @@ definition {
 			locator1 = "Home#PAGE",
 			value1 = "Home");
 
-		User.loginPG(specificURL = "${portalURL}/fr");
+		User.firstLoginUI(
+			password = "test",
+			specificURL = "${portalURL}/fr",
+			userEmailAddress = "test@liferay.com");
 
 		AssertLocation(value1 = "${portalURL}/web/guest");
 

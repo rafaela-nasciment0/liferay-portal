@@ -49,7 +49,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-import javax.portlet.ActionRequest;
 import javax.portlet.PortletURL;
 import javax.portlet.RenderRequest;
 import javax.portlet.RenderResponse;
@@ -93,15 +92,11 @@ public class EditUserGroupAssignmentsManagementToolbarDisplayContext {
 	public Map<String, Object> getAdditionalProps() {
 		return HashMapBuilder.<String, Object>put(
 			"editUserGroupAssignmentsURL",
-			() -> {
-				PortletURL editUserGroupAssignmentsURL =
-					_renderResponse.createActionURL();
-
-				editUserGroupAssignmentsURL.setParameter(
-					ActionRequest.ACTION_NAME, "editUserGroupAssignments");
-
-				return editUserGroupAssignmentsURL.toString();
-			}
+			PortletURLBuilder.createActionURL(
+				_renderResponse
+			).setActionName(
+				"editUserGroupAssignments"
+			).buildString()
 		).put(
 			"portletURL",
 			() -> {
@@ -111,17 +106,15 @@ public class EditUserGroupAssignmentsManagementToolbarDisplayContext {
 			}
 		).put(
 			"selectUsersURL",
-			() -> {
-				PortletURL selectUsersURL = _renderResponse.createActionURL();
-
-				selectUsersURL.setParameter(
-					"mvcPath", "/select_user_group_users.jsp");
-				selectUsersURL.setParameter(
-					"userGroupId", String.valueOf(_userGroup.getUserGroupId()));
-				selectUsersURL.setWindowState(LiferayWindowState.POP_UP);
-
-				return selectUsersURL.toString();
-			}
+			PortletURLBuilder.createActionURL(
+				_renderResponse
+			).setMVCPath(
+				"/select_user_group_users.jsp"
+			).setParameter(
+				"userGroupId", _userGroup.getUserGroupId()
+			).setWindowState(
+				LiferayWindowState.POP_UP
+			).buildString()
 		).put(
 			"userGroupName",
 			() -> {
@@ -135,8 +128,8 @@ public class EditUserGroupAssignmentsManagementToolbarDisplayContext {
 	public String getClearResultsURL() {
 		return PortletURLBuilder.create(
 			getPortletURL()
-		).setParameter(
-			"keywords", StringPool.BLANK
+		).setKeywords(
+			StringPool.BLANK
 		).buildString();
 	}
 
@@ -201,18 +194,23 @@ public class EditUserGroupAssignmentsManagementToolbarDisplayContext {
 			_mvcPath
 		).setRedirect(
 			ParamUtil.getString(_httpServletRequest, "redirect")
-		).setParameter(
-			"userGroupId", _userGroup.getUserGroupId()
+		).setKeywords(
+			() -> {
+				if (Validator.isNotNull(getKeywords())) {
+					return getKeywords();
+				}
+
+				return null;
+			}
 		).setParameter(
 			"displayStyle", _displayStyle
-		).build();
-
-		if (Validator.isNotNull(getKeywords())) {
-			portletURL.setParameter("keywords", getKeywords());
-		}
-
-		portletURL.setParameter("orderByCol", getOrderByCol());
-		portletURL.setParameter("orderByType", getOrderByType());
+		).setParameter(
+			"orderByCol", getOrderByCol()
+		).setParameter(
+			"orderByType", getOrderByType()
+		).setParameter(
+			"userGroupId", _userGroup.getUserGroupId()
+		).buildPortletURL();
 
 		if (_userSearch != null) {
 			portletURL.setParameter(

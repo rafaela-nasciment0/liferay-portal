@@ -3151,25 +3151,25 @@ public class AssetDisplayPageEntryPersistenceImpl
 		ServiceContext serviceContext =
 			ServiceContextThreadLocal.getServiceContext();
 
-		Date now = new Date();
+		Date date = new Date();
 
 		if (isNew && (assetDisplayPageEntry.getCreateDate() == null)) {
 			if (serviceContext == null) {
-				assetDisplayPageEntry.setCreateDate(now);
+				assetDisplayPageEntry.setCreateDate(date);
 			}
 			else {
 				assetDisplayPageEntry.setCreateDate(
-					serviceContext.getCreateDate(now));
+					serviceContext.getCreateDate(date));
 			}
 		}
 
 		if (!assetDisplayPageEntryModelImpl.hasSetModifiedDate()) {
 			if (serviceContext == null) {
-				assetDisplayPageEntry.setModifiedDate(now);
+				assetDisplayPageEntry.setModifiedDate(date);
 			}
 			else {
 				assetDisplayPageEntry.setModifiedDate(
-					serviceContext.getModifiedDate(now));
+					serviceContext.getModifiedDate(date));
 			}
 		}
 
@@ -3607,7 +3607,8 @@ public class AssetDisplayPageEntryPersistenceImpl
 	public Set<String> getCTColumnNames(
 		CTColumnResolutionType ctColumnResolutionType) {
 
-		return _ctColumnNamesMap.get(ctColumnResolutionType);
+		return _ctColumnNamesMap.getOrDefault(
+			ctColumnResolutionType, Collections.emptySet());
 	}
 
 	@Override
@@ -3641,7 +3642,6 @@ public class AssetDisplayPageEntryPersistenceImpl
 	static {
 		Set<String> ctControlColumnNames = new HashSet<String>();
 		Set<String> ctIgnoreColumnNames = new HashSet<String>();
-		Set<String> ctMergeColumnNames = new HashSet<String>();
 		Set<String> ctStrictColumnNames = new HashSet<String>();
 
 		ctControlColumnNames.add("mvccVersion");
@@ -3663,7 +3663,6 @@ public class AssetDisplayPageEntryPersistenceImpl
 			CTColumnResolutionType.CONTROL, ctControlColumnNames);
 		_ctColumnNamesMap.put(
 			CTColumnResolutionType.IGNORE, ctIgnoreColumnNames);
-		_ctColumnNamesMap.put(CTColumnResolutionType.MERGE, ctMergeColumnNames);
 		_ctColumnNamesMap.put(
 			CTColumnResolutionType.PK,
 			Collections.singleton("assetDisplayPageEntryId"));
@@ -3945,7 +3944,7 @@ public class AssetDisplayPageEntryPersistenceImpl
 			return AssetDisplayPageEntryTable.INSTANCE.getTableName();
 		}
 
-		private Object[] _getValue(
+		private static Object[] _getValue(
 			AssetDisplayPageEntryModelImpl assetDisplayPageEntryModelImpl,
 			String[] columnNames, boolean original) {
 
@@ -3969,8 +3968,8 @@ public class AssetDisplayPageEntryPersistenceImpl
 			return arguments;
 		}
 
-		private static Map<FinderPath, Long> _finderPathColumnBitmasksCache =
-			new ConcurrentHashMap<>();
+		private static final Map<FinderPath, Long>
+			_finderPathColumnBitmasksCache = new ConcurrentHashMap<>();
 
 	}
 

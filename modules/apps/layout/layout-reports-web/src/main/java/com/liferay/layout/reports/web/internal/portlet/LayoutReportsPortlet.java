@@ -14,57 +14,26 @@
 
 package com.liferay.layout.reports.web.internal.portlet;
 
-import com.liferay.info.item.InfoItemServiceTracker;
-import com.liferay.layout.reports.web.internal.configuration.LayoutReportsPageSpeedCompanyConfiguration;
-import com.liferay.layout.reports.web.internal.configuration.LayoutReportsPageSpeedConfiguration;
 import com.liferay.layout.reports.web.internal.constants.LayoutReportsPortletKeys;
-import com.liferay.layout.reports.web.internal.constants.LayoutReportsWebKeys;
-import com.liferay.layout.reports.web.internal.data.provider.LayoutReportsDataProvider;
-import com.liferay.layout.reports.web.internal.display.context.LayoutReportsDisplayContext;
-import com.liferay.layout.seo.kernel.LayoutSEOLinkManager;
-import com.liferay.portal.configuration.metatype.bnd.util.ConfigurableUtil;
-import com.liferay.portal.kernel.exception.PortalException;
-import com.liferay.portal.kernel.language.Language;
-import com.liferay.portal.kernel.model.Group;
-import com.liferay.portal.kernel.module.configuration.ConfigurationException;
-import com.liferay.portal.kernel.module.configuration.ConfigurationProvider;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCPortlet;
-import com.liferay.portal.kernel.service.CompanyLocalService;
-import com.liferay.portal.kernel.service.GroupLocalService;
-import com.liferay.portal.kernel.service.LayoutLocalService;
-import com.liferay.portal.kernel.util.Constants;
-import com.liferay.portal.kernel.util.GetterUtil;
-import com.liferay.portal.kernel.util.ParamUtil;
-import com.liferay.portal.kernel.util.Portal;
-import com.liferay.portal.kernel.util.UnicodeProperties;
-import com.liferay.portal.kernel.util.Validator;
 
 import java.io.IOException;
-
-import java.util.Map;
 
 import javax.portlet.Portlet;
 import javax.portlet.PortletException;
 import javax.portlet.RenderRequest;
 import javax.portlet.RenderResponse;
 
-import javax.servlet.http.HttpServletRequest;
-
-import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
-import org.osgi.service.component.annotations.Modified;
-import org.osgi.service.component.annotations.Reference;
 
 /**
  * @author Cristina González
  */
 @Component(
-	configurationPid = "com.liferay.layout.reports.web.internal.configuration.LayoutReportsPageSpeedConfiguration",
 	immediate = true,
 	property = {
 		"com.liferay.portlet.add-default-resource=true",
 		"com.liferay.portlet.display-category=category.hidden",
-		"com.liferay.portlet.header-portlet-css=/css/main.css",
 		"com.liferay.portlet.instanceable=false",
 		"com.liferay.portlet.layout-cacheable=true",
 		"com.liferay.portlet.private-request-attributes=false",
@@ -79,135 +48,12 @@ import org.osgi.service.component.annotations.Reference;
 )
 public class LayoutReportsPortlet extends MVCPortlet {
 
-	@Activate
-	@Modified
-	protected void activate(Map<String, Object> properties) {
-		_layoutReportsPageSpeedConfiguration =
-			ConfigurableUtil.createConfigurable(
-				LayoutReportsPageSpeedConfiguration.class, properties);
-	}
-
 	@Override
 	protected void doDispatch(
 			RenderRequest renderRequest, RenderResponse renderResponse)
 		throws IOException, PortletException {
 
-		HttpServletRequest httpServletRequest = _portal.getHttpServletRequest(
-			renderRequest);
-
-		HttpServletRequest originalHttpServletRequest =
-			_portal.getOriginalServletRequest(httpServletRequest);
-
-		String layoutMode = ParamUtil.getString(
-			originalHttpServletRequest, "p_l_mode", Constants.VIEW);
-
-		if (layoutMode.equals(Constants.PREVIEW)) {
-			return;
-		}
-
-		try {
-			Group group = _groupLocalService.getGroup(
-				_portal.getScopeGroupId(httpServletRequest));
-
-			if (!_isEnabled(group)) {
-				return;
-			}
-
-			httpServletRequest.setAttribute(
-				LayoutReportsWebKeys.LAYOUT_REPORTS_DISPLAY_CONTEXT,
-				new LayoutReportsDisplayContext(
-					_groupLocalService, _infoItemServiceTracker,
-					_layoutLocalService,
-					new LayoutReportsDataProvider(_getApiKey(group)),
-					_layoutSEOLinkManager, _language, _portal, renderRequest));
-
-			super.doDispatch(renderRequest, renderResponse);
-		}
-		catch (PortalException portalException) {
-			throw new PortletException(portalException);
-		}
+		super.doDispatch(renderRequest, renderResponse);
 	}
-
-	private String _getApiKey(Group group) throws ConfigurationException {
-		UnicodeProperties unicodeProperties = group.getTypeSettingsProperties();
-
-		String pageSpeedApikey = unicodeProperties.getProperty(
-			"pageSpeedApiKey");
-
-		if (Validator.isNotNull(pageSpeedApikey)) {
-			return pageSpeedApikey;
-		}
-
-		return _getApiKey(group.getCompanyId());
-	}
-
-	private String _getApiKey(long companyId) throws ConfigurationException {
-		LayoutReportsPageSpeedCompanyConfiguration
-			layoutReportsPageSpeedCompanyConfiguration =
-				_configurationProvider.getCompanyConfiguration(
-					LayoutReportsPageSpeedCompanyConfiguration.class,
-					companyId);
-
-		String apiKey = layoutReportsPageSpeedCompanyConfiguration.apiKey();
-
-		if (Validator.isNotNull(apiKey)) {
-			return apiKey;
-		}
-
-		return _layoutReportsPageSpeedConfiguration.apiKey();
-	}
-
-	private boolean _isEnabled(Group group) throws ConfigurationException {
-		UnicodeProperties unicodeProperties = group.getTypeSettingsProperties();
-
-		return GetterUtil.getBoolean(
-			unicodeProperties.getProperty("pageSpeedEnabled"),
-			_isEnabled(group.getCompanyId()));
-	}
-
-	private boolean _isEnabled(long companyId) throws ConfigurationException {
-		if (!_layoutReportsPageSpeedConfiguration.enabled()) {
-			return false;
-		}
-
-		LayoutReportsPageSpeedCompanyConfiguration
-			layoutReportsPageSpeedCompanyConfiguration =
-				_configurationProvider.getCompanyConfiguration(
-					LayoutReportsPageSpeedCompanyConfiguration.class,
-					companyId);
-
-		if (!layoutReportsPageSpeedCompanyConfiguration.enabled()) {
-			return false;
-		}
-
-		return true;
-	}
-
-	@Reference
-	private CompanyLocalService _companyLocalService;
-
-	@Reference
-	private ConfigurationProvider _configurationProvider;
-
-	@Reference
-	private GroupLocalService _groupLocalService;
-
-	@Reference
-	private InfoItemServiceTracker _infoItemServiceTracker;
-
-	@Reference
-	private Language _language;
-
-	@Reference
-	private LayoutLocalService _layoutLocalService;
-
-	private volatile LayoutReportsPageSpeedConfiguration
-		_layoutReportsPageSpeedConfiguration;
-
-	@Reference
-	private LayoutSEOLinkManager _layoutSEOLinkManager;
-
-	@Reference
-	private Portal _portal;
 
 }

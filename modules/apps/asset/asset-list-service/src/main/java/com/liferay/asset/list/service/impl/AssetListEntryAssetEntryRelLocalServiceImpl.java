@@ -187,6 +187,10 @@ public class AssetListEntryAssetEntryRelLocalServiceImpl
 		return _getAssetListEntryAssetEntryRels(assetListEntryAssetEntryRels);
 	}
 
+	/**
+	 * @deprecated As of Cavanaugh (7.4.x), with no direct replacement
+	 */
+	@Deprecated
 	@Override
 	public List<AssetListEntryAssetEntryRel> getAssetListEntryAssetEntryRels(
 		long assetListEntryId, long[] segmentsEntryIds,
@@ -243,6 +247,10 @@ public class AssetListEntryAssetEntryRelLocalServiceImpl
 			assetListEntryId, segmentsEntryIds);
 	}
 
+	/**
+	 * @deprecated As of Cavanaugh (7.4.x), with no direct replacement
+	 */
+	@Deprecated
 	@Override
 	public int getAssetListEntryAssetEntryRelsCount(
 		long assetListEntryId, long[] segmentsEntryIds,
@@ -260,9 +268,7 @@ public class AssetListEntryAssetEntryRelLocalServiceImpl
 			_getPredicate(assetListEntryId, segmentsEntryIds, assetCategoryIds)
 		);
 
-		Long count = assetListEntryAssetEntryRelPersistence.dslQuery(dslQuery);
-
-		return count.intValue();
+		return assetListEntryAssetEntryRelPersistence.dslQueryCount(dslQuery);
 	}
 
 	@Override
@@ -392,11 +398,7 @@ public class AssetListEntryAssetEntryRelLocalServiceImpl
 				AssetEntry assetEntry = _assetEntryLocalService.fetchEntry(
 					assetListEntryAssetEntryRel.getAssetEntryId());
 
-				if (assetEntry == null) {
-					return false;
-				}
-
-				if (!assetEntry.isVisible()) {
+				if ((assetEntry == null) || !assetEntry.isVisible()) {
 					return false;
 				}
 

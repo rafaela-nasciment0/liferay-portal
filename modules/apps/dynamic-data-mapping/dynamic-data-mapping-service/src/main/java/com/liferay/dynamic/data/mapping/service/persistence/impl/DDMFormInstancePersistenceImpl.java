@@ -2929,11 +2929,21 @@ public class DDMFormInstancePersistenceImpl
 				continue;
 			}
 
-			if (entityCache.getResult(
-					DDMFormInstanceImpl.class,
-					ddmFormInstance.getPrimaryKey()) == null) {
+			DDMFormInstance cachedDDMFormInstance =
+				(DDMFormInstance)entityCache.getResult(
+					DDMFormInstanceImpl.class, ddmFormInstance.getPrimaryKey());
 
+			if (cachedDDMFormInstance == null) {
 				cacheResult(ddmFormInstance);
+			}
+			else {
+				DDMFormInstanceModelImpl ddmFormInstanceModelImpl =
+					(DDMFormInstanceModelImpl)ddmFormInstance;
+				DDMFormInstanceModelImpl cachedDDMFormInstanceModelImpl =
+					(DDMFormInstanceModelImpl)cachedDDMFormInstance;
+
+				ddmFormInstanceModelImpl.setDDMFormValues(
+					cachedDDMFormInstanceModelImpl.getDDMFormValues());
 			}
 		}
 	}
@@ -3137,25 +3147,25 @@ public class DDMFormInstancePersistenceImpl
 		ServiceContext serviceContext =
 			ServiceContextThreadLocal.getServiceContext();
 
-		Date now = new Date();
+		Date date = new Date();
 
 		if (isNew && (ddmFormInstance.getCreateDate() == null)) {
 			if (serviceContext == null) {
-				ddmFormInstance.setCreateDate(now);
+				ddmFormInstance.setCreateDate(date);
 			}
 			else {
 				ddmFormInstance.setCreateDate(
-					serviceContext.getCreateDate(now));
+					serviceContext.getCreateDate(date));
 			}
 		}
 
 		if (!ddmFormInstanceModelImpl.hasSetModifiedDate()) {
 			if (serviceContext == null) {
-				ddmFormInstance.setModifiedDate(now);
+				ddmFormInstance.setModifiedDate(date);
 			}
 			else {
 				ddmFormInstance.setModifiedDate(
-					serviceContext.getModifiedDate(now));
+					serviceContext.getModifiedDate(date));
 			}
 		}
 
@@ -3585,7 +3595,8 @@ public class DDMFormInstancePersistenceImpl
 	public Set<String> getCTColumnNames(
 		CTColumnResolutionType ctColumnResolutionType) {
 
-		return _ctColumnNamesMap.get(ctColumnResolutionType);
+		return _ctColumnNamesMap.getOrDefault(
+			ctColumnResolutionType, Collections.emptySet());
 	}
 
 	@Override
@@ -3619,7 +3630,6 @@ public class DDMFormInstancePersistenceImpl
 	static {
 		Set<String> ctControlColumnNames = new HashSet<String>();
 		Set<String> ctIgnoreColumnNames = new HashSet<String>();
-		Set<String> ctMergeColumnNames = new HashSet<String>();
 		Set<String> ctStrictColumnNames = new HashSet<String>();
 
 		ctControlColumnNames.add("mvccVersion");
@@ -3644,7 +3654,6 @@ public class DDMFormInstancePersistenceImpl
 			CTColumnResolutionType.CONTROL, ctControlColumnNames);
 		_ctColumnNamesMap.put(
 			CTColumnResolutionType.IGNORE, ctIgnoreColumnNames);
-		_ctColumnNamesMap.put(CTColumnResolutionType.MERGE, ctMergeColumnNames);
 		_ctColumnNamesMap.put(
 			CTColumnResolutionType.PK, Collections.singleton("formInstanceId"));
 		_ctColumnNamesMap.put(
@@ -3910,7 +3919,7 @@ public class DDMFormInstancePersistenceImpl
 			return DDMFormInstanceTable.INSTANCE.getTableName();
 		}
 
-		private Object[] _getValue(
+		private static Object[] _getValue(
 			DDMFormInstanceModelImpl ddmFormInstanceModelImpl,
 			String[] columnNames, boolean original) {
 
@@ -3933,8 +3942,8 @@ public class DDMFormInstancePersistenceImpl
 			return arguments;
 		}
 
-		private static Map<FinderPath, Long> _finderPathColumnBitmasksCache =
-			new ConcurrentHashMap<>();
+		private static final Map<FinderPath, Long>
+			_finderPathColumnBitmasksCache = new ConcurrentHashMap<>();
 
 	}
 

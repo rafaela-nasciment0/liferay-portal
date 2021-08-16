@@ -69,7 +69,7 @@ public class ViewAccountRolesManagementToolbarDisplayContext
 					).setActionName(
 						"/account_admin/delete_account_roles"
 					).setRedirect(
-						currentURLObj.toString()
+						currentURLObj
 					).buildString());
 
 				dropdownItem.setIcon("times-circle");
@@ -85,8 +85,8 @@ public class ViewAccountRolesManagementToolbarDisplayContext
 	public String getClearResultsURL() {
 		return PortletURLBuilder.create(
 			getPortletURL()
-		).setParameter(
-			"keywords", StringPool.BLANK
+		).setKeywords(
+			StringPool.BLANK
 		).buildString();
 	}
 

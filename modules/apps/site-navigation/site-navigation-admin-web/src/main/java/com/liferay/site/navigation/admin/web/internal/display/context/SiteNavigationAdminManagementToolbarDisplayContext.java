@@ -93,8 +93,8 @@ public class SiteNavigationAdminManagementToolbarDisplayContext
 	public String getClearResultsURL() {
 		return PortletURLBuilder.create(
 			getPortletURL()
-		).setParameter(
-			"keywords", StringPool.BLANK
+		).setKeywords(
+			StringPool.BLANK
 		).buildString();
 	}
 
@@ -111,10 +111,10 @@ public class SiteNavigationAdminManagementToolbarDisplayContext
 					"addSiteNavigationMenuURL",
 					PortletURLBuilder.createActionURL(
 						liferayPortletResponse
-					).setMVCPath(
-						"/edit_site_navigation_menu.jsp"
 					).setActionName(
 						"/site_navigation_admin/add_site_navigation_menu"
+					).setMVCPath(
+						"/edit_site_navigation_menu.jsp"
 					).setRedirect(
 						themeDisplay.getURLCurrent()
 					).buildString());

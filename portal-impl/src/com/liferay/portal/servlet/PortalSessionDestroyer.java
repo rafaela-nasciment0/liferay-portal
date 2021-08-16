@@ -53,10 +53,6 @@ public class PortalSessionDestroyer extends BasePortalLifecycle {
 
 	@Override
 	protected void doPortalInit() {
-		if (PropsValues.SESSION_DISABLED) {
-			return;
-		}
-
 		PortalSessionContext.remove(_httpSession.getId());
 
 		try {
@@ -66,9 +62,7 @@ public class PortalSessionDestroyer extends BasePortalLifecycle {
 				if (_log.isWarnEnabled()) {
 					_log.warn("User id is not in the session");
 				}
-			}
 
-			if (userIdObj == null) {
 				return;
 			}
 

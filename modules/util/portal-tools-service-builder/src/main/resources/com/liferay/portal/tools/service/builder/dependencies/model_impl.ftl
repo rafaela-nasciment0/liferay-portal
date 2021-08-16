@@ -96,6 +96,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.function.BiConsumer;
@@ -136,7 +137,7 @@ public class ${entity.name}ModelImpl extends BaseModelImpl<${entity.name}> imple
 	<#compress>
 		public static final Object[][] TABLE_COLUMNS = {
 			<#list entity.databaseRegularEntityColumns as entityColumn>
-				<#assign sqlType = serviceBuilder.getSqlType(entity.getName(), entityColumn.getName(), entityColumn.getType()) />
+				<#assign sqlType = serviceBuilder.getSqlType(entity.getName(), entityColumn) />
 
 				{"${entityColumn.DBName}", Types.${sqlType}}
 
@@ -150,7 +151,7 @@ public class ${entity.name}ModelImpl extends BaseModelImpl<${entity.name}> imple
 
 		static {
 			<#list entity.databaseRegularEntityColumns as entityColumn>
-				<#assign sqlType = serviceBuilder.getSqlType(entity.getName(), entityColumn.getName(), entityColumn.getType()) />
+				<#assign sqlType = serviceBuilder.getSqlType(entity.getName(), entityColumn) />
 
 				TABLE_COLUMNS_MAP.put("${entityColumn.DBName}", Types.${sqlType});
 			</#list>
@@ -409,7 +410,7 @@ public class ${entity.name}ModelImpl extends BaseModelImpl<${entity.name}> imple
 
 					<#list mappingEntities?keys as mapEntityName>
 						<#list mappingEntities[mapEntityName] as mapColumn>
-							<#assign sqlType = serviceBuilder.getSqlType(mapEntityName, mapColumn.getName(), mapColumn.getType()) />
+							<#assign sqlType = serviceBuilder.getSqlType(mapEntityName, mapColumn) />
 
 							{"${mapColumn.DBName}", Types.${sqlType}}
 
@@ -881,7 +882,7 @@ public class ${entity.name}ModelImpl extends BaseModelImpl<${entity.name}> imple
 			}
 		</#if>
 
-		<#if entity.hasEntityColumn("createDate", "Date") && entity.hasEntityColumn("modifiedDate", "Date") && stringUtil.equals(entityColumn.name, "modifiedDate")>
+		<#if entity.hasEntityColumn("modifiedDate", "Date") && stringUtil.equals(entityColumn.name, "modifiedDate")>
 			public boolean hasSetModifiedDate() {
 				return _setModifiedDate;
 			}
@@ -891,7 +892,7 @@ public class ${entity.name}ModelImpl extends BaseModelImpl<${entity.name}> imple
 			@Override
 		</#if>
 		public void set${entityColumn.methodName}(${entityColumn.genericizedType} ${entityColumn.name}) {
-			<#if entity.hasEntityColumn("createDate", "Date") && entity.hasEntityColumn("modifiedDate", "Date") && stringUtil.equals(entityColumn.name, "modifiedDate")>
+			<#if entity.hasEntityColumn("modifiedDate", "Date") && stringUtil.equals(entityColumn.name, "modifiedDate")>
 				_setModifiedDate = true;
 			</#if>
 
@@ -1042,13 +1043,13 @@ public class ${entity.name}ModelImpl extends BaseModelImpl<${entity.name}> imple
 		<#assign
 			variableName = serviceBuilder.getVariableName(cacheField)
 			methodName = serviceBuilder.getCacheFieldMethodName(cacheField)
-			typeName = serviceBuilder.getGenericValue(cacheField.getType())
+			typeGenericsName = serviceBuilder.getTypeGenericsName(cacheField.getType())
 		/>
 
 		<#if !stringUtil.equals(methodName, "DefaultLanguageId")>
-			public ${typeName} get${methodName}() {
+			public ${typeGenericsName} get${methodName}() {
 				<#if cacheField.getType().isPrimitive()>
-					<#if stringUtil.equals(typeName, "boolean")>
+					<#if stringUtil.equals(typeGenericsName, "boolean")>
 						return false;
 					<#else>
 						return 0;
@@ -1059,7 +1060,7 @@ public class ${entity.name}ModelImpl extends BaseModelImpl<${entity.name}> imple
 			}
 		</#if>
 
-		public void set${methodName}(${typeName} ${variableName}) {
+		public void set${methodName}(${typeGenericsName} ${variableName}) {
 		}
 	</#list>
 
@@ -1384,7 +1385,7 @@ public class ${entity.name}ModelImpl extends BaseModelImpl<${entity.name}> imple
 				}
 
 				for (Map.Entry<String, Object> entry : _columnOriginalValues.entrySet()) {
-					if (entry.getValue() != getColumnValue(entry.getKey())) {
+					if (!Objects.equals(entry.getValue(), getColumnValue(entry.getKey()))) {
 						_columnBitmask |= _columnBitmasks.get(entry.getKey());
 					}
 				}
@@ -1690,7 +1691,7 @@ public class ${entity.name}ModelImpl extends BaseModelImpl<${entity.name}> imple
 				</#if>
 			</#if>
 
-			<#if entity.hasEntityColumn("createDate", "Date") && entity.hasEntityColumn("modifiedDate", "Date") && stringUtil.equals(entityColumn.name, "modifiedDate")>
+			<#if entity.hasEntityColumn("modifiedDate", "Date") && stringUtil.equals(entityColumn.name, "modifiedDate")>
 				_setModifiedDate = false;
 			</#if>
 		</#list>
@@ -1900,7 +1901,7 @@ public class ${entity.name}ModelImpl extends BaseModelImpl<${entity.name}> imple
 				</#if>
 			</#if>
 
-			<#if entity.hasEntityColumn("createDate", "Date") && entity.hasEntityColumn("modifiedDate", "Date") && stringUtil.equals(entityColumn.name, "modifiedDate")>
+			<#if entity.hasEntityColumn("modifiedDate", "Date") && stringUtil.equals(entityColumn.name, "modifiedDate")>
 				private boolean _setModifiedDate;
 			</#if>
 		</#if>

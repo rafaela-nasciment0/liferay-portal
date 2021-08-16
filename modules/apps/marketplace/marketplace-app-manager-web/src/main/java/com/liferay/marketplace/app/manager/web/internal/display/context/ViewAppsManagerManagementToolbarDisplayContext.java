@@ -147,10 +147,10 @@ public class ViewAppsManagerManagementToolbarDisplayContext
 		).setParameter(
 			"category", getCategory()
 		).setParameter(
-			"state", getState()
-		).setParameter(
 			"orderByType", getOrderByType()
-		).build();
+		).setParameter(
+			"state", getState()
+		).buildPortletURL();
 
 		if (_searchContainer != null) {
 			portletURL.setParameter(

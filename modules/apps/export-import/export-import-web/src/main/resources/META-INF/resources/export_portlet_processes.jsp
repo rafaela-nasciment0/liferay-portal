@@ -23,11 +23,11 @@ PortletURL portletURL = PortletURLBuilder.create(
 	currentURLObj
 ).setMVCRenderCommandName(
 	"/export_import/export_import"
-).setParameter(
-	"tabs2", "export"
+).setTabs2(
+	"export"
 ).setParameter(
 	"tabs3", "current-and-previous"
-).build();
+).buildPortletURL();
 
 String orderByCol = ParamUtil.getString(request, "orderByCol");
 String orderByType = ParamUtil.getString(request, "orderByType");
@@ -96,9 +96,7 @@ else {
 			>
 
 				<%
-				List<FileEntry> attachmentsFileEntries = backgroundTask.getAttachmentsFileEntries();
-
-				for (FileEntry fileEntry : attachmentsFileEntries) {
+				for (FileEntry fileEntry : backgroundTask.getAttachmentsFileEntries()) {
 					Map<String, Object> data = HashMapBuilder.<String, Object>put(
 						"senna-off", "true"
 					).build();

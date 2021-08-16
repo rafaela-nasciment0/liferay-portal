@@ -129,6 +129,14 @@ public class DDMExpressionImplTest extends PowerMockito {
 	}
 
 	@Test
+	public void testEquals2() throws Exception {
+		DDMExpressionImpl<Boolean> ddmExpressionImpl = createDDMExpression(
+			"2 == 2.0");
+
+		Assert.assertTrue(ddmExpressionImpl.evaluate());
+	}
+
+	@Test
 	public void testExpressionVariableNames() throws Exception {
 		DDMExpressionImpl<BigDecimal> ddmExpressionImpl = createDDMExpression(
 			"a - b");
@@ -151,6 +159,13 @@ public class DDMExpressionImplTest extends PowerMockito {
 
 		ddmExpressionImpl.setDDMExpressionFunctionTracker(
 			new DDMExpressionFunctionTracker() {
+
+				@Override
+				public Map<String, DDMExpressionFunction>
+					getCustomDDMExpressionFunctions() {
+
+					return Collections.emptyMap();
+				}
 
 				@Override
 				public Map<String, DDMExpressionFunctionFactory>
@@ -186,6 +201,13 @@ public class DDMExpressionImplTest extends PowerMockito {
 
 		ddmExpressionImpl.setDDMExpressionFunctionTracker(
 			new DDMExpressionFunctionTracker() {
+
+				@Override
+				public Map<String, DDMExpressionFunction>
+					getCustomDDMExpressionFunctions() {
+
+					return Collections.emptyMap();
+				}
 
 				@Override
 				public Map<String, DDMExpressionFunctionFactory>
@@ -226,6 +248,13 @@ public class DDMExpressionImplTest extends PowerMockito {
 			new DDMExpressionFunctionTracker() {
 
 				@Override
+				public Map<String, DDMExpressionFunction>
+					getCustomDDMExpressionFunctions() {
+
+					return Collections.emptyMap();
+				}
+
+				@Override
 				public Map<String, DDMExpressionFunctionFactory>
 					getDDMExpressionFunctionFactories(
 						Set<String> functionNames) {
@@ -261,6 +290,13 @@ public class DDMExpressionImplTest extends PowerMockito {
 
 		ddmExpressionImpl.setDDMExpressionFunctionTracker(
 			new DDMExpressionFunctionTracker() {
+
+				@Override
+				public Map<String, DDMExpressionFunction>
+					getCustomDDMExpressionFunctions() {
+
+					return Collections.emptyMap();
+				}
 
 				@Override
 				public Map<String, DDMExpressionFunctionFactory>
@@ -417,6 +453,13 @@ public class DDMExpressionImplTest extends PowerMockito {
 			new DDMExpressionFunctionTracker() {
 
 				@Override
+				public Map<String, DDMExpressionFunction>
+					getCustomDDMExpressionFunctions() {
+
+					return Collections.emptyMap();
+				}
+
+				@Override
 				public Map<String, DDMExpressionFunctionFactory>
 					getDDMExpressionFunctionFactories(
 						Set<String> functionNames) {
@@ -470,7 +513,7 @@ public class DDMExpressionImplTest extends PowerMockito {
 		DDMExpressionImpl<Boolean> ddmExpressionImpl = createDDMExpression(
 			"2 != 2.0");
 
-		Assert.assertTrue(ddmExpressionImpl.evaluate());
+		Assert.assertFalse(ddmExpressionImpl.evaluate());
 	}
 
 	@Test(expected = IllegalArgumentException.class)

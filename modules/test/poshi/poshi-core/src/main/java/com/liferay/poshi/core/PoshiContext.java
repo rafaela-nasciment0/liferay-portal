@@ -56,7 +56,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeMap;
@@ -249,7 +248,7 @@ public class PoshiContext {
 
 	public static String getNamespaceFromFilePath(String filePath) {
 		if (Validator.isNull(filePath)) {
-			return getDefaultNamespace();
+			return _DEFAULT_NAMESPACE;
 		}
 
 		for (Map.Entry<String, String> entry : _filePaths.entrySet()) {
@@ -264,7 +263,7 @@ public class PoshiContext {
 			}
 		}
 
-		return getDefaultNamespace();
+		return _DEFAULT_NAMESPACE;
 	}
 
 	public static List<String> getNamespaces() {
@@ -307,14 +306,34 @@ public class PoshiContext {
 	}
 
 	public static List<String> getPoshiPropertyNames() {
-		List<String> poshiPropertyNames = new ArrayList<>(_poshiPropertyNames);
+		Set<String> poshiPropertyNames = new HashSet<>(_poshiPropertyNames);
 
 		poshiPropertyNames.add("ignored");
 		poshiPropertyNames.add("known-issues");
 		poshiPropertyNames.add("priority");
+		poshiPropertyNames.add("test.class.method.name");
+		poshiPropertyNames.add("test.class.name");
 		poshiPropertyNames.add("test.run.environment");
 
-		return poshiPropertyNames;
+		String testCaseAvailablePropertyNames =
+			PropsValues.TEST_CASE_AVAILABLE_PROPERTY_NAMES;
+
+		if (Validator.isNotNull(testCaseAvailablePropertyNames)) {
+			Collections.addAll(
+				poshiPropertyNames,
+				StringUtil.split(testCaseAvailablePropertyNames));
+		}
+
+		String testCaseRequiredPropertyNames =
+			PropsValues.TEST_CASE_REQUIRED_PROPERTY_NAMES;
+
+		if (Validator.isNotNull(testCaseRequiredPropertyNames)) {
+			Collections.addAll(
+				poshiPropertyNames,
+				StringUtil.split(testCaseRequiredPropertyNames));
+		}
+
+		return new ArrayList<>(poshiPropertyNames);
 	}
 
 	public static List<String> getRequiredPoshiPropertyNames() {
@@ -373,6 +392,9 @@ public class PoshiContext {
 					}
 				}
 			}
+
+			properties.remove("test.class.method.name");
+			properties.remove("test.class.name");
 
 			multimap.put(properties, classCommandName);
 		}
@@ -655,6 +677,20 @@ public class PoshiContext {
 		return new Exception(sb.toString());
 	}
 
+	private static String _getIgnoreAttributeValue(
+		Element rootElement, Element commandElement) {
+
+		if (commandElement.attributeValue("ignore") != null) {
+			return commandElement.attributeValue("ignore");
+		}
+
+		if (rootElement.attributeValue("ignore") != null) {
+			return rootElement.attributeValue("ignore");
+		}
+
+		return "true";
+	}
+
 	private static List<URL> _getPoshiURLs(
 			FileSystem fileSystem, String[] includes, String baseDirName)
 		throws IOException {
@@ -719,7 +755,10 @@ public class PoshiContext {
 							rootElement, extendsCommandElement,
 							extendsCommandName)) {
 
-						properties.setProperty("ignored", "true");
+						properties.setProperty(
+							"ignored",
+							_getIgnoreAttributeValue(
+								rootElement, extendsCommandElement));
 					}
 
 					String namespacedClassCommandName = StringUtil.combine(
@@ -749,7 +788,9 @@ public class PoshiContext {
 						_namespacedClassCommandNamePropertiesMap.get(
 							namespacedClassCommandName);
 
-					properties.setProperty("ignored", "true");
+					properties.setProperty(
+						"ignored",
+						_getIgnoreAttributeValue(rootElement, commandElement));
 
 					_namespacedClassCommandNamePropertiesMap.put(
 						namespacedClassCommandName, properties);
@@ -771,12 +812,8 @@ public class PoshiContext {
 	private static boolean _isIgnorableCommandNames(
 		Element rootElement, Element commandElement, String commandName) {
 
-		if (Objects.equals(commandElement.attributeValue("ignore"), "true")) {
+		if (commandElement.attributeValue("ignore") != null) {
 			return true;
-		}
-
-		if (Objects.equals(commandElement.attributeValue("ignore"), "false")) {
-			return false;
 		}
 
 		List<String> ignorableCommandNames = new ArrayList<>();
@@ -789,11 +826,9 @@ public class PoshiContext {
 				ignoreCommandNamesString.split(","));
 		}
 
-		if (ignorableCommandNames.contains(commandName)) {
-			return true;
-		}
+		if (ignorableCommandNames.contains(commandName) ||
+			(rootElement.attributeValue("ignore") != null)) {
 
-		if (Objects.equals(rootElement.attributeValue("ignore"), "true")) {
 			return true;
 		}
 
@@ -940,6 +975,11 @@ public class PoshiContext {
 
 					Properties overriddenProperties = new Properties(
 						baseProperties);
+
+					overriddenProperties.setProperty(
+						"test.class.method.name", classCommandName);
+					overriddenProperties.setProperty(
+						"test.class.name", className);
 
 					overriddenProperties.putAll(overrideProperties);
 
@@ -1278,6 +1318,10 @@ public class PoshiContext {
 					Properties properties = _getClassCommandNameProperties(
 						rootElement, commandElement);
 
+					properties.setProperty(
+						"test.class.method.name", classCommandName);
+					properties.setProperty("test.class.name", className);
+
 					_namespacedClassCommandNamePropertiesMap.put(
 						namespace + "." + classCommandName, properties);
 
@@ -1402,6 +1446,8 @@ public class PoshiContext {
 
 	private static void _writeTestCaseMethodNamesProperties() throws Exception {
 		StringBuilder sb = new StringBuilder();
+
+		sb.append("## Autogenerated\n\n");
 
 		if (PropsValues.TEST_BATCH_PROPERTY_QUERY != null) {
 			int maxSubgroupSize = PropsValues.TEST_BATCH_MAX_SUBGROUP_SIZE;
@@ -1549,6 +1595,8 @@ public class PoshiContext {
 
 	private static void _writeTestGeneratedProperties() throws Exception {
 		StringBuilder sb = new StringBuilder();
+
+		sb.append("## Autogenerated\n\n");
 
 		for (String testCaseNamespacedClassCommandName :
 				_testCaseNamespacedClassCommandNames) {

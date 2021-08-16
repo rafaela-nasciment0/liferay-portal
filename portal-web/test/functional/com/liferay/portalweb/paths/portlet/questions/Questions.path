@@ -2,11 +2,13 @@
 <head>
 <title>Questions</title>
 </head>
+
 <body>
-<table cellpadding="1" cellspacing="1" border="1">
+<table border="1" cellpadding="1" cellspacing="1">
 <thead>
 <tr><td rowspan="1" colspan="3">Questions</td></tr>
 </thead>
+
 <tbody>
 <tr>
 	<td>ANSWER_BODY</td>
@@ -80,7 +82,7 @@
 </tr>
 <tr>
 	<td>PAGINATION_NEXT_LINK</td>
-	<td>//a[contains(@class, 'page-link')]//*[contains(@class,'lexicon-icon-angle-right')]</td>
+	<td>//button[*[name()='svg'][contains(@class,'lexicon-icon-angle-right')]]</td>
 	<td></td>
 </tr>
 <tr>
@@ -168,10 +170,10 @@
 	<td>//div[contains(@class,'question-locked-text') and contains(.,'This question is closed. New answers and comments are disabled.')]</td>
 	<td></td>
 </tr>
-<tr>	
-	<td>QUESTIONS_RESPONSE_DATE_LABEL</td>	
-	<td>//span[contains(@class,'text-secondary') and contains(.,'${key_label}')]</td>	
-	<td></td>	
+<tr>
+	<td>QUESTIONS_RESPONSE_DATE_LABEL</td>
+	<td>//span[contains(@class,'text-secondary') and contains(.,'${key_label}')]</td>
+	<td></td>
 </tr>
 <tr>
 	<td>QUESTIONS_SUBSCRIBE</td>
@@ -219,11 +221,6 @@
 	<td></td>
 </tr>
 <tr>
-	<td>QUESTIONS_NAME_FIELD</td>
-	<td>//p[@title='${key_questionNameField}']</td>
-	<td></td>
-</tr>
-<tr>
 	<td>QUESTIONS_DETAILS_TITLE</td>
 	<td>//div[contains(@class,'questions-container')]//h1[contains(.,'${key_questionTitle}')]</td>
 	<td></td>
@@ -265,7 +262,22 @@
 </tr>
 <tr>
 	<td>QUESTIONS_UNSUBSCRIBE</td>
-	<td>//button[@type='button' and @title='Unsubscribe']</td>
+	<td>//button[@type='button' and @*='Unsubscribe']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>QUESTIONS_STATISTICS_HEADER</td>
+	<td>//h4[contains(@class,'text-secondary') and contains(.,'${key_headerName}')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>QUESTIONS_STATISTICS_ITEM</td>
+	<td>//div[contains(@class,'text-secondary')]/p[contains(.,'${key_itemName}')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>QUESTIONS_STATISTICS_USER_NAME</td>
+	<td>//a[contains(@class,'questions-user')]//div/p[contains(.,'${key_userName}')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -359,9 +371,13 @@
 	<td>//a[contains(@class,'questions-title')]/h3[contains(.,'${key_questionTitle}')]</td>
 	<td></td>
 </tr>
+<!--WORKFLOW-->
+<tr>
+	<td>WORKFLOW_STATUS</td>
+	<td>//span[contains(@class,'label-item') and contains(.,'${key_status}')]</td>
+	<td></td>
+</tr>
 </tbody>
 </table>
 </body>
 </html>
-
-

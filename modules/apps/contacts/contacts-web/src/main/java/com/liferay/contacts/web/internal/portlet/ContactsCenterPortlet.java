@@ -400,11 +400,8 @@ public class ContactsCenterPortlet extends MVCPortlet {
 		int type = ParamUtil.getInteger(actionRequest, "type");
 
 		for (long userId : userIds) {
-			if (userId == themeDisplay.getUserId()) {
-				continue;
-			}
-
-			if (socialRelationLocalService.hasRelation(
+			if ((userId == themeDisplay.getUserId()) ||
+				socialRelationLocalService.hasRelation(
 					userId, themeDisplay.getUserId(),
 					SocialRelationConstants.TYPE_BI_CONNECTION) ||
 				socialRelationLocalService.hasRelation(
@@ -1014,7 +1011,7 @@ public class ContactsCenterPortlet extends MVCPortlet {
 			).setParameter(
 				"entryId", entry.getEntryId()
 			).setParameter(
-				"portalUser", Boolean.FALSE.toString()
+				"portalUser", false
 			).setWindowState(
 				LiferayWindowState.EXCLUSIVE
 			).buildString()
@@ -1107,9 +1104,9 @@ public class ContactsCenterPortlet extends MVCPortlet {
 			).setMVCPath(
 				"/contacts_center/view_resources.jsp"
 			).setParameter(
-				"userId", user.getUserId()
+				"portalUser", true
 			).setParameter(
-				"portalUser", Boolean.TRUE.toString()
+				"userId", user.getUserId()
 			).setWindowState(
 				LiferayWindowState.EXCLUSIVE
 			).buildString()

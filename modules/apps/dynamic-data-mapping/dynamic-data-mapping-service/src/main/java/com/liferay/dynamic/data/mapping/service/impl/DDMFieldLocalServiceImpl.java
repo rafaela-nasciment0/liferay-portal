@@ -234,7 +234,7 @@ public class DDMFieldLocalServiceImpl extends DDMFieldLocalServiceBaseImpl {
 
 	@Override
 	public int getDDMFormValuesCount(long structureId) {
-		Long count = ddmFieldPersistence.dslQuery(
+		return ddmFieldPersistence.dslQueryCount(
 			DSLQueryFactoryUtil.count(
 			).from(
 				DDMFieldTable.INSTANCE
@@ -247,8 +247,6 @@ public class DDMFieldLocalServiceImpl extends DDMFieldLocalServiceBaseImpl {
 						structureId)
 				)
 			));
-
-		return count.intValue();
 	}
 
 	@Override
@@ -319,15 +317,13 @@ public class DDMFieldLocalServiceImpl extends DDMFieldLocalServiceBaseImpl {
 			languageIdColumn = aliasDDMFieldAttributeTable.languageId;
 		}
 
-		Long count = ddmFieldPersistence.dslQuery(
+		return ddmFieldPersistence.dslQueryCount(
 			joinStep.where(
 				DDMFieldTable.INSTANCE.companyId.eq(
 					companyId
 				).and(
 					DDMFieldTable.INSTANCE.fieldType.eq(fieldType)
 				)));
-
-		return count.intValue();
 	}
 
 	@Override
@@ -511,11 +507,18 @@ public class DDMFieldLocalServiceImpl extends DDMFieldLocalServiceBaseImpl {
 			DDMFormField ddmFormField = ddmFormFieldMap.get(
 				ddmFormFieldValue.getName());
 
+			String instanceId = ddmFormFieldValue.getInstanceId();
+
+			while (ddmFieldInfoMap.containsKey(instanceId)) {
+				instanceId =
+					com.liferay.portal.kernel.util.StringUtil.randomString();
+			}
+
 			DDMFieldInfo ddmFieldInfo = new DDMFieldInfo(
-				ddmFormFieldValue.getName(), ddmFormFieldValue.getInstanceId(),
+				ddmFormFieldValue.getName(), instanceId,
 				ddmFormField.isLocalizable(), parentInstanceId);
 
-			ddmFieldInfoMap.put(ddmFieldInfo._instanceId, ddmFieldInfo);
+			ddmFieldInfoMap.put(instanceId, ddmFieldInfo);
 
 			Value value = ddmFormFieldValue.getValue();
 
@@ -535,8 +538,7 @@ public class DDMFieldLocalServiceImpl extends DDMFieldLocalServiceBaseImpl {
 
 			_collectDDMFieldInfos(
 				ddmFieldInfoMap, ddmFormFieldMap,
-				ddmFormFieldValue.getNestedDDMFormFieldValues(),
-				ddmFieldInfo._instanceId);
+				ddmFormFieldValue.getNestedDDMFormFieldValues(), instanceId);
 		}
 	}
 

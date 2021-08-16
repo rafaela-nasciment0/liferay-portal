@@ -247,10 +247,10 @@ public class CommerceTaxRateClayTable
 				PortletRequest.ACTION_PHASE)
 		).setActionName(
 			"/commerce_tax_methods/edit_commerce_tax_fixed_rate"
+		).setCMD(
+			Constants.DELETE
 		).setRedirect(
 			redirect
-		).setParameter(
-			Constants.CMD, Constants.DELETE
 		).setParameter(
 			"commerceTaxFixedRateId", taxRateId
 		).buildString();
@@ -266,7 +266,7 @@ public class CommerceTaxRateClayTable
 				PortletProvider.Action.EDIT)
 		).setMVCRenderCommandName(
 			"/commerce_tax_methods/edit_commerce_tax_fixed_rate"
-		).build();
+		).buildPortletURL();
 
 		long commerceTaxMethodId = ParamUtil.getLong(
 			httpServletRequest, "commerceTaxMethodId");

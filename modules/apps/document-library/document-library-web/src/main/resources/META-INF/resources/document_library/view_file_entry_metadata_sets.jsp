@@ -27,9 +27,7 @@ DLViewFileEntryMetadataSetsDisplayContext dLViewFileEntryMetadataSetsDisplayCont
 	propsTransformer="document_library/js/DDMStructuresManagementToolbarPropsTransformer"
 />
 
-<portlet:actionURL copyCurrentRenderParameters="<%= true %>" name="/document_library/delete_data_definition" var="deleteDataDefinitionURL">
-	<portlet:param name="mvcPath" value="/view_file_entry_metadata_sets.jsp" />
-</portlet:actionURL>
+<portlet:actionURL copyCurrentRenderParameters="<%= true %>" name="/document_library/delete_data_definition" var="deleteDataDefinitionURL" />
 
 <aui:form action="<%= deleteDataDefinitionURL %>" cssClass="container-fluid container-fluid-max-xl" method="post" name="fm">
 	<aui:input name="redirect" type="hidden" value="<%= currentURL %>" />
@@ -58,17 +56,15 @@ DLViewFileEntryMetadataSetsDisplayContext dLViewFileEntryMetadataSetsDisplayCont
 				String rowHREF = StringPool.BLANK;
 
 				if (DDMStructurePermission.contains(permissionChecker, ddmStructure, ActionKeys.UPDATE)) {
-					PortletURL rowURL = PortletURLBuilder.createRenderURL(
+					rowHREF = PortletURLBuilder.createRenderURL(
 						renderResponse
 					).setMVCRenderCommandName(
 						"/document_library/edit_ddm_structure"
 					).setRedirect(
 						currentURL
 					).setParameter(
-						"ddmStructureId", String.valueOf(ddmStructure.getStructureId())
-					).build();
-
-					rowHREF = rowURL.toString();
+						"ddmStructureId", ddmStructure.getStructureId()
+					).buildString();
 				}
 				%>
 

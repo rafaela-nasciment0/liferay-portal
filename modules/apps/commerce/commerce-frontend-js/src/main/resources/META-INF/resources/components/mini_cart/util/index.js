@@ -22,7 +22,7 @@ export function parseOptions(jsonString) {
 	let options;
 
 	try {
-		options = JSON.parse(jsonString);
+		options = JSON.parse(jsonString) || '';
 	}
 	catch (ignore) {
 		options = '';
@@ -33,74 +33,67 @@ export function parseOptions(jsonString) {
 		: options;
 }
 
-function generatedOrderDetailURL() {
-	const baseURL = new URL(
-		`${Liferay.ThemeDisplay.getCanonicalURL()}${ORDER_DETAILS_ENDPOINT}`
+export function regenerateOrderDetailURL(orderUUID, siteDefaultURL) {
+	if (!orderUUID || !siteDefaultURL) {
+		throw new Error(
+			`Cannot generate a new Order Detail URL. Invalid "${
+				siteDefaultURL ? 'orderUUID' : 'siteDefaultURL'
+			}"`
+		);
+	}
+
+	const orderDetailURL = new URL(
+		`${siteDefaultURL}${ORDER_DETAILS_ENDPOINT}`
 	);
 
-	baseURL.searchParams.append('p_p_id', DEFAULT_ORDER_DETAILS_PORTLET_ID);
-	baseURL.searchParams.append('p_p_lifecycle', '0');
-	baseURL.searchParams.append(
+	orderDetailURL.searchParams.append(
+		'p_p_id',
+		DEFAULT_ORDER_DETAILS_PORTLET_ID
+	);
+	orderDetailURL.searchParams.append('p_p_lifecycle', '0');
+	orderDetailURL.searchParams.append(
 		`_${DEFAULT_ORDER_DETAILS_PORTLET_ID}_mvcRenderCommandName`,
 		'/commerce_open_order_content/edit_commerce_order'
 	);
-	baseURL.searchParams.append(
-		`_${DEFAULT_ORDER_DETAILS_PORTLET_ID}_commerceOrderUuid`,
-		'0'
-	);
 
-	return baseURL;
-}
-
-export function regenerateOrderDetailURL(orderDetailURL, orderUUID) {
-	const originalURL = orderDetailURL
-		? new URL(orderDetailURL)
-		: generatedOrderDetailURL();
-
-	originalURL.searchParams.set(
+	orderDetailURL.searchParams.append(
 		`_${DEFAULT_ORDER_DETAILS_PORTLET_ID}_${ORDER_UUID_PARAMETER}`,
 		orderUUID
 	);
 
-	return originalURL.toString();
+	return orderDetailURL.toString();
 }
 
-export function summaryDataMapper(summary) {
-	return Object.keys(summary).reduce((values, key) => {
-		const summaryItem = {value: summary[key]};
-
-		switch (key) {
-			case 'itemsQuantity':
-				values.push({
-					label: Liferay.Language.get('quantity'),
-					...summaryItem,
-				});
-				break;
-			case 'subtotalFormatted':
-				values.push({
-					label: Liferay.Language.get('subtotal'),
-					...summaryItem,
-				});
-				break;
-			case 'totalDiscountValueFormatted':
-				values.push({
-					label: Liferay.Language.get('order-discount'),
-					...summaryItem,
-				});
-				break;
-			case 'totalFormatted':
-				values.push({
-					label: Liferay.Language.get('total'),
-					style: 'big',
-					...summaryItem,
-				});
-				break;
-			default:
-				break;
-		}
-
-		return values;
-	}, []);
+export function summaryDataMapper({
+	itemsQuantity,
+	subtotalDiscountValueFormatted,
+	subtotalFormatted,
+	totalDiscountValueFormatted,
+	totalFormatted,
+}) {
+	return [
+		{
+			label: Liferay.Language.get('quantity'),
+			value: itemsQuantity,
+		},
+		{
+			label: Liferay.Language.get('subtotal'),
+			value: subtotalFormatted,
+		},
+		{
+			label: Liferay.Language.get('subtotal-discount'),
+			value: subtotalDiscountValueFormatted,
+		},
+		{
+			label: Liferay.Language.get('order-discount'),
+			value: totalDiscountValueFormatted,
+		},
+		{
+			label: Liferay.Language.get('total'),
+			style: 'big',
+			value: totalFormatted,
+		},
+	];
 }
 
 export function hasErrors(cartItems) {

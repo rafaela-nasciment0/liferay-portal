@@ -104,13 +104,6 @@ public class CommerceSearchResource {
 			themeDisplay.setLayout(layout);
 			themeDisplay.setLayoutSet(layout.getLayoutSet());
 
-			CommerceAccount commerceAccount =
-				_commerceAccountHelper.getCurrentCommerceAccount(
-					_commerceChannelLocalService.
-						getCommerceChannelGroupIdBySiteGroupId(
-							themeDisplay.getScopeGroupId()),
-					httpServletRequest);
-
 			List<SearchItemModel> searchItemModels = new ArrayList<>();
 
 			searchItemModels.addAll(
@@ -121,6 +114,14 @@ public class CommerceSearchResource {
 			if (themeDisplay.isSignedIn()) {
 				searchItemModels.addAll(
 					searchAccounts(queryString, themeDisplay));
+
+				CommerceAccount commerceAccount =
+					_commerceAccountHelper.getCurrentCommerceAccount(
+						_commerceChannelLocalService.
+							getCommerceChannelGroupIdBySiteGroupId(
+								themeDisplay.getScopeGroupId()),
+						httpServletRequest);
+
 				searchItemModels.addAll(
 					searchOrders(queryString, themeDisplay, commerceAccount));
 			}
@@ -230,7 +231,7 @@ public class CommerceSearchResource {
 
 		for (Order order : orderList.getOrders()) {
 			SearchItemModel searchItemModel = new SearchItemModel(
-				"item", HtmlUtil.escape(String.valueOf(order.getId())));
+				"item", String.valueOf(order.getId()));
 
 			searchItemModel.setIcon("document");
 

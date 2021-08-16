@@ -14,7 +14,7 @@
 
 package com.liferay.dynamic.data.mapping.service.impl;
 
-import com.liferay.depot.model.DepotEntry;
+import com.liferay.depot.group.provider.SiteConnectedGroupGroupProvider;
 import com.liferay.depot.service.DepotEntryLocalService;
 import com.liferay.dynamic.data.mapping.configuration.DDMGroupServiceConfiguration;
 import com.liferay.dynamic.data.mapping.configuration.DDMWebConfiguration;
@@ -61,11 +61,9 @@ import com.liferay.portal.kernel.service.permission.ModelPermissions;
 import com.liferay.portal.kernel.settings.GroupServiceSettingsLocator;
 import com.liferay.portal.kernel.systemevent.SystemEvent;
 import com.liferay.portal.kernel.template.TemplateConstants;
-import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.Constants;
 import com.liferay.portal.kernel.util.FileUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
-import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.Portal;
@@ -264,8 +262,8 @@ public class DDMTemplateLocalServiceImpl
 		// Small image
 
 		saveImages(
-			smallImage, template.getSmallImageId(), smallImageFile,
-			smallImageBytes);
+			template.getCompanyId(), smallImage, template.getSmallImageId(),
+			smallImageFile, smallImageBytes);
 
 		// Template version
 
@@ -1510,8 +1508,8 @@ public class DDMTemplateLocalServiceImpl
 		// Small image
 
 		saveImages(
-			smallImage, template.getSmallImageId(), smallImageFile,
-			smallImageBytes);
+			template.getCompanyId(), smallImage, template.getSmallImageId(),
+			smallImageFile, smallImageBytes);
 
 		// Template version
 
@@ -1702,15 +1700,19 @@ public class DDMTemplateLocalServiceImpl
 
 		// Resources
 
+		String resourceName =
+			_ddmPermissionSupport.getTemplateModelResourceName(
+				template.getResourceClassName());
+
 		resourceLocalService.copyModelResources(
-			template.getCompanyId(), DDMTemplate.class.getName(),
-			template.getPrimaryKey(), newTemplate.getPrimaryKey());
+			template.getCompanyId(), resourceName, template.getPrimaryKey(),
+			newTemplate.getPrimaryKey());
 
 		// Small image
 
 		saveImages(
-			smallImage, newTemplate.getSmallImageId(), smallImageFile,
-			smallImageBytes);
+			newTemplate.getCompanyId(), smallImage,
+			newTemplate.getSmallImageId(), smallImageFile, smallImageBytes);
 
 		// Template version
 
@@ -1787,15 +1789,15 @@ public class DDMTemplateLocalServiceImpl
 	}
 
 	protected void saveImages(
-			boolean smallImage, long smallImageId, File smallImageFile,
-			byte[] smallImageBytes)
+			long companyId, boolean smallImage, long smallImageId,
+			File smallImageFile, byte[] smallImageBytes)
 		throws PortalException {
 
 		if (smallImage) {
 			if ((smallImageFile != null) && (smallImageBytes != null)) {
 				try {
 					imageLocalService.updateImage(
-						smallImageId, smallImageBytes);
+						companyId, smallImageId, smallImageBytes);
 				}
 				catch (Exception exception) {
 					throw new TemplateSmallImageContentException(exception);
@@ -1910,19 +1912,15 @@ public class DDMTemplateLocalServiceImpl
 
 	private long[] _getAncestorSiteAndDepotGroupIds(long groupId) {
 		try {
-			DepotEntryLocalService depotEntryLocalService =
-				_depotEntryLocalService;
+			SiteConnectedGroupGroupProvider siteConnectedGroupGroupProvider =
+				_siteConnectedGroupGroupProvider;
 
-			if (depotEntryLocalService == null) {
+			if (siteConnectedGroupGroupProvider == null) {
 				return _portal.getAncestorSiteGroupIds(groupId);
 			}
 
-			return ArrayUtil.append(
-				_portal.getAncestorSiteGroupIds(groupId),
-				ListUtil.toLongArray(
-					depotEntryLocalService.getGroupConnectedDepotEntries(
-						groupId, true, QueryUtil.ALL_POS, QueryUtil.ALL_POS),
-					DepotEntry::getGroupId));
+			return siteConnectedGroupGroupProvider.
+				getAncestorSiteAndDepotGroupIds(groupId, true);
 		}
 		catch (PortalException portalException) {
 			_log.error(portalException, portalException);
@@ -1957,5 +1955,11 @@ public class DDMTemplateLocalServiceImpl
 
 	@Reference
 	private Portal _portal;
+
+	@Reference(
+		cardinality = ReferenceCardinality.OPTIONAL,
+		policyOption = ReferencePolicyOption.GREEDY
+	)
+	private SiteConnectedGroupGroupProvider _siteConnectedGroupGroupProvider;
 
 }

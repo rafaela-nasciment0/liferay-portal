@@ -21,26 +21,20 @@ import PropTypes from 'prop-types';
 import React, {useEffect, useState} from 'react';
 
 import CurrentLanguageFlag from '../../../common/components/CurrentLanguageFlag';
-import ItemSelector from '../../../common/components/ItemSelector';
 import {LayoutSelector} from '../../../common/components/LayoutSelector';
 import MappingSelector from '../../../common/components/MappingSelector';
 import {ConfigurationFieldPropTypes} from '../../../prop-types/index';
 import {EDITABLE_TYPES} from '../../config/constants/editableTypes';
-import {config} from '../../config/index';
+import {useGetFieldValue} from '../../contexts/CollectionItemContext';
+import {useSelector} from '../../contexts/StoreContext';
 import selectLanguageId from '../../selectors/selectLanguageId';
-import {useSelector} from '../../store/index';
 import isMapped from '../../utils/editable-value/isMapped';
 import isMappedToLayout from '../../utils/editable-value/isMappedToLayout';
 import isMappedToStructure from '../../utils/editable-value/isMappedToStructure';
 import resolveEditableValue from '../../utils/editable-value/resolveEditableValue';
-import itemSelectorValueToInfoItem from '../../utils/item-selector-value/itemSelectorValueToInfoItem';
 import {useId} from '../../utils/useId';
-import {useGetFieldValue} from '../CollectionItemContext';
-
-const DISPLAY_PAGE_URL_FIELD_ID = 'displayPageURL';
 
 const SOURCE_OPTION_FROM_CONTENT_FIELD = 'fromContentField';
-const SOURCE_OPTION_FROM_ITEM_DISPLAY_PAGE = 'fromItemDisplayPage';
 const SOURCE_OPTION_FROM_LAYOUT = 'fromLayout';
 const SOURCE_OPTION_MANUAL = 'manual';
 
@@ -52,10 +46,6 @@ const SOURCE_OPTIONS = [
 	{
 		label: Liferay.Language.get('page'),
 		value: SOURCE_OPTION_FROM_LAYOUT,
-	},
-	{
-		label: Liferay.Language.get('display-page'),
-		value: SOURCE_OPTION_FROM_ITEM_DISPLAY_PAGE,
 	},
 	{
 		label: Liferay.Language.get('mapped-url'),
@@ -143,28 +133,19 @@ export default function LinkField({field, onValueSelect, value}) {
 				<ClaySelectWithOption
 					id={sourceInputId}
 					onChange={handleSourceChange}
-					options={
-						config.layoutMappingEnabled
-							? SOURCE_OPTIONS
-							: SOURCE_OPTIONS.filter(
-									({value}) =>
-										value !==
-											SOURCE_OPTION_FROM_ITEM_DISPLAY_PAGE &&
-										value !== SOURCE_OPTION_FROM_LAYOUT
-							  )
-					}
+					options={SOURCE_OPTIONS}
 					value={source}
 				/>
 			</ClayForm.Group>
 
 			{source === SOURCE_OPTION_MANUAL && (
-				<div className="autofit-row mb-3">
-					<div className="autofit-col autofit-col-expand">
-						<ClayForm.Group small>
-							<label htmlFor={hrefInputId}>
-								{Liferay.Language.get('url')}
-							</label>
+				<ClayForm.Group>
+					<label htmlFor={hrefInputId}>
+						{Liferay.Language.get('url')}
+					</label>
 
+					<ClayInput.Group small>
+						<ClayInput.GroupItem>
 							<ClayInput
 								id={hrefInputId}
 								onBlur={() => handleChange({href: nextHref})}
@@ -174,10 +155,12 @@ export default function LinkField({field, onValueSelect, value}) {
 								type="text"
 								value={nextHref || ''}
 							/>
-						</ClayForm.Group>
-					</div>
-					<CurrentLanguageFlag />
-				</div>
+						</ClayInput.GroupItem>
+						<ClayInput.GroupItem shrink>
+							<CurrentLanguageFlag />
+						</ClayInput.GroupItem>
+					</ClayInput.Group>
+				</ClayForm.Group>
 			)}
 
 			{source === SOURCE_OPTION_FROM_LAYOUT && (
@@ -218,20 +201,6 @@ export default function LinkField({field, onValueSelect, value}) {
 						</ClayForm.Group>
 					)}
 				</>
-			)}
-
-			{source === SOURCE_OPTION_FROM_ITEM_DISPLAY_PAGE && (
-				<ItemSelector
-					label={Liferay.Language.get('item')}
-					onItemSelect={(item) =>
-						handleChange({
-							...item,
-							fieldId: DISPLAY_PAGE_URL_FIELD_ID,
-						})
-					}
-					selectedItemTitle={nextValue?.title}
-					transformValueCallback={itemSelectorValueToInfoItem}
-				/>
 			)}
 
 			<ClayCheckbox

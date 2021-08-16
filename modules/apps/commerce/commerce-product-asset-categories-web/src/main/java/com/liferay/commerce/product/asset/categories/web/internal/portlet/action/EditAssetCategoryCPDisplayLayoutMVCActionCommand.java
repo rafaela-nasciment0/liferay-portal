@@ -155,18 +155,18 @@ public class EditAssetCategoryCPDisplayLayoutMVCActionCommand
 
 		if (cpDisplayLayoutId > 0) {
 			_cpDisplayLayoutService.updateCPDisplayLayout(
-				cpDisplayLayoutId, layoutUuid);
+				cpDisplayLayoutId, classPK, layoutUuid);
 		}
 		else {
+			if (classPKs.isEmpty()) {
+				throw new CPDisplayLayoutEntryException();
+			}
+
 			long commerceChannelId = ParamUtil.getLong(
 				actionRequest, "commerceChannelId");
 
 			CommerceChannel commerceChannel =
 				_commerceChannelService.getCommerceChannel(commerceChannelId);
-
-			if (classPKs.isEmpty()) {
-				throw new CPDisplayLayoutEntryException();
-			}
 
 			for (long curClassPK : classPKs) {
 				_cpDisplayLayoutService.addCPDisplayLayout(

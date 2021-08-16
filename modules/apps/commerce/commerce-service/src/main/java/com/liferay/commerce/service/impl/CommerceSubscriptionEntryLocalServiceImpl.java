@@ -63,9 +63,7 @@ import java.io.Serializable;
 
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.Callable;
 
 /**
@@ -674,35 +672,25 @@ public class CommerceSubscriptionEntryLocalServiceImpl
 
 		SearchContext searchContext = new SearchContext();
 
-		Map<String, Serializable> attributes =
+		searchContext.setAttributes(
 			HashMapBuilder.<String, Serializable>put(
 				CommerceSubscriptionEntryIndexer.FIELD_CP_INSTANCE_ID, keywords
 			).put(
+				CommerceSubscriptionEntryIndexer.FIELD_MAX_SUBSCRIPTION_CYCLES,
+				() -> maxSubscriptionCycles
+			).put(
 				CommerceSubscriptionEntryIndexer.FIELD_SKU, keywords
 			).put(
-				Field.ENTRY_CLASS_PK, keywords
-			).build();
-
-		if (maxSubscriptionCycles != null) {
-			attributes.put(
-				CommerceSubscriptionEntryIndexer.FIELD_MAX_SUBSCRIPTION_CYCLES,
-				maxSubscriptionCycles);
-		}
-
-		if (subscriptionStatus != null) {
-			attributes.put(
 				CommerceSubscriptionEntryIndexer.FIELD_SUBSCRIPTION_STATUS,
-				subscriptionStatus);
-		}
-
-		LinkedHashMap<String, Object> params =
-			LinkedHashMapBuilder.<String, Object>put(
-				"keywords", keywords
-			).build();
-
-		attributes.put("params", params);
-
-		searchContext.setAttributes(attributes);
+				() -> subscriptionStatus
+			).put(
+				Field.ENTRY_CLASS_PK, keywords
+			).put(
+				"params",
+				LinkedHashMapBuilder.<String, Object>put(
+					"keywords", keywords
+				).build()
+			).build());
 
 		searchContext.setCompanyId(companyId);
 		searchContext.setEnd(end);

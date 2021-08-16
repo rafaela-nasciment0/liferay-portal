@@ -110,7 +110,7 @@ public class SelectSiteInitializerDisplayContext {
 			"/site_admin/select_site_initializer"
 		).setRedirect(
 			getBackURL()
-		).build();
+		).buildPortletURL();
 	}
 
 	private List<SiteInitializerItem> _getSiteInitializerItems()
@@ -134,7 +134,7 @@ public class SelectSiteInitializerDisplayContext {
 
 		List<SiteInitializer> siteInitializers =
 			_siteInitializerRegistry.getSiteInitializers(
-				themeDisplay.getCompanyId());
+				themeDisplay.getCompanyId(), true);
 
 		for (SiteInitializer siteInitializer : siteInitializers) {
 			SiteInitializerItem siteInitializerItem = new SiteInitializerItem(

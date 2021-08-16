@@ -172,8 +172,8 @@ public abstract class BaseDataListViewResourceImpl
 	public Response postDataDefinitionDataListViewBatch(
 			@NotNull @Parameter(hidden = true) @PathParam("dataDefinitionId")
 				Long dataDefinitionId,
-			@Parameter(hidden = true) @QueryParam("callbackURL")
-				String callbackURL,
+			@Parameter(hidden = true) @QueryParam("callbackURL") String
+				callbackURL,
 			Object object)
 		throws Exception {
 
@@ -207,8 +207,8 @@ public abstract class BaseDataListViewResourceImpl
 	@Produces({"application/json", "application/xml"})
 	@Tags(value = {@Tag(name = "DataListView")})
 	public void deleteDataListView(
-			@NotNull @Parameter(hidden = true) @PathParam("dataListViewId")
-				Long dataListViewId)
+			@NotNull @Parameter(hidden = true) @PathParam("dataListViewId") Long
+				dataListViewId)
 		throws Exception {
 	}
 
@@ -227,8 +227,8 @@ public abstract class BaseDataListViewResourceImpl
 	@Produces("application/json")
 	@Tags(value = {@Tag(name = "DataListView")})
 	public Response deleteDataListViewBatch(
-			@Parameter(hidden = true) @QueryParam("callbackURL")
-				String callbackURL,
+			@Parameter(hidden = true) @QueryParam("callbackURL") String
+				callbackURL,
 			Object object)
 		throws Exception {
 
@@ -262,8 +262,8 @@ public abstract class BaseDataListViewResourceImpl
 	@Produces({"application/json", "application/xml"})
 	@Tags(value = {@Tag(name = "DataListView")})
 	public DataListView getDataListView(
-			@NotNull @Parameter(hidden = true) @PathParam("dataListViewId")
-				Long dataListViewId)
+			@NotNull @Parameter(hidden = true) @PathParam("dataListViewId") Long
+				dataListViewId)
 		throws Exception {
 
 		return new DataListView();
@@ -284,8 +284,8 @@ public abstract class BaseDataListViewResourceImpl
 	@PUT
 	@Tags(value = {@Tag(name = "DataListView")})
 	public DataListView putDataListView(
-			@NotNull @Parameter(hidden = true) @PathParam("dataListViewId")
-				Long dataListViewId,
+			@NotNull @Parameter(hidden = true) @PathParam("dataListViewId") Long
+				dataListViewId,
 			DataListView dataListView)
 		throws Exception {
 
@@ -307,8 +307,8 @@ public abstract class BaseDataListViewResourceImpl
 	@PUT
 	@Tags(value = {@Tag(name = "DataListView")})
 	public Response putDataListViewBatch(
-			@Parameter(hidden = true) @QueryParam("callbackURL")
-				String callbackURL,
+			@Parameter(hidden = true) @QueryParam("callbackURL") String
+				callbackURL,
 			Object object)
 		throws Exception {
 
@@ -337,7 +337,7 @@ public abstract class BaseDataListViewResourceImpl
 
 		for (DataListView dataListView : dataListViews) {
 			postDataDefinitionDataListView(
-				Long.valueOf((String)parameters.get("dataDefinitionId")),
+				Long.parseLong((String)parameters.get("dataDefinitionId")),
 				dataListView);
 		}
 	}
@@ -375,7 +375,7 @@ public abstract class BaseDataListViewResourceImpl
 		throws Exception {
 
 		return getDataDefinitionDataListViewsPage(
-			(Long)parameters.get("dataDefinitionId"),
+			Long.parseLong((String)parameters.get("dataDefinitionId")),
 			(String)parameters.get("keywords"), pagination, sorts);
 	}
 
@@ -410,7 +410,7 @@ public abstract class BaseDataListViewResourceImpl
 		for (DataListView dataListView : dataListViews) {
 			putDataListView(
 				dataListView.getId() != null ? dataListView.getId() :
-					(Long)parameters.get("dataListViewId"),
+					Long.parseLong((String)parameters.get("dataListViewId")),
 				dataListView);
 		}
 	}

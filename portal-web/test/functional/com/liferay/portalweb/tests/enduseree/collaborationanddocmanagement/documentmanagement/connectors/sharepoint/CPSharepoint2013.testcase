@@ -3,7 +3,6 @@ definition {
 
 	property cmis.repository.type = "sharepoint2013";
 	property custom.properties = "session.store.password=true${line.separator}company.security.auth.type=screenName";
-	property dummy.socket.proxy.disabled = "true";
 	property osgi.app.includes = "sharepoint-soap";
 	property portal.release = "false";
 	property test.run.environment = "EE";
@@ -32,7 +31,7 @@ definition {
 
 		Navigator.gotoAccountSettings();
 
-		User.editPasswordViaMyAccount(
+		User.editPassword(
 			currentPassword = "test",
 			newPassword = "password");
 
@@ -83,7 +82,7 @@ definition {
 
 			UserBar.gotoDropdownItem(dropdownItem = "Account Settings");
 
-			User.editPasswordViaMyAccount(
+			User.editPassword(
 				currentPassword = "password",
 				newPassword = "test");
 
@@ -97,6 +96,7 @@ definition {
 	}
 
 	@priority = "4"
+	@refactorneeded
 	test CheckinDocument {
 		property test.name.skip.portal.instance = "CPSharepoint#CheckinDocument";
 
@@ -152,6 +152,7 @@ definition {
 	}
 
 	@priority = "4"
+	@refactorneeded
 	test DeleteDocumentInSubfolder {
 		DMRepository.gotoCP(dmRepositoryName = "Sharepoint Repository Name");
 
@@ -203,10 +204,11 @@ definition {
 
 		DMDocument.cannotViewCP(dmDocumentTitle = "Document_2.doc");
 
-		DMDocument.viewDefaultCP();
+		DMDocument.viewDefault();
 	}
 
 	@priority = "4"
+	@refactorneeded
 	test DeleteSubfolder {
 		property test.name.skip.portal.instance = "CPSharepoint#DeleteSubfolder";
 
@@ -232,6 +234,7 @@ definition {
 	}
 
 	@priority = "4"
+	@refactorneeded
 	test EditDocumentFile {
 		property test.name.skip.portal.instance = "CPSharepoint#EditDocumentFile";
 
@@ -283,6 +286,7 @@ definition {
 	}
 
 	@priority = "4"
+	@refactorneeded
 	test EditRepository {
 		property test.name.skip.portal.instance = "CPSharepoint#EditRepository";
 
@@ -342,6 +346,7 @@ definition {
 	}
 
 	@priority = "4"
+	@refactorneeded
 	test MoveCheckedoutDocumentToFolder {
 		property test.name.skip.portal.instance = "CPSharepoint#MoveCheckedoutDocumentToFolder";
 
@@ -412,6 +417,7 @@ definition {
 	}
 
 	@priority = "4"
+	@refactorneeded
 	test MoveDocumentToHome {
 		property test.name.skip.portal.instance = "CPSharepoint#MoveDocumentToHome";
 
@@ -447,6 +453,7 @@ definition {
 	}
 
 	@priority = "4"
+	@refactorneeded
 	test SearchDocumentViaHome {
 		property test.name.skip.portal.instance = "CPSharepoint#SearchDocumentViaHome";
 
@@ -470,6 +477,7 @@ definition {
 	}
 
 	@priority = "4"
+	@refactorneeded
 	test ViewEditedCheckedoutDocument {
 		property test.name.skip.portal.instance = "CPSharepoint#ViewEditedCheckedoutDocument";
 
@@ -519,6 +527,7 @@ definition {
 	}
 
 	@priority = "4"
+	@refactorneeded
 	test ViewOriginalFileExtensionAfterUnsuccessfulExtensionChange {
 		property test.name.skip.portal.instance = "CPSharepoint#ViewOriginalFileExtensionAfterUnsuccessfulExtensionChange";
 
@@ -556,6 +565,7 @@ definition {
 	}
 
 	@priority = "4"
+	@refactorneeded
 	test ViewOriginalFileExtensionAfterUnsuccessfulExtensionRemoval {
 		property test.name.skip.portal.instance = "CPSharepoint#ViewOriginalFileExtensionAfterUnsuccessfulExtensionRemoval";
 

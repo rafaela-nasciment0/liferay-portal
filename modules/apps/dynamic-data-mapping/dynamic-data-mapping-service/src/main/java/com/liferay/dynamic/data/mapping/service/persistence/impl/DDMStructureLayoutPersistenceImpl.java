@@ -4378,11 +4378,22 @@ public class DDMStructureLayoutPersistenceImpl
 				continue;
 			}
 
-			if (entityCache.getResult(
+			DDMStructureLayout cachedDDMStructureLayout =
+				(DDMStructureLayout)entityCache.getResult(
 					DDMStructureLayoutImpl.class,
-					ddmStructureLayout.getPrimaryKey()) == null) {
+					ddmStructureLayout.getPrimaryKey());
 
+			if (cachedDDMStructureLayout == null) {
 				cacheResult(ddmStructureLayout);
+			}
+			else {
+				DDMStructureLayoutModelImpl ddmStructureLayoutModelImpl =
+					(DDMStructureLayoutModelImpl)ddmStructureLayout;
+				DDMStructureLayoutModelImpl cachedDDMStructureLayoutModelImpl =
+					(DDMStructureLayoutModelImpl)cachedDDMStructureLayout;
+
+				ddmStructureLayoutModelImpl.setDDMFormLayout(
+					cachedDDMStructureLayoutModelImpl.getDDMFormLayout());
 			}
 		}
 	}
@@ -4612,25 +4623,25 @@ public class DDMStructureLayoutPersistenceImpl
 		ServiceContext serviceContext =
 			ServiceContextThreadLocal.getServiceContext();
 
-		Date now = new Date();
+		Date date = new Date();
 
 		if (isNew && (ddmStructureLayout.getCreateDate() == null)) {
 			if (serviceContext == null) {
-				ddmStructureLayout.setCreateDate(now);
+				ddmStructureLayout.setCreateDate(date);
 			}
 			else {
 				ddmStructureLayout.setCreateDate(
-					serviceContext.getCreateDate(now));
+					serviceContext.getCreateDate(date));
 			}
 		}
 
 		if (!ddmStructureLayoutModelImpl.hasSetModifiedDate()) {
 			if (serviceContext == null) {
-				ddmStructureLayout.setModifiedDate(now);
+				ddmStructureLayout.setModifiedDate(date);
 			}
 			else {
 				ddmStructureLayout.setModifiedDate(
-					serviceContext.getModifiedDate(now));
+					serviceContext.getModifiedDate(date));
 			}
 		}
 
@@ -5064,7 +5075,8 @@ public class DDMStructureLayoutPersistenceImpl
 	public Set<String> getCTColumnNames(
 		CTColumnResolutionType ctColumnResolutionType) {
 
-		return _ctColumnNamesMap.get(ctColumnResolutionType);
+		return _ctColumnNamesMap.getOrDefault(
+			ctColumnResolutionType, Collections.emptySet());
 	}
 
 	@Override
@@ -5098,7 +5110,6 @@ public class DDMStructureLayoutPersistenceImpl
 	static {
 		Set<String> ctControlColumnNames = new HashSet<String>();
 		Set<String> ctIgnoreColumnNames = new HashSet<String>();
-		Set<String> ctMergeColumnNames = new HashSet<String>();
 		Set<String> ctStrictColumnNames = new HashSet<String>();
 
 		ctControlColumnNames.add("mvccVersion");
@@ -5121,7 +5132,6 @@ public class DDMStructureLayoutPersistenceImpl
 			CTColumnResolutionType.CONTROL, ctControlColumnNames);
 		_ctColumnNamesMap.put(
 			CTColumnResolutionType.IGNORE, ctIgnoreColumnNames);
-		_ctColumnNamesMap.put(CTColumnResolutionType.MERGE, ctMergeColumnNames);
 		_ctColumnNamesMap.put(
 			CTColumnResolutionType.PK,
 			Collections.singleton("structureLayoutId"));
@@ -5455,7 +5465,7 @@ public class DDMStructureLayoutPersistenceImpl
 			return DDMStructureLayoutTable.INSTANCE.getTableName();
 		}
 
-		private Object[] _getValue(
+		private static Object[] _getValue(
 			DDMStructureLayoutModelImpl ddmStructureLayoutModelImpl,
 			String[] columnNames, boolean original) {
 
@@ -5478,8 +5488,8 @@ public class DDMStructureLayoutPersistenceImpl
 			return arguments;
 		}
 
-		private static Map<FinderPath, Long> _finderPathColumnBitmasksCache =
-			new ConcurrentHashMap<>();
+		private static final Map<FinderPath, Long>
+			_finderPathColumnBitmasksCache = new ConcurrentHashMap<>();
 
 	}
 

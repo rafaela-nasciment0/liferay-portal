@@ -107,6 +107,25 @@ public class Query {
 	/**
 	 * Invoke this method with the command line:
 	 *
+	 * curl -H 'Content-Type: text/plain; charset=utf-8' -X 'POST' 'http://localhost:8080/o/graphql' -d $'{"query": "query {assetLibraryKeywordPermissions(assetLibraryId: ___, roleNames: ___){items {__}, page, pageSize, totalCount}}"}' -u 'test@liferay.com:test'
+	 */
+	@GraphQLField
+	public KeywordPage assetLibraryKeywordPermissions(
+			@GraphQLName("assetLibraryId") @NotEmpty String assetLibraryId,
+			@GraphQLName("roleNames") String roleNames)
+		throws Exception {
+
+		return _applyComponentServiceObjects(
+			_keywordResourceComponentServiceObjects,
+			this::_populateResourceContext,
+			keywordResource -> new KeywordPage(
+				keywordResource.getAssetLibraryKeywordPermissionsPage(
+					Long.valueOf(assetLibraryId), roleNames)));
+	}
+
+	/**
+	 * Invoke this method with the command line:
+	 *
 	 * curl -H 'Content-Type: text/plain; charset=utf-8' -X 'POST' 'http://localhost:8080/o/graphql' -d $'{"query": "query {keywordsRanked(page: ___, pageSize: ___, search: ___, siteKey: ___){items {__}, page, pageSize, totalCount}}"}' -u 'test@liferay.com:test'
 	 */
 	@GraphQLField
@@ -129,7 +148,7 @@ public class Query {
 	/**
 	 * Invoke this method with the command line:
 	 *
-	 * curl -H 'Content-Type: text/plain; charset=utf-8' -X 'POST' 'http://localhost:8080/o/graphql' -d $'{"query": "query {keyword(keywordId: ___){actions, assetLibraryKey, creator, dateCreated, dateModified, id, keywordUsageCount, name, siteId}}"}' -u 'test@liferay.com:test'
+	 * curl -H 'Content-Type: text/plain; charset=utf-8' -X 'POST' 'http://localhost:8080/o/graphql' -d $'{"query": "query {keyword(keywordId: ___){actions, assetLibraryKey, creator, dateCreated, dateModified, id, keywordUsageCount, name, siteId, subscribed}}"}' -u 'test@liferay.com:test'
 	 */
 	@GraphQLField(description = "Retrieves a keyword.")
 	public Keyword keyword(@GraphQLName("keywordId") Long keywordId)
@@ -172,6 +191,25 @@ public class Query {
 	/**
 	 * Invoke this method with the command line:
 	 *
+	 * curl -H 'Content-Type: text/plain; charset=utf-8' -X 'POST' 'http://localhost:8080/o/graphql' -d $'{"query": "query {keywordPermissions(roleNames: ___, siteKey: ___){items {__}, page, pageSize, totalCount}}"}' -u 'test@liferay.com:test'
+	 */
+	@GraphQLField
+	public KeywordPage keywordPermissions(
+			@GraphQLName("siteKey") @NotEmpty String siteKey,
+			@GraphQLName("roleNames") String roleNames)
+		throws Exception {
+
+		return _applyComponentServiceObjects(
+			_keywordResourceComponentServiceObjects,
+			this::_populateResourceContext,
+			keywordResource -> new KeywordPage(
+				keywordResource.getSiteKeywordPermissionsPage(
+					Long.valueOf(siteKey), roleNames)));
+	}
+
+	/**
+	 * Invoke this method with the command line:
+	 *
 	 * curl -H 'Content-Type: text/plain; charset=utf-8' -X 'POST' 'http://localhost:8080/o/graphql' -d $'{"query": "query {taxonomyCategoryRanked(page: ___, pageSize: ___, siteKey: ___){items {__}, page, pageSize, totalCount}}"}' -u 'test@liferay.com:test'
 	 */
 	@GraphQLField
@@ -198,8 +236,8 @@ public class Query {
 		description = "Retrieves a taxonomy category's child taxonomy categories. Results can be paginated, filtered, searched, and sorted."
 	)
 	public TaxonomyCategoryPage taxonomyCategoryTaxonomyCategories(
-			@GraphQLName("parentTaxonomyCategoryId")
-				String parentTaxonomyCategoryId,
+			@GraphQLName("parentTaxonomyCategoryId") String
+				parentTaxonomyCategoryId,
 			@GraphQLName("search") String search,
 			@GraphQLName("filter") String filterString,
 			@GraphQLName("pageSize") int pageSize,
@@ -237,6 +275,25 @@ public class Query {
 			taxonomyCategoryResource ->
 				taxonomyCategoryResource.getTaxonomyCategory(
 					taxonomyCategoryId));
+	}
+
+	/**
+	 * Invoke this method with the command line:
+	 *
+	 * curl -H 'Content-Type: text/plain; charset=utf-8' -X 'POST' 'http://localhost:8080/o/graphql' -d $'{"query": "query {taxonomyCategoryPermissions(roleNames: ___, taxonomyCategoryId: ___){items {__}, page, pageSize, totalCount}}"}' -u 'test@liferay.com:test'
+	 */
+	@GraphQLField
+	public TaxonomyCategoryPage taxonomyCategoryPermissions(
+			@GraphQLName("taxonomyCategoryId") String taxonomyCategoryId,
+			@GraphQLName("roleNames") String roleNames)
+		throws Exception {
+
+		return _applyComponentServiceObjects(
+			_taxonomyCategoryResourceComponentServiceObjects,
+			this::_populateResourceContext,
+			taxonomyCategoryResource -> new TaxonomyCategoryPage(
+				taxonomyCategoryResource.getTaxonomyCategoryPermissionsPage(
+					taxonomyCategoryId, roleNames)));
 	}
 
 	/**
@@ -302,6 +359,26 @@ public class Query {
 	/**
 	 * Invoke this method with the command line:
 	 *
+	 * curl -H 'Content-Type: text/plain; charset=utf-8' -X 'POST' 'http://localhost:8080/o/graphql' -d $'{"query": "query {assetLibraryTaxonomyVocabularyPermissions(assetLibraryId: ___, roleNames: ___){items {__}, page, pageSize, totalCount}}"}' -u 'test@liferay.com:test'
+	 */
+	@GraphQLField
+	public TaxonomyVocabularyPage assetLibraryTaxonomyVocabularyPermissions(
+			@GraphQLName("assetLibraryId") @NotEmpty String assetLibraryId,
+			@GraphQLName("roleNames") String roleNames)
+		throws Exception {
+
+		return _applyComponentServiceObjects(
+			_taxonomyVocabularyResourceComponentServiceObjects,
+			this::_populateResourceContext,
+			taxonomyVocabularyResource -> new TaxonomyVocabularyPage(
+				taxonomyVocabularyResource.
+					getAssetLibraryTaxonomyVocabularyPermissionsPage(
+						Long.valueOf(assetLibraryId), roleNames)));
+	}
+
+	/**
+	 * Invoke this method with the command line:
+	 *
 	 * curl -H 'Content-Type: text/plain; charset=utf-8' -X 'POST' 'http://localhost:8080/o/graphql' -d $'{"query": "query {taxonomyVocabularies(filter: ___, page: ___, pageSize: ___, search: ___, siteKey: ___, sorts: ___){items {__}, page, pageSize, totalCount}}"}' -u 'test@liferay.com:test'
 	 */
 	@GraphQLField(
@@ -332,6 +409,26 @@ public class Query {
 	/**
 	 * Invoke this method with the command line:
 	 *
+	 * curl -H 'Content-Type: text/plain; charset=utf-8' -X 'POST' 'http://localhost:8080/o/graphql' -d $'{"query": "query {siteTaxonomyVocabularyPermissions(roleNames: ___, siteKey: ___){items {__}, page, pageSize, totalCount}}"}' -u 'test@liferay.com:test'
+	 */
+	@GraphQLField
+	public TaxonomyVocabularyPage siteTaxonomyVocabularyPermissions(
+			@GraphQLName("siteKey") @NotEmpty String siteKey,
+			@GraphQLName("roleNames") String roleNames)
+		throws Exception {
+
+		return _applyComponentServiceObjects(
+			_taxonomyVocabularyResourceComponentServiceObjects,
+			this::_populateResourceContext,
+			taxonomyVocabularyResource -> new TaxonomyVocabularyPage(
+				taxonomyVocabularyResource.
+					getSiteTaxonomyVocabularyPermissionsPage(
+						Long.valueOf(siteKey), roleNames)));
+	}
+
+	/**
+	 * Invoke this method with the command line:
+	 *
 	 * curl -H 'Content-Type: text/plain; charset=utf-8' -X 'POST' 'http://localhost:8080/o/graphql' -d $'{"query": "query {taxonomyVocabulary(taxonomyVocabularyId: ___){actions, assetLibraryKey, assetTypes, availableLanguages, creator, dateCreated, dateModified, description, description_i18n, id, name, name_i18n, numberOfTaxonomyCategories, siteId, viewableBy}}"}' -u 'test@liferay.com:test'
 	 */
 	@GraphQLField(description = "Retrieves a taxonomy vocabulary.")
@@ -345,6 +442,78 @@ public class Query {
 			taxonomyVocabularyResource ->
 				taxonomyVocabularyResource.getTaxonomyVocabulary(
 					taxonomyVocabularyId));
+	}
+
+	/**
+	 * Invoke this method with the command line:
+	 *
+	 * curl -H 'Content-Type: text/plain; charset=utf-8' -X 'POST' 'http://localhost:8080/o/graphql' -d $'{"query": "query {taxonomyVocabularyPermissions(roleNames: ___, taxonomyVocabularyId: ___){items {__}, page, pageSize, totalCount}}"}' -u 'test@liferay.com:test'
+	 */
+	@GraphQLField
+	public TaxonomyVocabularyPage taxonomyVocabularyPermissions(
+			@GraphQLName("taxonomyVocabularyId") Long taxonomyVocabularyId,
+			@GraphQLName("roleNames") String roleNames)
+		throws Exception {
+
+		return _applyComponentServiceObjects(
+			_taxonomyVocabularyResourceComponentServiceObjects,
+			this::_populateResourceContext,
+			taxonomyVocabularyResource -> new TaxonomyVocabularyPage(
+				taxonomyVocabularyResource.getTaxonomyVocabularyPermissionsPage(
+					taxonomyVocabularyId, roleNames)));
+	}
+
+	@GraphQLTypeExtension(TaxonomyCategory.class)
+	public class GetTaxonomyCategoryPermissionsPageTypeExtension {
+
+		public GetTaxonomyCategoryPermissionsPageTypeExtension(
+			TaxonomyCategory taxonomyCategory) {
+
+			_taxonomyCategory = taxonomyCategory;
+		}
+
+		@GraphQLField
+		public TaxonomyCategoryPage permissions(
+				@GraphQLName("roleNames") String roleNames)
+			throws Exception {
+
+			return _applyComponentServiceObjects(
+				_taxonomyCategoryResourceComponentServiceObjects,
+				Query.this::_populateResourceContext,
+				taxonomyCategoryResource -> new TaxonomyCategoryPage(
+					taxonomyCategoryResource.getTaxonomyCategoryPermissionsPage(
+						_taxonomyCategory.getId(), roleNames)));
+		}
+
+		private TaxonomyCategory _taxonomyCategory;
+
+	}
+
+	@GraphQLTypeExtension(TaxonomyVocabulary.class)
+	public class GetTaxonomyVocabularyPermissionsPageTypeExtension {
+
+		public GetTaxonomyVocabularyPermissionsPageTypeExtension(
+			TaxonomyVocabulary taxonomyVocabulary) {
+
+			_taxonomyVocabulary = taxonomyVocabulary;
+		}
+
+		@GraphQLField
+		public TaxonomyVocabularyPage permissions(
+				@GraphQLName("roleNames") String roleNames)
+			throws Exception {
+
+			return _applyComponentServiceObjects(
+				_taxonomyVocabularyResourceComponentServiceObjects,
+				Query.this::_populateResourceContext,
+				taxonomyVocabularyResource -> new TaxonomyVocabularyPage(
+					taxonomyVocabularyResource.
+						getTaxonomyVocabularyPermissionsPage(
+							_taxonomyVocabulary.getId(), roleNames)));
+		}
+
+		private TaxonomyVocabulary _taxonomyVocabulary;
+
 	}
 
 	@GraphQLTypeExtension(TaxonomyVocabulary.class)

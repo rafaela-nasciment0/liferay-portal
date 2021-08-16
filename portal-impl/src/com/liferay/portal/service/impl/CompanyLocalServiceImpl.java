@@ -19,14 +19,17 @@ import com.liferay.expando.kernel.model.ExpandoTable;
 import com.liferay.petra.encryptor.Encryptor;
 import com.liferay.petra.encryptor.EncryptorException;
 import com.liferay.petra.function.UnsafeConsumer;
-import com.liferay.petra.lang.SafeClosable;
+import com.liferay.petra.lang.SafeCloseable;
+import com.liferay.petra.sql.dsl.DSLQueryFactoryUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.db.partition.DBPartitionUtil;
 import com.liferay.portal.kernel.dao.orm.ActionableDynamicQuery;
+import com.liferay.portal.kernel.dao.orm.Disjunction;
 import com.liferay.portal.kernel.dao.orm.EntityCacheUtil;
 import com.liferay.portal.kernel.dao.orm.Property;
 import com.liferay.portal.kernel.dao.orm.PropertyFactoryUtil;
+import com.liferay.portal.kernel.dao.orm.RestrictionsFactoryUtil;
 import com.liferay.portal.kernel.exception.AccountNameException;
 import com.liferay.portal.kernel.exception.CompanyMxException;
 import com.liferay.portal.kernel.exception.CompanyVirtualHostException;
@@ -48,6 +51,7 @@ import com.liferay.portal.kernel.model.Contact;
 import com.liferay.portal.kernel.model.ContactConstants;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.GroupConstants;
+import com.liferay.portal.kernel.model.GroupTable;
 import com.liferay.portal.kernel.model.LayoutPrototype;
 import com.liferay.portal.kernel.model.LayoutSetPrototype;
 import com.liferay.portal.kernel.model.Organization;
@@ -191,25 +195,26 @@ public class CompanyLocalServiceImpl extends CompanyLocalServiceBaseImpl {
 			DBPartitionUtil.setDefaultCompanyId(company.getCompanyId());
 		}
 
-		company.setWebId(webId);
-		company.setMx(mx);
-		company.setSystem(system);
-		company.setMaxUsers(maxUsers);
-		company.setActive(active);
-
-		company = companyPersistence.update(company);
-
-		// Virtual host
-
-		updateVirtualHostname(company.getCompanyId(), virtualHostname);
-
 		boolean newDBPartitionAdded = DBPartitionUtil.addDBPartition(
 			company.getCompanyId());
 
-		SafeClosable safeClosable = CompanyThreadLocal.setInitializingCompanyId(
-			company.getCompanyId());
+		SafeCloseable safeCloseable =
+			CompanyThreadLocal.setInitializingCompanyIdWithSafeCloseable(
+				company.getCompanyId());
 
 		try {
+			company.setWebId(webId);
+			company.setMx(mx);
+			company.setSystem(system);
+			company.setMaxUsers(maxUsers);
+			company.setActive(active);
+
+			company = companyPersistence.update(company);
+
+			// Virtual host
+
+			updateVirtualHostname(company.getCompanyId(), virtualHostname);
+
 			if (newDBPartitionAdded) {
 				dlFileEntryTypeLocalService.
 					createBasicDocumentDLFileEntryType();
@@ -256,7 +261,7 @@ public class CompanyLocalServiceImpl extends CompanyLocalServiceBaseImpl {
 
 					@Override
 					public Void call() throws Exception {
-						safeClosable.close();
+						safeCloseable.close();
 
 						return null;
 					}
@@ -266,7 +271,7 @@ public class CompanyLocalServiceImpl extends CompanyLocalServiceBaseImpl {
 			return company;
 		}
 		catch (Exception exception) {
-			safeClosable.close();
+			safeCloseable.close();
 
 			throw exception;
 		}
@@ -454,7 +459,13 @@ public class CompanyLocalServiceImpl extends CompanyLocalServiceBaseImpl {
 			UnsafeConsumer<Company, E> unsafeConsumer)
 		throws E {
 
-		forEachCompany(unsafeConsumer, companyLocalService.getCompanies(false));
+		List<Company> companies = null;
+
+		if (!CompanyThreadLocal.isLocked()) {
+			companies = companyLocalService.getCompanies(false);
+		}
+
+		forEachCompany(unsafeConsumer, companies);
 	}
 
 	@Override
@@ -463,9 +474,17 @@ public class CompanyLocalServiceImpl extends CompanyLocalServiceBaseImpl {
 			UnsafeConsumer<Company, E> unsafeConsumer, List<Company> companies)
 		throws E {
 
+		if (CompanyThreadLocal.isLocked()) {
+			unsafeConsumer.accept(
+				companyLocalService.fetchCompanyById(
+					CompanyThreadLocal.getCompanyId()));
+
+			return;
+		}
+
 		for (Company company : companies) {
-			try (SafeClosable safeClosable =
-					CompanyThreadLocal.setWithSafeClosable(
+			try (SafeCloseable safeCloseable =
+					CompanyThreadLocal.setWithSafeCloseable(
 						company.getCompanyId())) {
 
 				unsafeConsumer.accept(company);
@@ -479,11 +498,14 @@ public class CompanyLocalServiceImpl extends CompanyLocalServiceBaseImpl {
 			UnsafeConsumer<Long, E> unsafeConsumer)
 		throws E {
 
-		forEachCompanyId(
-			unsafeConsumer,
-			ListUtil.toLongArray(
-				companyLocalService.getCompanies(false),
-				Company::getCompanyId));
+		long[] companyIds = null;
+
+		if (!CompanyThreadLocal.isLocked()) {
+			companyIds = ListUtil.toLongArray(
+				companyLocalService.getCompanies(false), Company::getCompanyId);
+		}
+
+		forEachCompanyId(unsafeConsumer, companyIds);
 	}
 
 	@Override
@@ -492,9 +514,15 @@ public class CompanyLocalServiceImpl extends CompanyLocalServiceBaseImpl {
 			UnsafeConsumer<Long, E> unsafeConsumer, long[] companyIds)
 		throws E {
 
+		if (CompanyThreadLocal.isLocked()) {
+			unsafeConsumer.accept(CompanyThreadLocal.getCompanyId());
+
+			return;
+		}
+
 		for (long companyId : companyIds) {
-			try (SafeClosable safeClosable =
-					CompanyThreadLocal.setWithSafeClosable(companyId)) {
+			try (SafeCloseable safeCloseable =
+					CompanyThreadLocal.setWithSafeCloseable(companyId)) {
 
 				unsafeConsumer.accept(companyId);
 			}
@@ -992,7 +1020,8 @@ public class CompanyLocalServiceImpl extends CompanyLocalServiceBaseImpl {
 
 		Company company = checkLogo(companyId);
 
-		imageLocalService.updateImage(company.getLogoId(), file);
+		imageLocalService.updateImage(
+			company.getCompanyId(), company.getLogoId(), file);
 
 		return company;
 	}
@@ -1010,7 +1039,8 @@ public class CompanyLocalServiceImpl extends CompanyLocalServiceBaseImpl {
 
 		Company company = checkLogo(companyId);
 
-		imageLocalService.updateImage(company.getLogoId(), inputStream);
+		imageLocalService.updateImage(
+			company.getCompanyId(), company.getLogoId(), inputStream);
 
 		return company;
 	}
@@ -1042,18 +1072,21 @@ public class CompanyLocalServiceImpl extends CompanyLocalServiceBaseImpl {
 				if (!Objects.equals(oldLanguageIds, newLanguageIds)) {
 					validateLanguageIds(newLanguageIds);
 
+					_updateGroupLanguageIds(
+						companyId, newLanguageIds, oldLanguageIds);
+
 					LanguageUtil.resetAvailableLocales(companyId);
 
 					// Invalidate cache of all layout set prototypes that belong
 					// to this company. See LPS-36403.
 
-					Date now = new Date();
+					Date date = new Date();
 
 					for (LayoutSetPrototype layoutSetPrototype :
 							layoutSetPrototypeLocalService.
 								getLayoutSetPrototypes(companyId)) {
 
-						layoutSetPrototype.setModifiedDate(now);
+						layoutSetPrototype.setModifiedDate(date);
 
 						layoutSetPrototypeLocalService.updateLayoutSetPrototype(
 							layoutSetPrototype);
@@ -1679,9 +1712,18 @@ public class CompanyLocalServiceImpl extends CompanyLocalServiceBaseImpl {
 
 					dynamicQuery.add(parentGroupIdProperty.eq(_parentGroupId));
 
+					Disjunction disjunction =
+						RestrictionsFactoryUtil.disjunction();
+
 					Property siteProperty = PropertyFactoryUtil.forName("site");
 
-					dynamicQuery.add(siteProperty.eq(Boolean.TRUE));
+					disjunction.add(siteProperty.eq(Boolean.TRUE));
+
+					Property typeProperty = PropertyFactoryUtil.forName("type");
+
+					disjunction.add(typeProperty.eq(GroupConstants.TYPE_DEPOT));
+
+					dynamicQuery.add(disjunction);
 				});
 			_actionableDynamicQuery.setPerformActionMethod(
 				(Group group) -> {
@@ -1821,7 +1863,7 @@ public class CompanyLocalServiceImpl extends CompanyLocalServiceBaseImpl {
 	}
 
 	private User _addDefaultUser(Company company) {
-		Date now = new Date();
+		Date date = new Date();
 
 		User defaultUser = userPersistence.create(
 			counterLocalService.increment());
@@ -1850,7 +1892,7 @@ public class CompanyLocalServiceImpl extends CompanyLocalServiceBaseImpl {
 
 		defaultUser.setGreeting(greeting + StringPool.EXCLAMATION);
 
-		defaultUser.setLoginDate(now);
+		defaultUser.setLoginDate(date);
 		defaultUser.setFailedLoginAttempts(0);
 		defaultUser.setAgreedToTermsOfUse(true);
 		defaultUser.setStatus(WorkflowConstants.STATUS_APPROVED);
@@ -1878,7 +1920,7 @@ public class CompanyLocalServiceImpl extends CompanyLocalServiceBaseImpl {
 		defaultContact.setMiddleName(StringPool.BLANK);
 		defaultContact.setLastName(StringPool.BLANK);
 		defaultContact.setMale(true);
-		defaultContact.setBirthday(now);
+		defaultContact.setBirthday(date);
 
 		contactPersistence.update(defaultContact);
 
@@ -2075,6 +2117,73 @@ public class CompanyLocalServiceImpl extends CompanyLocalServiceBaseImpl {
 		TransactionCommitCallbackUtil.registerCallback(callable);
 	}
 
+	private void _updateGroupLanguageIds(
+		long companyId, String newLanguageIds, String oldLanguageIds) {
+
+		String[] oldLanguageIdsArray = StringUtil.split(oldLanguageIds);
+
+		if (ArrayUtil.isEmpty(oldLanguageIdsArray)) {
+			oldLanguageIdsArray = LocaleUtil.toLanguageIds(
+				LanguageUtil.getCompanyAvailableLocales(companyId));
+		}
+
+		List<String> removedLanguageIds = ListUtil.remove(
+			ListUtil.fromArray(oldLanguageIdsArray),
+			ListUtil.fromArray(StringUtil.split(newLanguageIds)));
+
+		if (ListUtil.isEmpty(removedLanguageIds)) {
+			return;
+		}
+
+		List<Group> groups = groupLocalService.dslQuery(
+			DSLQueryFactoryUtil.selectDistinct(
+				GroupTable.INSTANCE
+			).from(
+				GroupTable.INSTANCE
+			).where(
+				GroupTable.INSTANCE.companyId.eq(
+					companyId
+				).and(
+					GroupTable.INSTANCE.active.eq(true)
+				).and(
+					GroupTable.INSTANCE.site.eq(true)
+				).and(
+					GroupTable.INSTANCE.typeSettings.like(
+						"%inheritLocales=false%")
+				)
+			));
+
+		for (Group group : groups) {
+			UnicodeProperties groupTypeSettingsUnicodeProperties =
+				group.getTypeSettingsProperties();
+
+			String[] groupLanguageIds = StringUtil.split(
+				groupTypeSettingsUnicodeProperties.getProperty(
+					PropsKeys.LOCALES));
+
+			boolean updateLocales = false;
+
+			for (String removedLanguageId : removedLanguageIds) {
+				if (ArrayUtil.contains(groupLanguageIds, removedLanguageId)) {
+					groupLanguageIds = ArrayUtil.remove(
+						groupLanguageIds, removedLanguageId);
+
+					updateLocales = true;
+				}
+			}
+
+			if (updateLocales) {
+				LanguageUtil.resetAvailableGroupLocales(group.getGroupId());
+
+				groupTypeSettingsUnicodeProperties.setProperty(
+					PropsKeys.LOCALES,
+					StringUtil.merge(groupLanguageIds, StringPool.COMMA));
+
+				groupLocalService.updateGroup(group);
+			}
+		}
+	}
+
 	private static final String _DEFAULT_VIRTUAL_HOST = "localhost";
 
 	private static final Log _log = LogFactoryUtil.getLog(
@@ -2099,9 +2208,10 @@ public class CompanyLocalServiceImpl extends CompanyLocalServiceBaseImpl {
 				registry.getService(serviceReference);
 
 			synchronized (_pendingCompanies) {
-				for (Company company : _pendingCompanies) {
-					portalInstanceLifecycleManager.registerCompany(company);
-				}
+				forEachCompany(
+					company -> portalInstanceLifecycleManager.registerCompany(
+						company),
+					new ArrayList<Company>(_pendingCompanies));
 
 				_pendingCompanies.clear();
 			}

@@ -2526,24 +2526,24 @@ public class MBMailingListPersistenceImpl
 		ServiceContext serviceContext =
 			ServiceContextThreadLocal.getServiceContext();
 
-		Date now = new Date();
+		Date date = new Date();
 
 		if (isNew && (mbMailingList.getCreateDate() == null)) {
 			if (serviceContext == null) {
-				mbMailingList.setCreateDate(now);
+				mbMailingList.setCreateDate(date);
 			}
 			else {
-				mbMailingList.setCreateDate(serviceContext.getCreateDate(now));
+				mbMailingList.setCreateDate(serviceContext.getCreateDate(date));
 			}
 		}
 
 		if (!mbMailingListModelImpl.hasSetModifiedDate()) {
 			if (serviceContext == null) {
-				mbMailingList.setModifiedDate(now);
+				mbMailingList.setModifiedDate(date);
 			}
 			else {
 				mbMailingList.setModifiedDate(
-					serviceContext.getModifiedDate(now));
+					serviceContext.getModifiedDate(date));
 			}
 		}
 
@@ -2971,7 +2971,8 @@ public class MBMailingListPersistenceImpl
 	public Set<String> getCTColumnNames(
 		CTColumnResolutionType ctColumnResolutionType) {
 
-		return _ctColumnNamesMap.get(ctColumnResolutionType);
+		return _ctColumnNamesMap.getOrDefault(
+			ctColumnResolutionType, Collections.emptySet());
 	}
 
 	@Override
@@ -3005,7 +3006,6 @@ public class MBMailingListPersistenceImpl
 	static {
 		Set<String> ctControlColumnNames = new HashSet<String>();
 		Set<String> ctIgnoreColumnNames = new HashSet<String>();
-		Set<String> ctMergeColumnNames = new HashSet<String>();
 		Set<String> ctStrictColumnNames = new HashSet<String>();
 
 		ctControlColumnNames.add("mvccVersion");
@@ -3040,7 +3040,6 @@ public class MBMailingListPersistenceImpl
 			CTColumnResolutionType.CONTROL, ctControlColumnNames);
 		_ctColumnNamesMap.put(
 			CTColumnResolutionType.IGNORE, ctIgnoreColumnNames);
-		_ctColumnNamesMap.put(CTColumnResolutionType.MERGE, ctMergeColumnNames);
 		_ctColumnNamesMap.put(
 			CTColumnResolutionType.PK, Collections.singleton("mailingListId"));
 		_ctColumnNamesMap.put(
@@ -3287,7 +3286,7 @@ public class MBMailingListPersistenceImpl
 			return MBMailingListTable.INSTANCE.getTableName();
 		}
 
-		private Object[] _getValue(
+		private static Object[] _getValue(
 			MBMailingListModelImpl mbMailingListModelImpl, String[] columnNames,
 			boolean original) {
 
@@ -3310,8 +3309,8 @@ public class MBMailingListPersistenceImpl
 			return arguments;
 		}
 
-		private static Map<FinderPath, Long> _finderPathColumnBitmasksCache =
-			new ConcurrentHashMap<>();
+		private static final Map<FinderPath, Long>
+			_finderPathColumnBitmasksCache = new ConcurrentHashMap<>();
 
 	}
 

@@ -20,13 +20,13 @@ import {FRAGMENT_CONFIGURATION_ROLES} from '../../../../../../app/config/constan
 import {FREEMARKER_FRAGMENT_ENTRY_PROCESSOR} from '../../../../../../app/config/constants/freemarkerFragmentEntryProcessor';
 import {VIEWPORT_SIZES} from '../../../../../../app/config/constants/viewportSizes';
 import {config} from '../../../../../../app/config/index';
-import selectLanguageId from '../../../../../../app/selectors/selectLanguageId';
-import selectSegmentsExperienceId from '../../../../../../app/selectors/selectSegmentsExperienceId';
 import {
 	useDispatch,
 	useSelector,
 	useSelectorCallback,
-} from '../../../../../../app/store/index';
+} from '../../../../../../app/contexts/StoreContext';
+import selectLanguageId from '../../../../../../app/selectors/selectLanguageId';
+import selectSegmentsExperienceId from '../../../../../../app/selectors/selectSegmentsExperienceId';
 import updateFragmentConfiguration from '../../../../../../app/thunks/updateFragmentConfiguration';
 import {getResponsiveConfig} from '../../../../../../app/utils/getResponsiveConfig';
 import {getLayoutDataItemPropTypes} from '../../../../../../prop-types/index';
@@ -111,7 +111,7 @@ const CustomStyles = ({fragmentEntryLink, onValueSelect}) => {
 	);
 
 	return fieldSets?.length ? (
-		<div className="page-editor__page-structure__section__custom-styles">
+		<div className="page-editor__page-structure__section__custom-styles pb-0">
 			<h1 className="sr-only">{Liferay.Language.get('custom-styles')}</h1>
 
 			{fieldSets.map((fieldSet, index) => {
@@ -138,8 +138,8 @@ CustomStyles.propTypes = {
 function getConfigurationValues(fragmentEntryLink) {
 	return {
 		...fragmentEntryLink.defaultConfigurationValues,
-		...fragmentEntryLink.editableValues[
+		...(fragmentEntryLink.editableValues[
 			FREEMARKER_FRAGMENT_ENTRY_PROCESSOR
-		],
+		] || {}),
 	};
 }

@@ -506,6 +506,8 @@ public class HtmlImpl implements Html {
 			return StringPool.BLANK;
 		}
 
+		link = StringUtil.trim(link);
+
 		if (link.indexOf(StringPool.COLON) == 10) {
 			String protocol = StringUtil.toLowerCase(link.substring(0, 10));
 
@@ -535,7 +537,7 @@ public class HtmlImpl implements Html {
 			return xPath;
 		}
 
-		StringBuilder sb = new StringBuilder(xPath.length());
+		StringBundler sb = new StringBundler(xPath.length());
 
 		for (int i = 0; i < xPath.length(); i++) {
 			char c = xPath.charAt(i);
@@ -754,7 +756,7 @@ public class HtmlImpl implements Html {
 
 		text = stripComments(text);
 
-		StringBuilder sb = new StringBuilder(text.length());
+		StringBundler sb = new StringBundler(text.length());
 
 		int x = 0;
 		int y = text.indexOf("<");
@@ -764,7 +766,10 @@ public class HtmlImpl implements Html {
 
 			// Look for text enclosed by <abc></abc>
 
-			if (isTag(_TAG_SCRIPT, text, y + 1)) {
+			if (isTag(_TAG_NOSCRIPT, text, y + 1)) {
+				y = stripTag(_TAG_NOSCRIPT, text, y);
+			}
+			else if (isTag(_TAG_SCRIPT, text, y + 1)) {
 				y = stripTag(_TAG_SCRIPT, text, y);
 			}
 			else if (isTag(_TAG_STYLE, text, y + 1)) {
@@ -1009,6 +1014,10 @@ public class HtmlImpl implements Html {
 	private static final char[] _HEX_DIGITS = {
 		'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd',
 		'e', 'f'
+	};
+
+	private static final char[] _TAG_NOSCRIPT = {
+		'n', 'o', 's', 'c', 'r', 'i', 'p', 't'
 	};
 
 	private static final char[] _TAG_SCRIPT = {'s', 'c', 'r', 'i', 'p', 't'};

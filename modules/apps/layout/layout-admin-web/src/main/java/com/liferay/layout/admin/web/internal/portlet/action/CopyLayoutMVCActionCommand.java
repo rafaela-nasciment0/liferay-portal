@@ -45,7 +45,6 @@ import java.util.Objects;
 
 import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;
-import javax.portlet.PortletURL;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -83,13 +82,19 @@ public class CopyLayoutMVCActionCommand extends BaseMVCActionCommand {
 
 		Map<Locale, String> nameMap = HashMapBuilder.put(
 			themeDisplay.getLocale(), name
+		).put(
+			LocaleUtil.getSiteDefault(),
+			() -> {
+				if (!Objects.equals(
+						themeDisplay.getLocale(),
+						LocaleUtil.getSiteDefault())) {
+
+					return name;
+				}
+
+				return null;
+			}
 		).build();
-
-		if (!Objects.equals(
-				themeDisplay.getLocale(), LocaleUtil.getSiteDefault())) {
-
-			nameMap.put(LocaleUtil.getSiteDefault(), name);
-		}
 
 		UnicodeProperties typeSettingsUnicodeProperties =
 			PropertiesParamUtil.getProperties(
@@ -113,7 +118,8 @@ public class CopyLayoutMVCActionCommand extends BaseMVCActionCommand {
 				sourceLayout.getDescriptionMap(), sourceLayout.getKeywordsMap(),
 				sourceLayout.getRobotsMap(), sourceLayout.getType(),
 				sourceTypeSettingsUnicodeProperties.toString(), false, false,
-				new HashMap<>(), 0, serviceContext);
+				new HashMap<>(), sourceLayout.getMasterLayoutPlid(),
+				serviceContext);
 
 			Layout draftLayout = targetLayout.fetchDraftLayout();
 
@@ -133,19 +139,19 @@ public class CopyLayoutMVCActionCommand extends BaseMVCActionCommand {
 
 			_layoutLocalService.updateLayout(targetLayout);
 
-			PortletURL redirectURL = PortletURLBuilder.createRenderURL(
-				_portal.getLiferayPortletResponse(actionResponse)
-			).setParameter(
-				"navigation", privateLayout ? "private-pages" : "public-pages"
-			).setParameter(
-				"selPlid", sourceLayout.getParentPlid()
-			).setParameter(
-				"privateLayout", privateLayout
-			).build();
-
 			JSONPortletResponseUtil.writeJSON(
 				actionRequest, actionResponse,
-				JSONUtil.put("redirectURL", redirectURL.toString()));
+				JSONUtil.put(
+					"redirectURL",
+					PortletURLBuilder.createRenderURL(
+						_portal.getLiferayPortletResponse(actionResponse)
+					).setNavigation(
+						privateLayout ? "private-pages" : "public-pages"
+					).setParameter(
+						"privateLayout", privateLayout
+					).setParameter(
+						"selPlid", sourceLayout.getParentPlid()
+					).buildString()));
 		}
 		catch (Exception exception) {
 			SessionErrors.add(actionRequest, "layoutNameInvalid");

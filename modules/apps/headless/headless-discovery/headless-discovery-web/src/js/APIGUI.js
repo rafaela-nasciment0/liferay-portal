@@ -144,7 +144,7 @@ const APIGUI = () => {
 								onActiveChange={setActive}
 								trigger={
 									<ClayButton displayType="unstyled">
-										Rest Applications
+										REST Applications
 										<Icon symbol="caret-bottom-l" />
 									</ClayButton>
 								}
@@ -298,6 +298,7 @@ const APIGUI = () => {
 							'delete',
 							'patch',
 						]}
+						tryItOutEnabled={true}
 						url={
 							endpoint ||
 							endpoints.find((url) => url.includes('delivery'))

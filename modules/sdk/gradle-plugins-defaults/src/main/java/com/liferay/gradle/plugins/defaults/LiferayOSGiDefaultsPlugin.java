@@ -255,6 +255,9 @@ public class LiferayOSGiDefaultsPlugin implements Plugin<Project> {
 
 	public static final String COMMIT_CACHE_TASK_NAME = "commitCache";
 
+	public static final String COMPILE_INCLUDE_PLATFORM_CONFIGURATION_NAME =
+		"compileIncludePlatform";
+
 	public static final String COPY_LIBS_TASK_NAME = "copyLibs";
 
 	public static final String DEFAULT_REPOSITORY_URL =
@@ -368,6 +371,8 @@ public class LiferayOSGiDefaultsPlugin implements Plugin<Project> {
 		_configureMavenConf2ScopeMappings(project);
 
 		_applyConfigScripts(project);
+
+		_addConfigurationCompileIncludePlatform(project);
 
 		_addDependenciesPmd(project);
 
@@ -551,6 +556,8 @@ public class LiferayOSGiDefaultsPlugin implements Plugin<Project> {
 
 				@Override
 				public void execute(Project project) {
+					_addDependenciesCompileIncludePlatform(project);
+
 					_configureArtifacts(
 						project, jarJSDocTask, jarJSPsTask, jarJavadocTask,
 						jarSourcesTask, jarSourcesCommercialTask,
@@ -606,6 +613,21 @@ public class LiferayOSGiDefaultsPlugin implements Plugin<Project> {
 			});
 	}
 
+	private Configuration _addConfigurationCompileIncludePlatform(
+		Project project) {
+
+		ConfigurationContainer configurationContainer =
+			project.getConfigurations();
+
+		Configuration compileIncludePlatformConfiguration =
+			configurationContainer.maybeCreate(
+				COMPILE_INCLUDE_PLATFORM_CONFIGURATION_NAME);
+
+		compileIncludePlatformConfiguration.setVisible(false);
+
+		return compileIncludePlatformConfiguration;
+	}
+
 	private Configuration _addConfigurationPortalTest(Project project) {
 		Configuration configuration = GradleUtil.addConfiguration(
 			project, PORTAL_TEST_CONFIGURATION_NAME);
@@ -628,6 +650,25 @@ public class LiferayOSGiDefaultsPlugin implements Plugin<Project> {
 		configuration.setVisible(false);
 
 		return configuration;
+	}
+
+	private void _addDependenciesCompileIncludePlatform(Project project) {
+		ConfigurationContainer configurationContainer =
+			project.getConfigurations();
+
+		Configuration compileIncludePlatformConfiguration =
+			configurationContainer.findByName(
+				COMPILE_INCLUDE_PLATFORM_CONFIGURATION_NAME);
+
+		if (compileIncludePlatformConfiguration == null) {
+			return;
+		}
+
+		DependencyHandler dependencyHandler = project.getDependencies();
+
+		dependencyHandler.add(
+			LiferayOSGiPlugin.COMPILE_INCLUDE_CONFIGURATION_NAME,
+			project.files(compileIncludePlatformConfiguration.resolve()));
 	}
 
 	private void _addDependenciesPmd(Project project) {
@@ -2235,7 +2276,7 @@ public class LiferayOSGiDefaultsPlugin implements Plugin<Project> {
 						String group = excludeRule.getGroup();
 						String name = excludeRule.getModule();
 
-						File file;
+						File file = null;
 
 						if (_isTaglibDependency(group, name)) {
 							String fileName = name + ".jar";
@@ -2257,7 +2298,14 @@ public class LiferayOSGiDefaultsPlugin implements Plugin<Project> {
 						else if (_isUtilTaglibDependency(group, name)) {
 							file = new File(
 								utilTaglibDependencyDir,
-								"WEB-INF/lib/util-taglib.jar");
+								"WEB-INF/shielded-container-lib" +
+									"/util-taglib.jar");
+
+							if (!file.exists()) {
+								file = new File(
+									utilTaglibDependencyDir,
+									"WEB-INF/lib/util-taglib.jar");
+							}
 
 							if (!file.exists()) {
 								throw new GradleException(
@@ -2916,13 +2964,6 @@ public class LiferayOSGiDefaultsPlugin implements Plugin<Project> {
 	}
 
 	private void _configurePmd(Project project) {
-		PmdExtension pmdExtension = GradleUtil.getExtension(
-			project, PmdExtension.class);
-
-		ResourceHandler resourceHandler = project.getResources();
-
-		TextResourceFactory textResourceFactory = resourceHandler.getText();
-
 		String ruleSet;
 
 		try {
@@ -2933,6 +2974,13 @@ public class LiferayOSGiDefaultsPlugin implements Plugin<Project> {
 		catch (IOException ioException) {
 			throw new UncheckedIOException(ioException);
 		}
+
+		PmdExtension pmdExtension = GradleUtil.getExtension(
+			project, PmdExtension.class);
+
+		ResourceHandler resourceHandler = project.getResources();
+
+		TextResourceFactory textResourceFactory = resourceHandler.getText();
 
 		pmdExtension.setRuleSetConfig(textResourceFactory.fromString(ruleSet));
 
@@ -2999,16 +3047,20 @@ public class LiferayOSGiDefaultsPlugin implements Plugin<Project> {
 			GradleUtil.getConfiguration(
 				project, JavaPlugin.COMPILE_CLASSPATH_CONFIGURATION_NAME);
 
-		sourceSet.setCompileClasspath(
-			FileUtil.join(
-				compileClasspathConfiguration, sourceSet.getCompileClasspath(),
-				portalTestConfiguration));
+		Configuration testCompileClasspathConfiguration =
+			GradleUtil.getConfiguration(
+				project, sourceSet.getCompileClasspathConfigurationName());
 
-		sourceSet.setRuntimeClasspath(
-			FileUtil.join(
-				portalTestSnapshotConfiguration, compileClasspathConfiguration,
-				portalConfiguration, sourceSet.getRuntimeClasspath(),
-				portalTestConfiguration));
+		testCompileClasspathConfiguration.extendsFrom(
+			compileClasspathConfiguration, portalTestConfiguration);
+
+		Configuration testRuntimeClasspathConfiguration =
+			GradleUtil.getConfiguration(
+				project, sourceSet.getRuntimeClasspathConfigurationName());
+
+		testRuntimeClasspathConfiguration.extendsFrom(
+			portalTestSnapshotConfiguration, compileClasspathConfiguration,
+			portalConfiguration, portalTestConfiguration);
 	}
 
 	private void _configureSourceSetTestIntegration(
@@ -3025,15 +3077,21 @@ public class LiferayOSGiDefaultsPlugin implements Plugin<Project> {
 		Configuration compileOnlyConfiguration = GradleUtil.getConfiguration(
 			project, JavaPlugin.COMPILE_ONLY_CONFIGURATION_NAME);
 
-		sourceSet.setCompileClasspath(
-			FileUtil.join(
-				portalConfiguration, compileOnlyConfiguration,
-				sourceSet.getCompileClasspath(), portalTestConfiguration));
+		Configuration testIntegrationCompileClasspathConfiguration =
+			GradleUtil.getConfiguration(
+				project, sourceSet.getCompileClasspathConfigurationName());
 
-		sourceSet.setRuntimeClasspath(
-			FileUtil.join(
-				portalConfiguration, compileOnlyConfiguration,
-				sourceSet.getRuntimeClasspath(), portalTestConfiguration));
+		testIntegrationCompileClasspathConfiguration.extendsFrom(
+			portalConfiguration, compileOnlyConfiguration,
+			portalTestConfiguration);
+
+		Configuration testIntegrationRuntimeClasspathConfiguration =
+			GradleUtil.getConfiguration(
+				project, sourceSet.getRuntimeClasspathConfigurationName());
+
+		testIntegrationRuntimeClasspathConfiguration.extendsFrom(
+			portalConfiguration, compileOnlyConfiguration,
+			portalTestConfiguration);
 	}
 
 	private void _configureTaskBaselineSyncReleaseVersions(
@@ -4932,8 +4990,8 @@ public class LiferayOSGiDefaultsPlugin implements Plugin<Project> {
 		new BackupFilesBuildAdapter();
 	private static final Set<String> _copyrightedExtensions = new HashSet<>(
 		Arrays.asList(
-			"ftl", "groovy", "htm", "html", "js", "jsp", "jspf", "txt", "vm",
-			"xml"));
+			"ftl", "groovy", "htm", "html", "java", "js", "jsp", "jspf", "txt",
+			"vm", "xml"));
 	private static final Spec<File> _javaSpec = new NameSuffixFileSpec(".java");
 	private static final Spec<File> _jsdocSpec = new NameSuffixFileSpec(
 		".es.js", ".jsdoc", ".jsx");

@@ -57,11 +57,8 @@ public class SessionAuthToken implements AuthToken {
 
 		String lifecycle = liferayPortletURL.getLifecycle();
 
-		if (!lifecycle.equals(PortletRequest.ACTION_PHASE)) {
-			return;
-		}
-
-		if (AuthTokenWhitelistUtil.isPortletURLCSRFWhitelisted(
+		if (!lifecycle.equals(PortletRequest.ACTION_PHASE) ||
+			AuthTokenWhitelistUtil.isPortletURLCSRFWhitelisted(
 				liferayPortletURL)) {
 
 			return;
@@ -86,15 +83,8 @@ public class SessionAuthToken implements AuthToken {
 		Portlet portlet = PortletLocalServiceUtil.getPortletById(
 			companyId, portletId);
 
-		if (portlet == null) {
-			return;
-		}
-
-		if (!portlet.isAddDefaultResource()) {
-			return;
-		}
-
-		if (AuthTokenWhitelistUtil.isPortletURLPortletInvocationWhitelisted(
+		if ((portlet == null) || !portlet.isAddDefaultResource() ||
+			AuthTokenWhitelistUtil.isPortletURLPortletInvocationWhitelisted(
 				liferayPortletURL)) {
 
 			return;
@@ -157,15 +147,20 @@ public class SessionAuthToken implements AuthToken {
 			}
 		}
 
+		String sessionToken = getSessionAuthenticationToken(
+			httpServletRequest, _CSRF, false);
+
+		if (Validator.isNull(sessionToken)) {
+			throw new PrincipalException.MustHaveSessionCSRFToken(
+				PortalUtil.getUserId(httpServletRequest), origin);
+		}
+
 		String csrfToken = ParamUtil.getString(httpServletRequest, "p_auth");
 
 		if (Validator.isNull(csrfToken)) {
 			csrfToken = GetterUtil.getString(
 				httpServletRequest.getHeader("X-CSRF-Token"));
 		}
-
-		String sessionToken = getSessionAuthenticationToken(
-			httpServletRequest, _CSRF, false);
 
 		if (!csrfToken.equals(sessionToken)) {
 			throw new PrincipalException.MustHaveValidCSRFToken(

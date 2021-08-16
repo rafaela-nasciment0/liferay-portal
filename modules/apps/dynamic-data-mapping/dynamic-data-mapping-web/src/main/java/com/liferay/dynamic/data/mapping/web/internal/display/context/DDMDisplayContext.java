@@ -179,8 +179,8 @@ public class DDMDisplayContext {
 	public String getClearResultsURL() throws PortletException {
 		return PortletURLBuilder.create(
 			PortletURLUtil.clone(getPortletURL(), _renderResponse)
-		).setParameter(
-			"keywords", StringPool.BLANK
+		).setKeywords(
+			StringPool.BLANK
 		).buildString();
 	}
 
@@ -339,7 +339,7 @@ public class DDMDisplayContext {
 					"eventName",
 					ParamUtil.getString(
 						_renderRequest, "eventName", "selectStructure")
-				).build();
+				).buildPortletURL();
 
 				dropdownItem.setHref(
 					_renderResponse.createRenderURL(), "mvcPath",
@@ -371,16 +371,16 @@ public class DDMDisplayContext {
 		).setMVCPath(
 			"/select_template.jsp"
 		).setParameter(
-			"templateId", ParamUtil.getLong(_renderRequest, "templateId")
-		).setParameter(
 			"classNameId", getClassNameId()
 		).setParameter(
 			"classPK", ParamUtil.getLong(_renderRequest, "classPK")
 		).setParameter(
-			"resourceClassNameId", getResourceClassNameId()
-		).setParameter(
 			"eventName",
 			ParamUtil.getString(_renderRequest, "eventName", "selectTemplate")
+		).setParameter(
+			"resourceClassNameId", getResourceClassNameId()
+		).setParameter(
+			"templateId", ParamUtil.getLong(_renderRequest, "templateId")
 		).buildString();
 	}
 
@@ -417,20 +417,20 @@ public class DDMDisplayContext {
 			"/view.jsp"
 		).setParameter(
 			"groupId", _ddmWebRequestHelper.getScopeGroupId()
-		).build();
-
-		PortletURL addTemplateURL = PortletURLBuilder.createRenderURL(
-			_renderResponse
-		).setMVCPath(
-			"/edit_structure.jsp"
-		).setRedirect(
-			redirectURL.toString()
-		).setParameter(
-			"groupId", _ddmWebRequestHelper.getScopeGroupId()
-		).build();
+		).buildPortletURL();
 
 		return CreationMenuBuilder.addPrimaryDropdownItem(
-			getCreationMenuDropdownItem(addTemplateURL, "add")
+			getCreationMenuDropdownItem(
+				PortletURLBuilder.createRenderURL(
+					_renderResponse
+				).setMVCPath(
+					"/edit_structure.jsp"
+				).setRedirect(
+					redirectURL
+				).setParameter(
+					"groupId", _ddmWebRequestHelper.getScopeGroupId()
+				).buildPortletURL(),
+				"add")
 		).build();
 	}
 
@@ -473,8 +473,8 @@ public class DDMDisplayContext {
 			_renderResponse
 		).setMVCPath(
 			"/view.jsp"
-		).setParameter(
-			"tabs1", ParamUtil.getString(_renderRequest, "tabs1", "structures")
+		).setTabs1(
+			ParamUtil.getString(_renderRequest, "tabs1", "structures")
 		).setParameter(
 			"groupId", _ddmWebRequestHelper.getScopeGroupId()
 		).buildString();
@@ -500,16 +500,16 @@ public class DDMDisplayContext {
 						).setMVCPath(
 							"/edit_template.jsp"
 						).setParameter(
-							"groupId", _ddmWebRequestHelper.getScopeGroupId()
-						).setParameter(
 							"classNameId", getClassNameId()
 						).setParameter(
 							"classPK", getClassPK()
 						).setParameter(
-							"resourceClassNameId", getResourceClassNameId()
+							"groupId", _ddmWebRequestHelper.getScopeGroupId()
 						).setParameter(
 							"mode", getTemplateMode()
-						).build();
+						).setParameter(
+							"resourceClassNameId", getResourceClassNameId()
+						).buildPortletURL();
 
 					String message = "add";
 
@@ -561,7 +561,7 @@ public class DDMDisplayContext {
 							).setParameter(
 								"type",
 								DDMTemplateConstants.TEMPLATE_TYPE_DISPLAY
-							).build();
+							).buildPortletURL();
 
 						for (TemplateHandler templateHandler :
 								templateHandlers) {
@@ -622,21 +622,21 @@ public class DDMDisplayContext {
 			_renderResponse
 		).setMVCPath(
 			"/view_template.jsp"
-		).setParameter(
-			"tabs1", ParamUtil.getString(_renderRequest, "tabs1", "templates")
-		).setParameter(
-			"templateId", ParamUtil.getLong(_renderRequest, "templateId")
-		).setParameter(
-			"groupId", _ddmWebRequestHelper.getScopeGroupId()
+		).setTabs1(
+			ParamUtil.getString(_renderRequest, "tabs1", "templates")
 		).setParameter(
 			"classNameId", getClassNameId()
 		).setParameter(
 			"classPK", getClassPK()
 		).setParameter(
-			"resourceClassNameId", getResourceClassNameId()
-		).setParameter(
 			"eventName",
 			ParamUtil.getString(_renderRequest, "eventName", "selectTemplate")
+		).setParameter(
+			"groupId", _ddmWebRequestHelper.getScopeGroupId()
+		).setParameter(
+			"resourceClassNameId", getResourceClassNameId()
+		).setParameter(
+			"templateId", ParamUtil.getLong(_renderRequest, "templateId")
 		).buildString();
 	}
 
@@ -834,8 +834,10 @@ public class DDMDisplayContext {
 			portletURL.setParameter("classNameId", String.valueOf(classNameId));
 		}
 
-		if (classNameId != 0) {
-			portletURL.setParameter("classPK", String.valueOf(getClassPK()));
+		long classPK = getClassPK();
+
+		if (classPK != 0) {
+			portletURL.setParameter("classPK", String.valueOf(classPK));
 		}
 
 		long resourceClassNameId = getResourceClassNameId();

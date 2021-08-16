@@ -341,9 +341,14 @@ public class DLFileEntryTypeLocalServiceImpl
 			dlFileEntryType.getFileEntryTypeId());
 
 		DDMStructure ddmStructure = DDMStructureManagerUtil.fetchStructure(
-			dlFileEntryType.getGroupId(),
-			classNameLocalService.getClassNameId(DLFileEntryMetadata.class),
-			DLUtil.getDDMStructureKey(dlFileEntryType));
+			dlFileEntryType.getDataDefinitionId());
+
+		if (ddmStructure == null) {
+			ddmStructure = DDMStructureManagerUtil.fetchStructure(
+				dlFileEntryType.getGroupId(),
+				classNameLocalService.getClassNameId(DLFileEntryMetadata.class),
+				DLUtil.getDDMStructureKey(dlFileEntryType));
+		}
 
 		if (ddmStructure == null) {
 			ddmStructure = DDMStructureManagerUtil.fetchStructure(
@@ -609,7 +614,8 @@ public class DLFileEntryTypeLocalServiceImpl
 			serviceContext.getUserId(), dlFileEntry.getFileEntryId(), null,
 			null, null, null, null,
 			DLVersionNumberIncrease.fromMajorVersion(false),
-			defaultFileEntryTypeId, null, null, null, 0, serviceContext);
+			defaultFileEntryTypeId, null, null, null, 0, null, null,
+			serviceContext);
 	}
 
 	/**

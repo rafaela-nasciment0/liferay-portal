@@ -38,6 +38,7 @@ import com.liferay.portal.kernel.util.LoggingTimer;
 import com.liferay.portal.kernel.util.ObjectValuePair;
 import com.liferay.portal.kernel.util.PortalClassLoaderUtil;
 import com.liferay.portal.kernel.util.StringUtil;
+import com.liferay.portal.kernel.util.Validator;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -90,18 +91,28 @@ public abstract class UpgradeProcess
 
 		String message = "Completed upgrade process ";
 
-		try (Connection con = DataAccess.getConnection()) {
-			connection = con;
+		try (Connection connection = DataAccess.getConnection()) {
+			this.connection = connection;
 
 			if (isSkipUpgradeProcess()) {
 				return;
 			}
 
-			if (_log.isInfoEnabled()) {
-				_log.info("Upgrading " + ClassUtil.getClassName(this));
-			}
+			process(
+				companyId -> {
+					if (_log.isInfoEnabled()) {
+						String info =
+							"Upgrading " + ClassUtil.getClassName(this);
 
-			doUpgrade();
+						if (Validator.isNotNull(companyId)) {
+							info += "#" + companyId;
+						}
+
+						_log.info(info);
+					}
+
+					doUpgrade();
+				});
 		}
 		catch (Throwable throwable) {
 			message = "Failed upgrade process ";
@@ -109,7 +120,7 @@ public abstract class UpgradeProcess
 			throw new UpgradeException(throwable);
 		}
 		finally {
-			connection = null;
+			this.connection = null;
 
 			if (_log.isInfoEnabled()) {
 				_log.info(
@@ -324,18 +335,18 @@ public abstract class UpgradeProcess
 			DatabaseMetaData databaseMetaData = connection.getMetaData();
 			DBInspector dbInspector = new DBInspector(connection);
 
-			try (ResultSet rs1 = databaseMetaData.getPrimaryKeys(
+			try (ResultSet resultSet1 = databaseMetaData.getPrimaryKeys(
 					dbInspector.getCatalog(), dbInspector.getSchema(),
 					tableName);
-				ResultSet rs2 = databaseMetaData.getIndexInfo(
+				ResultSet resultSet2 = databaseMetaData.getIndexInfo(
 					dbInspector.getCatalog(), dbInspector.getSchema(),
 					dbInspector.normalizeName(tableName), false, false)) {
 
 				Set<String> primaryKeyNames = new HashSet<>();
 
-				while (rs1.next()) {
+				while (resultSet1.next()) {
 					String primaryKeyName = StringUtil.toUpperCase(
-						rs1.getString("PK_NAME"));
+						resultSet1.getString("PK_NAME"));
 
 					if (primaryKeyName != null) {
 						primaryKeyNames.add(primaryKeyName);
@@ -344,9 +355,9 @@ public abstract class UpgradeProcess
 
 				Map<String, Set<String>> columnNamesMap = new HashMap<>();
 
-				while (rs2.next()) {
+				while (resultSet2.next()) {
 					String indexName = StringUtil.toUpperCase(
-						rs2.getString("INDEX_NAME"));
+						resultSet2.getString("INDEX_NAME"));
 
 					if ((indexName == null) ||
 						primaryKeyNames.contains(indexName)) {
@@ -363,7 +374,8 @@ public abstract class UpgradeProcess
 					}
 
 					columnNames.add(
-						StringUtil.toUpperCase(rs2.getString("COLUMN_NAME")));
+						StringUtil.toUpperCase(
+							resultSet2.getString("COLUMN_NAME")));
 				}
 
 				for (Alterable alterable : alterables) {
@@ -437,17 +449,17 @@ public abstract class UpgradeProcess
 		throws IOException {
 
 		if (!PortalClassLoaderUtil.isPortalClassLoader(classLoader)) {
-			try (InputStream is = classLoader.getResourceAsStream(
+			try (InputStream inputStream = classLoader.getResourceAsStream(
 					"META-INF/sql/indexes.sql")) {
 
-				if (is == null) {
+				if (inputStream == null) {
 					return null;
 				}
 
 				List<ObjectValuePair<String, IndexMetadata>> objectValuePairs =
 					new ArrayList<>();
 
-				try (Reader reader = new InputStreamReader(is);
+				try (Reader reader = new InputStreamReader(inputStream);
 					UnsyncBufferedReader unsyncBufferedReader =
 						new UnsyncBufferedReader(reader)) {
 
@@ -478,9 +490,9 @@ public abstract class UpgradeProcess
 			return _portalIndexesSQL.get(tableName);
 		}
 
-		try (InputStream is = classLoader.getResourceAsStream(
+		try (InputStream inputStream = classLoader.getResourceAsStream(
 				"com/liferay/portal/tools/sql/dependencies/indexes.sql");
-			Reader reader = new InputStreamReader(is);
+			Reader reader = new InputStreamReader(inputStream);
 			UnsyncBufferedReader unsyncBufferedReader =
 				new UnsyncBufferedReader(reader)) {
 
@@ -599,28 +611,32 @@ public abstract class UpgradeProcess
 			String primaryKeyConstraintName = null;
 
 			if (dbType == DBType.SQLSERVER) {
-				try (PreparedStatement ps = connection.prepareStatement(
-						StringBundler.concat(
-							"select name from sys.key_constraints where type ",
-							"= 'PK' and OBJECT_NAME(parent_object_id) = '",
-							normalizedTableName, "'"));
-					ResultSet rs = ps.executeQuery()) {
+				try (PreparedStatement preparedStatement =
+						connection.prepareStatement(
+							StringBundler.concat(
+								"select name from sys.key_constraints where ",
+								"type = 'PK' and ",
+								"OBJECT_NAME(parent_object_id) = '",
+								normalizedTableName, "'"));
+					ResultSet resultSet = preparedStatement.executeQuery()) {
 
-					if (rs.next()) {
-						primaryKeyConstraintName = rs.getString("name");
+					if (resultSet.next()) {
+						primaryKeyConstraintName = resultSet.getString("name");
 					}
 				}
 			}
 			else {
-				try (PreparedStatement ps = connection.prepareStatement(
-						"sp_helpconstraint " + normalizedTableName);
-					ResultSet rs = ps.executeQuery()) {
+				try (PreparedStatement preparedStatement =
+						connection.prepareStatement(
+							"sp_helpconstraint " + normalizedTableName);
+					ResultSet resultSet = preparedStatement.executeQuery()) {
 
-					while (rs.next()) {
-						String definition = rs.getString("definition");
+					while (resultSet.next()) {
+						String definition = resultSet.getString("definition");
 
 						if (definition.startsWith("PRIMARY KEY INDEX")) {
-							primaryKeyConstraintName = rs.getString("name");
+							primaryKeyConstraintName = resultSet.getString(
+								"name");
 
 							break;
 						}

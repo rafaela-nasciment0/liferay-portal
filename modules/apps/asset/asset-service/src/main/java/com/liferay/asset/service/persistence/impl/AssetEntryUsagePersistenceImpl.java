@@ -4340,25 +4340,25 @@ public class AssetEntryUsagePersistenceImpl
 		ServiceContext serviceContext =
 			ServiceContextThreadLocal.getServiceContext();
 
-		Date now = new Date();
+		Date date = new Date();
 
 		if (isNew && (assetEntryUsage.getCreateDate() == null)) {
 			if (serviceContext == null) {
-				assetEntryUsage.setCreateDate(now);
+				assetEntryUsage.setCreateDate(date);
 			}
 			else {
 				assetEntryUsage.setCreateDate(
-					serviceContext.getCreateDate(now));
+					serviceContext.getCreateDate(date));
 			}
 		}
 
 		if (!assetEntryUsageModelImpl.hasSetModifiedDate()) {
 			if (serviceContext == null) {
-				assetEntryUsage.setModifiedDate(now);
+				assetEntryUsage.setModifiedDate(date);
 			}
 			else {
 				assetEntryUsage.setModifiedDate(
-					serviceContext.getModifiedDate(now));
+					serviceContext.getModifiedDate(date));
 			}
 		}
 
@@ -4788,7 +4788,8 @@ public class AssetEntryUsagePersistenceImpl
 	public Set<String> getCTColumnNames(
 		CTColumnResolutionType ctColumnResolutionType) {
 
-		return _ctColumnNamesMap.get(ctColumnResolutionType);
+		return _ctColumnNamesMap.getOrDefault(
+			ctColumnResolutionType, Collections.emptySet());
 	}
 
 	@Override
@@ -4822,7 +4823,6 @@ public class AssetEntryUsagePersistenceImpl
 	static {
 		Set<String> ctControlColumnNames = new HashSet<String>();
 		Set<String> ctIgnoreColumnNames = new HashSet<String>();
-		Set<String> ctMergeColumnNames = new HashSet<String>();
 		Set<String> ctStrictColumnNames = new HashSet<String>();
 
 		ctControlColumnNames.add("mvccVersion");
@@ -4843,7 +4843,6 @@ public class AssetEntryUsagePersistenceImpl
 			CTColumnResolutionType.CONTROL, ctControlColumnNames);
 		_ctColumnNamesMap.put(
 			CTColumnResolutionType.IGNORE, ctIgnoreColumnNames);
-		_ctColumnNamesMap.put(CTColumnResolutionType.MERGE, ctMergeColumnNames);
 		_ctColumnNamesMap.put(
 			CTColumnResolutionType.PK,
 			Collections.singleton("assetEntryUsageId"));
@@ -5169,7 +5168,7 @@ public class AssetEntryUsagePersistenceImpl
 			return AssetEntryUsageTable.INSTANCE.getTableName();
 		}
 
-		private Object[] _getValue(
+		private static Object[] _getValue(
 			AssetEntryUsageModelImpl assetEntryUsageModelImpl,
 			String[] columnNames, boolean original) {
 
@@ -5192,8 +5191,8 @@ public class AssetEntryUsagePersistenceImpl
 			return arguments;
 		}
 
-		private static Map<FinderPath, Long> _finderPathColumnBitmasksCache =
-			new ConcurrentHashMap<>();
+		private static final Map<FinderPath, Long>
+			_finderPathColumnBitmasksCache = new ConcurrentHashMap<>();
 
 	}
 

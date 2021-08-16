@@ -16,6 +16,7 @@ package com.liferay.portal.kernel.util;
 
 import com.liferay.petra.reflect.ReflectionUtil;
 import com.liferay.petra.string.CharPool;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 
 import java.io.IOException;
@@ -452,11 +453,7 @@ public class StringUtil {
 	 *         <code>end</code>, ignoring case; <code>false</code> otherwise
 	 */
 	public static boolean endsWith(String s, String end) {
-		if ((s == null) || (end == null)) {
-			return false;
-		}
-
-		if (end.length() > s.length()) {
+		if ((s == null) || (end == null) || (end.length() > s.length())) {
 			return false;
 		}
 
@@ -567,11 +564,7 @@ public class StringUtil {
 			return true;
 		}
 
-		if ((s1 == null) || (s2 == null)) {
-			return false;
-		}
-
-		if (s1.length() != s2.length()) {
+		if ((s1 == null) || (s2 == null) || (s1.length() != s2.length())) {
 			return false;
 		}
 
@@ -881,15 +874,9 @@ public class StringUtil {
 	public static int indexOfAny(
 		String s, char[] chars, int fromIndex, int toIndex) {
 
-		if ((s == null) || (toIndex < fromIndex)) {
-			return -1;
-		}
+		if ((s == null) || (toIndex < fromIndex) || ArrayUtil.isEmpty(chars) ||
+			(fromIndex >= s.length())) {
 
-		if (ArrayUtil.isEmpty(chars)) {
-			return -1;
-		}
-
-		if (fromIndex >= s.length()) {
 			return -1;
 		}
 
@@ -1048,15 +1035,9 @@ public class StringUtil {
 	public static int indexOfAny(
 		String s, String[] texts, int fromIndex, int toIndex) {
 
-		if ((s == null) || (toIndex < fromIndex)) {
-			return -1;
-		}
+		if ((s == null) || (toIndex < fromIndex) || ArrayUtil.isEmpty(texts) ||
+			(fromIndex >= s.length())) {
 
-		if (ArrayUtil.isEmpty(texts)) {
-			return -1;
-		}
-
-		if (fromIndex >= s.length()) {
 			return -1;
 		}
 
@@ -1308,15 +1289,9 @@ public class StringUtil {
 	public static int lastIndexOfAny(
 		String s, char[] chars, int fromIndex, int toIndex) {
 
-		if ((s == null) || (toIndex < fromIndex)) {
-			return -1;
-		}
+		if ((s == null) || (toIndex < fromIndex) || ArrayUtil.isEmpty(chars) ||
+			(fromIndex >= s.length())) {
 
-		if (ArrayUtil.isEmpty(chars)) {
-			return -1;
-		}
-
-		if (fromIndex >= s.length()) {
 			return -1;
 		}
 
@@ -1474,15 +1449,9 @@ public class StringUtil {
 	public static int lastIndexOfAny(
 		String s, String[] texts, int fromIndex, int toIndex) {
 
-		if ((s == null) || (toIndex < fromIndex)) {
-			return -1;
-		}
+		if ((s == null) || (toIndex < fromIndex) || ArrayUtil.isEmpty(texts) ||
+			(fromIndex >= s.length())) {
 
-		if (ArrayUtil.isEmpty(texts)) {
-			return -1;
-		}
-
-		if (fromIndex >= s.length()) {
 			return -1;
 		}
 
@@ -2199,8 +2168,8 @@ public class StringUtil {
 			while (enumeration.hasMoreElements()) {
 				URL url = enumeration.nextElement();
 
-				try (InputStream is = url.openStream()) {
-					String s = read(is);
+				try (InputStream inputStream = url.openStream()) {
+					String s = read(inputStream);
 
 					if (s != null) {
 						sb.append(s);
@@ -2214,15 +2183,15 @@ public class StringUtil {
 			return s.trim();
 		}
 
-		try (InputStream is = classLoader.getResourceAsStream(name)) {
-			if (is == null) {
+		try (InputStream inputStream = classLoader.getResourceAsStream(name)) {
+			if (inputStream == null) {
 				throw new IOException(
 					StringBundler.concat(
 						"Unable to open resource ", name, " in class loader ",
-						String.valueOf(classLoader)));
+						classLoader));
 			}
 
-			return read(is);
+			return read(inputStream);
 		}
 	}
 
@@ -2280,7 +2249,7 @@ public class StringUtil {
 			return s;
 		}
 
-		StringBuilder sb = new StringBuilder(s.length());
+		StringBundler sb = new StringBundler(s.length());
 
 		iterate:
 		for (int i = 0; i < s.length(); i++) {
@@ -3835,11 +3804,7 @@ public class StringUtil {
 	 *         specified start string; <code>false</code> otherwise
 	 */
 	public static boolean startsWith(String s, String start) {
-		if ((s == null) || (start == null)) {
-			return false;
-		}
-
-		if (start.length() > s.length()) {
+		if ((s == null) || (start == null) || (start.length() > s.length())) {
 			return false;
 		}
 
@@ -4001,15 +3966,10 @@ public class StringUtil {
 		int x = s.lastIndexOf(StringPool.OPEN_PARENTHESIS);
 		int y = s.lastIndexOf(StringPool.CLOSE_PARENTHESIS);
 
-		if ((x == -1) || (y == -1)) {
-			return s;
-		}
+		if ((x == -1) || (y == -1) || (x > y) ||
+			!s.endsWith(StringPool.CLOSE_PARENTHESIS) ||
+			(s.charAt(x - 1) != CharPool.SPACE)) {
 
-		if ((x > y) || !s.endsWith(StringPool.CLOSE_PARENTHESIS)) {
-			return s;
-		}
-
-		if (s.charAt(x - 1) != CharPool.SPACE) {
 			return s;
 		}
 

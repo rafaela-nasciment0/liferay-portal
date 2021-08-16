@@ -150,8 +150,8 @@ public class NotificationsManagementToolbarDisplayContext {
 					PortletURLBuilder.create(
 						PortletURLUtil.clone(
 							_currentURLObj, _liferayPortletResponse)
-					).setParameter(
-						"navigation", (String)null
+					).setNavigation(
+						(String)null
 					).buildString());
 
 				labelItem.setCloseable(true);
@@ -175,7 +175,7 @@ public class NotificationsManagementToolbarDisplayContext {
 		).setParameter(
 			"orderByType",
 			Objects.equals(getOrderByType(), "asc") ? "desc" : "asc"
-		).build();
+		).buildPortletURL();
 	}
 
 	private List<DropdownItem> _getFilterNavigationDropdownItems() {

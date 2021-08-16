@@ -16,6 +16,11 @@ package com.liferay.portal.instances.initializer;
 
 import com.liferay.portal.instances.exception.InitializationException;
 
+import java.util.Locale;
+import java.util.Map;
+
+import javax.servlet.http.HttpServletRequest;
+
 import org.osgi.annotation.versioning.ProviderType;
 
 /**
@@ -26,7 +31,12 @@ public interface PortalInstanceInitializer {
 
 	public String getKey();
 
-	public void initialize(long companyId) throws InitializationException;
+	public String getName(Locale locale);
+
+	public void initialize(
+			long companyId, HttpServletRequest httpServletRequest,
+			Map<String, String> payload)
+		throws InitializationException;
 
 	/**
 	 * @deprecated As of Cavanaugh (7.4.x), replaced by {@link

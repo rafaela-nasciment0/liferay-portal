@@ -20,12 +20,12 @@ PortletURL portletURL = PortletURLBuilder.createRenderURL(
 ).setMVCPath(
 	"/view.jsp"
 ).setParameter(
-	"selPlid", String.valueOf(selPlid)
-).setParameter(
 	"className", className
 ).setParameter(
-	"classPK", String.valueOf(classPK)
-).build();
+	"classPK", classPK
+).setParameter(
+	"selPlid", selPlid
+).buildPortletURL();
 
 request.setAttribute("mobile_device_rules_header.jspf-portletURL", portletURL);
 %>

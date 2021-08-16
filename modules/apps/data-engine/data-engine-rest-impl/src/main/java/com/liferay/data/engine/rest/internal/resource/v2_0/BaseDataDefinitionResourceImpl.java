@@ -20,7 +20,6 @@ import com.liferay.petra.function.UnsafeFunction;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.model.GroupedModel;
 import com.liferay.portal.kernel.model.ResourceAction;
-import com.liferay.portal.kernel.model.ResourceConstants;
 import com.liferay.portal.kernel.search.Sort;
 import com.liferay.portal.kernel.search.filter.Filter;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
@@ -29,6 +28,8 @@ import com.liferay.portal.kernel.service.GroupLocalService;
 import com.liferay.portal.kernel.service.ResourceActionLocalService;
 import com.liferay.portal.kernel.service.ResourcePermissionLocalService;
 import com.liferay.portal.kernel.service.RoleLocalService;
+import com.liferay.portal.kernel.util.GetterUtil;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
@@ -110,8 +111,8 @@ public abstract class BaseDataDefinitionResourceImpl
 	@Produces({"application/json", "application/xml"})
 	@Tags(value = {@Tag(name = "DataDefinition")})
 	public Page<DataDefinition> getDataDefinitionByContentTypeContentTypePage(
-			@NotNull @Parameter(hidden = true) @PathParam("contentType")
-				String contentType,
+			@NotNull @Parameter(hidden = true) @PathParam("contentType") String
+				contentType,
 			@Parameter(hidden = true) @QueryParam("keywords") String keywords,
 			@Context Pagination pagination, @Context Sort[] sorts)
 		throws Exception {
@@ -134,8 +135,8 @@ public abstract class BaseDataDefinitionResourceImpl
 	@Produces({"application/json", "application/xml"})
 	@Tags(value = {@Tag(name = "DataDefinition")})
 	public DataDefinition postDataDefinitionByContentType(
-			@NotNull @Parameter(hidden = true) @PathParam("contentType")
-				String contentType,
+			@NotNull @Parameter(hidden = true) @PathParam("contentType") String
+				contentType,
 			DataDefinition dataDefinition)
 		throws Exception {
 
@@ -192,8 +193,8 @@ public abstract class BaseDataDefinitionResourceImpl
 	@Produces("application/json")
 	@Tags(value = {@Tag(name = "DataDefinition")})
 	public Response deleteDataDefinitionBatch(
-			@Parameter(hidden = true) @QueryParam("callbackURL")
-				String callbackURL,
+			@Parameter(hidden = true) @QueryParam("callbackURL") String
+				callbackURL,
 			Object object)
 		throws Exception {
 
@@ -282,11 +283,6 @@ public abstract class BaseDataDefinitionResourceImpl
 				dataDefinition.getDateModified());
 		}
 
-		if (dataDefinition.getDefaultDataLayout() != null) {
-			existingDataDefinition.setDefaultDataLayout(
-				dataDefinition.getDefaultDataLayout());
-		}
-
 		if (dataDefinition.getDefaultLanguageId() != null) {
 			existingDataDefinition.setDefaultLanguageId(
 				dataDefinition.getDefaultLanguageId());
@@ -357,8 +353,8 @@ public abstract class BaseDataDefinitionResourceImpl
 	@PUT
 	@Tags(value = {@Tag(name = "DataDefinition")})
 	public Response putDataDefinitionBatch(
-			@Parameter(hidden = true) @QueryParam("callbackURL")
-				String callbackURL,
+			@Parameter(hidden = true) @QueryParam("callbackURL") String
+				callbackURL,
 			Object object)
 		throws Exception {
 
@@ -398,19 +394,32 @@ public abstract class BaseDataDefinitionResourceImpl
 			getDataDefinitionPermissionsPage(
 				@NotNull @Parameter(hidden = true)
 				@PathParam("dataDefinitionId")
-					Long dataDefinitionId,
-				@Parameter(hidden = true) @QueryParam("roleNames")
-					String roleNames)
+				Long dataDefinitionId,
+				@Parameter(hidden = true) @QueryParam("roleNames") String
+					roleNames)
 		throws Exception {
 
 		String resourceName = getPermissionCheckerResourceName(
 			dataDefinitionId);
+		Long resourceId = getPermissionCheckerResourceId(dataDefinitionId);
 
 		PermissionUtil.checkPermission(
-			ActionKeys.PERMISSIONS, groupLocalService, resourceName,
-			dataDefinitionId, getPermissionCheckerGroupId(dataDefinitionId));
+			ActionKeys.PERMISSIONS, groupLocalService, resourceName, resourceId,
+			getPermissionCheckerGroupId(dataDefinitionId));
 
-		return toPermissionPage(dataDefinitionId, resourceName, roleNames);
+		return toPermissionPage(
+			HashMapBuilder.put(
+				"get",
+				addAction(
+					ActionKeys.PERMISSIONS, "getDataDefinitionPermissionsPage",
+					resourceName, resourceId)
+			).put(
+				"replace",
+				addAction(
+					ActionKeys.PERMISSIONS, "putDataDefinitionPermission",
+					resourceName, resourceId)
+			).build(),
+			resourceId, resourceName, roleNames);
 	}
 
 	/**
@@ -426,26 +435,44 @@ public abstract class BaseDataDefinitionResourceImpl
 	@Produces({"application/json", "application/xml"})
 	@PUT
 	@Tags(value = {@Tag(name = "DataDefinition")})
-	public void putDataDefinitionPermission(
-			@NotNull @Parameter(hidden = true) @PathParam("dataDefinitionId")
+	public Page<com.liferay.portal.vulcan.permission.Permission>
+			putDataDefinitionPermission(
+				@NotNull @Parameter(hidden = true)
+				@PathParam("dataDefinitionId")
 				Long dataDefinitionId,
-			com.liferay.portal.vulcan.permission.Permission[] permissions)
+				com.liferay.portal.vulcan.permission.Permission[] permissions)
 		throws Exception {
 
 		String resourceName = getPermissionCheckerResourceName(
 			dataDefinitionId);
+		Long resourceId = getPermissionCheckerResourceId(dataDefinitionId);
 
 		PermissionUtil.checkPermission(
-			ActionKeys.PERMISSIONS, groupLocalService, resourceName,
-			dataDefinitionId, getPermissionCheckerGroupId(dataDefinitionId));
+			ActionKeys.PERMISSIONS, groupLocalService, resourceName, resourceId,
+			getPermissionCheckerGroupId(dataDefinitionId));
 
 		resourcePermissionLocalService.updateResourcePermissions(
-			contextCompany.getCompanyId(), 0, resourceName,
-			String.valueOf(dataDefinitionId),
+			contextCompany.getCompanyId(),
+			getPermissionCheckerGroupId(dataDefinitionId), resourceName,
+			String.valueOf(resourceId),
 			ModelPermissionsUtil.toModelPermissions(
-				contextCompany.getCompanyId(), permissions, dataDefinitionId,
+				contextCompany.getCompanyId(), permissions, resourceId,
 				resourceName, resourceActionLocalService,
 				resourcePermissionLocalService, roleLocalService));
+
+		return toPermissionPage(
+			HashMapBuilder.put(
+				"get",
+				addAction(
+					ActionKeys.PERMISSIONS, "getDataDefinitionPermissionsPage",
+					resourceName, resourceId)
+			).put(
+				"replace",
+				addAction(
+					ActionKeys.PERMISSIONS, "putDataDefinitionPermission",
+					resourceName, resourceId)
+			).build(),
+			resourceId, resourceName, null);
 	}
 
 	/**
@@ -470,12 +497,12 @@ public abstract class BaseDataDefinitionResourceImpl
 	@Tags(value = {@Tag(name = "DataDefinition")})
 	public Page<DataDefinition>
 			getSiteDataDefinitionByContentTypeContentTypePage(
-				@NotNull @Parameter(hidden = true) @PathParam("siteId")
-					Long siteId,
+				@NotNull @Parameter(hidden = true) @PathParam("siteId") Long
+					siteId,
 				@NotNull @Parameter(hidden = true) @PathParam("contentType")
 					String contentType,
-				@Parameter(hidden = true) @QueryParam("keywords")
-					String keywords,
+				@Parameter(hidden = true) @QueryParam("keywords") String
+					keywords,
 				@Context Pagination pagination, @Context Sort[] sorts)
 		throws Exception {
 
@@ -501,8 +528,8 @@ public abstract class BaseDataDefinitionResourceImpl
 	@Tags(value = {@Tag(name = "DataDefinition")})
 	public DataDefinition postSiteDataDefinitionByContentType(
 			@NotNull @Parameter(hidden = true) @PathParam("siteId") Long siteId,
-			@NotNull @Parameter(hidden = true) @PathParam("contentType")
-				String contentType,
+			@NotNull @Parameter(hidden = true) @PathParam("contentType") String
+				contentType,
 			DataDefinition dataDefinition)
 		throws Exception {
 
@@ -530,8 +557,8 @@ public abstract class BaseDataDefinitionResourceImpl
 	@Tags(value = {@Tag(name = "DataDefinition")})
 	public DataDefinition getSiteDataDefinitionByContentTypeByDataDefinitionKey(
 			@NotNull @Parameter(hidden = true) @PathParam("siteId") Long siteId,
-			@NotNull @Parameter(hidden = true) @PathParam("contentType")
-				String contentType,
+			@NotNull @Parameter(hidden = true) @PathParam("contentType") String
+				contentType,
 			@NotNull @Parameter(hidden = true) @PathParam("dataDefinitionKey")
 				String dataDefinitionKey)
 		throws Exception {
@@ -613,7 +640,7 @@ public abstract class BaseDataDefinitionResourceImpl
 		for (DataDefinition dataDefinition : dataDefinitions) {
 			putDataDefinition(
 				dataDefinition.getId() != null ? dataDefinition.getId() :
-					(Long)parameters.get("dataDefinitionId"),
+					Long.parseLong((String)parameters.get("dataDefinitionId")),
 				dataDefinition);
 		}
 	}
@@ -636,6 +663,10 @@ public abstract class BaseDataDefinitionResourceImpl
 			"This method needs to be implemented");
 	}
 
+	protected Long getPermissionCheckerResourceId(Object id) throws Exception {
+		return GetterUtil.getLong(id);
+	}
+
 	protected String getPermissionCheckerResourceName(Object id)
 		throws Exception {
 
@@ -644,7 +675,9 @@ public abstract class BaseDataDefinitionResourceImpl
 	}
 
 	protected Page<com.liferay.portal.vulcan.permission.Permission>
-			toPermissionPage(long id, String resourceName, String roleNames)
+			toPermissionPage(
+				Map<String, Map<String, String>> actions, long id,
+				String resourceName, String roleNames)
 		throws Exception {
 
 		List<ResourceAction> resourceActions =
@@ -652,6 +685,7 @@ public abstract class BaseDataDefinitionResourceImpl
 
 		if (Validator.isNotNull(roleNames)) {
 			return Page.of(
+				actions,
 				transform(
 					PermissionUtil.getRoles(
 						contextCompany, roleLocalService,
@@ -662,10 +696,11 @@ public abstract class BaseDataDefinitionResourceImpl
 		}
 
 		return Page.of(
+			actions,
 			transform(
-				resourcePermissionLocalService.getResourcePermissions(
-					contextCompany.getCompanyId(), resourceName,
-					ResourceConstants.SCOPE_INDIVIDUAL, String.valueOf(id)),
+				PermissionUtil.getResourcePermissions(
+					contextCompany.getCompanyId(), id, resourceName,
+					resourcePermissionLocalService),
 				resourcePermission -> PermissionUtil.toPermission(
 					resourceActions, resourcePermission,
 					roleLocalService.getRole(resourcePermission.getRoleId()))));

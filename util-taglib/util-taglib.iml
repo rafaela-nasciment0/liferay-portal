@@ -5,6 +5,7 @@
 		<exclude-output />
 		<content url="file://$MODULE_DIR$">
 			<sourceFolder url="file://$MODULE_DIR$/src" isTestSource="false" />
+			<sourceFolder url="file://$MODULE_DIR$/test/unit" isTestSource="true" />
 			<excludeFolder url="file://$MODULE_DIR$/classes" />
 		</content>
 		<orderEntry type="inheritedJdk" />
@@ -20,6 +21,7 @@
 		<orderEntry type="module" module-name="petra-mail" scope="PROVIDED" />
 		<orderEntry type="module" module-name="petra-memory" scope="PROVIDED" />
 		<orderEntry type="module" module-name="petra-nio" scope="PROVIDED" />
+		<orderEntry type="module" module-name="petra-portlet-url-builder" scope="PROVIDED" />
 		<orderEntry type="module" module-name="petra-process" scope="PROVIDED" />
 		<orderEntry type="module" module-name="petra-reflect" scope="PROVIDED" />
 		<orderEntry type="module" module-name="petra-sql-dsl-api" scope="PROVIDED" />

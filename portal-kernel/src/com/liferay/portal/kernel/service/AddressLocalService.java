@@ -171,6 +171,9 @@ public interface AddressLocalService
 	public <T> T dslQuery(DSLQuery dslQuery);
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public int dslQueryCount(DSLQuery dslQuery);
+
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public DynamicQuery dynamicQuery();
 
 	/**
@@ -331,6 +334,15 @@ public interface AddressLocalService
 	public List<Address> getAddresses(
 		long companyId, String className, long classPK, int start, int end,
 		OrderByComparator<Address> orderByComparator);
+
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public List<Address> getAddressesByTypeIds(
+		long companyId, String className, long classPK, long[] typeIds);
+
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public List<Address> getAddressesByTypeIds(
+		long companyId, String className, long classPK, long[] typeIds,
+		int start, int end, OrderByComparator<Address> orderByComparator);
 
 	/**
 	 * Returns the number of addresses.

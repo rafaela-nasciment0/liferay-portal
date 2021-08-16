@@ -24,6 +24,7 @@ import com.liferay.exportimport.kernel.lar.StagedModelDataHandlerRegistryUtil;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItem;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItemListBuilder;
 import com.liferay.petra.function.UnsafeConsumer;
+import com.liferay.petra.portlet.url.builder.PortletURLBuilder;
 import com.liferay.petra.reflect.ReflectionUtil;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
@@ -37,6 +38,7 @@ import com.liferay.portal.kernel.portlet.LiferayWindowState;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
 import com.liferay.portal.kernel.service.permission.GroupPermissionUtil;
+import com.liferay.portal.kernel.theme.PortletDisplay;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.Constants;
@@ -46,12 +48,12 @@ import com.liferay.taglib.security.PermissionsURLTag;
 import com.liferay.trash.TrashHelper;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.ResourceBundle;
 
 import javax.portlet.ActionRequest;
 import javax.portlet.ActionURL;
 import javax.portlet.PortletRequest;
-import javax.portlet.PortletURL;
 import javax.portlet.RenderRequest;
 import javax.portlet.RenderResponse;
 
@@ -215,13 +217,25 @@ public class BlogsEntryActionDropdownItemsProvider {
 				WebKeys.THEME_DISPLAY);
 
 		return dropdownItem -> {
+			String portletResource = StringPool.BLANK;
+
+			PortletDisplay portletDisplay = themeDisplay.getPortletDisplay();
+
+			if (!Objects.equals(
+					portletDisplay.getPortletName(),
+					BlogsPortletKeys.BLOGS_ADMIN)) {
+
+				portletResource = portletDisplay.getPortletName();
+			}
+
 			dropdownItem.setHref(
 				PortalUtil.getControlPanelPortletURL(
 					_httpServletRequest, themeDisplay.getScopeGroup(),
 					BlogsPortletKeys.BLOGS_ADMIN, 0, themeDisplay.getPlid(),
 					PortletRequest.RENDER_PHASE),
 				"mvcRenderCommandName", "/blogs/edit_entry", "redirect",
-				_getRedirectURL(), "entryId", blogsEntry.getEntryId());
+				_getRedirectURL(), "portletResource", portletResource,
+				"entryId", blogsEntry.getEntryId());
 
 			dropdownItem.setIcon("edit");
 			dropdownItem.setLabel(LanguageUtil.get(_resourceBundle, "edit"));
@@ -277,28 +291,30 @@ public class BlogsEntryActionDropdownItemsProvider {
 	private UnsafeConsumer<DropdownItem, Exception>
 		_getPublishToLiveEntryActionUnsafeConsumer(BlogsEntry blogsEntry) {
 
-		PortletURL publishEntryURL = _renderResponse.createActionURL();
-
-		publishEntryURL.setParameter(
-			ActionRequest.ACTION_NAME, "/blogs/publish_entry");
-		publishEntryURL.setParameter("backURL", _getRedirectURL());
-		publishEntryURL.setParameter(
-			"entryId", String.valueOf(blogsEntry.getEntryId()));
-
 		return dropdownItem -> {
 			dropdownItem.putData("action", "publishToLive");
-			dropdownItem.putData("publishEntryURL", publishEntryURL.toString());
+			dropdownItem.putData(
+				"publishEntryURL",
+				PortletURLBuilder.createActionURL(
+					_renderResponse
+				).setActionName(
+					"/blogs/publish_entry"
+				).setBackURL(
+					_getRedirectURL()
+				).setParameter(
+					"entryId", blogsEntry.getEntryId()
+				).buildString());
 			dropdownItem.setLabel(
 				LanguageUtil.get(_httpServletRequest, "publish-to-live"));
 		};
 	}
 
 	private String _getRedirectURL() {
-		PortletURL redirectURL = _renderResponse.createRenderURL();
-
-		redirectURL.setParameter("mvcRenderCommandName", "/blogs/view");
-
-		return redirectURL.toString();
+		return PortletURLBuilder.createRenderURL(
+			_renderResponse
+		).setMVCRenderCommandName(
+			"/blogs/view"
+		).buildString();
 	}
 
 	private boolean _hasDeletePermission(BlogsEntry blogsEntry) {

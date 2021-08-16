@@ -103,14 +103,14 @@ if (!ddlDisplayContext.isAdminPortlet()) {
 					).setRedirect(
 						currentURL
 					).setParameter(
-						"recordId", String.valueOf(record.getRecordId())
+						"editable", ddlViewRecordsDisplayContext.isEditable()
+					).setParameter(
+						"formDDMTemplateId", formDDMTemplateId
+					).setParameter(
+						"recordId", record.getRecordId()
 					).setParameter(
 						"version", recordVersion.getVersion()
-					).setParameter(
-						"editable", String.valueOf(ddlViewRecordsDisplayContext.isEditable())
-					).setParameter(
-						"formDDMTemplateId", String.valueOf(formDDMTemplateId)
-					).build();
+					).buildPortletURL();
 
 					href = rowURL.toString();
 				}

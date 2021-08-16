@@ -93,13 +93,10 @@ public class WorkflowDefinitionDisplayContext {
 		PermissionChecker permissionChecker =
 			PermissionThreadLocal.getPermissionChecker();
 
-		if (_companyAdministratorCanPublish &&
-			permissionChecker.isCompanyAdmin()) {
+		if ((_companyAdministratorCanPublish &&
+			 permissionChecker.isCompanyAdmin()) ||
+			permissionChecker.isOmniadmin()) {
 
-			return true;
-		}
-
-		if (permissionChecker.isOmniadmin()) {
 			return true;
 		}
 
@@ -109,8 +106,8 @@ public class WorkflowDefinitionDisplayContext {
 	public String getClearResultsURL(HttpServletRequest httpServletRequest) {
 		return PortletURLBuilder.create(
 			_getPortletURL(httpServletRequest)
-		).setParameter(
-			"keywords", StringPool.BLANK
+		).setKeywords(
+			StringPool.BLANK
 		).buildString();
 	}
 
@@ -421,8 +418,20 @@ public class WorkflowDefinitionDisplayContext {
 	public String getSortingURL(HttpServletRequest httpServletRequest)
 		throws PortletException {
 
-		PortletURL portletURL = PortletURLBuilder.createRenderURL(
+		return PortletURLBuilder.createRenderURL(
 			_workflowDefinitionRequestHelper.getLiferayPortletResponse()
+		).setParameter(
+			"definitionsNavigation",
+			() -> {
+				String definitionsNavigation = ParamUtil.getString(
+					httpServletRequest, "definitionsNavigation");
+
+				if (Validator.isNotNull(definitionsNavigation)) {
+					return definitionsNavigation;
+				}
+
+				return null;
+			}
 		).setParameter(
 			"orderByType",
 			() -> {
@@ -435,17 +444,7 @@ public class WorkflowDefinitionDisplayContext {
 
 				return "asc";
 			}
-		).build();
-
-		String definitionsNavigation = ParamUtil.getString(
-			httpServletRequest, "definitionsNavigation");
-
-		if (Validator.isNotNull(definitionsNavigation)) {
-			portletURL.setParameter(
-				"definitionsNavigation", definitionsNavigation);
-		}
-
-		return portletURL.toString();
+		).buildString();
 	}
 
 	public String getTitle(WorkflowDefinition workflowDefinition) {
@@ -600,7 +599,7 @@ public class WorkflowDefinitionDisplayContext {
 			"/view.jsp"
 		).setParameter(
 			"tab", WorkflowWebKeys.WORKFLOW_TAB_DEFINITION_LINK
-		).build();
+		).buildPortletURL();
 	}
 
 	protected OrderByComparator<WorkflowDefinition>
@@ -623,7 +622,7 @@ public class WorkflowDefinitionDisplayContext {
 			PortletRequest.RENDER_PHASE
 		).setMVCPath(
 			"/view.jsp"
-		).build();
+		).buildPortletURL();
 	}
 
 	private String _buildErrorLink(String messageKey, PortletURL portletURL) {

@@ -99,26 +99,25 @@ public class UADHierarchyDisplay {
 			RenderResponse renderResponse, Locale locale)
 		throws Exception {
 
-		String scope = ParamUtil.getString(httpServletRequest, "scope");
-
 		PortletURL baseURL = PortletURLBuilder.createRenderURL(
 			renderResponse
 		).setParameter(
-			"p_u_i_d", ParamUtil.getString(httpServletRequest, "p_u_i_d")
-		).setParameter(
 			"applicationKey",
 			ParamUtil.getString(httpServletRequest, "applicationKey")
-		).build();
+		).setParameter(
+			"p_u_i_d", ParamUtil.getString(httpServletRequest, "p_u_i_d")
+		).setParameter(
+			"scope",
+			() -> {
+				String scope = ParamUtil.getString(httpServletRequest, "scope");
 
-		if (Validator.isNotNull(scope)) {
-			baseURL.setParameter("scope", scope);
-		}
+				if (Validator.isNotNull(scope)) {
+					return scope;
+				}
 
-		PortletURL applicationURL = PortletURLBuilder.create(
-			PortletURLUtil.clone(baseURL, renderResponse)
-		).setMVCRenderCommandName(
-			"/user_associated_data/review_uad_data"
-		).build();
+				return null;
+			}
+		).buildPortletURL();
 
 		String className = ParamUtil.getString(
 			httpServletRequest, "parentContainerClass");
@@ -130,7 +129,12 @@ public class UADHierarchyDisplay {
 			uadDisplay, locale);
 
 		PortalUtil.addPortletBreadcrumbEntry(
-			httpServletRequest, applicationName, applicationURL.toString());
+			httpServletRequest, applicationName,
+			PortletURLBuilder.create(
+				PortletURLUtil.clone(baseURL, renderResponse)
+			).setMVCRenderCommandName(
+				"/user_associated_data/review_uad_data"
+			).buildString());
 
 		List<KeyValuePair> parentBreadcrumbs = new ArrayList<>();
 
@@ -153,18 +157,18 @@ public class UADHierarchyDisplay {
 			String parentContainerName = parentContainerUADDisplay.getName(
 				parentContainerUADDisplay.get(parentContainerId), locale);
 
-			PortletURL portletURL = PortletURLBuilder.create(
-				PortletURLUtil.clone(baseURL, renderResponse)
-			).setMVCRenderCommandName(
-				"/user_associated_data/view_uad_hierarchy"
-			).setParameter(
-				"parentContainerClass", parentContainerClass.getName()
-			).setParameter(
-				"parentContainerId", parentContainerId
-			).build();
-
 			parentBreadcrumbs.add(
-				new KeyValuePair(parentContainerName, portletURL.toString()));
+				new KeyValuePair(
+					parentContainerName,
+					PortletURLBuilder.create(
+						PortletURLUtil.clone(baseURL, renderResponse)
+					).setMVCRenderCommandName(
+						"/user_associated_data/view_uad_hierarchy"
+					).setParameter(
+						"parentContainerClass", parentContainerClass.getName()
+					).setParameter(
+						"parentContainerId", parentContainerId
+					).buildString()));
 
 			parentContainerClass =
 				parentContainerUADDisplay.getParentContainerClass();
@@ -299,29 +303,33 @@ public class UADHierarchyDisplay {
 			return null;
 		}
 
-		String primaryKey = ParamUtil.getString(
-			actionRequest, "parentContainerId");
-		String scope = ParamUtil.getString(actionRequest, "scope");
-
 		PortletURL portletURL = PortletURLBuilder.createRenderURL(
 			liferayPortletResponse
 		).setParameter(
-			"p_u_i_d", ParamUtil.getString(actionRequest, "p_u_i_d")
-		).setParameter(
 			"applicationKey",
 			ParamUtil.getString(actionRequest, "applicationKey")
-		).build();
+		).setParameter(
+			"p_u_i_d", ParamUtil.getString(actionRequest, "p_u_i_d")
+		).setParameter(
+			"scope",
+			() -> {
+				String scope = ParamUtil.getString(actionRequest, "scope");
 
-		if (Validator.isNotNull(scope)) {
-			portletURL.setParameter("scope", scope);
-		}
+				if (Validator.isNotNull(scope)) {
+					return scope;
+				}
+
+				return null;
+			}
+		).buildPortletURL();
 
 		UADDisplay<Object> uadDisplay =
 			(UADDisplay<Object>)_getUADDisplayByTypeClassName(className);
 
-		Object container = uadDisplay.get(primaryKey);
+		String primaryKey = ParamUtil.getString(
+			actionRequest, "parentContainerId");
 
-		Class<?> parentContainerClass = uadDisplay.getParentContainerClass();
+		Object container = uadDisplay.get(primaryKey);
 
 		String parentContainerId = String.valueOf(
 			uadDisplay.getParentContainerId(container));
@@ -335,8 +343,13 @@ public class UADHierarchyDisplay {
 			portletURL.setParameter(
 				"mvcRenderCommandName",
 				"/user_associated_data/view_uad_hierarchy");
+
+			Class<?> parentContainerClass =
+				uadDisplay.getParentContainerClass();
+
 			portletURL.setParameter(
 				"parentContainerClass", parentContainerClass.getName());
+
 			portletURL.setParameter("parentContainerId", parentContainerId);
 		}
 
@@ -392,9 +405,9 @@ public class UADHierarchyDisplay {
 		).setMVCRenderCommandName(
 			"/user_associated_data/view_uad_hierarchy"
 		).setParameter(
-			"p_u_i_d", selectedUserId
-		).setParameter(
 			"applicationKey", applicationKey
+		).setParameter(
+			"p_u_i_d", selectedUserId
 		).setParameter(
 			"parentContainerClass", typeClass.getName()
 		).setParameter(

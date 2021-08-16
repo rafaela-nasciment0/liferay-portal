@@ -27,9 +27,9 @@ if (Validator.isNull(backURL)) {
 	).setMVCRenderCommandName(
 		"/account_admin/edit_account_entry"
 	).setParameter(
-		"screenNavigationCategoryKey", AccountScreenNavigationEntryConstants.CATEGORY_KEY_ROLES
+		"accountEntryId", accountEntryId
 	).setParameter(
-		"accountEntryId", String.valueOf(accountEntryId)
+		"screenNavigationCategoryKey", AccountScreenNavigationEntryConstants.CATEGORY_KEY_ROLES
 	).buildString();
 }
 
@@ -58,9 +58,9 @@ renderResponse.setTitle((role == null) ? LanguageUtil.get(request, "add-new-role
 		).setMVCPath(
 			"/account_entries_admin/edit_account_role.jsp"
 		).setParameter(
-			"accountEntryId", String.valueOf(accountEntryId)
+			"accountEntryId", accountEntryId
 		).setParameter(
-			"accountRoleId", String.valueOf(accountRoleId)
-		).build()
+			"accountRoleId", accountRoleId
+		).buildPortletURL()
 	%>'
 />

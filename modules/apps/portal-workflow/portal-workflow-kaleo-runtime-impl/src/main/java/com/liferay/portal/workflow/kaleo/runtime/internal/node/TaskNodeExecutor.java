@@ -16,6 +16,7 @@ package com.liferay.portal.workflow.kaleo.runtime.internal.node;
 
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.service.ServiceContext;
+import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.workflow.kaleo.definition.DelayDuration;
 import com.liferay.portal.workflow.kaleo.definition.DurationScale;
@@ -27,6 +28,7 @@ import com.liferay.portal.workflow.kaleo.model.KaleoTask;
 import com.liferay.portal.workflow.kaleo.model.KaleoTaskAssignment;
 import com.liferay.portal.workflow.kaleo.model.KaleoTaskInstanceToken;
 import com.liferay.portal.workflow.kaleo.model.KaleoTimer;
+import com.liferay.portal.workflow.kaleo.model.KaleoTimerInstanceToken;
 import com.liferay.portal.workflow.kaleo.model.KaleoTransition;
 import com.liferay.portal.workflow.kaleo.runtime.ExecutionContext;
 import com.liferay.portal.workflow.kaleo.runtime.assignment.AggregateKaleoTaskAssignmentSelector;
@@ -53,9 +55,41 @@ import org.osgi.service.component.annotations.Reference;
  * @author Michael C. Han
  */
 @Component(
-	immediate = true, property = "node.type=TASK", service = NodeExecutor.class
+	immediate = true, property = "node.type=TASK",
+	service = {NodeExecutor.class, TaskNodeExecutor.class}
 )
 public class TaskNodeExecutor extends BaseNodeExecutor {
+
+	public void executeTimer(ExecutionContext executionContext)
+		throws PortalException {
+
+		KaleoTimerInstanceToken kaleoTimerInstanceToken =
+			executionContext.getKaleoTimerInstanceToken();
+
+		KaleoTimer kaleoTimer = kaleoTimerInstanceToken.getKaleoTimer();
+
+		kaleoActionExecutor.executeKaleoActions(
+			KaleoTimer.class.getName(), kaleoTimer.getKaleoTimerId(),
+			ExecutionType.ON_TIMER, executionContext);
+
+		List<KaleoTaskAssignment> kaleoTaskReassignments =
+			kaleoTimer.getKaleoTaskReassignments();
+
+		if (ListUtil.isNotEmpty(kaleoTaskReassignments)) {
+			_taskAssignerHelper.reassignKaleoTask(
+				kaleoTaskReassignments, executionContext);
+		}
+
+		notificationHelper.sendKaleoNotifications(
+			KaleoTimer.class.getName(), kaleoTimer.getKaleoTimerId(),
+			ExecutionType.ON_TIMER, executionContext);
+
+		if (!kaleoTimer.isRecurring()) {
+			kaleoTimerInstanceTokenLocalService.completeKaleoTimerInstanceToken(
+				kaleoTimerInstanceToken.getKaleoTimerInstanceTokenId(),
+				executionContext.getServiceContext());
+		}
+	}
 
 	protected Date calculateDueDate(KaleoTask kaleoTask)
 		throws KaleoDefinitionValidationException {
@@ -130,6 +164,15 @@ public class TaskNodeExecutor extends BaseNodeExecutor {
 			KaleoNode.class.getName(), currentKaleoNode.getKaleoNodeId(),
 			ExecutionType.ON_ASSIGNMENT, executionContext);
 
+		List<KaleoTimer> kaleoTimers = kaleoTimerLocalService.getKaleoTimers(
+			KaleoNode.class.getName(), currentKaleoNode.getKaleoNodeId());
+
+		kaleoTimerInstanceTokenLocalService.addKaleoTimerInstanceTokens(
+			executionContext.getKaleoInstanceToken(),
+			executionContext.getKaleoTaskInstanceToken(), kaleoTimers,
+			executionContext.getWorkflowContext(),
+			executionContext.getServiceContext());
+
 		_kaleoLogLocalService.addTaskAssignmentKaleoLogs(
 			null, kaleoTaskInstanceToken, "assigned-initial-task",
 			workflowContext, serviceContext);
@@ -141,23 +184,6 @@ public class TaskNodeExecutor extends BaseNodeExecutor {
 	protected void doExecute(
 		KaleoNode currentKaleoNode, ExecutionContext executionContext,
 		List<PathElement> remainingPathElements) {
-	}
-
-	@Override
-	protected void doExecuteTimer(
-			KaleoNode currentKaleoNode, KaleoTimer kaleoTimer,
-			ExecutionContext executionContext)
-		throws PortalException {
-
-		List<KaleoTaskAssignment> kaleoTaskReassignments =
-			kaleoTimer.getKaleoTaskReassignments();
-
-		if (kaleoTaskReassignments.isEmpty()) {
-			return;
-		}
-
-		_taskAssignerHelper.reassignKaleoTask(
-			kaleoTaskReassignments, executionContext);
 	}
 
 	@Override

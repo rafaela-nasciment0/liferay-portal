@@ -32,6 +32,7 @@ import com.liferay.portal.kernel.log.SanitizerLogWrapper;
 import com.liferay.portal.kernel.module.framework.ModuleServiceLifecycle;
 import com.liferay.portal.kernel.security.xml.SecureXMLFactoryProviderUtil;
 import com.liferay.portal.kernel.util.BasePortalLifecycle;
+import com.liferay.portal.kernel.util.FileUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.JavaDetector;
@@ -43,12 +44,11 @@ import com.liferay.portal.kernel.util.PortalLifecycle;
 import com.liferay.portal.kernel.util.PortalLifecycleUtil;
 import com.liferay.portal.kernel.util.PropsKeys;
 import com.liferay.portal.kernel.util.ReleaseInfo;
-import com.liferay.portal.kernel.util.ServerDetector;
 import com.liferay.portal.kernel.util.SystemProperties;
 import com.liferay.portal.kernel.util.TimeZoneUtil;
 import com.liferay.portal.kernel.xml.UnsecureSAXReaderUtil;
 import com.liferay.portal.log.Log4jLogFactoryImpl;
-import com.liferay.portal.module.framework.ModuleFrameworkUtilAdapter;
+import com.liferay.portal.module.framework.ModuleFrameworkUtil;
 import com.liferay.portal.security.xml.SecureXMLFactoryProviderImpl;
 import com.liferay.portal.spring.bean.LiferayBeanFactory;
 import com.liferay.portal.spring.compat.CompatBeanDefinitionRegistryPostProcessor;
@@ -62,7 +62,6 @@ import com.liferay.registry.ServiceRegistration;
 import com.sun.syndication.io.XmlReader;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 
 import java.util.List;
 import java.util.zip.ZipFile;
@@ -131,22 +130,6 @@ public class InitUtil {
 			exception.printStackTrace();
 		}
 
-		if (ServerDetector.isTomcat()) {
-			try {
-				Class<?> clazz = Class.forName(
-					"com.liferay.support.tomcat.loader." +
-						"PortalClassLoaderFactory");
-
-				Method method = clazz.getMethod(
-					"setClassLoader", ClassLoader.class);
-
-				method.invoke(null, PortalClassLoaderUtil.getClassLoader());
-			}
-			catch (Exception exception) {
-				exception.printStackTrace();
-			}
-		}
-
 		// Properties
 
 		com.liferay.portal.kernel.util.PropsUtil.setProps(new PropsImpl());
@@ -184,6 +167,12 @@ public class InitUtil {
 		// DB manager
 
 		DBManagerUtil.setDBManager(new DBManagerImpl());
+
+		// File
+
+		FileUtil fileUtil = new FileUtil();
+
+		fileUtil.setFile(new FileImpl());
 
 		// XML
 
@@ -232,7 +221,7 @@ public class InitUtil {
 				PropsValues.LIFERAY_WEB_PORTAL_CONTEXT_TEMPDIR =
 					System.getProperty(SystemProperties.TMP_DIR);
 
-				ModuleFrameworkUtilAdapter.initFramework();
+				ModuleFrameworkUtil.initFramework();
 			}
 
 			DBInitUtil.init();
@@ -242,10 +231,10 @@ public class InitUtil {
 					PropsValues.SPRING_INFRASTRUCTURE_CONFIGS);
 
 			if (initModuleFramework) {
-				ModuleFrameworkUtilAdapter.registerContext(
+				ModuleFrameworkUtil.registerContext(
 					infrastructureApplicationContext);
 
-				ModuleFrameworkUtilAdapter.startFramework();
+				ModuleFrameworkUtil.startFramework();
 			}
 
 			ConfigurableApplicationContext configurableApplicationContext =
@@ -285,10 +274,6 @@ public class InitUtil {
 
 			PortalBeanLocatorUtil.setBeanLocator(beanLocator);
 
-			if (initModuleFramework) {
-				ModuleFrameworkUtilAdapter.startRuntime();
-			}
-
 			_appApplicationContext = configurableApplicationContext;
 
 			if (initModuleFramework && registerContext) {
@@ -310,7 +295,7 @@ public class InitUtil {
 
 	public static void registerContext() {
 		if (_appApplicationContext != null) {
-			ModuleFrameworkUtilAdapter.registerContext(_appApplicationContext);
+			ModuleFrameworkUtil.registerContext(_appApplicationContext);
 		}
 	}
 
@@ -345,24 +330,6 @@ public class InitUtil {
 
 			},
 			PortalLifecycle.METHOD_DESTROY);
-	}
-
-	public static synchronized void stopModuleFramework() {
-		try {
-			ModuleFrameworkUtilAdapter.stopFramework(0);
-		}
-		catch (Exception exception) {
-			throw new RuntimeException(exception);
-		}
-	}
-
-	public static synchronized void stopRuntime() {
-		try {
-			ModuleFrameworkUtilAdapter.stopRuntime();
-		}
-		catch (Exception exception) {
-			throw new RuntimeException(exception);
-		}
 	}
 
 	private static final boolean _PRINT_TIME = false;

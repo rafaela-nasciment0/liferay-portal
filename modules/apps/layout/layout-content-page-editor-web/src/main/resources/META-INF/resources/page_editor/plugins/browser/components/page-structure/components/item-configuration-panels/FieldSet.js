@@ -21,7 +21,7 @@ import {CONTAINER_WIDTH_TYPES} from '../../../../../../app/config/constants/cont
 import {LAYOUT_DATA_ITEM_TYPES} from '../../../../../../app/config/constants/layoutDataItemTypes';
 import {VIEWPORT_SIZES} from '../../../../../../app/config/constants/viewportSizes';
 import {config} from '../../../../../../app/config/index';
-import {useSelector} from '../../../../../../app/store/index';
+import {useSelector} from '../../../../../../app/contexts/StoreContext';
 import CurrentLanguageFlag from '../../../../../../common/components/CurrentLanguageFlag';
 import {ConfigurationFieldPropTypes} from '../../../../../../prop-types/index';
 
@@ -46,13 +46,19 @@ export const FieldSet = ({
 
 	const {selectedViewportSize} = store;
 
-	const availableFields =
+	let availableFields =
 		selectedViewportSize === VIEWPORT_SIZES.desktop
 			? fields
 			: fields.filter(
 					(field) =>
 						field.responsive || field.name === 'backgroundImage'
 			  );
+
+	if (!config.fragmentsHidingEnabled) {
+		availableFields = availableFields.filter(
+			(field) => field.name !== 'display'
+		);
+	}
 
 	return (
 		availableFields.length > 0 && (
@@ -63,7 +69,11 @@ export const FieldSet = ({
 					</div>
 				)}
 
-				<div className="page-editor__sidebar__fieldset">
+				<div
+					className={classNames('page-editor__sidebar__fieldset', {
+						'page-editor__sidebar__fieldset--no-label': !label,
+					})}
+				>
 					{availableFields.map((field, index) => {
 						const FieldComponent =
 							field.type &&
@@ -104,7 +114,7 @@ export const FieldSet = ({
 								<div
 									className={classNames(
 										'autofit-row',
-										'page-editor__sidebar__fieldset__field',
+										'page-editor__sidebar__fieldset__field align-items-end',
 										{
 											'page-editor__sidebar__fieldset__field-small':
 												field.displaySize ===
@@ -126,7 +136,7 @@ export const FieldSet = ({
 									</div>
 
 									{field.localizable && (
-										<CurrentLanguageFlag />
+										<CurrentLanguageFlag className="ml-2" />
 									)}
 								</div>
 							)

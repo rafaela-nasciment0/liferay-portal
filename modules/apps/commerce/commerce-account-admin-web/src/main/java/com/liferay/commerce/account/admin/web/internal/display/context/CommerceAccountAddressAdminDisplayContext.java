@@ -133,10 +133,10 @@ public class CommerceAccountAddressAdminDisplayContext
 			commerceAccountAdminRequestHelper.getLiferayPortletResponse()
 		).setActionName(
 			"/commerce_account_admin/edit_commerce_address"
+		).setCMD(
+			Constants.DELETE
 		).setRedirect(
 			commerceAccountAdminRequestHelper.getCurrentURL()
-		).setParameter(
-			Constants.CMD, Constants.DELETE
 		).setParameter(
 			"commerceAddressId", commerceAddressId
 		).buildString();
@@ -164,7 +164,7 @@ public class CommerceAccountAddressAdminDisplayContext
 			super.getPortletURL()
 		).setMVCRenderCommandName(
 			"/commerce_account_admin/edit_commerce_account"
-		).build();
+		).buildPortletURL();
 	}
 
 	public long getRegionId() throws PortalException {

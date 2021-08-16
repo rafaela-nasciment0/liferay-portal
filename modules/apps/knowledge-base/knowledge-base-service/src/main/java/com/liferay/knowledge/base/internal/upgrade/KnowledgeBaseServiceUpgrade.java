@@ -14,22 +14,22 @@
 
 package com.liferay.knowledge.base.internal.upgrade;
 
-import com.liferay.document.library.kernel.store.Store;
 import com.liferay.knowledge.base.internal.upgrade.v2_0_2.KBArticleUpgradeProcess;
 import com.liferay.knowledge.base.internal.upgrade.v3_0_0.util.KBArticleTable;
 import com.liferay.knowledge.base.internal.upgrade.v3_0_0.util.KBCommentTable;
 import com.liferay.knowledge.base.internal.upgrade.v3_0_0.util.KBFolderTable;
 import com.liferay.knowledge.base.internal.upgrade.v3_0_0.util.KBTemplateTable;
+import com.liferay.knowledge.base.internal.upgrade.v4_1_0.KBArticleExternalReferenceCodeUpgradeProcess;
+import com.liferay.knowledge.base.internal.upgrade.v4_1_0.KBFolderExternalReferenceCodeUpgradeProcess;
 import com.liferay.knowledge.base.model.KBArticle;
 import com.liferay.portal.kernel.module.framework.ModuleServiceLifecycle;
 import com.liferay.portal.kernel.service.CompanyLocalService;
 import com.liferay.portal.kernel.settings.SettingsFactory;
-import com.liferay.portal.kernel.upgrade.BaseUpgradeSQLServerDatetime;
-import com.liferay.portal.kernel.upgrade.UpgradeException;
-import com.liferay.portal.kernel.upgrade.UpgradeMVCCVersion;
-import com.liferay.portal.kernel.upgrade.UpgradeViewCount;
+import com.liferay.portal.kernel.upgrade.BaseSQLServerDatetimeUpgradeProcess;
+import com.liferay.portal.kernel.upgrade.MVCCVersionUpgradeProcess;
+import com.liferay.portal.kernel.upgrade.ViewCountUpgradeProcess;
 import com.liferay.portal.upgrade.registry.UpgradeStepRegistrator;
-import com.liferay.portal.upgrade.release.BaseUpgradeServiceModuleRelease;
+import com.liferay.portlet.documentlibrary.store.StoreFactory;
 import com.liferay.view.count.service.ViewCountEntryLocalService;
 
 import org.osgi.service.component.annotations.Component;
@@ -43,33 +43,6 @@ public class KnowledgeBaseServiceUpgrade implements UpgradeStepRegistrator {
 
 	@Override
 	public void register(Registry registry) {
-		try {
-			BaseUpgradeServiceModuleRelease baseUpgradeServiceModuleRelease =
-				new BaseUpgradeServiceModuleRelease() {
-
-					@Override
-					protected String getNamespace() {
-						return "KB";
-					}
-
-					@Override
-					protected String getNewBundleSymbolicName() {
-						return "com.liferay.knowledge.base.service";
-					}
-
-					@Override
-					protected String getOldBundleSymbolicName() {
-						return "knowledge-base-portlet";
-					}
-
-				};
-
-			baseUpgradeServiceModuleRelease.upgrade();
-		}
-		catch (UpgradeException upgradeException) {
-			throw new RuntimeException(upgradeException);
-		}
-
 		registry.register(
 			"0.0.1", "1.0.0",
 			new com.liferay.knowledge.base.internal.upgrade.v1_0_0.
@@ -108,7 +81,8 @@ public class KnowledgeBaseServiceUpgrade implements UpgradeStepRegistrator {
 		registry.register(
 			"1.2.0", "1.3.0",
 			new com.liferay.knowledge.base.internal.upgrade.v1_3_0.
-				KBAttachmentsUpgradeProcess(_companyLocalService, _store),
+				KBAttachmentsUpgradeProcess(
+					_companyLocalService, _storeFactory.getStore()),
 			new com.liferay.knowledge.base.internal.upgrade.v1_3_0.
 				UpgradePortletPreferences());
 
@@ -163,7 +137,7 @@ public class KnowledgeBaseServiceUpgrade implements UpgradeStepRegistrator {
 
 		registry.register(
 			"2.0.2", "3.0.0",
-			new BaseUpgradeSQLServerDatetime(
+			new BaseSQLServerDatetimeUpgradeProcess(
 				new Class<?>[] {
 					KBArticleTable.class, KBCommentTable.class,
 					KBFolderTable.class, KBTemplateTable.class
@@ -171,7 +145,7 @@ public class KnowledgeBaseServiceUpgrade implements UpgradeStepRegistrator {
 
 		registry.register(
 			"3.0.0", "3.1.0",
-			new UpgradeMVCCVersion() {
+			new MVCCVersionUpgradeProcess() {
 
 				@Override
 				protected String[] getModuleTableNames() {
@@ -184,8 +158,13 @@ public class KnowledgeBaseServiceUpgrade implements UpgradeStepRegistrator {
 
 		registry.register(
 			"3.1.0", "4.0.0",
-			new UpgradeViewCount(
+			new ViewCountUpgradeProcess(
 				"KBArticle", KBArticle.class, "kbArticleId", "viewCount"));
+
+		registry.register(
+			"4.0.0", "4.1.0",
+			new KBArticleExternalReferenceCodeUpgradeProcess(),
+			new KBFolderExternalReferenceCodeUpgradeProcess());
 	}
 
 	@Reference(target = ModuleServiceLifecycle.PORTAL_INITIALIZED, unbind = "-")
@@ -203,8 +182,8 @@ public class KnowledgeBaseServiceUpgrade implements UpgradeStepRegistrator {
 
 	private SettingsFactory _settingsFactory;
 
-	@Reference(target = "(dl.store.upgrade=true)")
-	private Store _store;
+	@Reference(target = "(dl.store.impl.enabled=true)")
+	private StoreFactory _storeFactory;
 
 	/**
 	 * See LPS-101085. The ViewCount table needs to exist.

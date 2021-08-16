@@ -46,11 +46,11 @@ PortletURL portletURL = PortletURLBuilder.createRenderURL(
 	renderResponse
 ).setMVCPath(
 	"/microblogs/view.jsp"
-).setParameter(
-	"tabs1", tabs1
+).setTabs1(
+	tabs1
 ).setWindowState(
 	WindowState.NORMAL
-).build();
+).buildPortletURL();
 %>
 
 <div class="microblogs-container">
@@ -153,13 +153,13 @@ PortletURL portletURL = PortletURLBuilder.createRenderURL(
 		renderResponse
 	).setMVCPath(
 		"/microblogs/view.jsp"
+	).setTabs1(
+		tabs1
 	).setParameter(
-		"tabs1", tabs1
-	).setParameter(
-		"cur", String.valueOf(cur)
+		"cur", cur
 	).setWindowState(
 		LiferayWindowState.EXCLUSIVE
-	).build();
+	).buildPortletURL();
 
 	request.setAttribute(WebKeys.MICROBLOGS_ENTRIES, results);
 	request.setAttribute(WebKeys.MICROBLOGS_ENTRIES_URL, microblogsEntriesURL);

@@ -3717,25 +3717,25 @@ public class DDMDataProviderInstancePersistenceImpl
 		ServiceContext serviceContext =
 			ServiceContextThreadLocal.getServiceContext();
 
-		Date now = new Date();
+		Date date = new Date();
 
 		if (isNew && (ddmDataProviderInstance.getCreateDate() == null)) {
 			if (serviceContext == null) {
-				ddmDataProviderInstance.setCreateDate(now);
+				ddmDataProviderInstance.setCreateDate(date);
 			}
 			else {
 				ddmDataProviderInstance.setCreateDate(
-					serviceContext.getCreateDate(now));
+					serviceContext.getCreateDate(date));
 			}
 		}
 
 		if (!ddmDataProviderInstanceModelImpl.hasSetModifiedDate()) {
 			if (serviceContext == null) {
-				ddmDataProviderInstance.setModifiedDate(now);
+				ddmDataProviderInstance.setModifiedDate(date);
 			}
 			else {
 				ddmDataProviderInstance.setModifiedDate(
-					serviceContext.getModifiedDate(now));
+					serviceContext.getModifiedDate(date));
 			}
 		}
 
@@ -4179,7 +4179,8 @@ public class DDMDataProviderInstancePersistenceImpl
 	public Set<String> getCTColumnNames(
 		CTColumnResolutionType ctColumnResolutionType) {
 
-		return _ctColumnNamesMap.get(ctColumnResolutionType);
+		return _ctColumnNamesMap.getOrDefault(
+			ctColumnResolutionType, Collections.emptySet());
 	}
 
 	@Override
@@ -4213,7 +4214,6 @@ public class DDMDataProviderInstancePersistenceImpl
 	static {
 		Set<String> ctControlColumnNames = new HashSet<String>();
 		Set<String> ctIgnoreColumnNames = new HashSet<String>();
-		Set<String> ctMergeColumnNames = new HashSet<String>();
 		Set<String> ctStrictColumnNames = new HashSet<String>();
 
 		ctControlColumnNames.add("mvccVersion");
@@ -4235,7 +4235,6 @@ public class DDMDataProviderInstancePersistenceImpl
 			CTColumnResolutionType.CONTROL, ctControlColumnNames);
 		_ctColumnNamesMap.put(
 			CTColumnResolutionType.IGNORE, ctIgnoreColumnNames);
-		_ctColumnNamesMap.put(CTColumnResolutionType.MERGE, ctMergeColumnNames);
 		_ctColumnNamesMap.put(
 			CTColumnResolutionType.PK,
 			Collections.singleton("dataProviderInstanceId"));
@@ -4528,7 +4527,7 @@ public class DDMDataProviderInstancePersistenceImpl
 			return DDMDataProviderInstanceTable.INSTANCE.getTableName();
 		}
 
-		private Object[] _getValue(
+		private static Object[] _getValue(
 			DDMDataProviderInstanceModelImpl ddmDataProviderInstanceModelImpl,
 			String[] columnNames, boolean original) {
 
@@ -4552,8 +4551,8 @@ public class DDMDataProviderInstancePersistenceImpl
 			return arguments;
 		}
 
-		private static Map<FinderPath, Long> _finderPathColumnBitmasksCache =
-			new ConcurrentHashMap<>();
+		private static final Map<FinderPath, Long>
+			_finderPathColumnBitmasksCache = new ConcurrentHashMap<>();
 
 	}
 

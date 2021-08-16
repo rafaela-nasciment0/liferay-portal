@@ -112,15 +112,15 @@ public class CommerceProductDefinitionLinkDataSetActionProvider
 				CPPortletKeys.CP_DEFINITIONS, PortletRequest.ACTION_PHASE)
 		).setActionName(
 			"/cp_definitions/edit_cp_definition_link"
+		).setCMD(
+			Constants.DELETE
 		).setRedirect(
 			redirect
-		).setParameter(
-			Constants.CMD, Constants.DELETE
 		).setParameter(
 			"cpDefinitionId", cpDefinitionLink.getCPDefinitionId()
 		).setParameter(
 			"cpDefinitionLinkId", cpDefinitionLink.getCPDefinitionLinkId()
-		).build();
+		).buildPortletURL();
 	}
 
 	private PortletURL _getProductLinkEditURL(
@@ -138,7 +138,7 @@ public class CommerceProductDefinitionLinkDataSetActionProvider
 			"cpDefinitionId", cpDefinitionLink.getCPDefinitionId()
 		).setParameter(
 			"cpDefinitionLinkId", cpDefinitionLink.getCPDefinitionLinkId()
-		).build();
+		).buildPortletURL();
 
 		try {
 			portletURL.setWindowState(LiferayWindowState.POP_UP);

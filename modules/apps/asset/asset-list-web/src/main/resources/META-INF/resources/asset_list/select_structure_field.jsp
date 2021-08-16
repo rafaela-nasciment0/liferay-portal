@@ -46,10 +46,10 @@ ClassType classType = classTypeReader.getClassType(classTypeId, locale);
 			).setParameter(
 				"className", className
 			).setParameter(
-				"classTypeId", String.valueOf(classTypeId)
+				"classTypeId", classTypeId
 			).setParameter(
 				"eventName", eventName
-			).build()
+			).buildPortletURL()
 		%>'
 		total="<%= classType.getClassTypeFieldsCount() %>"
 	>

@@ -14,14 +14,11 @@
 
 package com.liferay.portal.kernel.util;
 
-import com.liferay.registry.ServiceReference;
-import com.liferay.registry.collections.ServiceReferenceMapper;
 import com.liferay.registry.collections.ServiceTrackerCollections;
 import com.liferay.registry.collections.ServiceTrackerMap;
 
 /**
- * @author Carlos Sierra Andrés
- *
+ * @author     Carlos Sierra Andrés
  * @deprecated As of Athanasius (7.3.x), replaced by {@link
  *             com.liferay.portal.kernel.resource.bundle.ResourceBundleLoaderUtil}
  */
@@ -68,38 +65,6 @@ public class ResourceBundleLoaderUtil {
 		_servletContextNameServiceTrackerMap =
 			ServiceTrackerCollections.openSingleValueMap(
 				ResourceBundleLoader.class, "servlet.context.name");
-	}
-
-	private static class ServiceTrackerHolder {
-
-		private static final ServiceTrackerMap<String, ResourceBundleLoader>
-			_servletContextNameAndBaseNameServiceTrackerMap;
-
-		static {
-			_servletContextNameAndBaseNameServiceTrackerMap =
-				ServiceTrackerCollections.openSingleValueMap(
-					ResourceBundleLoader.class,
-					"(&(resource.bundle.base.name=*)(servlet.context.name=*))",
-					new ServiceReferenceMapper<String, ResourceBundleLoader>() {
-
-						@Override
-						public void map(
-							ServiceReference<ResourceBundleLoader>
-								serviceReference,
-							Emitter<String> emitter) {
-
-							Object baseName = serviceReference.getProperty(
-								"resource.bundle.base.name");
-							Object servletContextName =
-								serviceReference.getProperty(
-									"servlet.context.name");
-
-							emitter.emit(baseName + "#" + servletContextName);
-						}
-
-					});
-		}
-
 	}
 
 }

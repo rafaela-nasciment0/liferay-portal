@@ -28,9 +28,6 @@ CommerceOrder commerceOrder = commerceOrderEditDisplayContext.getCommerceOrder()
 if ((commerceOrder != null) && Validator.isNull(cmd)) {
 	billingAddress = commerceOrder.getBillingAddress();
 }
-
-long countryId = BeanParamUtil.getLong(billingAddress, request, "countryId");
-long regionId = BeanParamUtil.getLong(billingAddress, request, "regionId");
 %>
 
 <portlet:actionURL name="/commerce_order/edit_commerce_order" var="editCommerceOrderBillingAddressActionURL" />
@@ -50,6 +47,10 @@ long regionId = BeanParamUtil.getLong(billingAddress, request, "regionId");
 		<aui:input name="phoneNumber" wrapperCssClass="form-group-item" />
 
 		<aui:input name="street1" wrapperCssClass="form-group-item" />
+
+		<aui:input name="street2" wrapperCssClass="form-group-item" />
+
+		<aui:input name="street3" wrapperCssClass="form-group-item" />
 
 		<aui:select label="country" name="countryId" wrapperCssClass="form-group-item" />
 
@@ -96,7 +97,8 @@ long regionId = BeanParamUtil.getLong(billingAddress, request, "regionId");
 			selectId: 'countryId',
 			selectNullable: <%= false %>,
 			selectSort: '<%= true %>',
-			selectVal: '<%= countryId %>',
+			selectVal:
+				'<%= BeanParamUtil.getLong(billingAddress, request, "countryId") %>',
 		},
 		{
 			select: '<portlet:namespace />regionId',
@@ -130,7 +132,8 @@ long regionId = BeanParamUtil.getLong(billingAddress, request, "regionId");
 			selectDesc: 'name',
 			selectId: 'regionId',
 			selectNullable: <%= false %>,
-			selectVal: '<%= regionId %>',
+			selectVal:
+				'<%= BeanParamUtil.getLong(billingAddress, request, "regionId") %>',
 		},
 	]);
 </aui:script>

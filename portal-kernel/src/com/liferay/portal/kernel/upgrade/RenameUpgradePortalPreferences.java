@@ -22,8 +22,11 @@ import java.sql.PreparedStatement;
 import java.util.Map;
 
 /**
- * @author Eduardo García
+ * @author     Eduardo García
+ * @deprecated As of Cavanaugh (7.4.x), replaced by {@link
+ *             PortalPreferencesUpgradeProcess}
  */
+@Deprecated
 public abstract class RenameUpgradePortalPreferences extends UpgradeProcess {
 
 	@Override

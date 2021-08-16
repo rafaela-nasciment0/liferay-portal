@@ -30,7 +30,7 @@ import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.URLCodec;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.lpkg.deployer.internal.wrapper.bundle.URLStreamHandlerServiceServiceTrackerCustomizer;
-import com.liferay.portal.lpkg.deployer.internal.wrapper.bundle.WARBundleWrapperBundleActivator;
+import com.liferay.portal.lpkg.deployer.internal.wrapper.bundle.activator.WARBundleWrapperBundleActivator;
 import com.liferay.portal.util.PropsValues;
 
 import java.io.File;
@@ -103,8 +103,6 @@ public class LPKGBundleTrackerCustomizer
 		Bundle bundle = bundleContext.getBundle();
 
 		_dataFile = bundle.getDataFile(_FILE_NAME_LPKG_DATA);
-
-		_properties = new Properties();
 
 		if (_dataFile.exists()) {
 			try (InputStream inputStream = new FileInputStream(_dataFile)) {
@@ -947,7 +945,7 @@ public class LPKGBundleTrackerCustomizer
 	private final File _dataFile;
 	private final Set<String> _outdatedRemoteAppIds = new HashSet<>();
 	private final Set<String> _overrideFileNames;
-	private final Properties _properties;
+	private final Properties _properties = new Properties();
 	private final Map<String, URL> _urls;
 
 }

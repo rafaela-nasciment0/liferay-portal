@@ -5255,25 +5255,25 @@ public class CPDefinitionOptionValueRelPersistenceImpl
 		ServiceContext serviceContext =
 			ServiceContextThreadLocal.getServiceContext();
 
-		Date now = new Date();
+		Date date = new Date();
 
 		if (isNew && (cpDefinitionOptionValueRel.getCreateDate() == null)) {
 			if (serviceContext == null) {
-				cpDefinitionOptionValueRel.setCreateDate(now);
+				cpDefinitionOptionValueRel.setCreateDate(date);
 			}
 			else {
 				cpDefinitionOptionValueRel.setCreateDate(
-					serviceContext.getCreateDate(now));
+					serviceContext.getCreateDate(date));
 			}
 		}
 
 		if (!cpDefinitionOptionValueRelModelImpl.hasSetModifiedDate()) {
 			if (serviceContext == null) {
-				cpDefinitionOptionValueRel.setModifiedDate(now);
+				cpDefinitionOptionValueRel.setModifiedDate(date);
 			}
 			else {
 				cpDefinitionOptionValueRel.setModifiedDate(
-					serviceContext.getModifiedDate(now));
+					serviceContext.getModifiedDate(date));
 			}
 		}
 
@@ -5864,6 +5864,13 @@ public class CPDefinitionOptionValueRelPersistenceImpl
 							columnName);
 				}
 
+				if (finderPath.isBaseModelResult() &&
+					(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION ==
+						finderPath.getCacheName())) {
+
+					finderPathColumnBitmask |= _ORDER_BY_COLUMNS_BITMASK;
+				}
+
 				_finderPathColumnBitmasksCache.put(
 					finderPath, finderPathColumnBitmask);
 			}
@@ -5886,7 +5893,7 @@ public class CPDefinitionOptionValueRelPersistenceImpl
 			return CPDefinitionOptionValueRelTable.INSTANCE.getTableName();
 		}
 
-		private Object[] _getValue(
+		private static Object[] _getValue(
 			CPDefinitionOptionValueRelModelImpl
 				cpDefinitionOptionValueRelModelImpl,
 			String[] columnNames, boolean original) {
@@ -5911,8 +5918,20 @@ public class CPDefinitionOptionValueRelPersistenceImpl
 			return arguments;
 		}
 
-		private static Map<FinderPath, Long> _finderPathColumnBitmasksCache =
-			new ConcurrentHashMap<>();
+		private static final Map<FinderPath, Long>
+			_finderPathColumnBitmasksCache = new ConcurrentHashMap<>();
+
+		private static final long _ORDER_BY_COLUMNS_BITMASK;
+
+		static {
+			long orderByColumnsBitmask = 0;
+
+			orderByColumnsBitmask |=
+				CPDefinitionOptionValueRelModelImpl.getColumnBitmask(
+					"priority");
+
+			_ORDER_BY_COLUMNS_BITMASK = orderByColumnsBitmask;
+		}
 
 	}
 

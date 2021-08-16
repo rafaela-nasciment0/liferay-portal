@@ -22,7 +22,6 @@ MBCategory category = (MBCategory)request.getAttribute(WebKeys.MESSAGE_BOARDS_CA
 long categoryId = MBUtil.getCategoryId(request, category);
 
 long excludedCategoryId = ParamUtil.getLong(request, "excludedMBCategoryId");
-String eventName = ParamUtil.getString(request, "eventName", liferayPortletResponse.getNamespace() + "selectCategory");
 
 MBCategoryDisplay categoryDisplay = new MBCategoryDisplay(scopeGroupId, categoryId);
 
@@ -54,8 +53,8 @@ else {
 				).setMVCRenderCommandName(
 					"/message_boards/select_category"
 				).setParameter(
-					"mbCategoryId", String.valueOf(categoryId)
-				).build()
+					"mbCategoryId", categoryId
+				).buildPortletURL()
 			%>'
 			total="<%= MBCategoryServiceUtil.getCategoriesCount(scopeGroupId, excludedCategoryId, categoryId, WorkflowConstants.STATUS_APPROVED) %>"
 		>
@@ -144,10 +143,3 @@ else {
 		</liferay-ui:search-container>
 	</aui:form>
 </clay:container-fluid>
-
-<aui:script>
-	Liferay.Util.selectEntityHandler(
-		'#<portlet:namespace />selectCategoryFm',
-		'<%= HtmlUtil.escapeJS(eventName) %>'
-	);
-</aui:script>

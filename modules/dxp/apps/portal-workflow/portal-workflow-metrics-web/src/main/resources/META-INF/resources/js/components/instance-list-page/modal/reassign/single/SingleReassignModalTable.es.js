@@ -16,7 +16,7 @@ import React, {useCallback, useMemo} from 'react';
 import {Autocomplete} from '../../../../../shared/components/autocomplete/Autocomplete.es';
 import {useFetch} from '../../../../../shared/hooks/useFetch.es';
 
-const AssigneeInput = ({setAssigneeId, taskId}) => {
+function AssigneeInput({setAssigneeId, taskId}) {
 	const {data, fetchData} = useFetch({
 		admin: true,
 		params: {page: -1, pageSize: -1},
@@ -41,16 +41,16 @@ const AssigneeInput = ({setAssigneeId, taskId}) => {
 			promises={promises}
 		/>
 	);
-};
+}
 
-const Item = ({
+function Item({
 	assigneePerson = {name: Liferay.Language.get('unassigned')},
 	id,
 	objectReviewed: {assetTitle, assetType},
 	setAssigneeId,
 	label,
 	workflowInstanceId,
-}) => {
+}) {
 	return (
 		<ClayTable.Row>
 			<ClayTable.Cell style={{fontWeight: 'bold'}}>
@@ -71,9 +71,9 @@ const Item = ({
 			</ClayTable.Cell>
 		</ClayTable.Row>
 	);
-};
+}
 
-const Table = ({items, setAssigneeId}) => {
+function Table({items, setAssigneeId}) {
 	return (
 		<ClayTable>
 			<ClayTable.Head>
@@ -128,15 +128,17 @@ const Table = ({items, setAssigneeId}) => {
 							width: '25%',
 						}}
 					>
-						{`${Liferay.Language.get('new-assignee')}`}{' '}
-						<ClayIcon
+						{`${Liferay.Language.get('new-assignee')}`}
+						<span
+							className="ml-1 workflow-tooltip"
 							data-tooltip-align="top"
-							style={{color: '#6B6C7E'}}
-							symbol="question-circle-full"
+							data-tooltip-delay="0"
 							title={Liferay.Language.get(
 								'possible-assignees-must-have-permissions-to-be-assigned-to-the-corresponding-step'
 							)}
-						/>
+						>
+							<ClayIcon symbol="question-circle-full" />
+						</span>
 					</ClayTable.Cell>
 				</ClayTable.Row>
 			</ClayTable.Head>
@@ -154,9 +156,9 @@ const Table = ({items, setAssigneeId}) => {
 			</ClayTable.Body>
 		</ClayTable>
 	);
-};
+}
 
 Table.AssigneeInput = AssigneeInput;
 Table.Item = Item;
 
-export {Table};
+export default Table;

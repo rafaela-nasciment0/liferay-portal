@@ -30,11 +30,8 @@ public class SearchBarPortletDestinationUtil {
 		Optional<String> optional =
 			searchBarPortletPreferences.getDestination();
 
-		if (!optional.isPresent()) {
-			return true;
-		}
-
-		if (isSameDestination(
+		if (!optional.isPresent() ||
+			isSameDestination(
 				optional.get(),
 				themeDisplay.getLayoutFriendlyURL(themeDisplay.getLayout()))) {
 
@@ -53,7 +50,8 @@ public class SearchBarPortletDestinationUtil {
 			offset = 1;
 		}
 
-		if (destination.regionMatches(
+		if ((destination.length() == (friendlyURL.length() - offset)) &&
+			destination.regionMatches(
 				0, friendlyURL, offset, friendlyURL.length() - offset)) {
 
 			return true;

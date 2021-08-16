@@ -57,6 +57,8 @@ Map<String, Object> contextObjects = HashMapBuilder.<String, Object>put(
 String[] mediaGalleryMimeTypes = dlPortletInstanceSettings.getMimeTypes();
 %>
 
+<liferay-ui:success key='<%= portletDisplay.getId() + "requestProcessed" %>' message="your-request-completed-successfully" />
+
 <liferay-ddm:template-renderer
 	className="<%= FileEntry.class.getName() %>"
 	contextObjects="<%= contextObjects %>"
@@ -77,7 +79,7 @@ String[] mediaGalleryMimeTypes = dlPortletInstanceSettings.getMimeTypes();
 		renderResponse
 	).setMVCRenderCommandName(
 		"/image_gallery_display/view"
-	).build();
+	).buildPortletURL();
 
 	if (Validator.isNotNull(redirect)) {
 		portletURL.setParameter("redirect", redirect);

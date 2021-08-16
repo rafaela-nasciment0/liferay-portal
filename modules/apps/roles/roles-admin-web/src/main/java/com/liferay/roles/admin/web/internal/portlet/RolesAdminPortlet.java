@@ -26,8 +26,9 @@ import com.liferay.item.selector.ItemSelector;
 import com.liferay.osgi.service.tracker.collections.list.ServiceTrackerList;
 import com.liferay.osgi.service.tracker.collections.list.ServiceTrackerListFactory;
 import com.liferay.osgi.service.tracker.collections.map.PropertyServiceReferenceComparator;
-import com.liferay.petra.lang.SafeClosable;
+import com.liferay.petra.lang.SafeCloseable;
 import com.liferay.petra.reflect.ReflectionUtil;
+import com.liferay.portal.kernel.exception.DataLimitExceededException;
 import com.liferay.portal.kernel.exception.DuplicateRoleException;
 import com.liferay.portal.kernel.exception.ModelListenerException;
 import com.liferay.portal.kernel.exception.NoSuchRoleException;
@@ -59,6 +60,7 @@ import com.liferay.portal.kernel.servlet.SessionErrors;
 import com.liferay.portal.kernel.servlet.SessionMessages;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.ArrayUtil;
+import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.Http;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.LocalizationUtil;
@@ -140,14 +142,7 @@ public class RolesAdminPortlet extends MVCPortlet {
 			ActionRequest actionRequest, ActionResponse actionResponse)
 		throws Exception {
 
-		ThemeDisplay themeDisplay = (ThemeDisplay)actionRequest.getAttribute(
-			WebKeys.THEME_DISPLAY);
-
 		long roleId = ParamUtil.getLong(actionRequest, "roleId");
-		String name = ParamUtil.getString(actionRequest, "name");
-		int scope = ParamUtil.getInteger(actionRequest, "scope");
-		String primKey = ParamUtil.getString(actionRequest, "primKey");
-		String actionId = ParamUtil.getString(actionRequest, "actionId");
 
 		Role role = _roleLocalService.getRole(roleId);
 
@@ -162,6 +157,14 @@ public class RolesAdminPortlet extends MVCPortlet {
 
 			throw new RolePermissionsException(roleName);
 		}
+
+		ThemeDisplay themeDisplay = (ThemeDisplay)actionRequest.getAttribute(
+			WebKeys.THEME_DISPLAY);
+
+		String name = ParamUtil.getString(actionRequest, "name");
+		int scope = ParamUtil.getInteger(actionRequest, "scope");
+		String primKey = ParamUtil.getString(actionRequest, "primKey");
+		String actionId = ParamUtil.getString(actionRequest, "actionId");
 
 		_resourcePermissionService.removeResourcePermission(
 			themeDisplay.getScopeGroupId(), themeDisplay.getCompanyId(), name,
@@ -296,8 +299,8 @@ public class RolesAdminPortlet extends MVCPortlet {
 		if (!ArrayUtil.isEmpty(addUserIds) ||
 			!ArrayUtil.isEmpty(removeUserIds)) {
 
-			try (SafeClosable safeClosable =
-					ProxyModeThreadLocal.setWithSafeClosable(true)) {
+			try (SafeCloseable safeCloseable =
+					ProxyModeThreadLocal.setWithSafeCloseable(true)) {
 
 				_userService.addRoleUsers(roleId, addUserIds);
 				_userService.unsetRoleUsers(roleId, removeUserIds);
@@ -325,8 +328,8 @@ public class RolesAdminPortlet extends MVCPortlet {
 			ParamUtil.getString(actionRequest, "addSegmentsEntryIds"), 0L);
 
 		if (ArrayUtil.isNotEmpty(addSegmentsEntryIds)) {
-			try (SafeClosable safeClosable =
-					ProxyModeThreadLocal.setWithSafeClosable(true)) {
+			try (SafeCloseable safeCloseable =
+					ProxyModeThreadLocal.setWithSafeCloseable(true)) {
 
 				for (long segmentsEntryId : addSegmentsEntryIds) {
 					_segmentsEntryRoleLocalService.addSegmentsEntryRole(
@@ -341,8 +344,8 @@ public class RolesAdminPortlet extends MVCPortlet {
 			ParamUtil.getString(actionRequest, "removeSegmentsEntryIds"), 0L);
 
 		if (ArrayUtil.isNotEmpty(removeSegmentsEntryIds)) {
-			try (SafeClosable safeClosable =
-					ProxyModeThreadLocal.setWithSafeClosable(true)) {
+			try (SafeCloseable safeCloseable =
+					ProxyModeThreadLocal.setWithSafeCloseable(true)) {
 
 				for (long segmentsEntryId : removeSegmentsEntryIds) {
 					_segmentsEntryRoleLocalService.deleteSegmentsEntryRole(
@@ -379,9 +382,6 @@ public class RolesAdminPortlet extends MVCPortlet {
 			ActionRequest actionRequest, ActionResponse actionResponse)
 		throws Exception {
 
-		ThemeDisplay themeDisplay = (ThemeDisplay)actionRequest.getAttribute(
-			WebKeys.THEME_DISPLAY);
-
 		long roleId = ParamUtil.getLong(actionRequest, "roleId");
 
 		Role role = _roleLocalService.getRole(roleId);
@@ -397,6 +397,9 @@ public class RolesAdminPortlet extends MVCPortlet {
 
 			throw new RolePermissionsException(roleName);
 		}
+
+		ThemeDisplay themeDisplay = (ThemeDisplay)actionRequest.getAttribute(
+			WebKeys.THEME_DISPLAY);
 
 		String portletResource = ParamUtil.getString(
 			actionRequest, "portletResource");
@@ -570,7 +573,10 @@ public class RolesAdminPortlet extends MVCPortlet {
 			include("/edit_role.jsp", renderRequest, renderResponse);
 		}
 		else if (SessionErrors.contains(
-					renderRequest, NoSuchRoleException.class.getName()) ||
+					renderRequest,
+					DataLimitExceededException.class.getName()) ||
+				 SessionErrors.contains(
+					 renderRequest, NoSuchRoleException.class.getName()) ||
 				 SessionErrors.contains(
 					 renderRequest, PrincipalException.getNestedClasses()) ||
 				 SessionErrors.contains(
@@ -595,7 +601,8 @@ public class RolesAdminPortlet extends MVCPortlet {
 
 	@Override
 	protected boolean isSessionErrorException(Throwable throwable) {
-		if (throwable instanceof DuplicateRoleException ||
+		if (throwable instanceof DataLimitExceededException ||
+			throwable instanceof DuplicateRoleException ||
 			throwable instanceof NoSuchRoleException ||
 			throwable instanceof PrincipalException ||
 			throwable instanceof RequiredRoleException ||
@@ -777,7 +784,7 @@ public class RolesAdminPortlet extends MVCPortlet {
 				ActionKeys.VIEW_SITE_ADMINISTRATION, true, scope,
 				ArrayUtil.filter(
 					groupIds,
-					groupId -> _isDepotGroup(role.getCompanyId(), groupId)));
+					groupId -> _isDepotGroup(GetterUtil.getLong(groupId))));
 
 			selResource = Group.class.getName();
 			actionId = ActionKeys.VIEW_SITE_ADMINISTRATION;
@@ -827,9 +834,9 @@ public class RolesAdminPortlet extends MVCPortlet {
 		return panelCategoryKeys.toArray(new String[0]);
 	}
 
-	private boolean _isDepotGroup(long companyId, String groupKey) {
+	private boolean _isDepotGroup(long groupId) {
 		try {
-			Group group = _groupService.getGroup(companyId, groupKey);
+			Group group = _groupService.getGroup(groupId);
 
 			if (group.isDepot()) {
 				return true;

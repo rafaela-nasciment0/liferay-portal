@@ -82,7 +82,10 @@ import org.osgi.service.component.annotations.Reference;
  */
 @Component(
 	immediate = true,
-	property = "site.navigation.menu.item.type=" + SiteNavigationMenuItemTypeConstants.LAYOUT,
+	property = {
+		"service.ranking:Integer=400",
+		"site.navigation.menu.item.type=" + SiteNavigationMenuItemTypeConstants.LAYOUT
+	},
 	service = SiteNavigationMenuItemType.class
 )
 public class LayoutSiteNavigationMenuItemType
@@ -132,7 +135,7 @@ public class LayoutSiteNavigationMenuItemType
 			renderResponse
 		).setActionName(
 			"/navigation_menu/add_layout_site_navigation_menu_item"
-		).build();
+		).buildPortletURL();
 	}
 
 	@Override
@@ -401,7 +404,7 @@ public class LayoutSiteNavigationMenuItemType
 		DynamicQuery dynamicQuery =
 			_siteNavigationMenuItemLocalService.dynamicQuery();
 
-		StringBuilder sb = new StringBuilder(5);
+		StringBundler sb = new StringBundler(5);
 
 		sb.append(StringPool.PERCENT);
 		sb.append("layoutUuid");

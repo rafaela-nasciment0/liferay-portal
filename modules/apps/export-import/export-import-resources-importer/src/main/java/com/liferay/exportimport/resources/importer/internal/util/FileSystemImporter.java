@@ -798,6 +798,7 @@ public class FileSystemImporter extends BaseImporter {
 					mimeTypes.getContentType(fileName), fileName,
 					StringPool.BLANK, StringPool.BLANK,
 					DLVersionNumberIncrease.MAJOR, inputStream, length,
+					fileEntry.getExpirationDate(), fileEntry.getReviewDate(),
 					serviceContext);
 
 				dlFileEntryLocalService.deleteFileVersion(
@@ -943,22 +944,22 @@ public class FileSystemImporter extends BaseImporter {
 				groupId, journalArticleId, WorkflowConstants.STATUS_ANY);
 
 		try {
+			Map<Locale, String> titleMap = getMap(articleDefaultLocale, title);
+
 			if (journalArticle == null) {
 				journalArticle = journalArticleLocalService.addArticle(
-					userId, groupId, folderId, 0, 0, journalArticleId, false,
-					JournalArticleConstants.VERSION_DEFAULT,
-					getMap(articleDefaultLocale, title), descriptionMap,
-					content, ddmStructureKey, ddmTemplateKey, StringPool.BLANK,
-					1, 1, 2010, 0, 0, 0, 0, 0, 0, 0, true, 0, 0, 0, 0, 0, true,
-					indexable, smallImage, smallImageURL, null,
-					new HashMap<String, byte[]>(), StringPool.BLANK,
-					serviceContext);
+					null, userId, groupId, folderId, 0, 0, journalArticleId,
+					false, JournalArticleConstants.VERSION_DEFAULT, titleMap,
+					descriptionMap, titleMap, content, ddmStructureKey,
+					ddmTemplateKey, StringPool.BLANK, 1, 1, 2010, 0, 0, 0, 0, 0,
+					0, 0, true, 0, 0, 0, 0, 0, true, indexable, smallImage,
+					smallImageURL, null, new HashMap<String, byte[]>(),
+					StringPool.BLANK, serviceContext);
 			}
 			else {
 				journalArticle = journalArticleLocalService.updateArticle(
 					userId, groupId, folderId, journalArticleId,
-					journalArticle.getVersion(),
-					getMap(articleDefaultLocale, title), descriptionMap,
+					journalArticle.getVersion(), titleMap, descriptionMap,
 					content, ddmStructureKey, ddmTemplateKey, StringPool.BLANK,
 					1, 1, 2010, 0, 0, 0, 0, 0, 0, 0, true, 0, 0, 0, 0, 0, true,
 					indexable, smallImage, smallImageURL, null,
@@ -1177,14 +1178,14 @@ public class FileSystemImporter extends BaseImporter {
 			Layout layout, String columnId, JSONObject portletJSONObject)
 		throws Exception {
 
-		LayoutTypePortlet layoutTypePortlet =
-			(LayoutTypePortlet)layout.getLayoutType();
-
 		String rootPortletId = portletJSONObject.getString("portletId");
 
 		if (Validator.isNull(rootPortletId)) {
 			throw new ImporterException("portletId is not specified");
 		}
+
+		LayoutTypePortlet layoutTypePortlet =
+			(LayoutTypePortlet)layout.getLayoutType();
 
 		PortletPreferencesTranslator portletPreferencesTranslator =
 			portletPreferencesTranslators.get(rootPortletId);

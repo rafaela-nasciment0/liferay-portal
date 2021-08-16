@@ -1893,24 +1893,24 @@ public class MemberRequestPersistenceImpl
 		ServiceContext serviceContext =
 			ServiceContextThreadLocal.getServiceContext();
 
-		Date now = new Date();
+		Date date = new Date();
 
 		if (isNew && (memberRequest.getCreateDate() == null)) {
 			if (serviceContext == null) {
-				memberRequest.setCreateDate(now);
+				memberRequest.setCreateDate(date);
 			}
 			else {
-				memberRequest.setCreateDate(serviceContext.getCreateDate(now));
+				memberRequest.setCreateDate(serviceContext.getCreateDate(date));
 			}
 		}
 
 		if (!memberRequestModelImpl.hasSetModifiedDate()) {
 			if (serviceContext == null) {
-				memberRequest.setModifiedDate(now);
+				memberRequest.setModifiedDate(date);
 			}
 			else {
 				memberRequest.setModifiedDate(
-					serviceContext.getModifiedDate(now));
+					serviceContext.getModifiedDate(date));
 			}
 		}
 
@@ -2401,6 +2401,13 @@ public class MemberRequestPersistenceImpl
 						memberRequestModelImpl.getColumnBitmask(columnName);
 				}
 
+				if (finderPath.isBaseModelResult() &&
+					(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION ==
+						finderPath.getCacheName())) {
+
+					finderPathColumnBitmask |= _ORDER_BY_COLUMNS_BITMASK;
+				}
+
 				_finderPathColumnBitmasksCache.put(
 					finderPath, finderPathColumnBitmask);
 			}
@@ -2422,7 +2429,7 @@ public class MemberRequestPersistenceImpl
 			return MemberRequestTable.INSTANCE.getTableName();
 		}
 
-		private Object[] _getValue(
+		private static Object[] _getValue(
 			MemberRequestModelImpl memberRequestModelImpl, String[] columnNames,
 			boolean original) {
 
@@ -2445,8 +2452,19 @@ public class MemberRequestPersistenceImpl
 			return arguments;
 		}
 
-		private static Map<FinderPath, Long> _finderPathColumnBitmasksCache =
-			new ConcurrentHashMap<>();
+		private static final Map<FinderPath, Long>
+			_finderPathColumnBitmasksCache = new ConcurrentHashMap<>();
+
+		private static final long _ORDER_BY_COLUMNS_BITMASK;
+
+		static {
+			long orderByColumnsBitmask = 0;
+
+			orderByColumnsBitmask |= MemberRequestModelImpl.getColumnBitmask(
+				"createDate");
+
+			_ORDER_BY_COLUMNS_BITMASK = orderByColumnsBitmask;
+		}
 
 	}
 

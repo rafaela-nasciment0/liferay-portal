@@ -109,10 +109,8 @@ public class AccountEntriesAdminPortletFilter
 						PortletRequest.RENDER_PHASE)
 				).setMVCRenderCommandName(
 					"/account_admin/edit_account_role"
-				).setParameter(
-					"screenNavigationCategoryKey",
-					AccountScreenNavigationEntryConstants.
-						CATEGORY_KEY_DEFINE_PERMISSIONS
+				).setBackURL(
+					ParamUtil.getString(renderRequest, "backURL")
 				).setParameter(
 					"cur", ParamUtil.getString(renderRequest, "cur")
 				).setParameter(
@@ -120,8 +118,10 @@ public class AccountEntriesAdminPortletFilter
 				).setParameter(
 					"resetCur", ParamUtil.getString(renderRequest, "resetCur")
 				).setParameter(
-					"backURL", ParamUtil.getString(renderRequest, "backURL")
-				).build();
+					"screenNavigationCategoryKey",
+					AccountScreenNavigationEntryConstants.
+						CATEGORY_KEY_DEFINE_PERMISSIONS
+				).buildPortletURL();
 
 				long roleId = ParamUtil.getLong(renderRequest, "roleId");
 

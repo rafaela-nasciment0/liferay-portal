@@ -64,6 +64,8 @@ public class RemoteAppPortlet extends MVCPortlet {
 		Dictionary<String, Object> properties = new Hashtable<>();
 
 		properties.put(
+			"com.liferay.portlet.company", _remoteAppEntry.getCompanyId());
+		properties.put(
 			"com.liferay.portlet.css-class-wrapper", "portlet-remote-app");
 		properties.put(
 			"com.liferay.portlet.display-category", "category.sample");

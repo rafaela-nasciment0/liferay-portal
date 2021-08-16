@@ -19,7 +19,7 @@ import {
 	render,
 	waitForElement,
 } from '@testing-library/react';
-import {PageProvider} from 'dynamic-data-mapping-form-renderer';
+import {PageProvider} from 'data-engine-js-components-web';
 import React from 'react';
 import ReactDOM from 'react-dom';
 
@@ -105,6 +105,7 @@ describe('Field LocalizableText', () => {
 	beforeEach(() => {
 		jest.useFakeTimers();
 		fetch.mockResponse(JSON.stringify({}));
+		Liferay.component = jest.fn();
 	});
 
 	it('is not readOnly', () => {

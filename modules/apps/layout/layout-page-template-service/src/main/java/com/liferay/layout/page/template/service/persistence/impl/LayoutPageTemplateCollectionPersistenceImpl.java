@@ -4401,25 +4401,25 @@ public class LayoutPageTemplateCollectionPersistenceImpl
 		ServiceContext serviceContext =
 			ServiceContextThreadLocal.getServiceContext();
 
-		Date now = new Date();
+		Date date = new Date();
 
 		if (isNew && (layoutPageTemplateCollection.getCreateDate() == null)) {
 			if (serviceContext == null) {
-				layoutPageTemplateCollection.setCreateDate(now);
+				layoutPageTemplateCollection.setCreateDate(date);
 			}
 			else {
 				layoutPageTemplateCollection.setCreateDate(
-					serviceContext.getCreateDate(now));
+					serviceContext.getCreateDate(date));
 			}
 		}
 
 		if (!layoutPageTemplateCollectionModelImpl.hasSetModifiedDate()) {
 			if (serviceContext == null) {
-				layoutPageTemplateCollection.setModifiedDate(now);
+				layoutPageTemplateCollection.setModifiedDate(date);
 			}
 			else {
 				layoutPageTemplateCollection.setModifiedDate(
-					serviceContext.getModifiedDate(now));
+					serviceContext.getModifiedDate(date));
 			}
 		}
 
@@ -4870,7 +4870,8 @@ public class LayoutPageTemplateCollectionPersistenceImpl
 	public Set<String> getCTColumnNames(
 		CTColumnResolutionType ctColumnResolutionType) {
 
-		return _ctColumnNamesMap.get(ctColumnResolutionType);
+		return _ctColumnNamesMap.getOrDefault(
+			ctColumnResolutionType, Collections.emptySet());
 	}
 
 	@Override
@@ -4904,7 +4905,6 @@ public class LayoutPageTemplateCollectionPersistenceImpl
 	static {
 		Set<String> ctControlColumnNames = new HashSet<String>();
 		Set<String> ctIgnoreColumnNames = new HashSet<String>();
-		Set<String> ctMergeColumnNames = new HashSet<String>();
 		Set<String> ctStrictColumnNames = new HashSet<String>();
 
 		ctControlColumnNames.add("mvccVersion");
@@ -4925,7 +4925,6 @@ public class LayoutPageTemplateCollectionPersistenceImpl
 			CTColumnResolutionType.CONTROL, ctControlColumnNames);
 		_ctColumnNamesMap.put(
 			CTColumnResolutionType.IGNORE, ctIgnoreColumnNames);
-		_ctColumnNamesMap.put(CTColumnResolutionType.MERGE, ctMergeColumnNames);
 		_ctColumnNamesMap.put(
 			CTColumnResolutionType.PK,
 			Collections.singleton("layoutPageTemplateCollectionId"));
@@ -5215,6 +5214,13 @@ public class LayoutPageTemplateCollectionPersistenceImpl
 							columnName);
 				}
 
+				if (finderPath.isBaseModelResult() &&
+					(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION ==
+						finderPath.getCacheName())) {
+
+					finderPathColumnBitmask |= _ORDER_BY_COLUMNS_BITMASK;
+				}
+
 				_finderPathColumnBitmasksCache.put(
 					finderPath, finderPathColumnBitmask);
 			}
@@ -5238,7 +5244,7 @@ public class LayoutPageTemplateCollectionPersistenceImpl
 			return LayoutPageTemplateCollectionTable.INSTANCE.getTableName();
 		}
 
-		private Object[] _getValue(
+		private static Object[] _getValue(
 			LayoutPageTemplateCollectionModelImpl
 				layoutPageTemplateCollectionModelImpl,
 			String[] columnNames, boolean original) {
@@ -5263,8 +5269,19 @@ public class LayoutPageTemplateCollectionPersistenceImpl
 			return arguments;
 		}
 
-		private static Map<FinderPath, Long> _finderPathColumnBitmasksCache =
-			new ConcurrentHashMap<>();
+		private static final Map<FinderPath, Long>
+			_finderPathColumnBitmasksCache = new ConcurrentHashMap<>();
+
+		private static final long _ORDER_BY_COLUMNS_BITMASK;
+
+		static {
+			long orderByColumnsBitmask = 0;
+
+			orderByColumnsBitmask |=
+				LayoutPageTemplateCollectionModelImpl.getColumnBitmask("name");
+
+			_ORDER_BY_COLUMNS_BITMASK = orderByColumnsBitmask;
+		}
 
 	}
 

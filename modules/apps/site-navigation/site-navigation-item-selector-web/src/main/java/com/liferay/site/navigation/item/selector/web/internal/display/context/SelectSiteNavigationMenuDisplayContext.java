@@ -325,14 +325,13 @@ public class SelectSiteNavigationMenuDisplayContext {
 			PortletURLUtil.clone(
 				_portletURL,
 				PortalUtil.getLiferayPortletResponse(portletResponse))
-		).setParameter(
-			"backURL",
+		).setBackURL(
 			ParamUtil.getString(
 				_httpServletRequest, "backURL",
 				PortalUtil.getCurrentURL(_httpServletRequest))
 		).setParameter(
 			"siteNavigationMenuId", siteNavigationMenuId
-		).build();
+		).buildPortletURL();
 	}
 
 	private List<BreadcrumbEntry> _getLayoutBreadcrumbEntries()

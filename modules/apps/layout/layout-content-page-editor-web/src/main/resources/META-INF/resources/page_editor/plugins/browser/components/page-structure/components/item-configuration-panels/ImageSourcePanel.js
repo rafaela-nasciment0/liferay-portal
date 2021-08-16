@@ -20,14 +20,18 @@ import {EDITABLE_FRAGMENT_ENTRY_PROCESSOR} from '../../../../../../app/config/co
 import {EDITABLE_TYPES} from '../../../../../../app/config/constants/editableTypes';
 import {VIEWPORT_SIZES} from '../../../../../../app/config/constants/viewportSizes';
 import {config} from '../../../../../../app/config/index';
+import {
+	useDispatch,
+	useSelector,
+} from '../../../../../../app/contexts/StoreContext';
 import selectEditableValueContent from '../../../../../../app/selectors/selectEditableValueContent';
 import selectLanguageId from '../../../../../../app/selectors/selectLanguageId';
 import selectSegmentsExperienceId from '../../../../../../app/selectors/selectSegmentsExperienceId';
-import {useDispatch, useSelector} from '../../../../../../app/store/index';
 import updateEditableValuesThunk from '../../../../../../app/thunks/updateEditableValues';
 import isMapped from '../../../../../../app/utils/editable-value/isMapped';
 import isMappedToCollection from '../../../../../../app/utils/editable-value/isMappedToCollection';
 import isMappedToInfoItem from '../../../../../../app/utils/editable-value/isMappedToInfoItem';
+import {getEditableLocalizedValue} from '../../../../../../app/utils/getEditableLocalizedValue';
 import {setIn} from '../../../../../../app/utils/setIn';
 import {updateIn} from '../../../../../../app/utils/updateIn';
 import {useId} from '../../../../../../app/utils/useId';
@@ -170,12 +174,10 @@ function DirectImagePanel({item}) {
 		editableConfig.imageTitle ||
 		(imageUrl === editableValue.defaultValue ? '' : imageUrl);
 
-	const imageDescription =
-		typeof editableConfig.alt === 'object' && editableConfig.alt
-			? editableConfig.alt[languageId] ||
-			  editableConfig.alt[config.defaultLanguageId] ||
-			  ''
-			: editableConfig.alt || '';
+	const imageDescription = getEditableLocalizedValue(
+		editableConfig.alt,
+		languageId
+	);
 
 	const handleImageChanged = (nextImage) => {
 		let nextEditableValue;
@@ -257,6 +259,7 @@ function DirectImagePanel({item}) {
 	return (
 		<>
 			<ImageSelector
+				fileEntryId={editableContent.fileEntryId}
 				imageTitle={imageTitle}
 				label={Liferay.Language.get('image')}
 				onClearButtonPressed={() => {

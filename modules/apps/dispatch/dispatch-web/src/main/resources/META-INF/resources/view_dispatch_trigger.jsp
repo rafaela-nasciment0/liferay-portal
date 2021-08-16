@@ -21,11 +21,11 @@ DispatchTriggerDisplayContext dispatchTriggerDisplayContext = (DispatchTriggerDi
 
 PortletURL portletURL = PortletURLBuilder.create(
 	dispatchTriggerDisplayContext.getPortletURL()
-).setParameter(
-	"tabs1", "dispatch-trigger"
+).setTabs1(
+	"dispatch-trigger"
 ).setParameter(
 	"searchContainerId", "dispatchTriggers"
-).build();
+).buildPortletURL();
 %>
 
 <clay:navigation-bar
@@ -67,8 +67,8 @@ PortletURL portletURL = PortletURLBuilder.create(
 							).setRedirect(
 								currentURL
 							).setParameter(
-								"dispatchTriggerId", String.valueOf(dispatchTrigger.getDispatchTriggerId())
-							).build()
+								"dispatchTriggerId", dispatchTrigger.getDispatchTriggerId()
+							).buildPortletURL()
 						%>'
 						property="name"
 					/>
@@ -88,9 +88,19 @@ PortletURL portletURL = PortletURLBuilder.create(
 						property="createDate"
 					/>
 
+					<%
+					DispatchTriggerMetadata dispatchTriggerMetadata = dispatchTriggerDisplayContext.getDispatchTriggerMetadata(dispatchTrigger.getDispatchTriggerId());
+
+					String nextFireDateString = LanguageUtil.get(request, "not-scheduled");
+
+					if (dispatchTriggerMetadata.isDispatchTaskExecutorReady() && (dispatchTrigger.getNextFireDate() != null)) {
+						nextFireDateString = fastDateFormat.format(dispatchTrigger.getNextFireDate());
+					}
+					%>
+
 					<liferay-ui:search-container-column-text
 						name="next-fire-date"
-						value="<%= dispatchTriggerDisplayContext.getNextFireDateString(dispatchTrigger.getDispatchTriggerId()) %>"
+						value="<%= nextFireDateString %>"
 					/>
 
 					<liferay-ui:search-container-column-text
@@ -107,10 +117,23 @@ PortletURL portletURL = PortletURLBuilder.create(
 						</h6>
 					</liferay-ui:search-container-column-text>
 
-					<liferay-ui:search-container-column-jsp
-						cssClass="table-cell-ws-nowrap"
-						path="/trigger/buttons.jsp"
-					/>
+					<c:choose>
+						<c:when test="<%= dispatchTriggerMetadata.isDispatchTaskExecutorReady() %>">
+							<liferay-ui:search-container-column-jsp
+								cssClass="table-cell-ws-nowrap"
+								path="/trigger/buttons.jsp"
+							/>
+						</c:when>
+						<c:otherwise>
+							<liferay-ui:search-container-column-text
+								cssClass="important table-cell-ws-nowrap"
+							>
+								<h6 class="background-task-status-row text-warning">
+									<liferay-ui:message key="incomplete" />
+								</h6>
+							</liferay-ui:search-container-column-text>
+						</c:otherwise>
+					</c:choose>
 				</liferay-ui:search-container-row>
 
 				<liferay-ui:search-iterator

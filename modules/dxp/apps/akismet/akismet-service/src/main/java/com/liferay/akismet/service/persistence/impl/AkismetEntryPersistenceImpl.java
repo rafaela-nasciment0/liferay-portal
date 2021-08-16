@@ -32,6 +32,8 @@ import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.BaseModel;
+import com.liferay.portal.kernel.service.ServiceContext;
+import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
 import com.liferay.portal.kernel.service.persistence.impl.BasePersistenceImpl;
 import com.liferay.portal.kernel.util.HashMapDictionary;
 import com.liferay.portal.kernel.util.OrderByComparator;
@@ -1081,6 +1083,21 @@ public class AkismetEntryPersistenceImpl
 		AkismetEntryModelImpl akismetEntryModelImpl =
 			(AkismetEntryModelImpl)akismetEntry;
 
+		if (!akismetEntryModelImpl.hasSetModifiedDate()) {
+			ServiceContext serviceContext =
+				ServiceContextThreadLocal.getServiceContext();
+
+			Date date = new Date();
+
+			if (serviceContext == null) {
+				akismetEntry.setModifiedDate(date);
+			}
+			else {
+				akismetEntry.setModifiedDate(
+					serviceContext.getModifiedDate(date));
+			}
+		}
+
 		Session session = null;
 
 		try {
@@ -1532,7 +1549,7 @@ public class AkismetEntryPersistenceImpl
 			return AkismetEntryTable.INSTANCE.getTableName();
 		}
 
-		private Object[] _getValue(
+		private static Object[] _getValue(
 			AkismetEntryModelImpl akismetEntryModelImpl, String[] columnNames,
 			boolean original) {
 
@@ -1554,8 +1571,8 @@ public class AkismetEntryPersistenceImpl
 			return arguments;
 		}
 
-		private static Map<FinderPath, Long> _finderPathColumnBitmasksCache =
-			new ConcurrentHashMap<>();
+		private static final Map<FinderPath, Long>
+			_finderPathColumnBitmasksCache = new ConcurrentHashMap<>();
 
 	}
 

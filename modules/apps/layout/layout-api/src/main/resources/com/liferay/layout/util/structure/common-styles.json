@@ -1,5 +1,26 @@
 [
 	{
+		"styles": [
+			{
+				"dataType": "string",
+				"defaultValue": "",
+				"dependencies": [
+				],
+				"label": "hide-fragment",
+				"name": "display",
+				"responsive": true,
+				"responsiveTemplate": "d{viewport}{value}",
+				"type": "checkbox",
+				"typeOptions": {
+					"customValues": {
+						"checked": "none",
+						"unchecked": "block"
+					}
+				}
+			}
+		]
+	},
+	{
 		"label": "margin",
 		"styles": [
 			{
@@ -14,6 +35,10 @@
 				"responsiveTemplate": "mt{viewport}{value}",
 				"type": "select",
 				"validValues": [
+					{
+						"label": "default",
+						"value": ""
+					},
 					{
 						"label": "0",
 						"value": "0"
@@ -73,6 +98,10 @@
 				"type": "select",
 				"validValues": [
 					{
+						"label": "default",
+						"value": ""
+					},
+					{
 						"label": "0",
 						"value": "0"
 					},
@@ -131,6 +160,10 @@
 				"type": "select",
 				"validValues": [
 					{
+						"label": "default",
+						"value": ""
+					},
+					{
 						"label": "0",
 						"value": "0"
 					},
@@ -188,6 +221,10 @@
 				"responsiveTemplate": "mr{viewport}{value}",
 				"type": "select",
 				"validValues": [
+					{
+						"label": "default",
+						"value": ""
+					},
 					{
 						"label": "0",
 						"value": "0"
@@ -252,6 +289,10 @@
 				"type": "select",
 				"validValues": [
 					{
+						"label": "default",
+						"value": ""
+					},
+					{
 						"label": "0",
 						"value": "0"
 					},
@@ -309,6 +350,10 @@
 				"responsiveTemplate": "pb{viewport}{value}",
 				"type": "select",
 				"validValues": [
+					{
+						"label": "default",
+						"value": ""
+					},
 					{
 						"label": "0",
 						"value": "0"
@@ -368,6 +413,10 @@
 				"type": "select",
 				"validValues": [
 					{
+						"label": "default",
+						"value": ""
+					},
+					{
 						"label": "0",
 						"value": "0"
 					},
@@ -425,6 +474,10 @@
 				"responsiveTemplate": "pr{viewport}{value}",
 				"type": "select",
 				"validValues": [
+					{
+						"label": "default",
+						"value": ""
+					},
 					{
 						"label": "0",
 						"value": "0"
@@ -820,7 +873,7 @@
 		"styles": [
 			{
 				"dataType": "number",
-				"defaultValue": 100,
+				"defaultValue": "",
 				"dependencies": [
 				],
 				"label": "opacity",

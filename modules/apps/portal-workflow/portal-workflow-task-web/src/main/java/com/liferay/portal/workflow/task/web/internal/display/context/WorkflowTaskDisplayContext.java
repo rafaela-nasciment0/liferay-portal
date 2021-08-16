@@ -214,16 +214,16 @@ public class WorkflowTaskDisplayContext {
 	public String getClearResultsURL() {
 		return PortletURLBuilder.create(
 			_getPortletURL()
-		).setParameter(
-			"keywords", StringPool.BLANK
+		).setKeywords(
+			StringPool.BLANK
 		).buildString();
 	}
 
-	public String getCreateDate(WorkflowLog workflowLog) {
+	public String getCreateDateString(WorkflowLog workflowLog) {
 		return _dateFormatDateTime.format(workflowLog.getCreateDate());
 	}
 
-	public String getCreateDate(WorkflowTask workflowTask) {
+	public String getCreateDateString(WorkflowTask workflowTask) {
 		return _dateFormatDateTime.format(workflowTask.getCreateDate());
 	}
 
@@ -241,7 +241,7 @@ public class WorkflowTaskDisplayContext {
 	public String getDisplayStyle() {
 		if (_displayStyle == null) {
 			_displayStyle = WorkflowTaskPortletUtil.getWorkflowTaskDisplayStyle(
-				_liferayPortletRequest, _getDisplayViews());
+				_liferayPortletRequest, _DISPLAY_VIEWS);
 		}
 
 		return _displayStyle;
@@ -385,10 +385,10 @@ public class WorkflowTaskDisplayContext {
 	public String getSortingURL() {
 		return PortletURLBuilder.createRenderURL(
 			_workflowTaskRequestHelper.getLiferayPortletResponse()
-		).setParameter(
-			"navigation", _getNavigation()
-		).setParameter(
-			"tabs1", _getTabs1()
+		).setNavigation(
+			_getNavigation()
+		).setTabs1(
+			_getTabs1()
 		).setParameter(
 			"orderByCol", _getOrderByCol()
 		).setParameter(
@@ -420,10 +420,10 @@ public class WorkflowTaskDisplayContext {
 			_getEditPortletURL(workflowTask)
 		).setRedirect(
 			themeDisplay.getURLCurrent()
+		).setPortletResource(
+			getPortletResource()
 		).setParameter(
-			"hideDefaultSuccessMessage", Boolean.TRUE.toString()
-		).setParameter(
-			"portletResource", getPortletResource()
+			"hideDefaultSuccessMessage", true
 		).setParameter(
 			"refererPlid", themeDisplay.getPlid()
 		).setParameter(
@@ -458,7 +458,7 @@ public class WorkflowTaskDisplayContext {
 				).setRedirect(
 					getCurrentURL()
 				).setParameter(
-					"hideControls", Boolean.TRUE.toString()
+					"hideControls", true
 				).setPortletMode(
 					PortletMode.VIEW
 				).setWindowState(
@@ -803,10 +803,6 @@ public class WorkflowTaskDisplayContext {
 		return curParam;
 	}
 
-	private String[] _getDisplayViews() {
-		return _DISPLAY_VIEWS;
-	}
-
 	private PortletURL _getEditPortletURL(WorkflowTask workflowTask)
 		throws PortalException {
 
@@ -874,20 +870,22 @@ public class WorkflowTaskDisplayContext {
 	}
 
 	private PortletURL _getPortletURL() {
-		PortletURL portletURL = PortletURLBuilder.createRenderURL(
+		return PortletURLBuilder.createRenderURL(
 			_liferayPortletResponse
-		).setParameter(
-			"tabs1", _getTabs1()
-		).build();
+		).setNavigation(
+			() -> {
+				String navigation = ParamUtil.getString(
+					_httpServletRequest, "navigation");
 
-		String navigation = ParamUtil.getString(
-			_httpServletRequest, "navigation");
+				if (Validator.isNotNull(navigation)) {
+					return _getNavigation();
+				}
 
-		if (Validator.isNotNull(navigation)) {
-			portletURL.setParameter("navigation", _getNavigation());
-		}
-
-		return portletURL;
+				return null;
+			}
+		).setTabs1(
+			_getTabs1()
+		).buildPortletURL();
 	}
 
 	private Role _getRole(long roleId) {

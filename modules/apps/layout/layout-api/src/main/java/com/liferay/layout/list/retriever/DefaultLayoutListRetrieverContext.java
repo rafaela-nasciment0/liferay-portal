@@ -16,7 +16,10 @@ package com.liferay.layout.list.retriever;
 
 import com.liferay.info.pagination.Pagination;
 
+import java.util.Map;
 import java.util.Optional;
+
+import javax.servlet.http.HttpServletRequest;
 
 /**
  * @author Eudaldo Alonso
@@ -24,9 +27,28 @@ import java.util.Optional;
 public class DefaultLayoutListRetrieverContext
 	implements LayoutListRetrieverContext {
 
+	/**
+	 * @deprecated As of Cavanaugh (7.4.x), with no direct replacement
+	 */
+	@Deprecated
 	@Override
 	public Optional<long[][]> getAssetCategoryIdsOptional() {
 		return Optional.ofNullable(_assetCategoryIds);
+	}
+
+	@Override
+	public Optional<Map<String, String[]>> getConfigurationOptional() {
+		return Optional.ofNullable(_configuration);
+	}
+
+	@Override
+	public Optional<Object> getContextObjectOptional() {
+		return Optional.ofNullable(_contextObject);
+	}
+
+	@Override
+	public Optional<HttpServletRequest> getHttpServletRequestOptional() {
+		return Optional.ofNullable(_httpServletRequest);
 	}
 
 	@Override
@@ -35,18 +57,51 @@ public class DefaultLayoutListRetrieverContext
 	}
 
 	@Override
+	public Optional<long[]> getSegmentsEntryIdsOptional() {
+		return Optional.ofNullable(_segmentsEntryIds);
+	}
+
+	/**
+	 * @deprecated As of Cavanaugh (7.4.x), with no direct replacement
+	 */
+	@Deprecated
+	@Override
 	public Optional<long[]> getSegmentsExperienceIdsOptional() {
 		return Optional.ofNullable(_segmentsExperienceIds);
 	}
 
+	/**
+	 * @deprecated As of Cavanaugh (7.4.x), with no direct replacement
+	 */
+	@Deprecated
 	public void setAssetCategoryIds(long[][] assetCategoryIds) {
 		_assetCategoryIds = assetCategoryIds;
+	}
+
+	public void setConfiguration(Map<String, String[]> configuration) {
+		_configuration = configuration;
+	}
+
+	public void setContextObject(Object contextObject) {
+		_contextObject = contextObject;
+	}
+
+	public void setHttpServletRequest(HttpServletRequest httpServletRequest) {
+		_httpServletRequest = httpServletRequest;
 	}
 
 	public void setPagination(Pagination pagination) {
 		_pagination = pagination;
 	}
 
+	public void setSegmentsEntryIds(long[] segmentsEntryIds) {
+		_segmentsEntryIds = segmentsEntryIds;
+	}
+
+	/**
+	 * @deprecated As of Cavanaugh (7.4.x), with no direct replacement
+	 */
+	@Deprecated
 	public void setSegmentsExperienceIds(long[] segmentsExperienceIds) {
 		_segmentsExperienceIds = segmentsExperienceIds;
 	}
@@ -61,7 +116,11 @@ public class DefaultLayoutListRetrieverContext
 	}
 
 	private long[][] _assetCategoryIds;
+	private Map<String, String[]> _configuration;
+	private Object _contextObject;
+	private HttpServletRequest _httpServletRequest;
 	private Pagination _pagination;
+	private long[] _segmentsEntryIds;
 	private long[] _segmentsExperienceIds;
 
 }

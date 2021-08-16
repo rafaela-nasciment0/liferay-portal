@@ -50,6 +50,7 @@ import com.liferay.portal.kernel.portlet.RequestBackedPortletURLFactoryUtil;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
 import com.liferay.portal.kernel.service.permission.GroupPermissionUtil;
+import com.liferay.portal.kernel.theme.PortletDisplay;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.Constants;
@@ -128,79 +129,120 @@ public class JournalArticleActionDropdownItemsProvider {
 
 		boolean singleLanguageSite = _isSingleLanguageSite();
 
-		return DropdownItemListBuilder.add(
-			() -> hasUpdatePermission, _getEditArticleActionUnsafeConsumer()
-		).add(
-			() -> hasUpdatePermission, _getMoveArticleActionUnsafeConsumer()
-		).add(
-			() -> JournalArticlePermission.contains(
-				_themeDisplay.getPermissionChecker(), _article,
-				ActionKeys.PERMISSIONS),
-			_getPermissionsArticleActionUnsafeConsumer()
-		).add(
-			() ->
-				hasViewPermission &&
-				JournalArticlePermission.contains(
-					_themeDisplay.getPermissionChecker(), _article,
-					ActionKeys.SUBSCRIBE),
-			_getSubscribeArticleActionUnsafeConsumer()
-		).add(
-			() -> hasViewPermission && (viewContentArticleAction != null),
-			viewContentArticleAction
-		).add(
-			() -> hasViewPermission && (previewContentArticleAction != null),
-			previewContentArticleAction
-		).add(
-			() ->
-				hasTranslatePermission && hasViewPermission &&
-				!singleLanguageSite,
-			_getTranslateActionUnsafeConsumer()
-		).add(
-			() ->
-				hasTranslatePermission && hasViewPermission &&
-				!singleLanguageSite,
-			_getExportForTranslationActionUnsafeConsumer()
-		).add(
-			() -> hasUpdatePermission && !singleLanguageSite,
-			_getImportTranslationActionUnsafeConsumer()
-		).add(
-			() -> hasUpdatePermission && (availableLanguageIds.length > 1),
-			_getDeleteArticleTranslationsActionUnsafeConsumer()
-		).add(
-			() -> hasViewPermission && hasUpdatePermission,
-			_getViewHistoryArticleActionUnsafeConsumer()
-		).add(
-			_getViewUsagesArticleActionUnsafeConsumer()
-		).add(
-			() -> JournalFolderPermission.contains(
-				_themeDisplay.getPermissionChecker(),
-				_themeDisplay.getScopeGroupId(), _article.getFolderId(),
-				ActionKeys.ADD_ARTICLE),
-			_getCopyArticleActionUnsafeConsumer()
-		).add(
-			() ->
-				JournalArticlePermission.contains(
-					_themeDisplay.getPermissionChecker(), _article,
-					ActionKeys.EXPIRE) &&
-				(_article.hasApprovedVersion() || _article.isScheduled()),
-			_getExpireArticleActionConsumer(_article.getArticleId())
-		).add(
-			() -> hasDeletePermission && trashEnabled,
-			_getMoveToTrashArticleActionUnsafeConsumer()
-		).add(
-			() -> hasDeletePermission && !trashEnabled,
-			_getDeleteArticleAction(_article.getArticleId())
-		).add(
-			() -> {
-				Group group = _themeDisplay.getScopeGroup();
+		return DropdownItemListBuilder.addGroup(
+			dropdownGroupItem -> {
+				dropdownGroupItem.setDropdownItems(
+					DropdownItemListBuilder.add(
+						() -> hasUpdatePermission,
+						_getEditArticleActionUnsafeConsumer()
+					).add(
+						() ->
+							hasViewPermission &&
+							(previewContentArticleAction != null),
+						previewContentArticleAction
+					).add(
+						() -> {
+							Group group = _themeDisplay.getScopeGroup();
 
-				if (_isShowPublishArticleAction() && !group.isLayout()) {
-					return true;
-				}
+							if (_isShowPublishArticleAction() &&
+								!group.isLayout()) {
 
-				return false;
-			},
-			_getPublishToLiveArticleActionUnsafeConsumer()
+								return true;
+							}
+
+							return false;
+						},
+						_getPublishToLiveArticleActionUnsafeConsumer()
+					).add(
+						() ->
+							hasTranslatePermission && hasViewPermission &&
+							!singleLanguageSite,
+						_getTranslateActionUnsafeConsumer()
+					).add(
+						() ->
+							hasViewPermission &&
+							(viewContentArticleAction != null),
+						viewContentArticleAction
+					).build());
+				dropdownGroupItem.setSeparator(true);
+			}
+		).addGroup(
+			dropdownGroupItem -> {
+				dropdownGroupItem.setDropdownItems(
+					DropdownItemListBuilder.add(
+						() ->
+							JournalArticlePermission.contains(
+								_themeDisplay.getPermissionChecker(), _article,
+								ActionKeys.EXPIRE) &&
+							(_article.hasApprovedVersion() ||
+							 _article.isScheduled()),
+						_getExpireArticleActionConsumer(_article.getArticleId())
+					).add(
+						() ->
+							hasViewPermission &&
+							JournalArticlePermission.contains(
+								_themeDisplay.getPermissionChecker(), _article,
+								ActionKeys.SUBSCRIBE),
+						_getSubscribeArticleActionUnsafeConsumer()
+					).add(
+						() -> hasViewPermission && hasUpdatePermission,
+						_getViewHistoryArticleActionUnsafeConsumer()
+					).add(
+						_getViewUsagesArticleActionUnsafeConsumer()
+					).build());
+				dropdownGroupItem.setSeparator(true);
+			}
+		).addGroup(
+			dropdownGroupItem -> {
+				dropdownGroupItem.setDropdownItems(
+					DropdownItemListBuilder.add(
+						() -> JournalFolderPermission.contains(
+							_themeDisplay.getPermissionChecker(),
+							_themeDisplay.getScopeGroupId(),
+							_article.getFolderId(), ActionKeys.ADD_ARTICLE),
+						_getCopyArticleActionUnsafeConsumer()
+					).add(
+						() ->
+							hasTranslatePermission && hasViewPermission &&
+							!singleLanguageSite,
+						_getExportForTranslationActionUnsafeConsumer()
+					).add(
+						() -> hasUpdatePermission && !singleLanguageSite,
+						_getImportTranslationActionUnsafeConsumer()
+					).add(
+						() ->
+							hasUpdatePermission &&
+							(availableLanguageIds.length > 1),
+						_getDeleteArticleTranslationsActionUnsafeConsumer()
+					).add(
+						() -> hasUpdatePermission,
+						_getMoveArticleActionUnsafeConsumer()
+					).build());
+				dropdownGroupItem.setSeparator(true);
+			}
+		).addGroup(
+			dropdownGroupItem -> {
+				dropdownGroupItem.setDropdownItems(
+					DropdownItemListBuilder.add(
+						() -> JournalArticlePermission.contains(
+							_themeDisplay.getPermissionChecker(), _article,
+							ActionKeys.PERMISSIONS),
+						_getPermissionsArticleActionUnsafeConsumer()
+					).build());
+				dropdownGroupItem.setSeparator(true);
+			}
+		).addGroup(
+			dropdownGroupItem -> {
+				dropdownGroupItem.setDropdownItems(
+					DropdownItemListBuilder.add(
+						() -> hasDeletePermission && trashEnabled,
+						_getMoveToTrashArticleActionUnsafeConsumer()
+					).add(
+						() -> hasDeletePermission && !trashEnabled,
+						_getDeleteArticleAction(_article.getArticleId())
+					).build());
+				dropdownGroupItem.setSeparator(true);
+			}
 		).build();
 	}
 
@@ -288,9 +330,9 @@ public class JournalArticleActionDropdownItemsProvider {
 				).setMVCPath(
 					"/select_version.jsp"
 				).setParameter(
-					"groupId", _article.getGroupId()
-				).setParameter(
 					"articleId", _article.getArticleId()
+				).setParameter(
+					"groupId", _article.getGroupId()
 				).setParameter(
 					"sourceVersion", _article.getVersion()
 				).setWindowState(
@@ -305,9 +347,9 @@ public class JournalArticleActionDropdownItemsProvider {
 				).setRedirect(
 					_getRedirect()
 				).setParameter(
-					"groupId", _article.getGroupId()
-				).setParameter(
 					"articleId", _article.getArticleId()
+				).setParameter(
+					"groupId", _article.getGroupId()
 				).buildString());
 			dropdownItem.setLabel(
 				LanguageUtil.get(_httpServletRequest, "compare-to"));
@@ -329,13 +371,13 @@ public class JournalArticleActionDropdownItemsProvider {
 					).setRedirect(
 						_getRedirect()
 					).setParameter(
+						"autoArticleId", true
+					).setParameter(
 						"groupId", _article.getGroupId()
 					).setParameter(
 						"oldArticleId", _article.getArticleId()
 					).setParameter(
 						"version", _article.getVersion()
-					).setParameter(
-						"autoArticleId", true
 					).buildString());
 				dropdownItem.setLabel(
 					LanguageUtil.get(_httpServletRequest, "copy"));
@@ -365,9 +407,9 @@ public class JournalArticleActionDropdownItemsProvider {
 				).setRedirect(
 					redirect
 				).setParameter(
-					"groupId", _article.getGroupId()
-				).setParameter(
 					"articleId", articleId
+				).setParameter(
+					"groupId", _article.getGroupId()
 				).buildString());
 			dropdownItem.setLabel(
 				LanguageUtil.get(_httpServletRequest, "delete"));
@@ -397,8 +439,8 @@ public class JournalArticleActionDropdownItemsProvider {
 					"/select_article_translations.jsp"
 				).setRedirect(
 					_getRedirect()
-				).setParameter(
-					"backURL", _getRedirect()
+				).setBackURL(
+					_getRedirect()
 				).setParameter(
 					"articleId", _article.getArticleId()
 				).setWindowState(
@@ -452,9 +494,9 @@ public class JournalArticleActionDropdownItemsProvider {
 				).setRedirect(
 					redirect
 				).setParameter(
-					"groupId", _article.getGroupId()
-				).setParameter(
 					"articleId", articleId
+				).setParameter(
+					"groupId", _article.getGroupId()
 				).buildString());
 			dropdownItem.setLabel(
 				LanguageUtil.get(_httpServletRequest, "expire"));
@@ -478,10 +520,23 @@ public class JournalArticleActionDropdownItemsProvider {
 
 		return dropdownItem -> {
 			dropdownItem.setHref(
-				_liferayPortletResponse.createRenderURL(), "mvcPath",
-				"/import_translation.jsp", "redirect", _getRedirect(),
-				"referringPortletResource", _getReferringPortletResource(),
-				"articleId", _article.getArticleId());
+				PortletURLBuilder.create(
+					_translationURLProvider.getImportTranslationURL(
+						_article.getGroupId(),
+						PortalUtil.getClassNameId(JournalArticle.class),
+						_article.getResourcePrimKey(),
+						RequestBackedPortletURLFactoryUtil.create(
+							_httpServletRequest))
+				).setRedirect(
+					_getRedirect()
+				).setPortletResource(
+					() -> {
+						PortletDisplay portletDisplay =
+							_themeDisplay.getPortletDisplay();
+
+						return portletDisplay.getId();
+					}
+				).buildPortletURL());
 			dropdownItem.setLabel(
 				LanguageUtil.get(_httpServletRequest, "import-translation"));
 		};
@@ -516,9 +571,9 @@ public class JournalArticleActionDropdownItemsProvider {
 				).setRedirect(
 					_getRedirect()
 				).setParameter(
-					"groupId", _article.getGroupId()
-				).setParameter(
 					"articleId", _article.getArticleId()
+				).setParameter(
+					"groupId", _article.getGroupId()
 				).buildString());
 			dropdownItem.setLabel(
 				LanguageUtil.get(_httpServletRequest, "move-to-recycle-bin"));
@@ -628,12 +683,12 @@ public class JournalArticleActionDropdownItemsProvider {
 					_liferayPortletResponse
 				).setActionName(
 					"/journal/publish_article"
-				).setParameter(
-					"backURL", _getRedirect()
-				).setParameter(
-					"groupId", _article.getGroupId()
+				).setBackURL(
+					_getRedirect()
 				).setParameter(
 					"articleId", _article.getArticleId()
+				).setParameter(
+					"groupId", _article.getGroupId()
 				).buildString());
 			dropdownItem.setLabel(
 				LanguageUtil.get(_httpServletRequest, "publish-to-live"));
@@ -709,14 +764,18 @@ public class JournalArticleActionDropdownItemsProvider {
 		_getTranslateActionUnsafeConsumer() {
 
 		return dropdownItem -> {
+			PortletDisplay portletDisplay = _themeDisplay.getPortletDisplay();
+
 			dropdownItem.setHref(
 				_translationURLProvider.getTranslateURL(
+					_themeDisplay.getScopeGroupId(),
 					PortalUtil.getClassNameId(JournalArticle.class.getName()),
 					_article.getResourcePrimKey(),
 					RequestBackedPortletURLFactoryUtil.create(
 						_httpServletRequest)),
-				"redirect", _getRedirect(), "referringPortletResource",
-				_getReferringPortletResource());
+				"redirect", _getRedirect(), "portletResource",
+				portletDisplay.getId());
+
 			dropdownItem.setLabel(
 				LanguageUtil.get(_httpServletRequest, "translate"));
 		};
@@ -802,9 +861,10 @@ public class JournalArticleActionDropdownItemsProvider {
 			_themeDisplay.getPermissionChecker();
 		long scopeGroupId = _themeDisplay.getScopeGroupId();
 
-		for (String languageId : _article.getAvailableLanguageIds()) {
+		for (Locale locale : LanguageUtil.getAvailableLocales(scopeGroupId)) {
 			if (_translationPermission.contains(
-					permissionChecker, scopeGroupId, languageId,
+					permissionChecker, scopeGroupId,
+					LanguageUtil.getLanguageId(locale),
 					TranslationActionKeys.TRANSLATE)) {
 
 				return true;
@@ -870,11 +930,7 @@ public class JournalArticleActionDropdownItemsProvider {
 	}
 
 	private boolean _isShowViewContentURL() throws Exception {
-		if (_article == null) {
-			return false;
-		}
-
-		if (!_article.hasApprovedVersion()) {
+		if ((_article == null) || !_article.hasApprovedVersion()) {
 			return false;
 		}
 
@@ -891,12 +947,9 @@ public class JournalArticleActionDropdownItemsProvider {
 			JournalArticleAssetRenderer.getClassPK(curArticle));
 
 		if (AssetDisplayPageUtil.hasAssetDisplayPage(
-				_themeDisplay.getScopeGroupId(), assetEntry)) {
+				_themeDisplay.getScopeGroupId(), assetEntry) ||
+			Validator.isNotNull(_article.getLayoutUuid())) {
 
-			return true;
-		}
-
-		if (Validator.isNotNull(_article.getLayoutUuid())) {
 			return true;
 		}
 

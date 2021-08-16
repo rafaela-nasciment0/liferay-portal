@@ -4,7 +4,7 @@
 <service-builder auto-namespace-tables="false" mvcc-enabled="false" package-path="com.liferay.commerce">
 	<author>Alessio Antonio Rendina</author>
 	<namespace>Commerce</namespace>
-	<entity external-reference-code="true" local-service="true" name="CommerceAddress" remote-service="true">
+	<entity external-reference-code="true" local-service="true" name="CommerceAddress" persistence="false" remote-service="true">
 
 		<!-- PK fields -->
 
@@ -82,12 +82,13 @@
 			<finder-column name="classPK" />
 			<finder-column name="defaultShipping" />
 		</finder>
-		<finder name="C_C_C_C" return-type="Collection">
+		<finder name="C_C_C_T" return-type="Collection">
 			<finder-column name="companyId" />
 			<finder-column name="classNameId" />
 			<finder-column name="classPK" />
 			<finder-column name="type" />
 		</finder>
+		<reference entity="Address" package-path="com.liferay.portal" />
 	</entity>
 	<entity local-service="true" name="CommerceAddressRestriction" remote-service="true">
 
@@ -398,7 +399,7 @@
 		<finder name="ParentCommerceOrderItemId" return-type="Collection">
 			<finder-column name="parentCommerceOrderItemId" />
 		</finder>
-		<finder name="C_I" return-type="Collection">
+		<finder name="C_CPI" return-type="Collection">
 			<finder-column name="commerceOrderId" />
 			<finder-column name="CPInstanceId" />
 		</finder>

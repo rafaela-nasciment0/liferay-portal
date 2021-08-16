@@ -27,6 +27,7 @@ import com.liferay.headless.delivery.client.dto.v1_0.Rating;
 import com.liferay.headless.delivery.client.http.HttpInvoker;
 import com.liferay.headless.delivery.client.pagination.Page;
 import com.liferay.headless.delivery.client.pagination.Pagination;
+import com.liferay.headless.delivery.client.permission.Permission;
 import com.liferay.headless.delivery.client.resource.v1_0.MessageBoardThreadResource;
 import com.liferay.headless.delivery.client.serdes.v1_0.MessageBoardThreadSerDes;
 import com.liferay.petra.function.UnsafeTriConsumer;
@@ -41,9 +42,11 @@ import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Company;
 import com.liferay.portal.kernel.model.Group;
+import com.liferay.portal.kernel.model.role.RoleConstants;
 import com.liferay.portal.kernel.service.CompanyLocalServiceUtil;
 import com.liferay.portal.kernel.test.util.GroupTestUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
+import com.liferay.portal.kernel.test.util.RoleTestUtil;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.DateFormatFactoryUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
@@ -196,6 +199,7 @@ public abstract class BaseMessageBoardThreadResourceTestCase {
 		messageBoardThread.setEncodingFormat(regex);
 		messageBoardThread.setFriendlyUrlPath(regex);
 		messageBoardThread.setHeadline(regex);
+		messageBoardThread.setStatus(regex);
 		messageBoardThread.setThreadType(regex);
 
 		String json = MessageBoardThreadSerDes.toJSON(messageBoardThread);
@@ -208,6 +212,7 @@ public abstract class BaseMessageBoardThreadResourceTestCase {
 		Assert.assertEquals(regex, messageBoardThread.getEncodingFormat());
 		Assert.assertEquals(regex, messageBoardThread.getFriendlyUrlPath());
 		Assert.assertEquals(regex, messageBoardThread.getHeadline());
+		Assert.assertEquals(regex, messageBoardThread.getStatus());
 		Assert.assertEquals(regex, messageBoardThread.getThreadType());
 	}
 
@@ -1045,6 +1050,72 @@ public abstract class BaseMessageBoardThreadResourceTestCase {
 	}
 
 	@Test
+	public void testGetMessageBoardThreadPermissionsPage() throws Exception {
+		MessageBoardThread postMessageBoardThread =
+			testGetMessageBoardThreadPermissionsPage_addMessageBoardThread();
+
+		Page<Permission> page =
+			messageBoardThreadResource.getMessageBoardThreadPermissionsPage(
+				postMessageBoardThread.getId(), RoleConstants.GUEST);
+
+		Assert.assertNotNull(page);
+	}
+
+	protected MessageBoardThread
+			testGetMessageBoardThreadPermissionsPage_addMessageBoardThread()
+		throws Exception {
+
+		return testPostSiteMessageBoardThread_addMessageBoardThread(
+			randomMessageBoardThread());
+	}
+
+	@Test
+	public void testPutMessageBoardThreadPermission() throws Exception {
+		@SuppressWarnings("PMD.UnusedLocalVariable")
+		MessageBoardThread messageBoardThread =
+			testPutMessageBoardThreadPermission_addMessageBoardThread();
+
+		com.liferay.portal.kernel.model.Role role = RoleTestUtil.addRole(
+			RoleConstants.TYPE_REGULAR);
+
+		assertHttpResponseStatusCode(
+			200,
+			messageBoardThreadResource.
+				putMessageBoardThreadPermissionHttpResponse(
+					messageBoardThread.getId(),
+					new Permission[] {
+						new Permission() {
+							{
+								setActionIds(new String[] {"VIEW"});
+								setRoleName(role.getName());
+							}
+						}
+					}));
+
+		assertHttpResponseStatusCode(
+			404,
+			messageBoardThreadResource.
+				putMessageBoardThreadPermissionHttpResponse(
+					0L,
+					new Permission[] {
+						new Permission() {
+							{
+								setActionIds(new String[] {"-"});
+								setRoleName("-");
+							}
+						}
+					}));
+	}
+
+	protected MessageBoardThread
+			testPutMessageBoardThreadPermission_addMessageBoardThread()
+		throws Exception {
+
+		return messageBoardThreadResource.postSiteMessageBoardThread(
+			testGroup.getGroupId(), randomMessageBoardThread());
+	}
+
+	@Test
 	public void testPutMessageBoardThreadSubscribe() throws Exception {
 		@SuppressWarnings("PMD.UnusedLocalVariable")
 		MessageBoardThread messageBoardThread =
@@ -1587,6 +1658,71 @@ public abstract class BaseMessageBoardThreadResourceTestCase {
 				"Object/code"));
 	}
 
+	@Test
+	public void testGetSiteMessageBoardThreadPermissionsPage()
+		throws Exception {
+
+		Page<Permission> page =
+			messageBoardThreadResource.getSiteMessageBoardThreadPermissionsPage(
+				testGroup.getGroupId(), RoleConstants.GUEST);
+
+		Assert.assertNotNull(page);
+	}
+
+	protected MessageBoardThread
+			testGetSiteMessageBoardThreadPermissionsPage_addMessageBoardThread()
+		throws Exception {
+
+		return testPostSiteMessageBoardThread_addMessageBoardThread(
+			randomMessageBoardThread());
+	}
+
+	@Test
+	public void testPutSiteMessageBoardThreadPermission() throws Exception {
+		@SuppressWarnings("PMD.UnusedLocalVariable")
+		MessageBoardThread messageBoardThread =
+			testPutSiteMessageBoardThreadPermission_addMessageBoardThread();
+
+		com.liferay.portal.kernel.model.Role role = RoleTestUtil.addRole(
+			RoleConstants.TYPE_REGULAR);
+
+		assertHttpResponseStatusCode(
+			200,
+			messageBoardThreadResource.
+				putSiteMessageBoardThreadPermissionHttpResponse(
+					messageBoardThread.getSiteId(),
+					new Permission[] {
+						new Permission() {
+							{
+								setActionIds(new String[] {"PERMISSIONS"});
+								setRoleName(role.getName());
+							}
+						}
+					}));
+
+		assertHttpResponseStatusCode(
+			404,
+			messageBoardThreadResource.
+				putSiteMessageBoardThreadPermissionHttpResponse(
+					messageBoardThread.getSiteId(),
+					new Permission[] {
+						new Permission() {
+							{
+								setActionIds(new String[] {"-"});
+								setRoleName("-");
+							}
+						}
+					}));
+	}
+
+	protected MessageBoardThread
+			testPutSiteMessageBoardThreadPermission_addMessageBoardThread()
+		throws Exception {
+
+		return messageBoardThreadResource.postSiteMessageBoardThread(
+			testGroup.getGroupId(), randomMessageBoardThread());
+	}
+
 	@Rule
 	public SearchTestRule searchTestRule = new SearchTestRule();
 
@@ -1660,10 +1796,7 @@ public abstract class BaseMessageBoardThreadResourceTestCase {
 
 				Class<?> clazz = object.getClass();
 
-				for (Field field :
-						ReflectionUtil.getDeclaredFields(
-							clazz.getSuperclass())) {
-
+				for (Field field : getDeclaredFields(clazz.getSuperclass())) {
 					arraySB.append(field.getName());
 					arraySB.append(": ");
 
@@ -1709,9 +1842,7 @@ public abstract class BaseMessageBoardThreadResourceTestCase {
 
 		StringBuilder sb = new StringBuilder("{");
 
-		for (Field field :
-				ReflectionUtil.getDeclaredFields(MessageBoardThread.class)) {
-
+		for (Field field : getDeclaredFields(MessageBoardThread.class)) {
 			if (!ArrayUtil.contains(
 					getAdditionalAssertFieldNames(), field.getName())) {
 
@@ -2002,6 +2133,14 @@ public abstract class BaseMessageBoardThreadResourceTestCase {
 				continue;
 			}
 
+			if (Objects.equals("status", additionalAssertFieldName)) {
+				if (messageBoardThread.getStatus() == null) {
+					valid = false;
+				}
+
+				continue;
+			}
+
 			if (Objects.equals("subscribed", additionalAssertFieldName)) {
 				if (messageBoardThread.getSubscribed() == null) {
 					valid = false;
@@ -2160,7 +2299,7 @@ public abstract class BaseMessageBoardThreadResourceTestCase {
 		graphQLFields.add(new GraphQLField("siteId"));
 
 		for (Field field :
-				ReflectionUtil.getDeclaredFields(
+				getDeclaredFields(
 					com.liferay.headless.delivery.dto.v1_0.MessageBoardThread.
 						class)) {
 
@@ -2195,7 +2334,7 @@ public abstract class BaseMessageBoardThreadResourceTestCase {
 				}
 
 				List<GraphQLField> childrenGraphQLFields = getGraphQLFields(
-					ReflectionUtil.getDeclaredFields(clazz));
+					getDeclaredFields(clazz));
 
 				graphQLFields.add(
 					new GraphQLField(field.getName(), childrenGraphQLFields));
@@ -2471,6 +2610,17 @@ public abstract class BaseMessageBoardThreadResourceTestCase {
 				continue;
 			}
 
+			if (Objects.equals("status", additionalAssertFieldName)) {
+				if (!Objects.deepEquals(
+						messageBoardThread1.getStatus(),
+						messageBoardThread2.getStatus())) {
+
+					return false;
+				}
+
+				continue;
+			}
+
 			if (Objects.equals("subscribed", additionalAssertFieldName)) {
 				if (!Objects.deepEquals(
 						messageBoardThread1.getSubscribed(),
@@ -2667,6 +2817,17 @@ public abstract class BaseMessageBoardThreadResourceTestCase {
 		}
 
 		return true;
+	}
+
+	protected Field[] getDeclaredFields(Class clazz) throws Exception {
+		Stream<Field> stream = Stream.of(
+			ReflectionUtil.getDeclaredFields(clazz));
+
+		return stream.filter(
+			field -> !field.isSynthetic()
+		).toArray(
+			Field[]::new
+		);
 	}
 
 	protected java.util.Collection<EntityField> getEntityFields()
@@ -2900,6 +3061,14 @@ public abstract class BaseMessageBoardThreadResourceTestCase {
 				"Invalid entity field " + entityFieldName);
 		}
 
+		if (entityFieldName.equals("status")) {
+			sb.append("'");
+			sb.append(String.valueOf(messageBoardThread.getStatus()));
+			sb.append("'");
+
+			return sb.toString();
+		}
+
 		if (entityFieldName.equals("subscribed")) {
 			throw new IllegalArgumentException(
 				"Invalid entity field " + entityFieldName);
@@ -2996,6 +3165,7 @@ public abstract class BaseMessageBoardThreadResourceTestCase {
 				seen = RandomTestUtil.randomBoolean();
 				showAsQuestion = RandomTestUtil.randomBoolean();
 				siteId = testGroup.getGroupId();
+				status = StringUtil.toLowerCase(RandomTestUtil.randomString());
 				subscribed = RandomTestUtil.randomBoolean();
 				threadType = StringUtil.toLowerCase(
 					RandomTestUtil.randomString());

@@ -81,7 +81,7 @@ public class CPOptionLocalServiceImpl extends CPOptionLocalServiceBaseImpl {
 			externalReferenceCode = null;
 		}
 
-		key = FriendlyURLNormalizerUtil.normalize(key);
+		key = FriendlyURLNormalizerUtil.normalizeWithPeriodsAndSlashes(key);
 
 		validateCPOptionKey(0, user.getCompanyId(), key);
 
@@ -109,6 +109,35 @@ public class CPOptionLocalServiceImpl extends CPOptionLocalServiceBaseImpl {
 		resourceLocalService.addModelResources(cpOption, serviceContext);
 
 		return cpOption;
+	}
+
+	@Override
+	public CPOption addOrUpdateCPOption(
+			String externalReferenceCode, long userId,
+			Map<Locale, String> nameMap, Map<Locale, String> descriptionMap,
+			String ddmFormFieldTypeName, boolean facetable, boolean required,
+			boolean skuContributor, String key, ServiceContext serviceContext)
+		throws PortalException {
+
+		if (Validator.isBlank(externalReferenceCode)) {
+			externalReferenceCode = null;
+		}
+		else {
+			CPOption cpOption = cpOptionPersistence.fetchByC_ERC(
+				serviceContext.getCompanyId(), externalReferenceCode);
+
+			if (cpOption != null) {
+				return updateCPOption(
+					cpOption.getCPOptionId(), nameMap, descriptionMap,
+					ddmFormFieldTypeName, facetable, required, skuContributor,
+					key, serviceContext);
+			}
+		}
+
+		return addCPOption(
+			externalReferenceCode, userId, nameMap, descriptionMap,
+			ddmFormFieldTypeName, facetable, required, skuContributor, key,
+			serviceContext);
 	}
 
 	@Indexable(type = IndexableType.DELETE)
@@ -218,7 +247,7 @@ public class CPOptionLocalServiceImpl extends CPOptionLocalServiceBaseImpl {
 
 		CPOption cpOption = cpOptionPersistence.findByPrimaryKey(cpOptionId);
 
-		key = FriendlyURLNormalizerUtil.normalize(key);
+		key = FriendlyURLNormalizerUtil.normalizeWithPeriodsAndSlashes(key);
 
 		validateCPOptionKey(
 			cpOption.getCPOptionId(), cpOption.getCompanyId(), key);
@@ -248,41 +277,12 @@ public class CPOptionLocalServiceImpl extends CPOptionLocalServiceBaseImpl {
 		return cpOptionPersistence.update(cpOption);
 	}
 
-	@Override
-	public CPOption upsertCPOption(
-			String externalReferenceCode, long userId,
-			Map<Locale, String> nameMap, Map<Locale, String> descriptionMap,
-			String ddmFormFieldTypeName, boolean facetable, boolean required,
-			boolean skuContributor, String key, ServiceContext serviceContext)
-		throws PortalException {
-
-		if (Validator.isBlank(externalReferenceCode)) {
-			externalReferenceCode = null;
-		}
-		else {
-			CPOption cpOption = cpOptionPersistence.fetchByC_ERC(
-				serviceContext.getCompanyId(), externalReferenceCode);
-
-			if (cpOption != null) {
-				return updateCPOption(
-					cpOption.getCPOptionId(), nameMap, descriptionMap,
-					ddmFormFieldTypeName, facetable, required, skuContributor,
-					key, serviceContext);
-			}
-		}
-
-		return addCPOption(
-			externalReferenceCode, userId, nameMap, descriptionMap,
-			ddmFormFieldTypeName, facetable, required, skuContributor, key,
-			serviceContext);
-	}
-
 	protected SearchContext buildSearchContext(
 		long companyId, String keywords, int start, int end, Sort sort) {
 
 		SearchContext searchContext = new SearchContext();
 
-		Map<String, Serializable> attributes =
+		searchContext.setAttributes(
 			HashMapBuilder.<String, Serializable>put(
 				CPField.KEY, keywords
 			).put(
@@ -298,9 +298,7 @@ public class CPOptionLocalServiceImpl extends CPOptionLocalServiceBaseImpl {
 				LinkedHashMapBuilder.<String, Object>put(
 					"keywords", keywords
 				).build()
-			).build();
-
-		searchContext.setAttributes(attributes);
+			).build());
 
 		searchContext.setCompanyId(companyId);
 		searchContext.setEnd(end);

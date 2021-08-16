@@ -9,7 +9,7 @@
  * distribution rights of the Software.
  */
 
-import {cleanup, fireEvent, render} from '@testing-library/react';
+import {act, cleanup, fireEvent, render} from '@testing-library/react';
 import React, {useState} from 'react';
 
 import {InstanceListContext} from '../../../../../../src/main/resources/META-INF/resources/js/components/instance-list-page/InstanceListPageProvider.es';
@@ -49,6 +49,8 @@ const ContainerMock = ({children}) => {
 	);
 };
 
+const setAssigneeId = jest.fn();
+
 describe('The SingleReassignModalTable component should', () => {
 	afterEach(cleanup);
 
@@ -79,9 +81,7 @@ describe('The SingleReassignModalTable component should', () => {
 		taskNames: ['Update'],
 	};
 
-	const setAssigneeId = jest.fn();
-
-	test('Render with statuses Completed and Overdue', () => {
+	it('Render with statuses Completed and Overdue', () => {
 		const {container} = render(
 			<SingleReassignModal.Table
 				data={data}
@@ -99,7 +99,7 @@ describe('The SingleReassignModalTable component should', () => {
 		expect(singleReassignModalTable.innerHTML).not.toBeNull();
 	});
 
-	test('Render with no taskName', () => {
+	it('Render with no taskName', () => {
 		const {container} = render(
 			<SingleReassignModal.Table
 				data={data}
@@ -117,7 +117,7 @@ describe('The SingleReassignModalTable component should', () => {
 		expect(singleReassignModalTable.innerHTML).not.toBeNull();
 	});
 
-	test('Render with no data', () => {
+	it('Render with no data', () => {
 		const {container} = render(
 			<SingleReassignModal.Table
 				data={{}}
@@ -135,7 +135,7 @@ describe('The SingleReassignModalTable component should', () => {
 		expect(singleReassignModalTable.innerHTML).not.toBeNull();
 	});
 
-	test('Render with taskNames', () => {
+	it('Render with taskNames', () => {
 		const data = {
 			items: [
 				{
@@ -183,7 +183,7 @@ describe('The AssigneeInput component should', () => {
 			.mockResolvedValue({data: {items: [{id: 1, name: 'Test'}]}}),
 	};
 
-	test('Render change assignee input text to Test', () => {
+	it('Render change assignee input text to Test', async () => {
 		cleanup();
 
 		render(
@@ -192,6 +192,7 @@ describe('The AssigneeInput component should', () => {
 					reassignedTasks={{
 						tasks: [{assigneeId: 20124, id: 39347}],
 					}}
+					setAssigneeId={setAssigneeId}
 					setReassignedTasks={setReassignMock}
 					taskId={39347}
 				/>
@@ -202,10 +203,14 @@ describe('The AssigneeInput component should', () => {
 
 		fireEvent.change(autocompleteInput, {target: {value: 'Test'}});
 
+		await act(async () => {
+			jest.runAllTimers();
+		});
+
 		expect(autocompleteInput.value).toBe('Test');
 	});
 
-	test('Change its text to "Test"', () => {
+	it('Change its text to "Test"', async () => {
 		cleanup();
 
 		const clientMock = {
@@ -226,16 +231,21 @@ describe('The AssigneeInput component should', () => {
 			</MockRouter>
 		);
 
+		await act(async () => {
+			jest.runAllTimers();
+		});
+
 		expect(clientMock.get).toHaveBeenCalled();
 	});
 
-	test('Select a new assignee', () => {
+	it('Select a new assignee', async () => {
 		cleanup();
 
 		render(
 			<MockRouter client={clientMock}>
 				<SingleReassignModal.Table.AssigneeInput
 					reassignedTasks={{tasks: []}}
+					setAssigneeId={setAssigneeId}
 					setReassignedTasks={setReassignMock}
 					taskId={39347}
 				/>
@@ -245,6 +255,10 @@ describe('The AssigneeInput component should', () => {
 		const autocompleteInput = document.querySelector('input.form-control');
 
 		fireEvent.change(autocompleteInput, {target: {value: 'Test'}});
+
+		await act(async () => {
+			jest.runAllTimers();
+		});
 
 		fireEvent.blur(autocompleteInput);
 
@@ -253,13 +267,14 @@ describe('The AssigneeInput component should', () => {
 		fireEvent.click(dropDownListItem);
 	});
 
-	test('Select a new assignee with input already filled', () => {
+	it('Select a new assignee with input already filled', async () => {
 		cleanup();
 
 		render(
 			<MockRouter client={clientMock}>
 				<SingleReassignModal.Table.AssigneeInput
 					reassignedTasks={{tasks: [{assigneeId: 20124, id: 39347}]}}
+					setAssigneeId={setAssigneeId}
 					setReassignedTasks={setReassignMock}
 					taskId={39347}
 				/>
@@ -269,6 +284,10 @@ describe('The AssigneeInput component should', () => {
 		const autocompleteInput = document.querySelector('input.form-control');
 
 		fireEvent.change(autocompleteInput, {target: {value: 'Test'}});
+
+		await act(async () => {
+			jest.runAllTimers();
+		});
 
 		fireEvent.blur(autocompleteInput);
 

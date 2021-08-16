@@ -1554,24 +1554,25 @@ public class KaleoConditionPersistenceImpl
 		ServiceContext serviceContext =
 			ServiceContextThreadLocal.getServiceContext();
 
-		Date now = new Date();
+		Date date = new Date();
 
 		if (isNew && (kaleoCondition.getCreateDate() == null)) {
 			if (serviceContext == null) {
-				kaleoCondition.setCreateDate(now);
+				kaleoCondition.setCreateDate(date);
 			}
 			else {
-				kaleoCondition.setCreateDate(serviceContext.getCreateDate(now));
+				kaleoCondition.setCreateDate(
+					serviceContext.getCreateDate(date));
 			}
 		}
 
 		if (!kaleoConditionModelImpl.hasSetModifiedDate()) {
 			if (serviceContext == null) {
-				kaleoCondition.setModifiedDate(now);
+				kaleoCondition.setModifiedDate(date);
 			}
 			else {
 				kaleoCondition.setModifiedDate(
-					serviceContext.getModifiedDate(now));
+					serviceContext.getModifiedDate(date));
 			}
 		}
 
@@ -2044,6 +2045,13 @@ public class KaleoConditionPersistenceImpl
 						kaleoConditionModelImpl.getColumnBitmask(columnName);
 				}
 
+				if (finderPath.isBaseModelResult() &&
+					(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION ==
+						finderPath.getCacheName())) {
+
+					finderPathColumnBitmask |= _ORDER_BY_COLUMNS_BITMASK;
+				}
+
 				_finderPathColumnBitmasksCache.put(
 					finderPath, finderPathColumnBitmask);
 			}
@@ -2066,7 +2074,7 @@ public class KaleoConditionPersistenceImpl
 			return KaleoConditionTable.INSTANCE.getTableName();
 		}
 
-		private Object[] _getValue(
+		private static Object[] _getValue(
 			KaleoConditionModelImpl kaleoConditionModelImpl,
 			String[] columnNames, boolean original) {
 
@@ -2089,8 +2097,16 @@ public class KaleoConditionPersistenceImpl
 			return arguments;
 		}
 
-		private static Map<FinderPath, Long> _finderPathColumnBitmasksCache =
-			new ConcurrentHashMap<>();
+		private static final Map<FinderPath, Long>
+			_finderPathColumnBitmasksCache = new ConcurrentHashMap<>();
+
+		private static final long _ORDER_BY_COLUMNS_BITMASK;
+
+		static {
+			long orderByColumnsBitmask = 0;
+
+			_ORDER_BY_COLUMNS_BITMASK = orderByColumnsBitmask;
+		}
 
 	}
 

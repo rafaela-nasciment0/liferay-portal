@@ -102,8 +102,8 @@ public class Query {
 	@GraphQLField(description = "Retrieves a display page template of a site")
 	public DisplayPageTemplate displayPageTemplate(
 			@GraphQLName("siteKey") @NotEmpty String siteKey,
-			@GraphQLName("displayPageTemplateKey")
-				String displayPageTemplateKey)
+			@GraphQLName("displayPageTemplateKey") String
+				displayPageTemplateKey)
 		throws Exception {
 
 		return _applyComponentServiceObjects(
@@ -146,6 +146,26 @@ public class Query {
 					Pagination.of(page, pageSize),
 					_sortsBiFunction.apply(
 						structuredContentResource, sortsString))));
+	}
+
+	/**
+	 * Invoke this method with the command line:
+	 *
+	 * curl -H 'Content-Type: text/plain; charset=utf-8' -X 'POST' 'http://localhost:8080/o/graphql' -d $'{"query": "query {structuredContentByVersion(structuredContentId: ___, version: ___){}}"}' -u 'test@liferay.com:test'
+	 */
+	@GraphQLField(description = "Retrieves a version of a structured content")
+	public com.liferay.headless.delivery.dto.v1_0.StructuredContent
+			structuredContentByVersion(
+				@GraphQLName("structuredContentId") Long structuredContentId,
+				@GraphQLName("version") Double version)
+		throws Exception {
+
+		return _applyComponentServiceObjects(
+			_structuredContentResourceComponentServiceObjects,
+			this::_populateResourceContext,
+			structuredContentResource ->
+				structuredContentResource.getStructuredContentByVersion(
+					structuredContentId, version));
 	}
 
 	/**

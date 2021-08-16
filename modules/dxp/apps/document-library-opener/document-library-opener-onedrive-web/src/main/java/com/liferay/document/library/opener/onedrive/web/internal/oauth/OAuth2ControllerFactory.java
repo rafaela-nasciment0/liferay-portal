@@ -27,10 +27,10 @@ import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.portlet.JSONPortletResponseUtil;
 import com.liferay.portal.kernel.portlet.LiferayPortletURL;
 import com.liferay.portal.kernel.portlet.PortletURLFactory;
-import com.liferay.portal.kernel.resource.bundle.ResourceBundleLoader;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.PwdGenerator;
+import com.liferay.portal.kernel.util.ResourceBundleUtil;
 import com.liferay.portal.kernel.util.WebKeys;
 
 import java.io.IOException;
@@ -112,15 +112,15 @@ public class OAuth2ControllerFactory {
 				portletRequest, _portal.getPortletId(portletRequest),
 				PortletRequest.RENDER_PHASE)
 		).setParameter(
-			"repositoryId", ParamUtil.getString(portletRequest, "repositoryId")
-		).setParameter(
 			"folderId", ParamUtil.getString(portletRequest, "folderId")
+		).setParameter(
+			"repositoryId", ParamUtil.getString(portletRequest, "repositoryId")
 		).buildString();
 	}
 
 	private String _translate(Locale locale, String key) {
-		ResourceBundle resourceBundle =
-			_resourceBundleLoader.loadResourceBundle(locale);
+		ResourceBundle resourceBundle = ResourceBundleUtil.getBundle(
+			locale, getClass());
 
 		return _language.get(resourceBundle, key);
 	}
@@ -139,11 +139,6 @@ public class OAuth2ControllerFactory {
 
 	@Reference
 	private PortletURLFactory _portletURLFactory;
-
-	@Reference(
-		target = "(bundle.symbolic.name=com.liferay.document.library.opener.onedrive.web)"
-	)
-	private ResourceBundleLoader _resourceBundleLoader;
 
 	private static class OAuth2Result {
 

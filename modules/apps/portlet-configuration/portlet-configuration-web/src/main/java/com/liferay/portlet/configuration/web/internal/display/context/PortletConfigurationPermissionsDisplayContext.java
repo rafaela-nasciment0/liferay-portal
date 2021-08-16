@@ -174,8 +174,8 @@ public class PortletConfigurationPermissionsDisplayContext {
 	public String getClearResultsURL() throws Exception {
 		return PortletURLBuilder.create(
 			getIteratorURL()
-		).setParameter(
-			"keywords", StringPool.BLANK
+		).setKeywords(
+			StringPool.BLANK
 		).buildString();
 	}
 
@@ -245,23 +245,23 @@ public class PortletConfigurationPermissionsDisplayContext {
 				PortletRequest.RENDER_PHASE)
 		).setMVCPath(
 			"/edit_permissions.jsp"
-		).setParameter(
-			"returnToFullPageURL", _getReturnToFullPageURL()
-		).setParameter(
-			"portletConfiguration", Boolean.TRUE.toString()
-		).setParameter(
-			"portletResource", _getPortletResource()
+		).setPortletResource(
+			_getPortletResource()
 		).setParameter(
 			"modelResource", getModelResource()
+		).setParameter(
+			"portletConfiguration", true
 		).setParameter(
 			"resourceGroupId", _getResourceGroupId()
 		).setParameter(
 			"resourcePrimKey", getResourcePrimKey()
 		).setParameter(
+			"returnToFullPageURL", _getReturnToFullPageURL()
+		).setParameter(
 			"roleTypes", _getRoleTypesParam()
 		).setWindowState(
 			LiferayWindowState.POP_UP
-		).build();
+		).buildPortletURL();
 	}
 
 	public String getModelResource() {
@@ -636,10 +636,12 @@ public class PortletConfigurationPermissionsDisplayContext {
 				_httpServletRequest,
 				PortletConfigurationPortletKeys.PORTLET_CONFIGURATION,
 				PortletRequest.ACTION_PHASE)
-		).setMVCPath(
-			"/edit_permissions.jsp"
 		).setActionName(
 			"updateRolePermissions"
+		).setMVCPath(
+			"/edit_permissions.jsp"
+		).setPortletResource(
+			_getPortletResource()
 		).setParameter(
 			"cur",
 			ParamUtil.getInteger(
@@ -649,24 +651,22 @@ public class PortletConfigurationPermissionsDisplayContext {
 			ParamUtil.getInteger(
 				_httpServletRequest, SearchContainer.DEFAULT_DELTA_PARAM)
 		).setParameter(
-			"returnToFullPageURL", _getReturnToFullPageURL()
-		).setParameter(
-			"portletConfiguration", Boolean.TRUE.toString()
-		).setParameter(
-			"portletResource", _getPortletResource()
-		).setParameter(
 			"modelResource", getModelResource()
 		).setParameter(
 			"modelResourceDescription", getModelResourceDescription()
+		).setParameter(
+			"portletConfiguration", true
 		).setParameter(
 			"resourceGroupId", _getResourceGroupId()
 		).setParameter(
 			"resourcePrimKey", getResourcePrimKey()
 		).setParameter(
+			"returnToFullPageURL", _getReturnToFullPageURL()
+		).setParameter(
 			"roleTypes", _getRoleTypesParam()
 		).setWindowState(
 			LiferayWindowState.POP_UP
-		).build();
+		).buildPortletURL();
 	}
 
 	private int[] _getGroupRoleTypes(Group group, int[] defaultRoleTypes) {

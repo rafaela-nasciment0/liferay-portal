@@ -507,6 +507,8 @@ definition {
 
 	@priority = "5"
 	test AddRepeatingMonthly2Times {
+		property portal.acceptance = "true";
+
 		CalendarNavigator.gotoAddEvent();
 
 		CalendarEvent.add(

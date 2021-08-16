@@ -242,15 +242,13 @@
 						%>
 
 						<clay:row
-							cssClass="weekdays"
+							cssClass="clearfix pt-3 weekdays"
 						>
 
 							<%
-							int firstDayOfWeek = cal.getFirstDayOfWeek();
-
 							Weekday[] weekdaysArray = Weekday.values();
 
-							Collections.rotate(Arrays.asList(weekdaysArray), -firstDayOfWeek);
+							Collections.rotate(Arrays.asList(weekdaysArray), -cal.getFirstDayOfWeek());
 
 							for (Weekday weekday : weekdaysArray) {
 							%>

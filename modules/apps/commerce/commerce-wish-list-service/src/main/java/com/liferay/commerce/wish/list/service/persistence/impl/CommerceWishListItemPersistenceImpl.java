@@ -3361,25 +3361,25 @@ public class CommerceWishListItemPersistenceImpl
 		ServiceContext serviceContext =
 			ServiceContextThreadLocal.getServiceContext();
 
-		Date now = new Date();
+		Date date = new Date();
 
 		if (isNew && (commerceWishListItem.getCreateDate() == null)) {
 			if (serviceContext == null) {
-				commerceWishListItem.setCreateDate(now);
+				commerceWishListItem.setCreateDate(date);
 			}
 			else {
 				commerceWishListItem.setCreateDate(
-					serviceContext.getCreateDate(now));
+					serviceContext.getCreateDate(date));
 			}
 		}
 
 		if (!commerceWishListItemModelImpl.hasSetModifiedDate()) {
 			if (serviceContext == null) {
-				commerceWishListItem.setModifiedDate(now);
+				commerceWishListItem.setModifiedDate(date);
 			}
 			else {
 				commerceWishListItem.setModifiedDate(
-					serviceContext.getModifiedDate(now));
+					serviceContext.getModifiedDate(date));
 			}
 		}
 
@@ -3895,6 +3895,13 @@ public class CommerceWishListItemPersistenceImpl
 							columnName);
 				}
 
+				if (finderPath.isBaseModelResult() &&
+					(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION ==
+						finderPath.getCacheName())) {
+
+					finderPathColumnBitmask |= _ORDER_BY_COLUMNS_BITMASK;
+				}
+
 				_finderPathColumnBitmasksCache.put(
 					finderPath, finderPathColumnBitmask);
 			}
@@ -3917,7 +3924,7 @@ public class CommerceWishListItemPersistenceImpl
 			return CommerceWishListItemTable.INSTANCE.getTableName();
 		}
 
-		private Object[] _getValue(
+		private static Object[] _getValue(
 			CommerceWishListItemModelImpl commerceWishListItemModelImpl,
 			String[] columnNames, boolean original) {
 
@@ -3940,8 +3947,19 @@ public class CommerceWishListItemPersistenceImpl
 			return arguments;
 		}
 
-		private static Map<FinderPath, Long> _finderPathColumnBitmasksCache =
-			new ConcurrentHashMap<>();
+		private static final Map<FinderPath, Long>
+			_finderPathColumnBitmasksCache = new ConcurrentHashMap<>();
+
+		private static final long _ORDER_BY_COLUMNS_BITMASK;
+
+		static {
+			long orderByColumnsBitmask = 0;
+
+			orderByColumnsBitmask |=
+				CommerceWishListItemModelImpl.getColumnBitmask("createDate");
+
+			_ORDER_BY_COLUMNS_BITMASK = orderByColumnsBitmask;
+		}
 
 	}
 

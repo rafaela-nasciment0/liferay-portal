@@ -2,11 +2,13 @@
 <head>
 <title>Dropdown</title>
 </head>
+
 <body>
-<table cellpadding="1" cellspacing="1" border="1">
+<table border="1" cellpadding="1" cellspacing="1">
 <thead>
 <tr><td rowspan="1" colspan="3">Dropdown</td></tr>
 </thead>
+
 <tbody>
 <tr>
 	<td>ANY_DISABLED</td>
@@ -24,6 +26,11 @@
 	<td></td>
 </tr>
 <tr>
+	<td>DROPDOWN_TOGGLE_BUTTON</td>
+	<td>//div[contains(@class,'btn-group')]//a[contains(.,'${key_toggleButtonName}')]</td>
+	<td></td>
+</tr>
+<tr>
 	<td>EMPTY_MESSAGE_DROPDOWN</td>
 	<td>//div[contains(@class,'empty-result-message')]//button[contains(@class,'dropdown-toggle')]</td>
 	<td></td>
@@ -31,6 +38,11 @@
 <tr>
 	<td>ENTRIES</td>
 	<td>//*[contains(@class,'dropdown') and contains(.,'Entries')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>ENTRIES_NUMBER</td>
+	<td>//div[@class='dropdown pagination-items-per-page']//a[@role='button' and contains(text(),'${key_numberEntries}')]</td>
 	<td></td>
 </tr>
 <tr>

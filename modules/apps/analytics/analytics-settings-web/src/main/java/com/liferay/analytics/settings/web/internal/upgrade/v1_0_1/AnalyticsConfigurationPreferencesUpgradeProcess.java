@@ -56,11 +56,8 @@ public class AnalyticsConfigurationPreferencesUpgradeProcess
 			Dictionary<String, Object> properties =
 				configuration.getProperties();
 
-			if (properties == null) {
-				continue;
-			}
-
-			if (Validator.isNotNull(
+			if ((properties == null) ||
+				Validator.isNotNull(
 					properties.get("liferayAnalyticsProjectId"))) {
 
 				continue;
@@ -70,6 +67,13 @@ public class AnalyticsConfigurationPreferencesUpgradeProcess
 				properties.get("liferayAnalyticsFaroBackendURL"));
 
 			String projectId = _getProjectId(faroBackendURL);
+
+			if (projectId == null) {
+				String liferayAnalyticsEndpointURL = GetterUtil.getString(
+					properties.get("liferayAnalyticsEndpointURL"));
+
+				projectId = _getProjectId(liferayAnalyticsEndpointURL);
+			}
 
 			properties.put("liferayAnalyticsProjectId", projectId);
 

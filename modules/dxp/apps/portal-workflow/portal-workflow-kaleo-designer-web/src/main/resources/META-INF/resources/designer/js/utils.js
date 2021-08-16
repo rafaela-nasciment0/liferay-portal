@@ -28,6 +28,7 @@ AUI.add(
 		var KaleoDesignerUtils = {};
 
 		var KaleoDesignerStrings = {
+			account: Liferay.Language.get('account'),
 			action: Liferay.Language.get('action'),
 			actions: Liferay.Language.get('actions'),
 			actionsType: Liferay.Language.get('actions-type'),
@@ -184,7 +185,7 @@ AUI.add(
 			try {
 				jsonObj = JSON.parse(val);
 			}
-			catch (e) {}
+			catch (error) {}
 
 			return jsonObj;
 		};
@@ -200,7 +201,7 @@ AUI.add(
 					JSON.stringify(val, null, STR_CHAR_TAB) +
 					STR_CHAR_CRLF;
 			}
-			catch (e) {}
+			catch (error) {}
 
 			return jsonString;
 		};

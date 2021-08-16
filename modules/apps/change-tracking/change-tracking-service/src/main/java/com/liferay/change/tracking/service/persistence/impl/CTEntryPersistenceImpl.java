@@ -2485,23 +2485,23 @@ public class CTEntryPersistenceImpl
 		ServiceContext serviceContext =
 			ServiceContextThreadLocal.getServiceContext();
 
-		Date now = new Date();
+		Date date = new Date();
 
 		if (isNew && (ctEntry.getCreateDate() == null)) {
 			if (serviceContext == null) {
-				ctEntry.setCreateDate(now);
+				ctEntry.setCreateDate(date);
 			}
 			else {
-				ctEntry.setCreateDate(serviceContext.getCreateDate(now));
+				ctEntry.setCreateDate(serviceContext.getCreateDate(date));
 			}
 		}
 
 		if (!ctEntryModelImpl.hasSetModifiedDate()) {
 			if (serviceContext == null) {
-				ctEntry.setModifiedDate(now);
+				ctEntry.setModifiedDate(date);
 			}
 			else {
-				ctEntry.setModifiedDate(serviceContext.getModifiedDate(now));
+				ctEntry.setModifiedDate(serviceContext.getModifiedDate(date));
 			}
 		}
 
@@ -3010,7 +3010,7 @@ public class CTEntryPersistenceImpl
 			return CTEntryTable.INSTANCE.getTableName();
 		}
 
-		private Object[] _getValue(
+		private static Object[] _getValue(
 			CTEntryModelImpl ctEntryModelImpl, String[] columnNames,
 			boolean original) {
 
@@ -3031,8 +3031,8 @@ public class CTEntryPersistenceImpl
 			return arguments;
 		}
 
-		private static Map<FinderPath, Long> _finderPathColumnBitmasksCache =
-			new ConcurrentHashMap<>();
+		private static final Map<FinderPath, Long>
+			_finderPathColumnBitmasksCache = new ConcurrentHashMap<>();
 
 	}
 

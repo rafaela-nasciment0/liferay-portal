@@ -333,6 +333,23 @@ definition {
 		Check.checkNotVisible(locator1 = "SitePages#LIST_GROUP_ITEM_CHECKBOX");
 	}
 
+	@summary = "Click on page meni of a Site Page. Parent pages hierarchy is required to navigate to child pages."
+	macro clickPageMenu {
+		WaitForPageLoad();
+
+		if (isSet(parentPagesHierarchy)) {
+			for (var parentPage : list "${parentPagesHierarchy}") {
+				Click(
+					key_itemName = "${parentPage}",
+					locator1 = "SitePages#LIST_GROUP_ITEM");
+			}
+		}
+
+		Click(
+			key_pageName = "${pageName}",
+			locator1 = "SitePages#LIST_GROUP_ITEM_ELLIPSIS_ICON");
+	}
+
 	macro configureChildPage {
 		if (IsTextNotEqual(locator1 = "ControlMenu#HEADING", value1 = "Pages")) {
 			ProductMenu.gotoPortlet(
@@ -381,11 +398,7 @@ definition {
 	}
 
 	macro deletePage {
-		var browserType = PropsUtil.get("browser.type");
-
-		if ("${browserType}" == "chrome") {
-			MetalComponent.waitForLayout();
-		}
+		WaitForPageLoad();
 
 		Click(
 			key_pageName = "${pageName}",
@@ -437,6 +450,16 @@ definition {
 		}
 	}
 
+	macro getFriendlyUrl {
+		key_friendlyURL = "";
+		var friendlyURL = selenium.getElementValue(
+			locator1 = "SitePages#FRIENDLY_URL");
+
+		var URL = "http://localhost:8080/web/guest${friendlyURL}";
+
+		return "${URL}";
+	}
+
 	@summary = "Go to the page creation form through the empty-result-message taglib"
 	macro gotoAddFirstPage {
 		var key_menuItem = "${pageType}";
@@ -452,11 +475,7 @@ definition {
 
 	@summary = "Go to the pageMenuItem of a Site Page. Parent pages hierarchy is required to navigate to child pages."
 	macro gotoPageMenuItem {
-		var browserType = PropsUtil.get("browser.type");
-
-		if ("${browserType}" == "chrome") {
-			MetalComponent.waitForLayout();
-		}
+		WaitForPageLoad();
 
 		if (isSet(parentPagesHierarchy)) {
 			for (var parentPage : list "${parentPagesHierarchy}") {
@@ -493,11 +512,7 @@ definition {
 	}
 
 	macro togglePrivacy {
-		var browserType = PropsUtil.get("browser.type");
-
-		if ("${browserType}" == "chrome") {
-			MetalComponent.waitForLayout();
-		}
+		WaitForPageLoad();
 
 		if (IsElementNotPresent(locator1 = "Breadcrumb#BREADCRUMB_ENTRY_EXACT_MATCH", key_breadcrumbName = "${privacy}")) {
 			Click(

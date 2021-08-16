@@ -16,6 +16,16 @@ create table CacheDisabledEntry (
 	name VARCHAR(75) null
 );
 
+create table CacheFieldEntry (
+	cacheFieldEntryId LONG not null primary key,
+	groupId LONG,
+	name VARCHAR(75) null
+);
+
+create table CacheMissEntry (
+	cacheMissEntryId LONG not null primary key
+);
+
 create table DSLQueryEntry (
 	dslQueryEntryId LONG not null primary key,
 	name VARCHAR(75) null

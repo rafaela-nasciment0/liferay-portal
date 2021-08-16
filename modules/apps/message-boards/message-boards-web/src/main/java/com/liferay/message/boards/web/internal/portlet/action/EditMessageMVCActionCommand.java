@@ -316,8 +316,7 @@ public class EditMessageMVCActionCommand extends BaseMVCActionCommand {
 			"/message_boards/edit_message"
 		).setRedirect(
 			ParamUtil.getString(actionRequest, "redirect")
-		).setParameter(
-			"portletResource",
+		).setPortletResource(
 			ParamUtil.getString(actionRequest, "portletResource")
 		).setParameter(
 			"messageId", message.getMessageId()

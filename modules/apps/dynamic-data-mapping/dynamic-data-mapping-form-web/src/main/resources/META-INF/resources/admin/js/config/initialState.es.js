@@ -12,9 +12,15 @@
  * details.
  */
 
-import {RulesSupport} from 'dynamic-data-mapping-form-builder';
-import {PagesVisitor, getUid} from 'dynamic-data-mapping-form-renderer';
-import {INITIAL_STATE} from 'dynamic-data-mapping-form-renderer/js/core/config/index.es';
+import {
+	PagesVisitor,
+	RulesSupport,
+	getUid,
+} from 'data-engine-js-components-web';
+import {
+	INITIAL_PAGES,
+	INITIAL_STATE,
+} from 'data-engine-js-components-web/js/core/config/index.es';
 
 export const BUILDER_INITIAL_STATE = {
 	...INITIAL_STATE,
@@ -39,32 +45,10 @@ export const BUILDER_INITIAL_STATE = {
 			),
 		},
 	},
-	paginationMode: 'multi_pages',
+	objectFields: [],
+	paginationMode: 'multi-pages',
 	rules: [],
 };
-
-const INITIAL_PAGES = [
-	{
-		description: '',
-		localizedDescription: {
-			[themeDisplay.getLanguageId()]: '',
-		},
-		localizedTitle: {
-			[themeDisplay.getLanguageId()]: '',
-		},
-		rows: [
-			{
-				columns: [
-					{
-						fields: [],
-						size: 12,
-					},
-				],
-			},
-		],
-		title: '',
-	},
-];
 
 /**
  * NormalizePages deals with manipulations of the Field to change behaviors or
@@ -86,6 +70,8 @@ const normalizePages = (pages) => {
 			// to refactor the Options field to better deal with states and location.
 
 			return {
+				...otherProps,
+				localizedValue: {},
 				settingsContext: {
 					...settingsContext,
 					pages: visitor.mapFields((field) => {
@@ -112,7 +98,7 @@ const normalizePages = (pages) => {
 						return field;
 					}),
 				},
-				...otherProps,
+				value: undefined,
 			};
 		},
 		true,
@@ -123,7 +109,6 @@ const normalizePages = (pages) => {
 export const initState = (
 	{
 		initialSuccessPageSettings,
-		localizedName,
 		pages: initialPages,
 		paginationMode: initialPaginationMode,
 		rules: initialRules,
@@ -167,8 +152,6 @@ export const initState = (
 	};
 
 	return {
-		availableLanguageIds: Object.keys(localizedName),
-		localizedName,
 		pages: [
 
 			// Adds new properties to pages for rendering and provides

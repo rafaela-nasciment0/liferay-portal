@@ -80,7 +80,6 @@ import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;
 import javax.portlet.PortletPreferences;
 import javax.portlet.PortletRequest;
-import javax.portlet.PortletURL;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -142,7 +141,6 @@ public class UpdateArticleMVCActionCommand extends BaseMVCActionCommand {
 		long folderId = ParamUtil.getLong(uploadPortletRequest, "folderId");
 		String articleId = ParamUtil.getString(
 			uploadPortletRequest, "articleId");
-		double version = ParamUtil.getDouble(uploadPortletRequest, "version");
 
 		Map<Locale, String> titleMap = LocalizationUtil.getLocalizationMap(
 			actionRequest, "titleMapAsXML");
@@ -313,7 +311,7 @@ public class UpdateArticleMVCActionCommand extends BaseMVCActionCommand {
 				uploadPortletRequest, "autoArticleId");
 
 			article = _journalArticleService.addArticle(
-				groupId, folderId, classNameId, classPK, articleId,
+				null, groupId, folderId, classNameId, classPK, articleId,
 				autoArticleId, titleMap, descriptionMap, friendlyURLMap,
 				content, ddmStructureKey, ddmTemplateKey, layoutUuid,
 				displayDateMonth, displayDateDay, displayDateYear,
@@ -327,6 +325,9 @@ public class UpdateArticleMVCActionCommand extends BaseMVCActionCommand {
 		else {
 
 			// Update article
+
+			double version = ParamUtil.getDouble(
+				uploadPortletRequest, "version");
 
 			article = _journalArticleService.getArticle(
 				groupId, articleId, version);
@@ -446,9 +447,7 @@ public class UpdateArticleMVCActionCommand extends BaseMVCActionCommand {
 			String redirect)
 		throws Exception {
 
-		String languageId = ParamUtil.getString(actionRequest, "languageId");
-
-		PortletURL portletURL = PortletURLBuilder.create(
+		return PortletURLBuilder.create(
 			PortletURLFactoryUtil.create(
 				actionRequest, JournalPortletKeys.JOURNAL,
 				PortletRequest.RENDER_PHASE)
@@ -456,31 +455,36 @@ public class UpdateArticleMVCActionCommand extends BaseMVCActionCommand {
 			"/edit_article.jsp"
 		).setRedirect(
 			redirect
-		).setParameter(
-			"portletResource",
+		).setPortletResource(
 			ParamUtil.getString(actionRequest, "portletResource")
+		).setParameter(
+			"articleId", article.getArticleId()
+		).setParameter(
+			"folderId", article.getFolderId()
+		).setParameter(
+			"groupId", article.getGroupId()
+		).setParameter(
+			"languageId",
+			() -> {
+				String languageId = ParamUtil.getString(
+					actionRequest, "languageId");
+
+				if (Validator.isNotNull(languageId)) {
+					return languageId;
+				}
+
+				return null;
+			}
 		).setParameter(
 			"referringPortletResource",
 			ParamUtil.getString(actionRequest, "referringPortletResource")
 		).setParameter(
 			"resourcePrimKey", article.getResourcePrimKey()
 		).setParameter(
-			"groupId", article.getGroupId()
-		).setParameter(
-			"folderId", article.getFolderId()
-		).setParameter(
-			"articleId", article.getArticleId()
-		).setParameter(
 			"version", article.getVersion()
-		).build();
-
-		if (Validator.isNotNull(languageId)) {
-			portletURL.setParameter("languageId", languageId);
-		}
-
-		portletURL.setWindowState(actionRequest.getWindowState());
-
-		return portletURL.toString();
+		).setWindowState(
+			actionRequest.getWindowState()
+		).buildString();
 	}
 
 	protected void sendEditArticleRedirect(

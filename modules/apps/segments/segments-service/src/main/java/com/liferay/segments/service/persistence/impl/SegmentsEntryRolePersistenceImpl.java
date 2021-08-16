@@ -1624,25 +1624,25 @@ public class SegmentsEntryRolePersistenceImpl
 		ServiceContext serviceContext =
 			ServiceContextThreadLocal.getServiceContext();
 
-		Date now = new Date();
+		Date date = new Date();
 
 		if (isNew && (segmentsEntryRole.getCreateDate() == null)) {
 			if (serviceContext == null) {
-				segmentsEntryRole.setCreateDate(now);
+				segmentsEntryRole.setCreateDate(date);
 			}
 			else {
 				segmentsEntryRole.setCreateDate(
-					serviceContext.getCreateDate(now));
+					serviceContext.getCreateDate(date));
 			}
 		}
 
 		if (!segmentsEntryRoleModelImpl.hasSetModifiedDate()) {
 			if (serviceContext == null) {
-				segmentsEntryRole.setModifiedDate(now);
+				segmentsEntryRole.setModifiedDate(date);
 			}
 			else {
 				segmentsEntryRole.setModifiedDate(
-					serviceContext.getModifiedDate(now));
+					serviceContext.getModifiedDate(date));
 			}
 		}
 
@@ -2069,7 +2069,8 @@ public class SegmentsEntryRolePersistenceImpl
 	public Set<String> getCTColumnNames(
 		CTColumnResolutionType ctColumnResolutionType) {
 
-		return _ctColumnNamesMap.get(ctColumnResolutionType);
+		return _ctColumnNamesMap.getOrDefault(
+			ctColumnResolutionType, Collections.emptySet());
 	}
 
 	@Override
@@ -2103,7 +2104,6 @@ public class SegmentsEntryRolePersistenceImpl
 	static {
 		Set<String> ctControlColumnNames = new HashSet<String>();
 		Set<String> ctIgnoreColumnNames = new HashSet<String>();
-		Set<String> ctMergeColumnNames = new HashSet<String>();
 		Set<String> ctStrictColumnNames = new HashSet<String>();
 
 		ctControlColumnNames.add("mvccVersion");
@@ -2120,7 +2120,6 @@ public class SegmentsEntryRolePersistenceImpl
 			CTColumnResolutionType.CONTROL, ctControlColumnNames);
 		_ctColumnNamesMap.put(
 			CTColumnResolutionType.IGNORE, ctIgnoreColumnNames);
-		_ctColumnNamesMap.put(CTColumnResolutionType.MERGE, ctMergeColumnNames);
 		_ctColumnNamesMap.put(
 			CTColumnResolutionType.PK,
 			Collections.singleton("segmentsEntryRoleId"));
@@ -2336,7 +2335,7 @@ public class SegmentsEntryRolePersistenceImpl
 			return SegmentsEntryRoleTable.INSTANCE.getTableName();
 		}
 
-		private Object[] _getValue(
+		private static Object[] _getValue(
 			SegmentsEntryRoleModelImpl segmentsEntryRoleModelImpl,
 			String[] columnNames, boolean original) {
 
@@ -2359,8 +2358,8 @@ public class SegmentsEntryRolePersistenceImpl
 			return arguments;
 		}
 
-		private static Map<FinderPath, Long> _finderPathColumnBitmasksCache =
-			new ConcurrentHashMap<>();
+		private static final Map<FinderPath, Long>
+			_finderPathColumnBitmasksCache = new ConcurrentHashMap<>();
 
 	}
 

@@ -178,6 +178,10 @@ public class AddressLocalServiceUtil {
 		return getService().dslQuery(dslQuery);
 	}
 
+	public static int dslQueryCount(DSLQuery dslQuery) {
+		return getService().dslQueryCount(dslQuery);
+	}
+
 	public static DynamicQuery dynamicQuery() {
 		return getService().dynamicQuery();
 	}
@@ -376,6 +380,22 @@ public class AddressLocalServiceUtil {
 
 		return getService().getAddresses(
 			companyId, className, classPK, start, end, orderByComparator);
+	}
+
+	public static List<Address> getAddressesByTypeIds(
+		long companyId, String className, long classPK, long[] typeIds) {
+
+		return getService().getAddressesByTypeIds(
+			companyId, className, classPK, typeIds);
+	}
+
+	public static List<Address> getAddressesByTypeIds(
+		long companyId, String className, long classPK, long[] typeIds,
+		int start, int end, OrderByComparator<Address> orderByComparator) {
+
+		return getService().getAddressesByTypeIds(
+			companyId, className, classPK, typeIds, start, end,
+			orderByComparator);
 	}
 
 	/**

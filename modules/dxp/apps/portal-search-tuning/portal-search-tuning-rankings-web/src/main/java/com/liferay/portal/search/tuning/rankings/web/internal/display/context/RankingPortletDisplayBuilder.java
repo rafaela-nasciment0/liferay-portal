@@ -153,8 +153,8 @@ public class RankingPortletDisplayBuilder {
 	protected String getClearResultsURL() {
 		return PortletURLBuilder.create(
 			_getPortletURL(getKeywords())
-		).setParameter(
-			"keywords", StringPool.BLANK
+		).setKeywords(
+			StringPool.BLANK
 		).buildString();
 	}
 
@@ -256,11 +256,7 @@ public class RankingPortletDisplayBuilder {
 	protected boolean isDisabledManagementBar(
 		SearchContainer<RankingEntryDisplayContext> searchContainer) {
 
-		if (_hasResults(searchContainer)) {
-			return false;
-		}
-
-		if (_isSearch(getKeywords())) {
+		if (_hasResults(searchContainer) || _isSearch(getKeywords())) {
 			return false;
 		}
 
@@ -310,21 +306,25 @@ public class RankingPortletDisplayBuilder {
 
 	@SuppressWarnings("deprecation")
 	private PortletURL _getPortletURL(String keywords) {
-		PortletURL portletURL = PortletURLBuilder.createRenderURL(
+		return PortletURLBuilder.createRenderURL(
 			_renderResponse
 		).setMVCPath(
 			"/view.jsp"
-		).build();
+		).setKeywords(
+			() -> {
+				if (!Validator.isBlank(keywords)) {
+					return keywords;
+				}
 
-		if (!Validator.isBlank(keywords)) {
-			portletURL.setParameter("keywords", keywords);
-		}
-
-		portletURL.setParameter("displayStyle", getDisplayStyle());
-		portletURL.setParameter("orderByCol", _getOrderByCol());
-		portletURL.setParameter("orderByType", getOrderByType());
-
-		return portletURL;
+				return null;
+			}
+		).setParameter(
+			"displayStyle", getDisplayStyle()
+		).setParameter(
+			"orderByCol", _getOrderByCol()
+		).setParameter(
+			"orderByType", getOrderByType()
+		).buildPortletURL();
 	}
 
 	private boolean _hasResults(

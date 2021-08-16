@@ -2,11 +2,13 @@
 <head>
 <title>Publications</title>
 </head>
+
 <body>
-<table cellpadding="1" cellspacing="1" border="1">
+<table border="1" cellpadding="1" cellspacing="1">
 <thead>
 <tr><td rowspan="1" colspan="3">Publications</td></tr>
 </thead>
+
 <tbody>
 <tr>
 	<td>AUTOMATICALLY_RESOLVED_TABLE</td>
@@ -20,7 +22,7 @@
 </tr>
 <tr>
 	<td>PUBLICATIONS_INDICATOR_TITLE</td>
-	<td>//button[contains(@class,'change-tracking-indicator-title')] and contains(.,'${key_publicationsName}')</td>
+	<td>//button[contains(@class,'change-tracking-indicator-title')] and contains(.,'${key_publicationName}')</td>
 	<td></td>
 </tr>
 <tr>
@@ -95,27 +97,27 @@
 </tr>
 <tr>
 	<td>LIST_OUT_OF_DATE_STATUS</td>
-	<td>//a[contains(.,'${key_publicationsName}')]//span/span[contains(.,'Out of Date')]</td>
+	<td>//a[contains(.,'${key_publicationName}')]//span/span[contains(.,'Out of Date')]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>LIST_PUBLICATION_ELLIPSIS</td>
-	<td>//li[@data-qa-id='row'][contains(.,'${key_publicationsName}')]//*[contains(@class,'lexicon-icon lexicon-icon-ellipsis-v')]</td>
+	<td>//li[@data-qa-id='row'][contains(.,'${key_publicationName}')]//*[contains(@class,'lexicon-icon lexicon-icon-ellipsis-v')]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>LIST_PUBLISHED_STATUS</td>
-	<td>//p[contains(.,'${key_publicationsName}')]//following-sibling::p/span[contains(.,'Published')]</td>
+	<td>//p[contains(.,'${key_publicationName}')]//following-sibling::p/span[contains(.,'Published')]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>LIST_REVERT_BUTTON</td>
-	<td>//div[contains(.,'${key_publicationsName}')]//following-sibling::div//a[contains(.,'Revert')]</td>
+	<td>//div[contains(.,'${key_publicationName}')]//following-sibling::div//a[contains(.,'Revert')]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>LIST_REVERT_DISABLED</td>
-	<td>//div[contains(.,'${key_publicationsName}')]//following-sibling::div//a[contains(@class, 'disabled btn') and contains(.,'Revert')]</td>
+	<td>//div[contains(.,'${key_publicationName}')]//following-sibling::div//a[contains(@class, 'disabled btn') and contains(.,'Revert')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -145,7 +147,12 @@
 </tr>
 <tr>
 	<td>PUBLICATION_NAME_IN_DIFF</td>
-	<td>//td[contains(@class,'publications-diff-td') and contains(.,'${key_publicationsName}')]</td>
+	<td>//td[contains(@class,'publications-diff-td') and contains(.,'${key_publicationName}')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>PUBLICATION_ORDER_IN_HISTORY</td>
+	<td>//ul[contains(@class,'publications-table')]//li[${resultOrder}]/div/p/a</td>
 	<td></td>
 </tr>
 <tr>
@@ -179,8 +186,8 @@
 	<td></td>
 </tr>
 <tr>
-	<td>PUBLISHED_PUBLICATIONS_NAME</td>
-	<td>//div[contains(@class,'publication-name') and contains(.,'${key_publicationsName}')]</td>
+	<td>PUBLISHED_PUBLICATION_NAME</td>
+	<td>//div[contains(@class,'publication-name') and contains(.,'${key_publicationName}')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -215,7 +222,7 @@
 </tr>
 <tr>
 	<td>SELECT_PUBLICATION_NAME</td>
-	<td>//p[contains(.,'${key_publicationsName}') and contains(@class, 'list-group-title')]</td>
+	<td>//p[contains(.,'${key_publicationName}') and contains(@class, 'list-group-title')]</td>
 	<td></td>
 </tr>
 </tbody>

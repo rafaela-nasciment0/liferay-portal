@@ -35,17 +35,17 @@ scopeGroup = themeDisplay.getScopeGroup();
 	<%
 	PortletURL portletURL = PortletURLBuilder.create(
 		PortletURLFactoryUtil.create(request, ChangesetPortletKeys.CHANGESET, PortletRequest.ACTION_PHASE)
-	).setMVCRenderCommandName(
-		"exportImportEntity"
 	).setActionName(
 		"exportImportEntity"
-	).setParameter(
-		"cmd", cmd
-	).setParameter(
-		"backURL", themeDisplay.getURLCurrent()
+	).setMVCRenderCommandName(
+		"exportImportEntity"
+	).setCMD(
+		cmd
+	).setBackURL(
+		themeDisplay.getURLCurrent()
 	).setParameter(
 		"portletId", portletDisplay.getId()
-	).build();
+	).buildPortletURL();
 	%>
 
 	<aui:script use="liferay-export-import-management-bar-button">

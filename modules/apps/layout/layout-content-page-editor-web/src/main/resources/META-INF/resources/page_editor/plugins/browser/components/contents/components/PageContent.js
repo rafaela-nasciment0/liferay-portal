@@ -13,64 +13,150 @@
  */
 
 import ClayButton from '@clayui/button';
-import ClayDropDown from '@clayui/drop-down';
+import {ClayDropDownWithItems} from '@clayui/drop-down';
 import ClayIcon from '@clayui/icon';
-import ClayLabel from '@clayui/label';
 import ClayLayout from '@clayui/layout';
 import classNames from 'classnames';
-import {openModal} from 'frontend-js-web';
 import PropTypes from 'prop-types';
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useMemo, useState} from 'react';
 
+import {EDITABLE_FRAGMENT_ENTRY_PROCESSOR} from '../../../../../app/config/constants/editableFragmentEntryProcessor';
+import {ITEM_ACTIVATION_ORIGINS} from '../../../../../app/config/constants/itemActivationOrigins';
+import {ITEM_TYPES} from '../../../../../app/config/constants/itemTypes';
+import {useToControlsId} from '../../../../../app/contexts/CollectionItemContext';
 import {
 	useHoverItem,
 	useHoveredItemId,
-} from '../../../../../app/components/Controls';
-import {EDITABLE_FRAGMENT_ENTRY_PROCESSOR} from '../../../../../app/config/constants/editableFragmentEntryProcessor';
-import {ITEM_TYPES} from '../../../../../app/config/constants/itemTypes';
-import {useSelector} from '../../../../../app/store/index';
+	useSelectItem,
+} from '../../../../../app/contexts/ControlsContext';
+import {
+	useEditableProcessorUniqueId,
+	useSetEditableProcessorUniqueId,
+} from '../../../../../app/contexts/EditableProcessorContext';
+import {
+	useSelector,
+	useSelectorCallback,
+} from '../../../../../app/contexts/StoreContext';
+import selectCanUpdateEditables from '../../../../../app/selectors/selectCanUpdateEditables';
+import {selectPageContentDropdownItems} from '../../../../../app/selectors/selectPageContentDropdownItems';
+import ImageEditorModal from './ImageEditorModal';
 
-export default function PageContent(props) {
-	const [active, setActive] = useState(false);
-	const {editURL, permissionsURL, viewUsagesURL} = props.actions;
+export default function PageContent({
+	classNameId,
+	classPK,
+	editableId,
+	icon,
+	subtype,
+	title,
+}) {
+	const editableProcessorUniqueId = useEditableProcessorUniqueId();
 	const hoverItem = useHoverItem();
 	const hoveredItemId = useHoveredItemId();
+	const canUpdateEditables = useSelector(selectCanUpdateEditables);
 	const fragmentEntryLinks = useSelector((state) => state.fragmentEntryLinks);
 	const [isHovered, setIsHovered] = useState(false);
+	const [
+		nextEditbleProcessorUniqueId,
+		setEditableNextProcessorUniqueId,
+	] = useState(null);
+	const selectItem = useSelectItem();
+	const setEditableProcessorUniqueId = useSetEditableProcessorUniqueId();
+	const [imageEditorParams, setImageEditorParams] = useState(null);
+	const toControlsId = useToControlsId();
+
+	const isBeingEdited = useMemo(
+		() => toControlsId(editableId) === editableProcessorUniqueId,
+		[toControlsId, editableId, editableProcessorUniqueId]
+	);
+
+	const dropdownItems = useSelectorCallback(
+		(state) => {
+			const pageContentDropdownItems = selectPageContentDropdownItems(
+				classPK
+			)(state);
+
+			return pageContentDropdownItems?.map((item) => {
+				if (item.label === Liferay.Language.get('edit-image')) {
+					return {
+						...item,
+						onClick: () => {
+							setImageEditorParams({
+								editImageURL: item.editImageURL,
+								fileEntryId: item.fileEntryId,
+								previewURL: item.previewURL,
+							});
+						},
+					};
+				}
+
+				return item;
+			});
+		},
+		[classPK]
+	);
+
+	useEffect(() => {
+		if (editableProcessorUniqueId || !nextEditbleProcessorUniqueId) {
+			return;
+		}
+
+		setEditableProcessorUniqueId(nextEditbleProcessorUniqueId);
+		setEditableNextProcessorUniqueId(null);
+	}, [
+		editableProcessorUniqueId,
+		nextEditbleProcessorUniqueId,
+		setEditableProcessorUniqueId,
+	]);
 
 	useEffect(() => {
 		if (hoveredItemId) {
-			const [fragmentEntryLinkId, ...editableId] = hoveredItemId.split(
-				'-'
-			);
+			if (editableId) {
+				setIsHovered(editableId === hoveredItemId);
+			}
+			else {
+				const [
+					fragmentEntryLinkId,
+					...editableId
+				] = hoveredItemId.split('-');
 
-			if (fragmentEntryLinks[fragmentEntryLinkId]) {
-				const fragmentEntryLink =
-					fragmentEntryLinks[fragmentEntryLinkId];
+				if (fragmentEntryLinks[fragmentEntryLinkId]) {
+					const fragmentEntryLink =
+						fragmentEntryLinks[fragmentEntryLinkId];
 
-				const editableValue =
-					fragmentEntryLink.editableValues[
-						EDITABLE_FRAGMENT_ENTRY_PROCESSOR
-					];
+					const editableValue =
+						fragmentEntryLink.editableValues[
+							EDITABLE_FRAGMENT_ENTRY_PROCESSOR
+						];
 
-				const editable = editableValue[editableId.join('-')];
+					const editable = editableValue[editableId.join('-')];
 
-				if (editable) {
-					setIsHovered(editable.classPK === props.classPK);
+					if (editable) {
+						setIsHovered(editable.classPK === classPK);
+					}
 				}
 			}
 		}
 		else {
 			setIsHovered(false);
 		}
-	}, [fragmentEntryLinks, hoveredItemId, props.classPK]);
+	}, [fragmentEntryLinks, hoveredItemId, classPK, editableId]);
 
 	const handleMouseOver = () => {
 		setIsHovered(true);
 
-		hoverItem(`${props.classNameId}-${props.classPK}`, {
-			itemType: ITEM_TYPES.mappedContent,
-		});
+		if (editableId) {
+			hoverItem(editableId, {
+				itemType: ITEM_TYPES.inlineContent,
+				origin: ITEM_ACTIVATION_ORIGINS.contents,
+			});
+		}
+
+		if (classNameId && classPK) {
+			hoverItem(`${classNameId}-${classPK}`, {
+				itemType: ITEM_TYPES.mappedContent,
+				origin: ITEM_ACTIVATION_ORIGINS.contents,
+			});
+		}
 	};
 
 	const handleMouseLeave = () => {
@@ -78,47 +164,54 @@ export default function PageContent(props) {
 		hoverItem(null);
 	};
 
+	const onClickEditInlineText = () => {
+		if (isBeingEdited) {
+			return;
+		}
+
+		selectItem(`${editableId}`, {
+			itemType: ITEM_TYPES.editable,
+			origin: ITEM_ACTIVATION_ORIGINS.sidebar,
+		});
+
+		setEditableNextProcessorUniqueId(toControlsId(editableId));
+	};
+
 	return (
 		<li
-			className={classNames('page-editor__contents__page-content', {
-				'page-editor__contents__page-content--mapped-item-hovered': isHovered,
+			className={classNames('page-editor__page-contents__page-content', {
+				'page-editor__page-contents__page-content--mapped-item-hovered': isHovered,
 			})}
 			onMouseLeave={handleMouseLeave}
 			onMouseOver={handleMouseOver}
 		>
-			<div className="d-flex pl-3 pr-2 py-3">
+			<div
+				className={classNames('d-flex', {
+					'align-items-center': !subtype,
+				})}
+			>
+				<ClayIcon
+					className={classNames('mr-3', {
+						'mt-1': subtype,
+					})}
+					focusable="false"
+					monospaced="true"
+					role="presentation"
+					symbol={icon || 'document-text'}
+				/>
 				<ClayLayout.ContentCol expand>
-					<strong className="list-group-title text-truncate">
-						{props.title}
-					</strong>
-
-					<span className="small text-secondary">{props.name}</span>
-
-					<span className="small text-secondary">
-						{props.usagesCount === 1
-							? Liferay.Language.get('used-in-1-page')
-							: Liferay.Util.sub(
-									Liferay.Language.get('used-in-x-pages'),
-									props.usagesCount
-							  )}
+					<span className="font-weight-semi-bold text-truncate">
+						{title}
 					</span>
 
-					<div>
-						{props.status.hasApprovedVersion && (
-							<ClayLabel displayType="success">
-								{Liferay.Language.get('approved')}
-							</ClayLabel>
-						)}
-						<ClayLabel displayType={props.status.style}>
-							{props.status.label}
-						</ClayLabel>
-					</div>
+					{subtype && (
+						<span className="text-secondary">{subtype}</span>
+					)}
 				</ClayLayout.ContentCol>
 
-				{(editURL || permissionsURL || viewUsagesURL) && (
-					<ClayDropDown
-						active={active}
-						onActiveChange={setActive}
+				{dropdownItems?.length ? (
+					<ClayDropDownWithItems
+						items={dropdownItems}
 						trigger={
 							<ClayButton
 								className="btn-monospaced btn-sm text-secondary"
@@ -130,61 +223,41 @@ export default function PageContent(props) {
 								<ClayIcon symbol="ellipsis-v" />
 							</ClayButton>
 						}
+					/>
+				) : (
+					<ClayButton
+						className={classNames('btn-sm mr-2 text-secondary', {
+							'not-allowed': isBeingEdited || !canUpdateEditables,
+						})}
+						disabled={isBeingEdited || !canUpdateEditables}
+						displayType="unstyled"
+						onClick={onClickEditInlineText}
 					>
-						<ClayDropDown.ItemList>
-							{editURL && (
-								<ClayDropDown.Item href={editURL} key="editURL">
-									{Liferay.Language.get('edit')}
-								</ClayDropDown.Item>
-							)}
-
-							{permissionsURL && (
-								<ClayDropDown.Item
-									key="permissionsURL"
-									onClick={() => {
-										openModal({
-											title: Liferay.Language.get(
-												'permissions'
-											),
-											url: permissionsURL,
-										});
-									}}
-								>
-									{Liferay.Language.get('permissions')}
-								</ClayDropDown.Item>
-							)}
-
-							{viewUsagesURL && (
-								<ClayDropDown.Item
-									key="viewUsagesURL"
-									onClick={() => {
-										openModal({
-											title: Liferay.Language.get(
-												'view-usages'
-											),
-											url: viewUsagesURL,
-										});
-									}}
-								>
-									{Liferay.Language.get('view-usages')}
-								</ClayDropDown.Item>
-							)}
-						</ClayDropDown.ItemList>
-					</ClayDropDown>
+						<span className="sr-only">
+							{Liferay.Language.get('edit-inline-text')}
+						</span>
+						<ClayIcon symbol="pencil" />
+					</ClayButton>
 				)}
 			</div>
+
+			{imageEditorParams && (
+				<ImageEditorModal
+					editImageURL={imageEditorParams.editImageURL}
+					fileEntryId={imageEditorParams.fileEntryId}
+					fragmentEntryLinks={fragmentEntryLinks}
+					onCloseModal={() => setImageEditorParams(null)}
+					previewURL={imageEditorParams.previewURL}
+				/>
+			)}
 		</li>
 	);
 }
 
 PageContent.propTypes = {
 	actions: PropTypes.object,
-	name: PropTypes.string.isRequired,
-	status: PropTypes.shape({
-		hasApprovedVersion: PropTypes.bool,
-		label: PropTypes.string,
-		style: PropTypes.string,
-	}),
+	icon: PropTypes.string,
+	name: PropTypes.string,
+	subtype: PropTypes.string,
 	title: PropTypes.string.isRequired,
-	usagesCount: PropTypes.number.isRequired,
 };

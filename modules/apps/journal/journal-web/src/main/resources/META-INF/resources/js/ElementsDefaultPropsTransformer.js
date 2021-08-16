@@ -62,7 +62,7 @@ const ACTIONS = {
 			buttonAddLabel: Liferay.Language.get('delete'),
 			multiple: true,
 			onSelect: (selectedItems) => {
-				if (selectedItems) {
+				if (selectedItems?.length) {
 					if (
 						confirm(
 							Liferay.Language.get(
@@ -70,18 +70,23 @@ const ACTIONS = {
 							)
 						)
 					) {
-						selectedItems.forEach((item) => {
-							document.hrefFm.appendChild(item);
-						});
+						const form = document.hrefFm;
 
-						submitForm(
-							document.hrefFm,
-							itemData.deleteArticleTranslationsURL
-						);
+						if (!form) {
+							return;
+						}
+
+						const input = document.createElement('input');
+
+						input.name = `${portletNamespace}rowIds`;
+						input.value = selectedItems.map((item) => item.value);
+
+						form.appendChild(input);
+
+						submitForm(form, itemData.deleteArticleTranslationsURL);
 					}
 				}
 			},
-			selectEventName: `${portletNamespace}selectTranslations`,
 			title: Liferay.Language.get('delete-translations'),
 			url: itemData.selectArticleTranslationsURL,
 		});
@@ -156,25 +161,32 @@ export default function propsTransformer({
 	portletNamespace,
 	...props
 }) {
+	const bindAction = (item) => {
+		const action = ACTIONS[item.data?.action];
+
+		const transformedItem = {...item};
+
+		if (typeof action === 'function') {
+			transformedItem.onClick = (event) => {
+				event.preventDefault();
+
+				action.call(ACTIONS, {
+					itemData: item.data,
+					portletNamespace,
+					trashEnabled,
+				});
+			};
+		}
+
+		if (Array.isArray(item.items)) {
+			transformedItem.items = item.items.map(bindAction);
+		}
+
+		return transformedItem;
+	};
+
 	return {
 		...props,
-		items: items.map((item) => {
-			return {
-				...item,
-				onClick(event) {
-					const action = item.data?.action;
-
-					if (action) {
-						event.preventDefault();
-
-						ACTIONS[action]({
-							itemData: item.data,
-							portletNamespace,
-							trashEnabled,
-						});
-					}
-				},
-			};
-		}),
+		items: items.map(bindAction),
 	};
 }

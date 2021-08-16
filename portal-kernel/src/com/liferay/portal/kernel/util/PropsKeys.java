@@ -603,6 +603,9 @@ public interface PropsKeys {
 	public static final String COMPANY_SECURITY_STRANGERS_WITH_MX =
 		"company.security.strangers.with.mx";
 
+	public static final String COMPANY_SECURITY_UPDATE_PASSWORD_REQUIRED =
+		"company.security.update.password.required";
+
 	public static final String COMPANY_SETTINGS_FORM_AUTHENTICATION =
 		"company.settings.form.authentication";
 
@@ -930,6 +933,24 @@ public interface PropsKeys {
 
 	public static final String DL_EMAIL_FILE_ENTRY_ADDED_SUBJECT =
 		"dl.email.file.entry.added.subject";
+
+	public static final String DL_EMAIL_FILE_ENTRY_EXPIRED_BODY =
+		"dl.email.file.entry.expired.body";
+
+	public static final String DL_EMAIL_FILE_ENTRY_EXPIRED_ENABLED =
+		"dl.email.file.entry.expired.enabled";
+
+	public static final String DL_EMAIL_FILE_ENTRY_EXPIRED_SUBJECT =
+		"dl.email.file.entry.expired.subject";
+
+	public static final String DL_EMAIL_FILE_ENTRY_REVIEW_BODY =
+		"dl.email.file.entry.review.body";
+
+	public static final String DL_EMAIL_FILE_ENTRY_REVIEW_ENABLED =
+		"dl.email.file.entry.review.enabled";
+
+	public static final String DL_EMAIL_FILE_ENTRY_REVIEW_SUBJECT =
+		"dl.email.file.entry.review.subject";
 
 	public static final String DL_EMAIL_FILE_ENTRY_UPDATED_BODY =
 		"dl.email.file.entry.updated.body";
@@ -1767,6 +1788,15 @@ public interface PropsKeys {
 	public static final String LDAP_ATTRS_TRANSFORMER_IMPL =
 		"ldap.attrs.transformer.impl";
 
+	public static final String LEARN_RESOURCES_CDN_ENABLED =
+		"learn.resources.cdn.enabled";
+
+	public static final String LEARN_RESOURCES_ENABLED =
+		"learn.resources.enabled";
+
+	public static final String LEARN_RESOURCES_REFRESH_TIME =
+		"learn.resources.refresh.time";
+
 	public static final String LIFERAY_HOME = "liferay.home";
 
 	public static final String LIFERAY_LIB_GLOBAL_DIR =
@@ -1777,6 +1807,9 @@ public interface PropsKeys {
 
 	public static final String LIFERAY_LIB_PORTAL_DIR =
 		"liferay.lib.portal.dir";
+
+	public static final String LIFERAY_SHIELDED_CONTAINER_LIB_PORTAL_DIR =
+		"liferay.shielded.container.lib.portal.dir";
 
 	public static final String LIFERAY_WEB_PORTAL_DIR =
 		"liferay.web.portal.dir";
@@ -2738,12 +2771,24 @@ public interface PropsKeys {
 	public static final String RECENT_GROUPS_MAX_ELEMENTS =
 		"recent.groups.max.elements";
 
+	/**
+	 * @deprecated As of Cavanaugh (7.4.x)
+	 */
+	@Deprecated
 	public static final String REDIRECT_URL_DOMAINS_ALLOWED =
 		"redirect.url.domains.allowed";
 
+	/**
+	 * @deprecated As of Cavanaugh (7.4.x)
+	 */
+	@Deprecated
 	public static final String REDIRECT_URL_IPS_ALLOWED =
 		"redirect.url.ips.allowed";
 
+	/**
+	 * @deprecated As of Cavanaugh (7.4.x)
+	 */
+	@Deprecated
 	public static final String REDIRECT_URL_SECURITY_MODE =
 		"redirect.url.security.mode";
 
@@ -2863,6 +2908,9 @@ public interface PropsKeys {
 	public static final String SEARCH_CONTAINER_PAGE_ITERATOR_MAX_PAGES =
 		"search.container.page.iterator.max.pages";
 
+	public static final String SEARCH_CONTAINER_PAGE_MAX_DELTA =
+		"search.container.page.max.delta";
+
 	/**
 	 * @deprecated As of Judson (7.1.x), with no direct replacement
 	 */
@@ -2913,6 +2961,10 @@ public interface PropsKeys {
 	public static final String SESSION_COOKIE_USE_FULL_HOSTNAME =
 		"session.cookie.use.full.hostname";
 
+	/**
+	 * @deprecated As of Cavanaugh (7.4.x), with no direct replacement
+	 */
+	@Deprecated
 	public static final String SESSION_DISABLED = "session.disabled";
 
 	public static final String SESSION_ENABLE_PERSISTENT_COOKIES =
@@ -3235,6 +3287,9 @@ public interface PropsKeys {
 	public static final String TABLE_MAPPER_CACHELESS_MAPPING_TABLE_NAMES =
 		"table.mapper.cacheless.mapping.table.names";
 
+	public static final String TEMPLATE_ENGINE_SERVICE_LOCATOR_RESTRICT =
+		"template.engine.service.locator.restrict";
+
 	public static final String TERMS_OF_USE_REQUIRED = "terms.of.use.required";
 
 	public static final String TEXT_EXTRACTION_FORK_PROCESS_ENABLED =
@@ -3323,6 +3378,9 @@ public interface PropsKeys {
 
 	public static final String UPGRADE_DATABASE_TRANSACTIONS_DISABLED =
 		"upgrade.database.transactions.disabled";
+
+	public static final String UPGRADE_REPORT_ENABLED =
+		"upgrade.report.enabled";
 
 	public static final String USER_GROUPS_NAME_ALLOW_NUMERIC =
 		"user.groups.name.allow.numeric";

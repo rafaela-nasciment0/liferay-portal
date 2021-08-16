@@ -228,6 +228,18 @@ public class OrganizationServiceImpl extends OrganizationServiceBaseImpl {
 			passwordPolicyId, organizationIds);
 	}
 
+	@Override
+	public void addUserOrganizationByEmailAddress(
+			String emailAddress, long organizationId)
+		throws PortalException {
+
+		OrganizationPermissionUtil.check(
+			getPermissionChecker(), organizationId, ActionKeys.ASSIGN_MEMBERS);
+
+		organizationLocalService.addUserOrganizationByEmailAddress(
+			emailAddress, organizationId);
+	}
+
 	/**
 	 * Deletes the organization's logo.
 	 *
@@ -253,6 +265,18 @@ public class OrganizationServiceImpl extends OrganizationServiceBaseImpl {
 			getPermissionChecker(), organizationId, ActionKeys.DELETE);
 
 		organizationLocalService.deleteOrganization(organizationId);
+	}
+
+	@Override
+	public void deleteUserOrganizationByEmailAddress(
+			String emailAddress, long organizationId)
+		throws PortalException {
+
+		OrganizationPermissionUtil.check(
+			getPermissionChecker(), organizationId, ActionKeys.ASSIGN_MEMBERS);
+
+		organizationLocalService.deleteUserOrganizationByEmailAddress(
+			emailAddress, organizationId);
 	}
 
 	/**
@@ -283,7 +307,7 @@ public class OrganizationServiceImpl extends OrganizationServiceBaseImpl {
 		long gtOrganizationId, long companyId, long parentOrganizationId,
 		int size) {
 
-		return organizationPersistence.filterFindByO_C_P(
+		return organizationPersistence.filterFindByGtO_C_P(
 			gtOrganizationId, companyId, parentOrganizationId, 0, size,
 			new OrganizationIdComparator(true));
 	}

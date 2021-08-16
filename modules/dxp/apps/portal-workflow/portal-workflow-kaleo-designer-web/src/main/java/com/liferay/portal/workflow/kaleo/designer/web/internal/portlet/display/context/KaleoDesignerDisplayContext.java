@@ -109,13 +109,10 @@ public class KaleoDesignerDisplayContext {
 		PermissionChecker permissionChecker =
 			PermissionThreadLocal.getPermissionChecker();
 
-		if (_companyAdministratorCanPublish &&
-			permissionChecker.isCompanyAdmin()) {
+		if ((_companyAdministratorCanPublish &&
+			 permissionChecker.isCompanyAdmin()) ||
+			permissionChecker.isOmniadmin()) {
 
-			return true;
-		}
-
-		if (permissionChecker.isOmniadmin()) {
 			return true;
 		}
 
@@ -127,8 +124,8 @@ public class KaleoDesignerDisplayContext {
 			PortletURLUtil.clone(
 				getPortletURL(),
 				_kaleoDesignerRequestHelper.getLiferayPortletResponse())
-		).setParameter(
-			"keywords", StringPool.BLANK
+		).setKeywords(
+			StringPool.BLANK
 		).buildString();
 	}
 
@@ -144,11 +141,9 @@ public class KaleoDesignerDisplayContext {
 	}
 
 	public JSPCreationMenu getCreationMenu(PageContext pageContext) {
-		if (!canPublishWorkflowDefinition()) {
-			return null;
-		}
+		if (!canPublishWorkflowDefinition() ||
+			!isSaveKaleoDefinitionVersionButtonVisible(null)) {
 
-		if (!isSaveKaleoDefinitionVersionButtonVisible(null)) {
 			return null;
 		}
 
@@ -747,7 +742,7 @@ public class KaleoDesignerDisplayContext {
 			"/view.jsp"
 		).setParameter(
 			"tab", WorkflowWebKeys.WORKFLOW_TAB_DEFINITION_LINK
-		).build();
+		).buildPortletURL();
 	}
 
 	protected PortletURL getWorkflowInstancesPortletURL() {
@@ -757,7 +752,7 @@ public class KaleoDesignerDisplayContext {
 			PortletRequest.RENDER_PHASE
 		).setMVCPath(
 			"/view.jsp"
-		).build();
+		).buildPortletURL();
 	}
 
 	protected boolean isSearch() {

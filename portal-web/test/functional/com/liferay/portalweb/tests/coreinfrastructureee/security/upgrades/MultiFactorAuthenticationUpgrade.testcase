@@ -13,8 +13,6 @@ definition {
 
 	setUp {
 		Navigator.openURL();
-
-		Smoke.viewWelcomePage();
 	}
 
 	@priority = "5"
@@ -22,8 +20,9 @@ definition {
 		property data.archive.type = "data-archive-mfa-instance-level";
 		property portal.version = "7.3.10";
 
-		SignIn.signInSpecificURL(
-			url = "http://www.able.com:8080/",
+		User.firstLoginUI(
+			password = "test",
+			specificURL = "http://www.able.com:8080",
 			userEmailAddress = "test@www.able.com");
 
 		MultiFactorAuthentication.sendOTPEmailPG();
@@ -36,6 +35,7 @@ definition {
 			userPassword = "test");
 
 		PortalSettings.gotoConfiguration(
+			baseURL = "http://www.able.com:8080",
 			configurationCategory = "Multi-Factor Authentication",
 			configurationName = "Multi-Factor Authentication and Email One-Time Password Configuration",
 			configurationScope = "Virtual Instance Scope");
@@ -52,7 +52,9 @@ definition {
 
 		var portalURL = PropsUtil.get("portal.url");
 
-		SignIn.signIn(userEmailAddress = "test@liferay.com");
+		User.firstLoginUI(
+			password = "test",
+			userEmailAddress = "test@liferay.com");
 
 		MultiFactorAuthentication.sendOTPEmailPG();
 

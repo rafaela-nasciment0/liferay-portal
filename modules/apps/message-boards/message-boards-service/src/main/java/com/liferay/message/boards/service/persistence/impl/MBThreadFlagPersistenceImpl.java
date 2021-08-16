@@ -3022,24 +3022,24 @@ public class MBThreadFlagPersistenceImpl
 		ServiceContext serviceContext =
 			ServiceContextThreadLocal.getServiceContext();
 
-		Date now = new Date();
+		Date date = new Date();
 
 		if (isNew && (mbThreadFlag.getCreateDate() == null)) {
 			if (serviceContext == null) {
-				mbThreadFlag.setCreateDate(now);
+				mbThreadFlag.setCreateDate(date);
 			}
 			else {
-				mbThreadFlag.setCreateDate(serviceContext.getCreateDate(now));
+				mbThreadFlag.setCreateDate(serviceContext.getCreateDate(date));
 			}
 		}
 
 		if (!mbThreadFlagModelImpl.hasSetModifiedDate()) {
 			if (serviceContext == null) {
-				mbThreadFlag.setModifiedDate(now);
+				mbThreadFlag.setModifiedDate(date);
 			}
 			else {
 				mbThreadFlag.setModifiedDate(
-					serviceContext.getModifiedDate(now));
+					serviceContext.getModifiedDate(date));
 			}
 		}
 
@@ -3464,7 +3464,8 @@ public class MBThreadFlagPersistenceImpl
 	public Set<String> getCTColumnNames(
 		CTColumnResolutionType ctColumnResolutionType) {
 
-		return _ctColumnNamesMap.get(ctColumnResolutionType);
+		return _ctColumnNamesMap.getOrDefault(
+			ctColumnResolutionType, Collections.emptySet());
 	}
 
 	@Override
@@ -3498,7 +3499,6 @@ public class MBThreadFlagPersistenceImpl
 	static {
 		Set<String> ctControlColumnNames = new HashSet<String>();
 		Set<String> ctIgnoreColumnNames = new HashSet<String>();
-		Set<String> ctMergeColumnNames = new HashSet<String>();
 		Set<String> ctStrictColumnNames = new HashSet<String>();
 
 		ctControlColumnNames.add("mvccVersion");
@@ -3517,7 +3517,6 @@ public class MBThreadFlagPersistenceImpl
 			CTColumnResolutionType.CONTROL, ctControlColumnNames);
 		_ctColumnNamesMap.put(
 			CTColumnResolutionType.IGNORE, ctIgnoreColumnNames);
-		_ctColumnNamesMap.put(CTColumnResolutionType.MERGE, ctMergeColumnNames);
 		_ctColumnNamesMap.put(
 			CTColumnResolutionType.PK, Collections.singleton("threadFlagId"));
 		_ctColumnNamesMap.put(
@@ -3781,7 +3780,7 @@ public class MBThreadFlagPersistenceImpl
 			return MBThreadFlagTable.INSTANCE.getTableName();
 		}
 
-		private Object[] _getValue(
+		private static Object[] _getValue(
 			MBThreadFlagModelImpl mbThreadFlagModelImpl, String[] columnNames,
 			boolean original) {
 
@@ -3803,8 +3802,8 @@ public class MBThreadFlagPersistenceImpl
 			return arguments;
 		}
 
-		private static Map<FinderPath, Long> _finderPathColumnBitmasksCache =
-			new ConcurrentHashMap<>();
+		private static final Map<FinderPath, Long>
+			_finderPathColumnBitmasksCache = new ConcurrentHashMap<>();
 
 	}
 

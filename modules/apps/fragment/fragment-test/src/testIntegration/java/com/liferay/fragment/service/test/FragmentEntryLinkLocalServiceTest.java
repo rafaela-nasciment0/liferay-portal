@@ -46,6 +46,7 @@ import com.liferay.portal.kernel.service.CompanyLocalService;
 import com.liferay.portal.kernel.service.LayoutLocalService;
 import com.liferay.portal.kernel.service.LayoutSetLocalService;
 import com.liferay.portal.kernel.service.ServiceContext;
+import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
 import com.liferay.portal.kernel.settings.definition.ConfigurationBeanDeclaration;
 import com.liferay.portal.kernel.test.portlet.MockLiferayPortletActionResponse;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
@@ -55,7 +56,7 @@ import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.test.util.ServiceContextTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
-import com.liferay.portal.kernel.util.HashMapDictionary;
+import com.liferay.portal.kernel.util.HashMapDictionaryBuilder;
 import com.liferay.portal.kernel.util.JavaConstants;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.WebKeys;
@@ -66,7 +67,6 @@ import com.liferay.portal.test.rule.PermissionCheckerMethodTestRule;
 
 import java.io.InputStream;
 
-import java.util.Dictionary;
 import java.util.List;
 
 import org.junit.After;
@@ -106,6 +106,8 @@ public class FragmentEntryLinkLocalServiceTest {
 
 		_serviceContext.setRequest(_getMockHttpServletRequest());
 
+		ServiceContextThreadLocal.pushServiceContext(_serviceContext);
+
 		_fragmentEntry = _fragmentEntryLocalService.addFragmentEntry(
 			TestPropsValues.getUserId(), _group.getGroupId(),
 			_fragmentCollection.getFragmentCollectionId(), null,
@@ -133,13 +135,11 @@ public class FragmentEntryLinkLocalServiceTest {
 
 	@After
 	public void tearDown() throws Exception {
-		Dictionary<String, Object> properties = new HashMapDictionary<>();
-
-		properties.put("propagateChanges", false);
-
 		_configurationProvider.saveCompanyConfiguration(
 			FragmentServiceConfiguration.class, _group.getCompanyId(),
-			properties);
+			HashMapDictionaryBuilder.<String, Object>put(
+				"propagateChanges", false
+			).build());
 
 		_setFreeMarkerEnabled(true);
 	}
@@ -510,13 +510,11 @@ public class FragmentEntryLinkLocalServiceTest {
 	public void testUpdateFragmentEntryLinkWithoutPropagation()
 		throws Exception {
 
-		Dictionary<String, Object> properties = new HashMapDictionary<>();
-
-		properties.put("propagateChanges", false);
-
 		_configurationProvider.saveCompanyConfiguration(
 			FragmentServiceConfiguration.class, _group.getCompanyId(),
-			properties);
+			HashMapDictionaryBuilder.<String, Object>put(
+				"propagateChanges", false
+			).build());
 
 		String configuration = _read("configuration-light.json");
 
@@ -567,13 +565,11 @@ public class FragmentEntryLinkLocalServiceTest {
 
 	@Test
 	public void testUpdateFragmentEntryLinkWithPropagation() throws Exception {
-		Dictionary<String, Object> properties = new HashMapDictionary<>();
-
-		properties.put("propagateChanges", true);
-
 		_configurationProvider.saveCompanyConfiguration(
 			FragmentServiceConfiguration.class, _group.getCompanyId(),
-			properties);
+			HashMapDictionaryBuilder.<String, Object>put(
+				"propagateChanges", true
+			).build());
 
 		FragmentEntry fragmentEntry =
 			_fragmentEntryLocalService.addFragmentEntry(
@@ -620,6 +616,48 @@ public class FragmentEntryLinkLocalServiceTest {
 			_objectMapper.readTree(
 				_read("expected-editable-values-light-modified.json")),
 			_objectMapper.readTree(editableValuesJSONObject.toString()));
+	}
+
+	@Test
+	public void testUpdateFragmentEntryLinkWithPropagationAndNewConfigurationValues()
+		throws Exception {
+
+		FragmentEntry fragmentEntry =
+			_fragmentEntryLocalService.addFragmentEntry(
+				TestPropsValues.getUserId(), _group.getGroupId(),
+				_fragmentCollection.getFragmentCollectionId(), null,
+				"Fragment Name", StringPool.BLANK,
+				_read("fragment-configuration.html"), StringPool.BLANK,
+				_read("configuration-new-field.json"), 0,
+				FragmentConstants.TYPE_COMPONENT,
+				WorkflowConstants.STATUS_APPROVED, _serviceContext);
+
+		FragmentEntryLink fragmentEntryLink =
+			_fragmentEntryLinkLocalService.addFragmentEntryLink(
+				TestPropsValues.getUserId(), _group.getGroupId(), 0,
+				fragmentEntry.getFragmentEntryId(), 0, _layout.getPlid(),
+				fragmentEntry.getCss(), fragmentEntry.getHtml(),
+				fragmentEntry.getJs(), fragmentEntry.getConfiguration(),
+				StringPool.BLANK, StringPool.BLANK, 0, null, _serviceContext);
+
+		_fragmentEntryLocalService.updateFragmentEntry(
+			TestPropsValues.getUserId(), fragmentEntry.getFragmentEntryId(),
+			fragmentEntry.getName(), fragmentEntry.getCss(),
+			_read("updated-fragment-configuration.html"), fragmentEntry.getJs(),
+			_read("updated-configuration-new-field.json"),
+			WorkflowConstants.STATUS_APPROVED);
+
+		_fragmentEntryLinkLocalService.updateLatestChanges(
+			fragmentEntryLink.getFragmentEntryLinkId());
+
+		fragmentEntryLink =
+			_fragmentEntryLinkLocalService.fetchFragmentEntryLink(
+				fragmentEntryLink.getFragmentEntryLinkId());
+
+		Assert.assertEquals(
+			_objectMapper.readTree(
+				_read("updated-configuration-new-field.json")),
+			_objectMapper.readTree(fragmentEntryLink.getConfiguration()));
 	}
 
 	@Test
@@ -796,13 +834,12 @@ public class FragmentEntryLinkLocalServiceTest {
 	private void _setFreeMarkerEnabled(boolean freeMarkerEnabled)
 		throws Exception {
 
-		Dictionary<String, Object> properties = new HashMapDictionary<>();
-
-		properties.put("enable.freemarker", freeMarkerEnabled);
-
 		_configurationProvider.saveCompanyConfiguration(
 			_configurationBeanDeclaration.getConfigurationBeanClass(),
-			_group.getCompanyId(), properties);
+			_group.getCompanyId(),
+			HashMapDictionaryBuilder.<String, Object>put(
+				"enable.freemarker", freeMarkerEnabled
+			).build());
 
 		Thread.sleep(200);
 	}

@@ -103,10 +103,10 @@ CPMeasurementUnitsDisplayContext cpMeasurementUnitsDisplayContext = (CPMeasureme
 							).setRedirect(
 								currentURL
 							).setParameter(
-								"cpMeasurementUnitId", String.valueOf(cpMeasurementUnit.getCPMeasurementUnitId())
+								"cpMeasurementUnitId", cpMeasurementUnit.getCPMeasurementUnitId()
 							).setParameter(
-								"type", String.valueOf(cpMeasurementUnitsDisplayContext.getType())
-							).build()
+								"type", cpMeasurementUnitsDisplayContext.getType()
+							).buildPortletURL()
 						%>'
 						name="name"
 						value="<%= HtmlUtil.escape(cpMeasurementUnit.getName(locale)) %>"

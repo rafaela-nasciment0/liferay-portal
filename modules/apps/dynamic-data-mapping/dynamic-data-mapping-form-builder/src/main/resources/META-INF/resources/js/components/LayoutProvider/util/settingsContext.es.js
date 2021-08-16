@@ -16,10 +16,9 @@ import {
 	PagesVisitor,
 	generateInstanceId,
 	normalizeFieldName,
-} from 'dynamic-data-mapping-form-renderer';
-
-import {getDefaultFieldName} from '../../../util/fieldSupport.es';
-import {updateFieldValidationProperty} from './fields.es';
+} from 'data-engine-js-components-web';
+import {updateFieldValidationProperty} from 'data-engine-js-components-web/js/core/utils/fields';
+import {getDefaultFieldName} from 'data-engine-js-components-web/js/utils/fieldSupport';
 
 export const getSettingsContextProperty = (
 	settingsContext,
@@ -392,6 +391,12 @@ export const updateField = (
 				field,
 				propertyValue
 			),
+		};
+	}
+	else if (propertyName === 'numericInputMask') {
+		field = {
+			...field,
+			...propertyValue,
 		};
 	}
 	else if (propertyName === 'options') {

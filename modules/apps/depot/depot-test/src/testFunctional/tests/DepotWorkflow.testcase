@@ -16,13 +16,9 @@ definition {
 
 		JSONGroup.addGroup(groupName = "Site Name");
 
-		DepotNavigator.openDepotAdmin();
-
-		DepotNavigator.gotoEdit(depotName = "Test Depot Name");
-
-		DepotNavigator.gotoSites(depotName = "Test Depot Name");
-
-		Depot.connectSite(siteList = "Site Name");
+		JSONDepot.connectSite(
+			depotName = "Test Depot Name",
+			groupName = "Site Name");
 	}
 
 	tearDown {
@@ -46,14 +42,16 @@ definition {
 
 	@description = "This ensures that the approved image from a depot is available to use in its connected site."
 	@priority = "5"
+	@refactorneeded
 	test ApproveImage {
 		property portal.acceptance = "true";
 
-		DepotNavigator.openDepotDocumentsAndMediaAdmin(depotName = "Test Depot Name");
-
-		DMFolder.addCP(
+		JSONDocument.addFolder(
 			dmFolderDescription = "DM Folder Description",
-			dmFolderName = "DM Folder Name");
+			dmFolderName = "DM Folder Name",
+			groupName = "Test Depot Name");
+
+		DepotNavigator.openDepotDocumentsAndMediaAdmin(depotName = "Test Depot Name");
 
 		DMFolder.configureWorkflowCP(
 			dmFolderName = "DM Folder Name",
@@ -71,11 +69,7 @@ definition {
 			locator1 = "DocumentsAndMedia#ICON_DOCUMENT_WORKFLOW_STATUS",
 			value1 = "Pending");
 
-		BlogsNavigator.openBlogsAdmin(siteURLKey = "site-name");
-
-		BlogsNavigator.gotoAddEntry();
-
-		Pause(locator1 = "5000");
+		BlogsNavigator.openToAddEntry(siteURLKey = "site-name");
 
 		BlogsNavigator.gotoSelectFile();
 
@@ -122,9 +116,7 @@ definition {
 			dmDocumentStatus = "Approved",
 			dmDocumentTitle = "Document_1.jpg");
 
-		BlogsNavigator.openBlogsAdmin(siteURLKey = "site-name");
-
-		BlogsNavigator.gotoAddEntry();
+		BlogsNavigator.openToAddEntry(siteURLKey = "site-name");
 
 		BlogsNavigator.gotoSelectFile();
 
@@ -137,6 +129,7 @@ definition {
 
 	@description = "This ensures that the approved WC article from a depot is available to use in its connected site."
 	@priority = "5"
+	@refactorneeded
 	test ApproveWCArticle {
 		property portal.acceptance = "true";
 
@@ -236,6 +229,7 @@ definition {
 
 	@description = "This test covers LPS-113392. It ensures that an asset library WC article can be approved by the content reviewer."
 	@priority = "5"
+	@refactorneeded
 	test ApproveWCArticleByContentReviewer {
 		property custom.properties = "jsonws.web.service.paths.excludes=";
 
@@ -309,7 +303,7 @@ definition {
 			assetType = "Web Content Article",
 			user = "Test Test");
 
-		Workflow.assignByDetails(user = "userfn userln");
+		Workflow.assignByDetails(user = "usersn (userfn userln)");
 
 		User.logoutAndLoginPG(
 			userLoginEmailAddress = "user1@liferay.com",
@@ -337,6 +331,7 @@ definition {
 
 	@description = "This ensures that a single approver workflow of web content can be defined for the asset library."
 	@priority = "5"
+	@refactorneeded
 	test ApproveWCArticleWithinDepot {
 		DepotNavigator.openDepotAdmin();
 
@@ -386,6 +381,7 @@ definition {
 
 	@description = "This ensures that the approved WC article in folder from a depot is available to use in its connected site."
 	@priority = "5"
+	@refactorneeded
 	test ApproveWCInFolder {
 		DepotNavigator.openDepotWebContentAdmin(depotName = "Test Depot Name");
 
@@ -491,12 +487,14 @@ definition {
 
 	@description = "This ensures that the resubmitted image from a depot is available to use in its connected site."
 	@priority = "5"
+	@refactorneeded
 	test RejectAndResubmitImage {
-		DepotNavigator.openDepotDocumentsAndMediaAdmin(depotName = "Test Depot Name");
-
-		DMFolder.addCP(
+		JSONDocument.addFolder(
 			dmFolderDescription = "DM Folder Description",
-			dmFolderName = "DM Folder Name");
+			dmFolderName = "DM Folder Name",
+			groupName = "Test Depot Name");
+
+		DepotNavigator.openDepotDocumentsAndMediaAdmin(depotName = "Test Depot Name");
 
 		DMFolder.configureWorkflowCP(
 			dmDocumentTypeName = "Basic Document",
@@ -609,6 +607,7 @@ definition {
 
 	@description = "This ensures that the resubmitted WC article from a depot is available to use in its connected site."
 	@priority = "5"
+	@refactorneeded
 	test RejectAndResubmitWC {
 		ApplicationsMenu.gotoPortlet(
 			category = "Workflow",
@@ -727,6 +726,7 @@ definition {
 
 	@description = "This ensures that the resubmitted web content can be approved in an asset library."
 	@priority = "5"
+	@refactorneeded
 	test RejectandResubmitWCArticleWithinDepot {
 		DepotNavigator.openDepotAdmin();
 
@@ -808,6 +808,7 @@ definition {
 
 	@description = "This ensures that an asset library WC article can be rejected by the content reviewer."
 	@priority = "5"
+	@refactorneeded
 	test RejectWCArticleByContentReviewer {
 		property custom.properties = "jsonws.web.service.paths.excludes=";
 
@@ -870,7 +871,7 @@ definition {
 			assetType = "Web Content Article",
 			user = "Test Test");
 
-		Workflow.assignByDetails(user = "userfn userln");
+		Workflow.assignByDetails(user = "usersn (userfn userln)");
 
 		User.logoutAndLoginPG(
 			userLoginEmailAddress = "user1@liferay.com",
@@ -898,12 +899,14 @@ definition {
 
 	@description = "This ensures that a DM folder workflow can be restored to default from other settings."
 	@priority = "4"
+	@refactorneeded
 	test RestoreDMFolderWorkflowToDefault {
-		DepotNavigator.openDepotDocumentsAndMediaAdmin(depotName = "Test Depot Name");
-
-		DMFolder.addCP(
+		JSONDocument.addFolder(
 			dmFolderDescription = "DM Folder Description",
-			dmFolderName = "DM Folder Name");
+			dmFolderName = "DM Folder Name",
+			groupName = "Test Depot Name");
+
+		DepotNavigator.openDepotDocumentsAndMediaAdmin(depotName = "Test Depot Name");
 
 		DMFolder.configureWorkflowCP(
 			dmDocumentTypeName = "Basic Document",
@@ -911,10 +914,14 @@ definition {
 			workflowDefinition = "Single Approver",
 			workflowRestriction = "Specific Restrictions");
 
+		DepotNavigator.openDepotDocumentsAndMediaAdmin(depotName = "Test Depot Name");
+
 		DMFolder.configureWorkflowCP(
 			dmFolderName = "DM Folder Name",
 			workflowDefinition = "Single Approver",
 			workflowRestriction = "Default Workflow");
+
+		DepotNavigator.openDepotDocumentsAndMediaAdmin(depotName = "Test Depot Name");
 
 		DMFolder.configureWorkflowCP(
 			dmFolderName = "DM Folder Name",
@@ -938,6 +945,7 @@ definition {
 
 	@description = "This ensures that a WC folder workflow can be restored to default from other settings."
 	@priority = "4"
+	@refactorneeded
 	test RestoreWCFolderWorkflowToDefault {
 		DepotNavigator.openDepotWebContentAdmin(depotName = "Test Depot Name");
 
@@ -979,6 +987,7 @@ definition {
 
 	@description = "This ensures that the workflow can be set in an asset library."
 	@priority = "5"
+	@refactorneeded
 	test Smoke {
 		property portal.acceptance = "true";
 
@@ -998,17 +1007,16 @@ definition {
 			key_rowEntry = "Blogs Entry",
 			locator1 = "Button#EDIT_ROW");
 
-		DepotNavigator.openDepotDocumentsAndMediaAdmin(depotName = "Test Depot Name");
+		JSONDocument.addFolder(
+			dmFolderDescription = "DM Folder Description",
+			dmFolderName = "DM Folder Name",
+			groupName = "Test Depot Name");
 
-		DMFolder.addCP(dmFolderName = "DM Folder Name");
+		DepotNavigator.openDepotDocumentsAndMediaAdmin(depotName = "Test Depot Name");
 
 		Depot.viewDMWorkflowPresent(dmFolderName = "DM Folder Name");
 
-		DepotNavigator.openDepotAdmin();
-
-		DepotNavigator.gotoDepotPortlet(
-			depotName = "Test Depot Name",
-			portlet = "Settings");
+		DepotNavigator.openDepotSettingsGeneral(depotName = "Test Depot Name");
 
 		Depot.configureApplication(
 			applicationList = "Web Content",

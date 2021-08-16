@@ -127,8 +127,9 @@ public class AnnotationsExtendedObjectClassDefinition
 		URL url = bundle.getResource(resourcePath);
 
 		if (url != null) {
-			try (InputStream is = url.openStream()) {
-				return JSONFactoryUtil.createJSONObject(StringUtil.read(is));
+			try (InputStream inputStream = url.openStream()) {
+				return JSONFactoryUtil.createJSONObject(
+					StringUtil.read(inputStream));
 			}
 			catch (Exception exception) {
 				_log.error(
@@ -208,6 +209,9 @@ public class AnnotationsExtendedObjectClassDefinition
 		).put(
 			"name-arguments",
 			StringUtil.merge(extendedObjectClassDefinition.nameArguments())
+		).put(
+			"strictScope",
+			Boolean.toString(extendedObjectClassDefinition.strictScope())
 		).build();
 
 		ExtendedObjectClassDefinition.Scope scope =

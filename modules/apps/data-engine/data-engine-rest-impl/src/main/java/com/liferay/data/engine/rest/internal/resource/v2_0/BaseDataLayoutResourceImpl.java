@@ -173,8 +173,8 @@ public abstract class BaseDataLayoutResourceImpl
 	public Response postDataDefinitionDataLayoutBatch(
 			@NotNull @Parameter(hidden = true) @PathParam("dataDefinitionId")
 				Long dataDefinitionId,
-			@Parameter(hidden = true) @QueryParam("callbackURL")
-				String callbackURL,
+			@Parameter(hidden = true) @QueryParam("callbackURL") String
+				callbackURL,
 			Object object)
 		throws Exception {
 
@@ -208,8 +208,8 @@ public abstract class BaseDataLayoutResourceImpl
 	@Produces({"application/json", "application/xml"})
 	@Tags(value = {@Tag(name = "DataLayout")})
 	public void deleteDataLayout(
-			@NotNull @Parameter(hidden = true) @PathParam("dataLayoutId")
-				Long dataLayoutId)
+			@NotNull @Parameter(hidden = true) @PathParam("dataLayoutId") Long
+				dataLayoutId)
 		throws Exception {
 	}
 
@@ -228,8 +228,8 @@ public abstract class BaseDataLayoutResourceImpl
 	@Produces("application/json")
 	@Tags(value = {@Tag(name = "DataLayout")})
 	public Response deleteDataLayoutBatch(
-			@Parameter(hidden = true) @QueryParam("callbackURL")
-				String callbackURL,
+			@Parameter(hidden = true) @QueryParam("callbackURL") String
+				callbackURL,
 			Object object)
 		throws Exception {
 
@@ -263,8 +263,8 @@ public abstract class BaseDataLayoutResourceImpl
 	@Produces({"application/json", "application/xml"})
 	@Tags(value = {@Tag(name = "DataLayout")})
 	public DataLayout getDataLayout(
-			@NotNull @Parameter(hidden = true) @PathParam("dataLayoutId")
-				Long dataLayoutId)
+			@NotNull @Parameter(hidden = true) @PathParam("dataLayoutId") Long
+				dataLayoutId)
 		throws Exception {
 
 		return new DataLayout();
@@ -285,8 +285,8 @@ public abstract class BaseDataLayoutResourceImpl
 	@PUT
 	@Tags(value = {@Tag(name = "DataLayout")})
 	public DataLayout putDataLayout(
-			@NotNull @Parameter(hidden = true) @PathParam("dataLayoutId")
-				Long dataLayoutId,
+			@NotNull @Parameter(hidden = true) @PathParam("dataLayoutId") Long
+				dataLayoutId,
 			DataLayout dataLayout)
 		throws Exception {
 
@@ -308,8 +308,8 @@ public abstract class BaseDataLayoutResourceImpl
 	@PUT
 	@Tags(value = {@Tag(name = "DataLayout")})
 	public Response putDataLayoutBatch(
-			@Parameter(hidden = true) @QueryParam("callbackURL")
-				String callbackURL,
+			@Parameter(hidden = true) @QueryParam("callbackURL") String
+				callbackURL,
 			Object object)
 		throws Exception {
 
@@ -344,8 +344,8 @@ public abstract class BaseDataLayoutResourceImpl
 	@Produces({"application/json", "application/xml"})
 	@Tags(value = {@Tag(name = "DataLayout")})
 	public Response postDataLayoutContext(
-			@NotNull @Parameter(hidden = true) @PathParam("dataLayoutId")
-				Long dataLayoutId,
+			@NotNull @Parameter(hidden = true) @PathParam("dataLayoutId") Long
+				dataLayoutId,
 			DataLayoutRenderingContext dataLayoutRenderingContext)
 		throws Exception {
 
@@ -375,8 +375,8 @@ public abstract class BaseDataLayoutResourceImpl
 	@Tags(value = {@Tag(name = "DataLayout")})
 	public DataLayout getSiteDataLayoutByContentTypeByDataLayoutKey(
 			@NotNull @Parameter(hidden = true) @PathParam("siteId") Long siteId,
-			@NotNull @Parameter(hidden = true) @PathParam("contentType")
-				String contentType,
+			@NotNull @Parameter(hidden = true) @PathParam("contentType") String
+				contentType,
 			@NotNull @Parameter(hidden = true) @PathParam("dataLayoutKey")
 				String dataLayoutKey)
 		throws Exception {
@@ -393,7 +393,7 @@ public abstract class BaseDataLayoutResourceImpl
 
 		for (DataLayout dataLayout : dataLayouts) {
 			postDataDefinitionDataLayout(
-				Long.valueOf((String)parameters.get("dataDefinitionId")),
+				Long.parseLong((String)parameters.get("dataDefinitionId")),
 				dataLayout);
 		}
 	}
@@ -431,7 +431,7 @@ public abstract class BaseDataLayoutResourceImpl
 		throws Exception {
 
 		return getDataDefinitionDataLayoutsPage(
-			(Long)parameters.get("dataDefinitionId"),
+			Long.parseLong((String)parameters.get("dataDefinitionId")),
 			(String)parameters.get("keywords"), pagination, sorts);
 	}
 
@@ -466,7 +466,7 @@ public abstract class BaseDataLayoutResourceImpl
 		for (DataLayout dataLayout : dataLayouts) {
 			putDataLayout(
 				dataLayout.getId() != null ? dataLayout.getId() :
-					(Long)parameters.get("dataLayoutId"),
+					Long.parseLong((String)parameters.get("dataLayoutId")),
 				dataLayout);
 		}
 	}

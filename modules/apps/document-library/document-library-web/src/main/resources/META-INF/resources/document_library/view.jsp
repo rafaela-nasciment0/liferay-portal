@@ -18,6 +18,7 @@
 
 <%
 DLAdminDisplayContext dlAdminDisplayContext = (DLAdminDisplayContext)request.getAttribute(DLAdminDisplayContext.class.getName());
+DLAdminManagementToolbarDisplayContext dlAdminManagementToolbarDisplayContext = (DLAdminManagementToolbarDisplayContext)request.getAttribute(DLAdminManagementToolbarDisplayContext.class.getName());
 
 DLViewDisplayContext dlViewDisplayContext = new DLViewDisplayContext(dlAdminDisplayContext, request, renderRequest, renderResponse);
 %>
@@ -49,6 +50,8 @@ DLViewDisplayContext dlViewDisplayContext = new DLViewDisplayContext(dlAdminDisp
 		<clay:management-toolbar
 			additionalProps='<%=
 				HashMapBuilder.<String, Object>put(
+					"collectDigitalSignaturePortlet", DigitalSignaturePortletKeys.COLLECT_DIGITAL_SIGNATURE
+				).put(
 					"downloadEntryURL", dlViewDisplayContext.getDownloadEntryURL()
 				).put(
 					"editEntryURL", dlViewDisplayContext.getEditEntryURL()
@@ -78,7 +81,7 @@ DLViewDisplayContext dlViewDisplayContext = new DLViewDisplayContext(dlAdminDisp
 					"viewFileEntryURL", dlViewDisplayContext.getViewFileEntryURL()
 				).build()
 			%>'
-			managementToolbarDisplayContext="<%= (DLAdminManagementToolbarDisplayContext)request.getAttribute(DLAdminManagementToolbarDisplayContext.class.getName()) %>"
+			managementToolbarDisplayContext="<%= dlAdminManagementToolbarDisplayContext %>"
 			propsTransformer="document_library/js/DLManagementToolbarPropsTransformer"
 		/>
 
@@ -166,7 +169,7 @@ DLViewDisplayContext dlViewDisplayContext = new DLViewDisplayContext(dlAdminDisp
 									</c:otherwise>
 								</c:choose>
 
-								<div class="lfr-template" id="<portlet:namespace />appViewEntryTemplates">
+								<div class="d-none" id="<portlet:namespace />appViewEntryTemplates">
 
 									<%
 									String thumbnailSrc = themeDisplay.getPathThemeImages() + "/file_system/large/default.png";
@@ -183,11 +186,11 @@ DLViewDisplayContext dlViewDisplayContext = new DLViewDisplayContext(dlAdminDisp
 										</liferay-frontend:vertical-card-header>
 									</liferay-frontend:vertical-card>
 
-									<li class="display-descriptive entry-display-style list-group-item">
+									<li class="display-descriptive entry-display-style list-group-item list-group-item-flex">
 										<div class="autofit-col"></div>
 
 										<div class="autofit-col">
-											<div class="click-selector sticker sticker-user-icon sticker-xl">
+											<div class="click-selector sticker">
 												<div class="sticker-overlay">
 													<img alt="thumbnail" class="sticker-img" src="<%= thumbnailSrc %>" />
 												</div>
@@ -195,15 +198,15 @@ DLViewDisplayContext dlViewDisplayContext = new DLViewDisplayContext(dlAdminDisp
 										</div>
 
 										<div class="autofit-col autofit-col-expand">
-											<h5 class="text-default">
-												<liferay-ui:message arguments="<%= HtmlUtil.escape(user.getFullName()) %>" key="right-now-by-x" />
-											</h5>
-
-											<h4>
+											<h2 class="h5">
 												<aui:a href="<%= dlViewDisplayContext.getUploadURL() %>">
 													{title}
 												</aui:a>
-											</h4>
+											</h2>
+
+											<span>
+												<liferay-ui:message arguments="<%= HtmlUtil.escape(user.getFullName()) %>" key="right-now-by-x" />
+											</span>
 										</div>
 
 										<div class="autofit-col"></div>
@@ -363,6 +366,21 @@ DLViewDisplayContext dlViewDisplayContext = new DLViewDisplayContext(dlAdminDisp
 						"context", Collections.singletonMap("namespace", liferayPortletResponse.getNamespace())
 					).put(
 						"props", editCategoriesProps
+					).build()
+				%>'
+			/>
+		</div>
+
+		<portlet:actionURL name="/document_library/edit_file_entry_image_editor" var="editImageURL" />
+
+		<div>
+			<react:component
+				module="document_library/js/image-editor/EditImageWithImageEditor"
+				props='<%=
+					HashMapBuilder.<String, Object>put(
+						"editImageURL", editImageURL
+					).put(
+						"redirectURL", currentURL
 					).build()
 				%>'
 			/>

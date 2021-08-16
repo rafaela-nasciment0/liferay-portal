@@ -113,8 +113,8 @@ public class WorkflowInstanceViewDisplayContext
 	public String getClearResultsURL() {
 		return PortletURLBuilder.create(
 			getViewPortletURL()
-		).setParameter(
-			"keywords", StringPool.BLANK
+		).setKeywords(
+			StringPool.BLANK
 		).buildString();
 	}
 
@@ -326,8 +326,29 @@ public class WorkflowInstanceViewDisplayContext
 	public String getSortingURL(HttpServletRequest httpServletRequest)
 		throws PortletException {
 
-		PortletURL portletURL = PortletURLBuilder.createRenderURL(
+		return PortletURLBuilder.createRenderURL(
 			workflowInstanceRequestHelper.getLiferayPortletResponse()
+		).setNavigation(
+			() -> {
+				String navigation = getNavigation();
+
+				if (Validator.isNotNull(navigation)) {
+					return navigation;
+				}
+
+				return null;
+			}
+		).setParameter(
+			"orderByCol",
+			() -> {
+				String orderByCol = getOrderByCol();
+
+				if (Validator.isNotNull(orderByCol)) {
+					return orderByCol;
+				}
+
+				return null;
+			}
 		).setParameter(
 			"orderByType",
 			() -> {
@@ -340,24 +361,9 @@ public class WorkflowInstanceViewDisplayContext
 
 				return "asc";
 			}
-		).build();
-
-		String instanceNavigation = ParamUtil.getString(
-			httpServletRequest, "navigation");
-
-		if (Validator.isNotNull(instanceNavigation)) {
-			portletURL.setParameter("navigation", instanceNavigation);
-		}
-
-		String orderByCol = getOrderByCol();
-
-		if (Validator.isNotNull(orderByCol)) {
-			portletURL.setParameter("orderByCol", orderByCol);
-		}
-
-		portletURL.setParameter("tab", WorkflowWebKeys.WORKFLOW_TAB_INSTANCE);
-
-		return portletURL.toString();
+		).setParameter(
+			"tab", WorkflowWebKeys.WORKFLOW_TAB_INSTANCE
+		).buildString();
 	}
 
 	public String getStatus(WorkflowInstance workflowInstance) {
@@ -376,11 +382,13 @@ public class WorkflowInstanceViewDisplayContext
 	public PortletURL getViewPortletURL() {
 		return PortletURLBuilder.createRenderURL(
 			liferayPortletResponse
-		).setParameter(
-			"tab", WorkflowWebKeys.WORKFLOW_TAB_INSTANCE
+		).setNavigation(
+			getNavigation()
 		).setParameter(
 			"orderByType", getOrderByType()
-		).build();
+		).setParameter(
+			"tab", WorkflowWebKeys.WORKFLOW_TAB_INSTANCE
+		).buildPortletURL();
 	}
 
 	public ViewTypeItemList getViewTypes() {

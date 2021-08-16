@@ -55,7 +55,7 @@ PortletURL portletURL = PortletURLBuilder.create(
 	commerceCartContentMiniDisplayContext.getPortletURL()
 ).setParameter(
 	"searchContainerId", "commerceOrderItems"
-).build();
+).buildPortletURL();
 
 request.setAttribute("view.jsp-portletURL", portletURL);
 %>
@@ -123,11 +123,9 @@ request.setAttribute("view.jsp-portletURL", portletURL);
 						</div>
 
 						<%
-						List<KeyValuePair> keyValuePairs = commerceCartContentMiniDisplayContext.getKeyValuePairs(commerceOrderItem.getCPDefinitionId(), commerceOrderItem.getJson(), locale);
-
 						StringJoiner stringJoiner = new StringJoiner(StringPool.COMMA);
 
-						for (KeyValuePair keyValuePair : keyValuePairs) {
+						for (KeyValuePair keyValuePair : commerceCartContentMiniDisplayContext.getKeyValuePairs(commerceOrderItem.getCPDefinitionId(), commerceOrderItem.getJson(), locale)) {
 							stringJoiner.add(keyValuePair.getValue());
 						}
 						%>

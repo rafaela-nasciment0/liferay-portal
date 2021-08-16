@@ -36,9 +36,10 @@ import com.liferay.portal.kernel.service.ResourceActionLocalService;
 import com.liferay.portal.kernel.service.ResourcePermissionLocalService;
 import com.liferay.portal.kernel.service.RoleLocalService;
 import com.liferay.portal.kernel.service.UserLocalService;
-import com.liferay.portal.kernel.upgrade.BaseUpgradeSQLServerDatetime;
+import com.liferay.portal.kernel.upgrade.BaseSQLServerDatetimeUpgradeProcess;
+import com.liferay.portal.kernel.upgrade.CTModelUpgradeProcess;
 import com.liferay.portal.kernel.upgrade.DummyUpgradeStep;
-import com.liferay.portal.kernel.upgrade.UpgradeMVCCVersion;
+import com.liferay.portal.kernel.upgrade.MVCCVersionUpgradeProcess;
 import com.liferay.portal.upgrade.registry.UpgradeStepRegistrator;
 import com.liferay.subscription.service.SubscriptionLocalService;
 
@@ -104,7 +105,7 @@ public class CalendarServiceUpgrade implements UpgradeStepRegistrator {
 
 		registry.register(
 			"3.0.1", "4.0.0",
-			new BaseUpgradeSQLServerDatetime(
+			new BaseSQLServerDatetimeUpgradeProcess(
 				new Class<?>[] {
 					CalendarBookingTable.class,
 					CalendarNotificationTemplateTable.class,
@@ -121,7 +122,7 @@ public class CalendarServiceUpgrade implements UpgradeStepRegistrator {
 
 		registry.register(
 			"4.0.1", "4.1.0",
-			new UpgradeMVCCVersion() {
+			new MVCCVersionUpgradeProcess() {
 
 				@Override
 				protected String[] getModuleTableNames() {
@@ -142,6 +143,12 @@ public class CalendarServiceUpgrade implements UpgradeStepRegistrator {
 			"4.1.1", "4.1.2",
 			new com.liferay.calendar.internal.upgrade.v4_1_2.
 				CalendarNotificationTemplateUpgradeProcess());
+
+		registry.register(
+			"4.1.2", "4.2.0",
+			new CTModelUpgradeProcess(
+				"Calendar", "CalendarBooking", "CalendarNotificationTemplate",
+				"CalendarResource"));
 	}
 
 	@Reference

@@ -71,19 +71,17 @@ List<DDMDisplayTabItem> ddmDisplayTabItems = ddmDisplay.getTabItems();
 				String rowHREF = StringPool.BLANK;
 
 				if (DDMStructurePermission.contains(permissionChecker, structure, ActionKeys.UPDATE)) {
-					PortletURL rowURL = PortletURLBuilder.createRenderURL(
+					rowHREF = PortletURLBuilder.createRenderURL(
 						renderResponse
 					).setMVCPath(
 						"/edit_structure.jsp"
 					).setRedirect(
 						currentURL
 					).setParameter(
-						"classNameId", String.valueOf(PortalUtil.getClassNameId(DDMStructure.class))
+						"classNameId", PortalUtil.getClassNameId(DDMStructure.class)
 					).setParameter(
-						"classPK", String.valueOf(structure.getStructureId())
-					).build();
-
-					rowHREF = rowURL.toString();
+						"classPK", structure.getStructureId()
+					).buildString();
 				}
 				%>
 

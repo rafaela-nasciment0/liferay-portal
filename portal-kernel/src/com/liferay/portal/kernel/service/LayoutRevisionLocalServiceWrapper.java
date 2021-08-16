@@ -181,6 +181,13 @@ public class LayoutRevisionLocalServiceWrapper
 	}
 
 	@Override
+	public int dslQueryCount(
+		com.liferay.petra.sql.dsl.query.DSLQuery dslQuery) {
+
+		return _layoutRevisionLocalService.dslQueryCount(dslQuery);
+	}
+
+	@Override
 	public com.liferay.portal.kernel.dao.orm.DynamicQuery dynamicQuery() {
 		return _layoutRevisionLocalService.dynamicQuery();
 	}
@@ -284,6 +291,15 @@ public class LayoutRevisionLocalServiceWrapper
 
 		return _layoutRevisionLocalService.fetchLatestLayoutRevision(
 			layoutSetBranchId, plid);
+	}
+
+	@Override
+	public com.liferay.portal.kernel.model.LayoutRevision
+		fetchLatestLayoutRevision(
+			long layoutSetBranchId, long layoutBranchId, long plid) {
+
+		return _layoutRevisionLocalService.fetchLatestLayoutRevision(
+			layoutSetBranchId, layoutBranchId, plid);
 	}
 
 	@Override

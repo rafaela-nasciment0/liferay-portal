@@ -20,24 +20,16 @@
 String redirect = ParamUtil.getString(request, "redirect");
 
 if (Validator.isNull(redirect)) {
-	PortletURL redirectURL = renderResponse.createRenderURL();
-
-	redirectURL.setParameter("mvcPath", "/admin/view.jsp");
-
-	redirect = redirectURL.toString();
+	redirect = PortletURLBuilder.createRenderURL(
+		renderResponse
+	).setMVCPath(
+		"/admin/view.jsp"
+	).buildString();
 }
 
 KaleoFormsViewRecordsDisplayContext kaleoFormsViewRecordsDisplayContext = kaleoFormsAdminDisplayContext.getKaleoFormsViewRecordsDisplayContext();
 
 KaleoProcess kaleoProcess = kaleoFormsViewRecordsDisplayContext.getKaleoProcess();
-
-boolean hasSubmitPermission = KaleoProcessPermission.contains(permissionChecker, kaleoProcess, ActionKeys.SUBMIT);
-
-PortletURL portletURL = renderResponse.createRenderURL();
-
-portletURL.setParameter("mvcPath", "/admin/view_kaleo_process.jsp");
-portletURL.setParameter("redirect", redirect);
-portletURL.setParameter("kaleoProcessId", String.valueOf(kaleoProcess.getKaleoProcessId()));
 %>
 
 <clay:navigation-bar
@@ -73,7 +65,21 @@ portletURL.setParameter("kaleoProcessId", String.valueOf(kaleoProcess.getKaleoPr
 <clay:container-fluid
 	id='<%= liferayPortletResponse.getNamespace() + "formContainer" %>'
 >
-	<aui:form action="<%= portletURL.toString() %>" method="post" name="searchContainerForm">
+	<aui:form
+		action='<%=
+			PortletURLBuilder.createRenderURL(
+				renderResponse
+			).setMVCPath(
+				"/admin/view_kaleo_process.jsp"
+			).setRedirect(
+				redirect
+			).setParameter(
+				"kaleoProcessId", kaleoProcess.getKaleoProcessId()
+			).buildString()
+		%>'
+		method="post"
+		name="searchContainerForm"
+	>
 		<aui:input name="ddlRecordIds" type="hidden" />
 
 		<liferay-ui:search-container
@@ -95,13 +101,19 @@ portletURL.setParameter("kaleoProcessId", String.valueOf(kaleoProcess.getKaleoPr
 
 				Map<String, List<DDMFormFieldValue>> ddmFormFieldValuesMap = ddmFormValues.getDDMFormFieldValuesMap();
 
-				PortletURL rowURL = renderResponse.createRenderURL();
-
-				rowURL.setParameter("mvcPath", "/admin/view_record.jsp");
-				rowURL.setParameter("redirect", currentURL);
-				rowURL.setParameter("ddlRecordId", String.valueOf(record.getRecordId()));
-				rowURL.setParameter("kaleoProcessId", String.valueOf(kaleoProcess.getKaleoProcessId()));
-				rowURL.setParameter("version", recordVersion.getVersion());
+				PortletURL rowURL = PortletURLBuilder.createRenderURL(
+					renderResponse
+				).setMVCPath(
+					"/admin/view_record.jsp"
+				).setRedirect(
+					currentURL
+				).setParameter(
+					"ddlRecordId", record.getRecordId()
+				).setParameter(
+					"kaleoProcessId", kaleoProcess.getKaleoProcessId()
+				).setParameter(
+					"version", recordVersion.getVersion()
+				).buildPortletURL();
 
 				// Columns
 
@@ -126,7 +138,7 @@ portletURL.setParameter("kaleoProcessId", String.valueOf(kaleoProcess.getKaleoPr
 				}
 				%>
 
-				<c:if test="<%= hasSubmitPermission %>">
+				<c:if test="<%= KaleoProcessPermission.contains(permissionChecker, kaleoProcess, ActionKeys.SUBMIT) %>">
 					<liferay-ui:search-container-column-status
 						name="status"
 						status="<%= recordVersion.getStatus() %>"

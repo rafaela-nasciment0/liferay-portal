@@ -63,6 +63,17 @@ public interface KeywordResource {
 			Long assetLibraryId, String callbackURL, Object object)
 		throws Exception;
 
+	public Page<com.liferay.portal.vulcan.permission.Permission>
+			getAssetLibraryKeywordPermissionsPage(
+				Long assetLibraryId, String roleNames)
+		throws Exception;
+
+	public Page<com.liferay.portal.vulcan.permission.Permission>
+			putAssetLibraryKeywordPermission(
+				Long assetLibraryId,
+				com.liferay.portal.vulcan.permission.Permission[] permissions)
+		throws Exception;
+
 	public Page<Keyword> getKeywordsRankedPage(
 			Long siteId, String search, Pagination pagination)
 		throws Exception;
@@ -79,6 +90,10 @@ public interface KeywordResource {
 	public Response putKeywordBatch(String callbackURL, Object object)
 		throws Exception;
 
+	public void putKeywordSubscribe(Long keywordId) throws Exception;
+
+	public void putKeywordUnsubscribe(Long keywordId) throws Exception;
+
 	public Page<Keyword> getSiteKeywordsPage(
 			Long siteId, String search, Filter filter, Pagination pagination,
 			Sort[] sorts)
@@ -89,6 +104,16 @@ public interface KeywordResource {
 
 	public Response postSiteKeywordBatch(
 			Long siteId, String callbackURL, Object object)
+		throws Exception;
+
+	public Page<com.liferay.portal.vulcan.permission.Permission>
+			getSiteKeywordPermissionsPage(Long siteId, String roleNames)
+		throws Exception;
+
+	public Page<com.liferay.portal.vulcan.permission.Permission>
+			putSiteKeywordPermission(
+				Long siteId,
+				com.liferay.portal.vulcan.permission.Permission[] permissions)
 		throws Exception;
 
 	public default void setContextAcceptLanguage(

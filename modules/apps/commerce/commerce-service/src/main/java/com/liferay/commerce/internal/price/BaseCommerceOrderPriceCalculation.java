@@ -137,9 +137,13 @@ public abstract class BaseCommerceOrderPriceCalculation
 			commerceOrder.getTotalDiscountPercentageLevel3(),
 			commerceOrder.getTotalDiscountPercentageLevel4());
 
-		BigDecimal totalWithTaxAmount = commerceOrder.getTotalWithTaxAmount();
+		BigDecimal totalWithTaxAmount = total;
 
-		BigDecimal totalDiscountWithTaxAmount = BigDecimal.ZERO;
+		if (commerceOrder.getTotalWithTaxAmount() != null) {
+			totalWithTaxAmount = commerceOrder.getTotalWithTaxAmount();
+		}
+
+		BigDecimal totalDiscountWithTaxAmount = totalDiscountAmount;
 
 		if (commerceOrder.getTotalDiscountWithTaxAmount() != null) {
 			totalDiscountWithTaxAmount =
@@ -236,8 +240,6 @@ public abstract class BaseCommerceOrderPriceCalculation
 			CommerceOrder commerceOrder)
 		throws PortalException {
 
-		CommerceCurrency commerceCurrency = commerceOrder.getCommerceCurrency();
-
 		if (discountsTargetNetPrice) {
 			commerceOrderPriceImpl.setShippingDiscountValue(
 				orderShippingCommerceDiscountValue);
@@ -247,6 +249,9 @@ public abstract class BaseCommerceOrderPriceCalculation
 				orderTotalCommerceDiscountValue);
 		}
 		else {
+			CommerceCurrency commerceCurrency =
+				commerceOrder.getCommerceCurrency();
+
 			RoundingMode roundingMode = RoundingMode.valueOf(
 				commerceCurrency.getRoundingMode());
 

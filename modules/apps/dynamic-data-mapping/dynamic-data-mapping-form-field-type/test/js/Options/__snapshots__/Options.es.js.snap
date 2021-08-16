@@ -3,7 +3,7 @@
 exports[`Options shows the options 1`] = `
 <div>
   <div
-    aria-labelledby="options_fieldDetails"
+    aria-labelledby="options"
     class="form-group hide"
     data-field-name="options"
     tabindex="0"
@@ -34,20 +34,22 @@ exports[`Options shows the options 1`] = `
           class="ddm-option-entry"
         >
           <div
-            aria-labelledby="option0_fieldDetails"
+            aria-labelledby="option0"
             class="form-group hide"
             data-field-name="option0"
             tabindex="0"
           >
             <div
-              aria-labelledby="keyValueLabeloption0_fieldDetails"
+              aria-labelledby="keyValueLabeloption0"
               class="form-group hide"
               data-field-name="keyValueLabeloption0"
               tabindex="0"
             >
               <input
+                aria-labelledby="keyValueLabeloption0_fieldDetails"
                 class="form-control ddm-field-text"
                 dir="rtl"
+                id="keyValueLabeloption0_fieldDetails"
                 lang="en_US"
                 name="keyValueLabeloption0"
                 placeholder="enter-an-option"
@@ -138,20 +140,22 @@ exports[`Options shows the options 1`] = `
           class="ddm-option-entry"
         >
           <div
-            aria-labelledby="option1_fieldDetails"
+            aria-labelledby="option1"
             class="form-group hide"
             data-field-name="option1"
             tabindex="0"
           >
             <div
-              aria-labelledby="keyValueLabeloption1_fieldDetails"
+              aria-labelledby="keyValueLabeloption1"
               class="form-group hide"
               data-field-name="keyValueLabeloption1"
               tabindex="0"
             >
               <input
+                aria-labelledby="keyValueLabeloption1_fieldDetails"
                 class="form-control ddm-field-text"
                 dir="rtl"
+                id="keyValueLabeloption1_fieldDetails"
                 lang="en_US"
                 name="keyValueLabeloption1"
                 placeholder="enter-an-option"
@@ -242,20 +246,22 @@ exports[`Options shows the options 1`] = `
           class="ddm-option-entry"
         >
           <div
-            aria-labelledby="option2_fieldDetails"
+            aria-labelledby="option2"
             class="form-group hide"
             data-field-name="option2"
             tabindex="0"
           >
             <div
-              aria-labelledby="keyValueLabeloption2_fieldDetails"
+              aria-labelledby="keyValueLabeloption2"
               class="form-group hide"
               data-field-name="keyValueLabeloption2"
               tabindex="0"
             >
               <input
+                aria-labelledby="keyValueLabeloption2_fieldDetails"
                 class="form-control ddm-field-text"
                 dir="rtl"
+                id="keyValueLabeloption2_fieldDetails"
                 lang="en_US"
                 name="keyValueLabeloption2"
                 placeholder="enter-an-option"

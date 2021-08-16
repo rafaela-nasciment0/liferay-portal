@@ -32,6 +32,7 @@ import com.liferay.asset.publisher.constants.AssetPublisherPortletKeys;
 import com.liferay.asset.publisher.util.AssetEntryResult;
 import com.liferay.asset.publisher.util.AssetPublisherHelper;
 import com.liferay.asset.publisher.web.internal.configuration.AssetPublisherWebConfiguration;
+import com.liferay.asset.publisher.web.internal.constants.AssetPublisherSelectionStyleConstants;
 import com.liferay.asset.util.AssetHelper;
 import com.liferay.petra.portlet.url.builder.PortletURLBuilder;
 import com.liferay.petra.string.StringBundler;
@@ -63,6 +64,7 @@ import com.liferay.portal.kernel.util.Http;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.Portal;
+import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.kernel.xml.Document;
@@ -322,7 +324,8 @@ public class AssetPublisherHelperImpl implements AssetPublisherHelper {
 		throws Exception {
 
 		String selectionStyle = GetterUtil.getString(
-			portletPreferences.getValue("selectionStyle", null), "manual");
+			portletPreferences.getValue("selectionStyle", null),
+			AssetPublisherSelectionStyleConstants.TYPE_MANUAL);
 
 		long assetListEntryId = GetterUtil.getLong(
 			portletPreferences.getValue("assetListEntryId", null));
@@ -359,7 +362,7 @@ public class AssetPublisherHelperImpl implements AssetPublisherHelper {
 
 		if (!ArrayUtil.isEmpty(allTagNames)) {
 			assetEntries = _filterAssetTagNamesAssetEntries(
-				assetEntries, allTagNames);
+				assetEntries, _normalizeAssetTagNames(allTagNames));
 		}
 
 		return assetEntries;
@@ -514,6 +517,8 @@ public class AssetPublisherHelperImpl implements AssetPublisherHelper {
 			if (Objects.equals(queryName, "assetTags") && queryContains &&
 				(queryAndOperator || (queryValues.length == 1))) {
 
+				queryValues = _normalizeAssetTagNames(queryValues);
+
 				Collections.addAll(allAssetTagNames, queryValues);
 			}
 		}
@@ -548,31 +553,35 @@ public class AssetPublisherHelperImpl implements AssetPublisherHelper {
 		AssetRenderer<?> assetRenderer, AssetEntry assetEntry,
 		boolean viewInContext) {
 
-		int delta = ParamUtil.getInteger(liferayPortletRequest, "delta");
-		boolean resetCur = ParamUtil.getBoolean(
-			liferayPortletRequest, "resetCur");
-
 		PortletURL redirectURL = PortletURLBuilder.createRenderURL(
 			liferayPortletResponse
 		).setParameter(
+			"assetEntryId", assetEntry.getEntryId()
+		).setParameter(
 			"cur", ParamUtil.getInteger(liferayPortletRequest, "cur")
-		).build();
+		).setParameter(
+			"delta",
+			() -> {
+				int delta = ParamUtil.getInteger(
+					liferayPortletRequest, "delta");
 
-		if (delta > 0) {
-			redirectURL.setParameter("delta", String.valueOf(delta));
-		}
+				if (delta > 0) {
+					return delta;
+				}
 
-		redirectURL.setParameter("resetCur", String.valueOf(resetCur));
-		redirectURL.setParameter(
-			"assetEntryId", String.valueOf(assetEntry.getEntryId()));
+				return null;
+			}
+		).setParameter(
+			"resetCur", ParamUtil.getBoolean(liferayPortletRequest, "resetCur")
+		).buildPortletURL();
 
 		PortletURL viewFullContentURL = PortletURLBuilder.create(
 			getBaseAssetViewURL(
 				liferayPortletRequest, liferayPortletResponse, assetRenderer,
 				assetEntry)
 		).setRedirect(
-			redirectURL.toString()
-		).build();
+			redirectURL
+		).buildPortletURL();
 
 		String viewURL = null;
 
@@ -626,7 +635,7 @@ public class AssetPublisherHelperImpl implements AssetPublisherHelper {
 
 				return assetRendererFactory.getType();
 			}
-		).build();
+		).buildPortletURL();
 
 		String urlTitle = assetRenderer.getUrlTitle(
 			liferayPortletRequest.getLocale());
@@ -665,9 +674,13 @@ public class AssetPublisherHelperImpl implements AssetPublisherHelper {
 			portletPreferences.getValue(
 				"anyAssetType", Boolean.TRUE.toString()));
 		String selectionStyle = portletPreferences.getValue(
-			"selectionStyle", "dynamic");
+			"selectionStyle",
+			AssetPublisherSelectionStyleConstants.TYPE_DYNAMIC);
 
-		if (anyAssetType || selectionStyle.equals("manual")) {
+		if (anyAssetType ||
+			selectionStyle.equals(
+				AssetPublisherSelectionStyleConstants.TYPE_MANUAL)) {
+
 			return availableClassNameIds;
 		}
 
@@ -1172,6 +1185,19 @@ public class AssetPublisherHelperImpl implements AssetPublisherHelper {
 		return false;
 	}
 
+	private String[] _normalizeAssetTagNames(String[] assetTagNames) {
+		if (ArrayUtil.isEmpty(assetTagNames)) {
+			return assetTagNames;
+		}
+
+		for (int i = 0; i < assetTagNames.length; i++) {
+			assetTagNames[i] = StringUtil.toLowerCase(
+				StringUtil.trim(assetTagNames[i]));
+		}
+
+		return assetTagNames;
+	}
+
 	private void _removeAndStoreSelection(
 			List<String> assetEntryUuids, PortletPreferences portletPreferences)
 		throws Exception {
@@ -1276,16 +1302,16 @@ public class AssetPublisherHelperImpl implements AssetPublisherHelper {
 			}
 			else {
 				if (queryContains && queryAndOperator) {
-					allAssetTagNames = queryValues;
+					allAssetTagNames = _normalizeAssetTagNames(queryValues);
 				}
 				else if (queryContains && !queryAndOperator) {
-					anyAssetTagNames = queryValues;
+					anyAssetTagNames = _normalizeAssetTagNames(queryValues);
 				}
 				else if (!queryContains && queryAndOperator) {
-					notAllAssetTagNames = queryValues;
+					notAllAssetTagNames = _normalizeAssetTagNames(queryValues);
 				}
 				else {
-					notAnyAssetTagNames = queryValues;
+					notAnyAssetTagNames = _normalizeAssetTagNames(queryValues);
 				}
 			}
 		}
@@ -1305,7 +1331,8 @@ public class AssetPublisherHelperImpl implements AssetPublisherHelper {
 		assetEntryQuery.setAllKeywords(allKeywords);
 
 		if (overrideAllAssetTagNames != null) {
-			allAssetTagNames = overrideAllAssetTagNames;
+			allAssetTagNames = _normalizeAssetTagNames(
+				overrideAllAssetTagNames);
 		}
 
 		long[] siteGroupIds = _getSiteGroupIds(scopeGroupIds);
@@ -1368,7 +1395,8 @@ public class AssetPublisherHelperImpl implements AssetPublisherHelper {
 	@Reference
 	private AssetListEntryService _assetListEntryService;
 
-	private AssetPublisherWebConfiguration _assetPublisherWebConfiguration;
+	private volatile AssetPublisherWebConfiguration
+		_assetPublisherWebConfiguration;
 
 	@Reference
 	private AssetTagLocalService _assetTagLocalService;

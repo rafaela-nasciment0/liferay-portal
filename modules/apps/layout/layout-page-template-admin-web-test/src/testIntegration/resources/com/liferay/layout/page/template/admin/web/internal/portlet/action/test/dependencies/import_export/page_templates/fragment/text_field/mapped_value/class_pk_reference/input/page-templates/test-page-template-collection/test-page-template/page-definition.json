@@ -25,8 +25,6 @@
 						}
 					],
 					"fragmentStyle": {
-						"backgroundFragmentImage": {
-						},
 						"borderRadius": "rounded-0",
 						"borderWidth": "0",
 						"fontFamily": "sans-serif",
@@ -60,5 +58,6 @@
 	"settings": {
 		"colorSchemeName": "01",
 		"themeName": "Classic"
-	}
+	},
+	"version": 1.0
 }

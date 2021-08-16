@@ -58,6 +58,7 @@ import com.liferay.portal.vulcan.util.SearchUtil;
 import java.math.BigDecimal;
 
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Map;
 
 import javax.ws.rs.core.MultivaluedMap;
@@ -147,8 +148,9 @@ public class PriceListResourceImpl
 		throws Exception {
 
 		return SearchUtil.search(
+			Collections.emptyMap(),
 			booleanQuery -> booleanQuery.getPreBooleanFilter(), filter,
-			CommercePriceList.class, StringPool.BLANK, pagination,
+			CommercePriceList.class.getName(), StringPool.BLANK, pagination,
 			queryConfig -> queryConfig.setSelectedFieldNames(
 				Field.ENTRY_CLASS_PK),
 			new UnsafeConsumer() {
@@ -160,9 +162,9 @@ public class PriceListResourceImpl
 				}
 
 			},
+			sorts,
 			document -> _toPriceList(
-				GetterUtil.getLong(document.get(Field.ENTRY_CLASS_PK))),
-			sorts);
+				GetterUtil.getLong(document.get(Field.ENTRY_CLASS_PK))));
 	}
 
 	@Override
@@ -233,7 +235,7 @@ public class PriceListResourceImpl
 		DateConfig expirationDateConfig = new DateConfig(expirationCalendar);
 
 		CommercePriceList commercePriceList =
-			_commercePriceListService.upsertCommercePriceList(
+			_commercePriceListService.addOrUpdateCommercePriceList(
 				priceList.getExternalReferenceCode(),
 				commerceCatalog.getGroupId(), contextUser.getUserId(), 0L,
 				commerceCurrency.getCommerceCurrencyId(), priceList.getName(),
@@ -311,7 +313,7 @@ public class PriceListResourceImpl
 		if (priceEntries != null) {
 			for (PriceEntry priceEntry : priceEntries) {
 				CommercePriceEntry commercePriceEntry =
-					_commercePriceEntryService.upsertCommercePriceEntry(
+					_commercePriceEntryService.addOrUpdateCommercePriceEntry(
 						priceEntry.getExternalReferenceCode(),
 						GetterUtil.getLong(priceEntry.getId()),
 						GetterUtil.getLong(priceEntry.getSkuId()), null,
@@ -326,7 +328,7 @@ public class PriceListResourceImpl
 
 				if (tierPrices != null) {
 					for (TierPrice tierPrice : tierPrices) {
-						TierPriceUtil.upsertCommerceTierPriceEntry(
+						TierPriceUtil.addOrUpdateCommerceTierPriceEntry(
 							_commerceTierPriceEntryService, tierPrice,
 							commercePriceEntry, serviceContext);
 					}

@@ -22,15 +22,13 @@ String redirect = ParamUtil.getString(request, "redirect");
 String backURL = ParamUtil.getString(request, "backURL");
 
 if (Validator.isNull(redirect) && Validator.isNull(backURL)) {
-	PortletURL portletURL = PortletURLBuilder.createRenderURL(
+	backURL = PortletURLBuilder.createRenderURL(
 		renderResponse
 	).setMVCPath(
 		"/view.jsp"
 	).setParameter(
-		"groupId", String.valueOf(groupId)
-	).build();
-
-	backURL = portletURL.toString();
+		"groupId", groupId
+	).buildString();
 }
 
 long ruleGroupId = ParamUtil.getLong(request, "ruleGroupId");
@@ -46,10 +44,10 @@ PortletURL portletURL = PortletURLBuilder.createRenderURL(
 ).setRedirect(
 	redirect
 ).setParameter(
-	"ruleGroupId", String.valueOf(ruleGroupId)
+	"groupId", groupId
 ).setParameter(
-	"groupId", String.valueOf(groupId)
-).build();
+	"ruleGroupId", ruleGroupId
+).buildPortletURL();
 
 SearchContainer<MDRRule> rulesSearchContainer = new SearchContainer(renderRequest, portletURL, null, "no-classification-rules-are-configured-for-this-device-family");
 
@@ -114,7 +112,7 @@ renderResponse.setTitle(ruleGroup.getName(locale));
 		PortletURLUtil.clone(portletURL, renderResponse)
 	).setParameter(
 		"displayStyle", displayStyle
-	).build();
+	).buildPortletURL();
 	%>
 
 	<liferay-frontend:management-bar-filters>

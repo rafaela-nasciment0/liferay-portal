@@ -85,6 +85,10 @@ public class FunctionalBatchTestrayCaseResult extends BatchTestrayCaseResult {
 				return "Failed to finish build on CI";
 			}
 
+			if (result.equals("ABORTED")) {
+				return "Aborted prior to running test";
+			}
+
 			if (result.equals("SUCCESS") || result.equals("UNSTABLE")) {
 				return "Failed to run test on CI";
 			}
@@ -246,12 +250,6 @@ public class FunctionalBatchTestrayCaseResult extends BatchTestrayCaseResult {
 			return null;
 		}
 
-		String result = build.getResult();
-
-		if (!result.equals("SUCCESS") && !result.equals("UNSTABLE")) {
-			return null;
-		}
-
 		TestClassResult testClassResult = build.getTestClassResult(
 			"com.liferay.poshi.runner.PoshiRunner");
 
@@ -292,24 +290,22 @@ public class FunctionalBatchTestrayCaseResult extends BatchTestrayCaseResult {
 
 		sb.append("/poshi-warnings.xml");
 
-		TestrayS3Object testrayS3Object =
-			TestrayS3ObjectFactory.newTestrayS3Object(
-				TestrayS3Bucket.getInstance(), sb.toString());
+		TestrayAttachment testrayAttachment =
+			TestrayFactory.newTestrayAttachment(
+				this, "Poshi Warnings", sb.toString());
 
-		if (!testrayS3Object.exists()) {
+		if (!testrayAttachment.exists()) {
 			return null;
 		}
 
-		String testrayS3ObjectValue = testrayS3Object.getValue();
+		String testrayAttachmentValue = testrayAttachment.getValue();
 
-		testrayS3ObjectValue = testrayS3ObjectValue.trim();
-
-		if (JenkinsResultsParserUtil.isNullOrEmpty(testrayS3ObjectValue)) {
+		if (JenkinsResultsParserUtil.isNullOrEmpty(testrayAttachmentValue)) {
 			return null;
 		}
 
 		try {
-			Document document = Dom4JUtil.parse(testrayS3ObjectValue);
+			Document document = Dom4JUtil.parse(testrayAttachmentValue);
 
 			Element rootElement = document.getRootElement();
 
@@ -422,12 +418,14 @@ public class FunctionalBatchTestrayCaseResult extends BatchTestrayCaseResult {
 
 		String name = getName();
 
+		name = name.replace("#", "_");
+
 		TestrayAttachment testrayAttachment =
 			TestrayFactory.newTestrayAttachment(
 				this, "Poshi Report",
 				JenkinsResultsParserUtil.combine(
-					getAxisBuildURLPath(), "/", name.replace("#", "_"),
-					"/index.html.gz"));
+					getAxisBuildURLPath(), "/",
+					JenkinsResultsParserUtil.fixURL(name), "/index.html.gz"));
 
 		if (!testrayAttachment.exists()) {
 			return null;
@@ -443,12 +441,14 @@ public class FunctionalBatchTestrayCaseResult extends BatchTestrayCaseResult {
 
 		String name = getName();
 
+		name = name.replace("#", "_");
+
 		TestrayAttachment testrayAttachment =
 			TestrayFactory.newTestrayAttachment(
 				this, "Poshi Summary",
 				JenkinsResultsParserUtil.combine(
-					getAxisBuildURLPath(), "/", name.replace("#", "_"),
-					"/summary.html.gz"));
+					getAxisBuildURLPath(), "/",
+					JenkinsResultsParserUtil.fixURL(name), "/summary.html.gz"));
 
 		if (!testrayAttachment.exists()) {
 			return null;

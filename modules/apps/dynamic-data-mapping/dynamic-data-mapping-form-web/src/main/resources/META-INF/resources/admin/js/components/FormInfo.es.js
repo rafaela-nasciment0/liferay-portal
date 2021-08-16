@@ -14,19 +14,12 @@
 
 import ClayForm from '@clayui/form';
 import ClayLayout from '@clayui/layout';
-import {
-	isKeyInSet,
-	isModifyingKey,
-} from 'dynamic-data-mapping-form-builder/js/util/dom.es';
-import {
-	useConfig,
-	useForm,
-	useFormState,
-} from 'dynamic-data-mapping-form-renderer';
+import {useConfig, useForm, useFormState} from 'data-engine-js-components-web';
 import {autoSize} from 'frontend-js-web';
 import React, {useEffect, useRef} from 'react';
 
 import {EVENT_TYPES} from '../eventTypes.es';
+import {isKeyInSet, isModifyingKey} from '../util/dom';
 
 const isForbiddenKey = (event, limit) => {
 	const charCode = event.which ? event.which : event.keyCode;

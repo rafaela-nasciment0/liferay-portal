@@ -56,13 +56,14 @@ public class ImagesImporterUtil {
 
 			byte[] bytes = null;
 
-			try (InputStream is = zipFile.getInputStream(zipEntry)) {
-				bytes = FileUtil.getBytes(is);
+			try (InputStream inputStream = zipFile.getInputStream(zipEntry)) {
+				bytes = FileUtil.getBytes(inputStream);
 			}
 
 			FileEntry fileEntry = DLAppLocalServiceUtil.addFileEntry(
-				userId, groupId, DLFolderConstants.DEFAULT_PARENT_FOLDER_ID,
-				fileName, MimeTypesUtil.getContentType(fileName), bytes,
+				null, userId, groupId,
+				DLFolderConstants.DEFAULT_PARENT_FOLDER_ID, fileName,
+				MimeTypesUtil.getContentType(fileName), bytes, null, null,
 				ServiceContextThreadLocal.getServiceContext());
 
 			fileEntries.add(fileEntry);

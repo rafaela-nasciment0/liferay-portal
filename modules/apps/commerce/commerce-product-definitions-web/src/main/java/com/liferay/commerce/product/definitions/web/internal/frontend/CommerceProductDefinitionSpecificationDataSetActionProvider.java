@@ -124,14 +124,14 @@ public class CommerceProductDefinitionSpecificationDataSetActionProvider
 				CPPortletKeys.CP_DEFINITIONS, PortletRequest.ACTION_PHASE)
 		).setActionName(
 			"/cp_definitions/edit_cp_definition_specification_option_value"
+		).setCMD(
+			Constants.DELETE
 		).setRedirect(
 			redirect
 		).setParameter(
-			Constants.CMD, Constants.DELETE
-		).setParameter(
 			"cpDefinitionSpecificationOptionValueId",
 			cpDefinitionSpecificationOptionValueId
-		).build();
+		).buildPortletURL();
 	}
 
 	private PortletURL _getProductSpecificationEditURL(
@@ -153,7 +153,7 @@ public class CommerceProductDefinitionSpecificationDataSetActionProvider
 			"cpDefinitionSpecificationOptionValueId",
 			cpDefinitionSpecificationOptionValue.
 				getCPDefinitionSpecificationOptionValueId()
-		).build();
+		).buildPortletURL();
 
 		try {
 			portletURL.setWindowState(LiferayWindowState.POP_UP);

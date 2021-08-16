@@ -27,6 +27,9 @@ import navigate from '../util/navigate.es';
 const Modal = ({
 	bodyHTML,
 	buttons,
+	containerProps = {
+		className: 'cadmin',
+	},
 	customEvents,
 	headerHTML,
 	height,
@@ -36,6 +39,7 @@ const Modal = ({
 	onClose,
 	onOpen,
 	size,
+	status,
 	title,
 	url,
 	zIndex,
@@ -170,9 +174,11 @@ const Modal = ({
 			{visible && (
 				<ClayModal
 					className="liferay-modal"
+					containerProps={{...containerProps}}
 					id={id}
 					observer={observer}
 					size={url && !size ? 'full-screen' : size}
+					status={status}
 					zIndex={zIndex}
 				>
 					<ClayModal.Header>
@@ -266,6 +272,7 @@ const openModal = (props) => {
 };
 
 const openPortletModal = ({
+	containerProps,
 	iframeBodyCssClass,
 	onClose,
 	portletSelector,
@@ -302,6 +309,7 @@ const openPortletModal = ({
 		}
 
 		openModal({
+			containerProps,
 			headerHTML,
 			iframeBodyCssClass,
 			onClose,
@@ -328,13 +336,13 @@ const openPortletWindow = ({bodyCssClass, portlet, uri, ...otherProps}) => {
 const openSelectionModal = ({
 	buttonAddLabel = Liferay.Language.get('add'),
 	buttonCancelLabel = Liferay.Language.get('cancel'),
+	containerProps,
 	customSelectEvent = false,
 	height,
 	id,
 	multiple = false,
 	onClose,
 	onSelect,
-	searchContainerId,
 	selectEventName,
 	selectedData,
 	size,
@@ -342,13 +350,52 @@ const openSelectionModal = ({
 	url,
 	zIndex,
 }) => {
+	const eventHandlers = [];
+	let iframeWindowObj;
+	let processCloseFn;
 	let selectedItem;
 
-	const eventHandlers = [];
-	const select = ({processClose}) => {
-		onSelect(selectedItem);
+	const select = () => {
+		if (multiple && !selectedItem) {
+			const searchContainer = iframeWindowObj.document.querySelector(
+				'.searchcontainer'
+			);
 
-		processClose();
+			if (searchContainer) {
+				iframeWindowObj.Liferay.componentReady(searchContainer.id).then(
+					(searchContainer) => {
+						const allSelectedElements = searchContainer.select.getAllSelectedElements();
+
+						const allSelectedNodes = allSelectedElements.getDOMNodes();
+
+						onSelect(
+							allSelectedNodes.map((node) => {
+								let item = {};
+
+								if (node.value) {
+									item.value = node.value;
+								}
+
+								const row = node.closest('tr, li');
+
+								if (row && Object.keys(row.dataset).length) {
+									item = {...item, ...row.dataset};
+								}
+
+								return item;
+							})
+						);
+
+						processCloseFn();
+					}
+				);
+			}
+		}
+		else {
+			onSelect(selectedItem);
+
+			processCloseFn();
+		}
 	};
 
 	openModal({
@@ -365,6 +412,7 @@ const openSelectionModal = ({
 					},
 			  ]
 			: null,
+		containerProps,
 		height,
 		id: id || selectEventName,
 		onClose: () => {
@@ -379,19 +427,14 @@ const openSelectionModal = ({
 			}
 		},
 		onOpen: ({iframeWindow, processClose}) => {
-			const container = iframeWindow.document.body;
+			iframeWindowObj = iframeWindow;
+			processCloseFn = processClose;
 
-			const selectEventHandler = Liferay.on(selectEventName, (event) => {
-				selectedItem = event.data || event;
+			const iframeBody = iframeWindow.document.body;
 
-				if (!multiple) {
-					select({processClose});
-				}
-			});
-
-			eventHandlers.push(selectEventHandler);
-
-			const itemElements = container.querySelectorAll('.selector-button');
+			const itemElements = iframeBody.querySelectorAll(
+				'.selector-button'
+			);
 
 			if (selectedData) {
 				const selectedDataSet = new Set(selectedData);
@@ -403,39 +446,43 @@ const openSelectionModal = ({
 
 					if (selectedDataSet.has(itemId)) {
 						itemElement.disabled = true;
+						itemElement.classList.add('disabled');
+					}
+					else {
+						itemElement.disabled = false;
+						itemElement.classList.remove('disabled');
 					}
 				});
 			}
 
-			if (!customSelectEvent) {
-				container.addEventListener('click', (event) => {
-					const delegateTarget =
-						event.target &&
-						event.target.closest('.selector-button');
+			if (selectEventName) {
+				const selectEventHandler = Liferay.on(
+					selectEventName,
+					(event) => {
+						selectedItem = event.data || event;
 
-					if (delegateTarget) {
-						Liferay.fire(selectEventName, delegateTarget.dataset);
-					}
-				});
-			}
-
-			if (searchContainerId && multiple) {
-				iframeWindow.Liferay.componentReady(searchContainerId).then(
-					(searchContainer) => {
-						searchContainer.on('rowToggled', (event) => {
-							const allSelectedElements =
-								event.elements.allSelectedElements;
-
-							if (!allSelectedElements.isEmpty()) {
-								selectedItem = {
-									value: allSelectedElements
-										.get('value')
-										.join(','),
-								};
-							}
-						});
+						if (!multiple) {
+							select();
+						}
 					}
 				);
+
+				eventHandlers.push(selectEventHandler);
+
+				if (!customSelectEvent) {
+					iframeBody.addEventListener('click', (event) => {
+						const delegateTarget = event.target?.closest(
+							'.selector-button'
+						);
+
+						if (delegateTarget) {
+							Liferay.fire(
+								selectEventName,
+								delegateTarget.dataset
+							);
+						}
+					});
+				}
 			}
 		},
 		size,
@@ -547,6 +594,7 @@ Modal.propTypes = {
 			type: PropTypes.oneOf(['cancel', 'submit']),
 		})
 	),
+	containerProps: PropTypes.object,
 	customEvents: PropTypes.arrayOf(
 		PropTypes.shape({
 			name: PropTypes.string,

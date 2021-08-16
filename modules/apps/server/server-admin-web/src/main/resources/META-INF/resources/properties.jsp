@@ -27,10 +27,10 @@ int delta = ParamUtil.getInteger(request, SearchContainer.DEFAULT_DELTA_PARAM, S
 			renderResponse
 		).setMVCRenderCommandName(
 			"/server_admin/view"
+		).setTabs1(
+			tabs1
 		).setParameter(
-			"tabs1", tabs1
-		).setParameter(
-			"delta", String.valueOf(delta)
-		).build()
+			"delta", delta
+		).buildPortletURL()
 	%>'
 />

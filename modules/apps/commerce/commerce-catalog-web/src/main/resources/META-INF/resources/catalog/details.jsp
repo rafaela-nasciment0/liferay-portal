@@ -33,7 +33,7 @@ boolean isViewOnly = !commerceCatalogDisplayContext.hasPermission(commerceCatalo
 
 <portlet:actionURL name="/commerce_catalogs/edit_commerce_catalog" var="editCommerceCatalogActionURL" />
 
-<aui:form action="<%= editCommerceCatalogActionURL %>" method="post" name="fm">
+<aui:form action="<%= editCommerceCatalogActionURL %>" cssClass="mt-4" method="post" name="fm">
 	<aui:input name="<%= Constants.CMD %>" type="hidden" value="<%= (commerceCatalog == null) ? Constants.ADD : Constants.UPDATE %>" />
 	<aui:input name="redirect" type="hidden" value="<%= backURL %>" />
 	<aui:input name="baseCommercePriceListId" type="hidden" value="<%= commerceCatalogDisplayContext.getBaseCommercePriceListId(CommercePriceListConstants.TYPE_PRICE_LIST) %>" />
@@ -81,7 +81,7 @@ boolean isViewOnly = !commerceCatalogDisplayContext.hasPermission(commerceCatalo
 							String commerceCurrencyCode = commerceCurrency.getCode();
 						%>
 
-							<aui:option label="<%= commerceCurrency.getName(locale) %>" selected="<%= (commerceCatalog == null) ? commerceCurrency.isPrimary() : commerceCurrencyCode.equals(commerceCatalog.getCommerceCurrencyCode()) %>" value="<%= commerceCurrencyCode %>" />
+							<aui:option label="<%= HtmlUtil.escape(commerceCurrency.getName(locale)) %>" selected="<%= (commerceCatalog == null) ? commerceCurrency.isPrimary() : commerceCurrencyCode.equals(commerceCatalog.getCommerceCurrencyCode()) %>" value="<%= HtmlUtil.escape(commerceCurrencyCode) %>" />
 
 						<%
 						}
@@ -99,7 +99,7 @@ boolean isViewOnly = !commerceCatalogDisplayContext.hasPermission(commerceCatalo
 								apiUrl:
 									'<%= commerceCatalogDisplayContext.getPriceListsApiUrl(CommercePriceListConstants.TYPE_PRICE_LIST) %>',
 								initialLabel:
-									'<%= (baseCommercePriceList == null) ? StringPool.BLANK : baseCommercePriceList.getName() %>',
+									'<%= (baseCommercePriceList == null) ? StringPool.BLANK : HtmlUtil.escapeJS(baseCommercePriceList.getName()) %>',
 								initialValue:
 									'<%= (baseCommercePriceList == null) ? 0 : baseCommercePriceList.getCommercePriceListId() %>',
 								inputId: 'baseCommercePriceListId',
@@ -132,7 +132,7 @@ boolean isViewOnly = !commerceCatalogDisplayContext.hasPermission(commerceCatalo
 								apiUrl:
 									'<%= commerceCatalogDisplayContext.getPriceListsApiUrl(CommercePriceListConstants.TYPE_PROMOTION) %>',
 								initialLabel:
-									'<%= (basePromotionCommercePriceList == null) ? StringPool.BLANK : basePromotionCommercePriceList.getName() %>',
+									'<%= (basePromotionCommercePriceList == null) ? StringPool.BLANK : HtmlUtil.escapeJS(basePromotionCommercePriceList.getName()) %>',
 								initialValue:
 									'<%= (basePromotionCommercePriceList == null) ? 0 : basePromotionCommercePriceList.getCommercePriceListId() %>',
 								inputId: 'basePromotionCommercePriceListId',

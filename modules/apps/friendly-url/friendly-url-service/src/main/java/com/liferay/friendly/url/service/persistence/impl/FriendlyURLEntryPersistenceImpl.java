@@ -2368,25 +2368,25 @@ public class FriendlyURLEntryPersistenceImpl
 		ServiceContext serviceContext =
 			ServiceContextThreadLocal.getServiceContext();
 
-		Date now = new Date();
+		Date date = new Date();
 
 		if (isNew && (friendlyURLEntry.getCreateDate() == null)) {
 			if (serviceContext == null) {
-				friendlyURLEntry.setCreateDate(now);
+				friendlyURLEntry.setCreateDate(date);
 			}
 			else {
 				friendlyURLEntry.setCreateDate(
-					serviceContext.getCreateDate(now));
+					serviceContext.getCreateDate(date));
 			}
 		}
 
 		if (!friendlyURLEntryModelImpl.hasSetModifiedDate()) {
 			if (serviceContext == null) {
-				friendlyURLEntry.setModifiedDate(now);
+				friendlyURLEntry.setModifiedDate(date);
 			}
 			else {
 				friendlyURLEntry.setModifiedDate(
-					serviceContext.getModifiedDate(now));
+					serviceContext.getModifiedDate(date));
 			}
 		}
 
@@ -2816,7 +2816,8 @@ public class FriendlyURLEntryPersistenceImpl
 	public Set<String> getCTColumnNames(
 		CTColumnResolutionType ctColumnResolutionType) {
 
-		return _ctColumnNamesMap.get(ctColumnResolutionType);
+		return _ctColumnNamesMap.getOrDefault(
+			ctColumnResolutionType, Collections.emptySet());
 	}
 
 	@Override
@@ -2850,7 +2851,6 @@ public class FriendlyURLEntryPersistenceImpl
 	static {
 		Set<String> ctControlColumnNames = new HashSet<String>();
 		Set<String> ctIgnoreColumnNames = new HashSet<String>();
-		Set<String> ctMergeColumnNames = new HashSet<String>();
 		Set<String> ctStrictColumnNames = new HashSet<String>();
 
 		ctControlColumnNames.add("mvccVersion");
@@ -2868,7 +2868,6 @@ public class FriendlyURLEntryPersistenceImpl
 			CTColumnResolutionType.CONTROL, ctControlColumnNames);
 		_ctColumnNamesMap.put(
 			CTColumnResolutionType.IGNORE, ctIgnoreColumnNames);
-		_ctColumnNamesMap.put(CTColumnResolutionType.MERGE, ctMergeColumnNames);
 		_ctColumnNamesMap.put(
 			CTColumnResolutionType.PK,
 			Collections.singleton("friendlyURLEntryId"));
@@ -3112,7 +3111,7 @@ public class FriendlyURLEntryPersistenceImpl
 			return FriendlyURLEntryTable.INSTANCE.getTableName();
 		}
 
-		private Object[] _getValue(
+		private static Object[] _getValue(
 			FriendlyURLEntryModelImpl friendlyURLEntryModelImpl,
 			String[] columnNames, boolean original) {
 
@@ -3135,8 +3134,8 @@ public class FriendlyURLEntryPersistenceImpl
 			return arguments;
 		}
 
-		private static Map<FinderPath, Long> _finderPathColumnBitmasksCache =
-			new ConcurrentHashMap<>();
+		private static final Map<FinderPath, Long>
+			_finderPathColumnBitmasksCache = new ConcurrentHashMap<>();
 
 	}
 

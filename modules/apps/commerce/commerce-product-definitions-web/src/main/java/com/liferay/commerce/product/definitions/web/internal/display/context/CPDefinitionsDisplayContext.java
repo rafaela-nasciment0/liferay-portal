@@ -30,6 +30,7 @@ import com.liferay.commerce.product.service.CommerceCatalogService;
 import com.liferay.commerce.product.service.CommerceChannelRelService;
 import com.liferay.commerce.product.servlet.taglib.ui.constants.CPDefinitionScreenNavigationConstants;
 import com.liferay.commerce.product.type.CPType;
+import com.liferay.commerce.product.url.CPFriendlyURL;
 import com.liferay.frontend.taglib.clay.data.set.servlet.taglib.util.ClayDataSetActionDropdownItem;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.CreationMenu;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.CreationMenuBuilder;
@@ -50,6 +51,7 @@ import com.liferay.portal.kernel.portlet.RequestBackedPortletURLFactory;
 import com.liferay.portal.kernel.portlet.RequestBackedPortletURLFactoryUtil;
 import com.liferay.portal.kernel.service.WorkflowDefinitionLinkLocalServiceUtil;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
+import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.StringUtil;
@@ -66,7 +68,6 @@ import javax.portlet.ActionURL;
 import javax.portlet.PortletRequest;
 import javax.portlet.PortletURL;
 import javax.portlet.RenderResponse;
-import javax.portlet.RenderURL;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -82,7 +83,8 @@ public class CPDefinitionsDisplayContext
 		CommerceAccountGroupRelService commerceAccountGroupRelService,
 		CommerceCatalogService commerceCatalogService,
 		CommerceChannelRelService commerceChannelRelService,
-		CPDefinitionService cpDefinitionService, ItemSelector itemSelector) {
+		CPDefinitionService cpDefinitionService, CPFriendlyURL cpFriendlyURL,
+		ItemSelector itemSelector) {
 
 		super(actionHelper, httpServletRequest);
 
@@ -90,6 +92,7 @@ public class CPDefinitionsDisplayContext
 		_commerceCatalogService = commerceCatalogService;
 		_commerceChannelRelService = commerceChannelRelService;
 		_cpDefinitionService = cpDefinitionService;
+		_cpFriendlyURL = cpFriendlyURL;
 		_itemSelector = itemSelector;
 	}
 
@@ -191,36 +194,43 @@ public class CPDefinitionsDisplayContext
 			getClayDataSetActionDropdownItems()
 		throws PortalException {
 
-		List<ClayDataSetActionDropdownItem> clayDataSetActionDropdownItems =
-			new ArrayList<>();
-
-		PortletURL portletURL = PortletURLBuilder.create(
-			PortletProviderUtil.getPortletURL(
-				httpServletRequest, CPDefinition.class.getName(),
-				PortletProvider.Action.MANAGE)
-		).setMVCRenderCommandName(
-			"/cp_definitions/edit_cp_definition"
-		).setParameter(
-			"cpDefinitionId", "{id}"
-		).setParameter(
-			"screenNavigationCategoryKey",
-			CPDefinitionScreenNavigationConstants.CATEGORY_KEY_DETAILS
-		).build();
-
-		clayDataSetActionDropdownItems.add(
+		return ListUtil.fromArray(
 			new ClayDataSetActionDropdownItem(
-				portletURL.toString(), "view", "view",
-				LanguageUtil.get(httpServletRequest, "view"), "get", null,
-				null));
-
-		clayDataSetActionDropdownItems.add(
+				PortletURLBuilder.create(
+					PortletProviderUtil.getPortletURL(
+						httpServletRequest, CPDefinition.class.getName(),
+						PortletProvider.Action.MANAGE)
+				).setMVCRenderCommandName(
+					"/cp_definitions/edit_cp_definition"
+				).setParameter(
+					"cpDefinitionId", "{id}"
+				).setParameter(
+					"screenNavigationCategoryKey",
+					CPDefinitionScreenNavigationConstants.CATEGORY_KEY_DETAILS
+				).buildString(),
+				"view", "view", LanguageUtil.get(httpServletRequest, "view"),
+				"get", null, null),
 			new ClayDataSetActionDropdownItem(
 				"/o/headless-commerce-admin-catalog/v1.0/products/{productId}",
 				"trash", "delete",
 				LanguageUtil.get(httpServletRequest, "delete"), "delete",
-				"delete", "async"));
-
-		return clayDataSetActionDropdownItems;
+				"delete", "async"),
+			new ClayDataSetActionDropdownItem(
+				PortletURLBuilder.create(
+					PortletURLFactoryUtil.create(
+						cpRequestHelper.getRenderRequest(),
+						cpRequestHelper.getPortletId(),
+						PortletRequest.RENDER_PHASE)
+				).setMVCRenderCommandName(
+					"/cp_definitions/duplicate_cp_definition"
+				).setParameter(
+					"cpDefinitionId", "{id}"
+				).setWindowState(
+					LiferayWindowState.POP_UP
+				).buildString(),
+				"paste", "duplicate",
+				LanguageUtil.get(httpServletRequest, "duplicate"), "post",
+				"update", "modal"));
 	}
 
 	public long[] getCommerceAccountGroupRelCommerceAccountGroupIds()
@@ -283,19 +293,22 @@ public class CPDefinitionsDisplayContext
 	public CreationMenu getCreationMenu() throws Exception {
 		CreationMenu creationMenu = new CreationMenu();
 
-		RenderURL renderURL = liferayPortletResponse.createRenderURL();
-
-		renderURL.setParameter(
-			"mvcRenderCommandName", "/cp_definitions/add_cp_definition");
-		renderURL.setParameter("backURL", cpRequestHelper.getCurrentURL());
-		renderURL.setWindowState(LiferayWindowState.POP_UP);
+		PortletURL portletURL = PortletURLBuilder.createRenderURL(
+			liferayPortletResponse
+		).setMVCRenderCommandName(
+			"/cp_definitions/add_cp_definition"
+		).setBackURL(
+			cpRequestHelper.getCurrentURL()
+		).setWindowState(
+			LiferayWindowState.POP_UP
+		).buildPortletURL();
 
 		for (CPType cpType : getCPTypes()) {
-			renderURL.setParameter("productTypeName", cpType.getName());
+			portletURL.setParameter("productTypeName", cpType.getName());
 
 			creationMenu.addDropdownItem(
 				dropdownItem -> {
-					dropdownItem.setHref(renderURL.toString());
+					dropdownItem.setHref(portletURL.toString());
 					dropdownItem.setLabel(
 						cpType.getLabel(cpRequestHelper.getLocale()));
 					dropdownItem.setTarget("modal");
@@ -308,22 +321,21 @@ public class CPDefinitionsDisplayContext
 	public List<DropdownItem> getDropdownItems() throws Exception {
 		List<DropdownItem> dropdownItems = new ArrayList<>();
 
-		PortletURL portletURL = PortletURLBuilder.create(
-			PortletURLFactoryUtil.create(
-				cpRequestHelper.getRenderRequest(),
-				cpRequestHelper.getPortletId(), PortletRequest.RENDER_PHASE)
-		).setMVCRenderCommandName(
-			"/cp_definitions/duplicate_cp_definition"
-		).setParameter(
-			"cpDefinitionId",
-			ParamUtil.getString(httpServletRequest, "cpDefinitionId")
-		).setWindowState(
-			LiferayWindowState.POP_UP
-		).build();
-
 		DropdownItem dropdownItem = new DropdownItem();
 
-		dropdownItem.setHref(portletURL.toString());
+		dropdownItem.setHref(
+			PortletURLBuilder.create(
+				PortletURLFactoryUtil.create(
+					cpRequestHelper.getRenderRequest(),
+					cpRequestHelper.getPortletId(), PortletRequest.RENDER_PHASE)
+			).setMVCRenderCommandName(
+				"/cp_definitions/duplicate_cp_definition"
+			).setParameter(
+				"cpDefinitionId",
+				ParamUtil.getString(httpServletRequest, "cpDefinitionId")
+			).setWindowState(
+				LiferayWindowState.POP_UP
+			).buildString());
 		dropdownItem.setLabel(
 			LanguageUtil.get(httpServletRequest, "duplicate"));
 		dropdownItem.setTarget("modal");
@@ -389,6 +401,11 @@ public class CPDefinitionsDisplayContext
 		return headerActionModels;
 	}
 
+	public String getProductURLSeparator() {
+		return _cpFriendlyURL.getProductURLSeparator(
+			cpRequestHelper.getCompanyId());
+	}
+
 	public String getUrlTitleMapAsXML() throws PortalException {
 		long cpDefinitionId = getCPDefinitionId();
 
@@ -426,6 +443,7 @@ public class CPDefinitionsDisplayContext
 	private final CommerceCatalogService _commerceCatalogService;
 	private final CommerceChannelRelService _commerceChannelRelService;
 	private final CPDefinitionService _cpDefinitionService;
+	private final CPFriendlyURL _cpFriendlyURL;
 	private final ItemSelector _itemSelector;
 
 }

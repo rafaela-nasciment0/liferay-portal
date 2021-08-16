@@ -88,13 +88,13 @@ public class JournalContentPortletToolbarContributor
 			"/edit_article.jsp"
 		).setRedirect(
 			_portal.getLayoutFullURL(themeDisplay)
-		).setParameter(
-			"portletResource", portletDisplay.getId()
-		).setParameter(
-			"refererPlid", plid
+		).setPortletResource(
+			portletDisplay.getId()
 		).setParameter(
 			"groupId", scopeGroupId
-		).build();
+		).setParameter(
+			"refererPlid", plid
+		).buildPortletURL();
 
 		List<DDMStructure> ddmStructures =
 			_journalFolderService.getDDMStructures(

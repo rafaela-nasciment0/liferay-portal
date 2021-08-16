@@ -138,7 +138,7 @@ public class AssetEntryUsagesDisplayContext {
 				return StringPool.BLANK;
 			}
 
-			if (!_isDraft(layout)) {
+			if (!layout.isDraftLayout()) {
 				return layout.getName(_themeDisplay.getLocale());
 			}
 
@@ -157,7 +157,7 @@ public class AssetEntryUsagesDisplayContext {
 		Layout layout = LayoutLocalServiceUtil.fetchLayout(
 			assetEntryUsage.getPlid());
 
-		if ((layout.getClassNameId() > 0) && (layout.getClassPK() > 0)) {
+		if (layout.isDraftLayout()) {
 			plid = layout.getClassPK();
 		}
 
@@ -169,7 +169,7 @@ public class AssetEntryUsagesDisplayContext {
 			return StringPool.BLANK;
 		}
 
-		if (!_isDraft(layout)) {
+		if (!layout.isDraftLayout()) {
 			return layoutPageTemplateEntry.getName();
 		}
 
@@ -420,14 +420,10 @@ public class AssetEntryUsagesDisplayContext {
 			return true;
 		}
 
-		if (assetEntryUsage.getType() ==
-				AssetEntryUsageConstants.TYPE_DISPLAY_PAGE_TEMPLATE) {
-
-			return false;
-		}
-
-		if (assetEntryUsage.getType() !=
-				AssetEntryUsageConstants.TYPE_PAGE_TEMPLATE) {
+		if ((assetEntryUsage.getType() ==
+				AssetEntryUsageConstants.TYPE_DISPLAY_PAGE_TEMPLATE) ||
+			(assetEntryUsage.getType() !=
+				AssetEntryUsageConstants.TYPE_PAGE_TEMPLATE)) {
 
 			return false;
 		}
@@ -436,7 +432,7 @@ public class AssetEntryUsagesDisplayContext {
 
 		Layout layout = LayoutLocalServiceUtil.fetchLayout(plid);
 
-		if ((layout.getClassNameId() > 0) && (layout.getClassPK() > 0)) {
+		if (layout.isDraftLayout()) {
 			plid = layout.getClassPK();
 		}
 
@@ -444,12 +440,9 @@ public class AssetEntryUsagesDisplayContext {
 			LayoutPageTemplateEntryLocalServiceUtil.
 				fetchLayoutPageTemplateEntryByPlid(plid);
 
-		if (layoutPageTemplateEntry == null) {
-			return false;
-		}
-
-		if (layoutPageTemplateEntry.getType() ==
-				LayoutPageTemplateEntryTypeConstants.TYPE_WIDGET_PAGE) {
+		if ((layoutPageTemplateEntry == null) ||
+			(layoutPageTemplateEntry.getType() ==
+				LayoutPageTemplateEntryTypeConstants.TYPE_WIDGET_PAGE)) {
 
 			return false;
 		}
@@ -550,16 +543,6 @@ public class AssetEntryUsagesDisplayContext {
 		}
 
 		return 0;
-	}
-
-	private boolean _isDraft(Layout layout) {
-		if (layout.getClassNameId() != PortalUtil.getClassNameId(
-				Layout.class.getName())) {
-
-			return false;
-		}
-
-		return true;
 	}
 
 	private final AssetEntry _assetEntry;

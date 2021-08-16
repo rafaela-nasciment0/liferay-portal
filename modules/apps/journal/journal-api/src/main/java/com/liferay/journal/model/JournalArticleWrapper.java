@@ -56,6 +56,7 @@ public class JournalArticleWrapper
 		attributes.put("userName", getUserName());
 		attributes.put("createDate", getCreateDate());
 		attributes.put("modifiedDate", getModifiedDate());
+		attributes.put("externalReferenceCode", getExternalReferenceCode());
 		attributes.put("folderId", getFolderId());
 		attributes.put("classNameId", getClassNameId());
 		attributes.put("classPK", getClassPK());
@@ -63,7 +64,6 @@ public class JournalArticleWrapper
 		attributes.put("articleId", getArticleId());
 		attributes.put("version", getVersion());
 		attributes.put("urlTitle", getUrlTitle());
-		attributes.put("content", getContent());
 		attributes.put("DDMStructureKey", getDDMStructureKey());
 		attributes.put("DDMTemplateKey", getDDMTemplateKey());
 		attributes.put("defaultLanguageId", getDefaultLanguageId());
@@ -152,6 +152,13 @@ public class JournalArticleWrapper
 			setModifiedDate(modifiedDate);
 		}
 
+		String externalReferenceCode = (String)attributes.get(
+			"externalReferenceCode");
+
+		if (externalReferenceCode != null) {
+			setExternalReferenceCode(externalReferenceCode);
+		}
+
 		Long folderId = (Long)attributes.get("folderId");
 
 		if (folderId != null) {
@@ -192,12 +199,6 @@ public class JournalArticleWrapper
 
 		if (urlTitle != null) {
 			setUrlTitle(urlTitle);
-		}
-
-		String content = (String)attributes.get("content");
-
-		if (content != null) {
-			setContent(content);
 		}
 
 		String DDMStructureKey = (String)attributes.get("DDMStructureKey");
@@ -392,11 +393,6 @@ public class JournalArticleWrapper
 		return model.getCompanyId();
 	}
 
-	/**
-	 * Returns the content of this journal article.
-	 *
-	 * @return the content of this journal article
-	 */
 	@Override
 	public String getContent() {
 		return model.getContent();
@@ -532,6 +528,16 @@ public class JournalArticleWrapper
 	@Override
 	public Date getExpirationDate() {
 		return model.getExpirationDate();
+	}
+
+	/**
+	 * Returns the external reference code of this journal article.
+	 *
+	 * @return the external reference code of this journal article
+	 */
+	@Override
+	public String getExternalReferenceCode() {
+		return model.getExternalReferenceCode();
 	}
 
 	@Override
@@ -1186,16 +1192,6 @@ public class JournalArticleWrapper
 	}
 
 	/**
-	 * Sets the content of this journal article.
-	 *
-	 * @param content the content of this journal article
-	 */
-	@Override
-	public void setContent(String content) {
-		model.setContent(content);
-	}
-
-	/**
 	 * Sets the create date of this journal article.
 	 *
 	 * @param createDate the create date of this journal article
@@ -1284,6 +1280,16 @@ public class JournalArticleWrapper
 	@Override
 	public void setExpirationDate(Date expirationDate) {
 		model.setExpirationDate(expirationDate);
+	}
+
+	/**
+	 * Sets the external reference code of this journal article.
+	 *
+	 * @param externalReferenceCode the external reference code of this journal article
+	 */
+	@Override
+	public void setExternalReferenceCode(String externalReferenceCode) {
+		model.setExternalReferenceCode(externalReferenceCode);
 	}
 
 	/**

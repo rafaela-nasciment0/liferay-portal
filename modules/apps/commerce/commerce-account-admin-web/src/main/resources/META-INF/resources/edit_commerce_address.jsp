@@ -26,9 +26,6 @@ int selectedType = CommerceAddressConstants.ADDRESS_TYPE_BILLING_AND_SHIPPING;
 if (commerceAddress != null) {
 	selectedType = commerceAddress.getType();
 }
-
-long countryId = commerceAccountAddressAdminDisplayContext.getCountryId();
-long regionId = commerceAccountAddressAdminDisplayContext.getRegionId();
 %>
 
 <portlet:actionURL name="/commerce_account_admin/edit_commerce_address" var="editCommerceAddressActionURL" />
@@ -71,9 +68,7 @@ long regionId = commerceAccountAddressAdminDisplayContext.getRegionId();
 						<aui:select label="country" name="countryId" showEmptyOption="<%= true %>">
 
 							<%
-							List<Country> countries = commerceAccountAddressAdminDisplayContext.getCountries();
-
-							for (Country country : countries) {
+							for (Country country : commerceAccountAddressAdminDisplayContext.getCountries()) {
 							%>
 
 								<aui:option label="<%= country.getTitle(locale) %>" selected="<%= (commerceAddress != null) && (commerceAddress.getCountryId() == country.getCountryId()) %>" value="<%= country.getCountryId() %>" />
@@ -87,9 +82,7 @@ long regionId = commerceAccountAddressAdminDisplayContext.getRegionId();
 						<aui:select label="region" name="regionId" showEmptyOption="<%= true %>">
 
 							<%
-							List<Region> regions = commerceAccountAddressAdminDisplayContext.getRegions();
-
-							for (Region region : regions) {
+							for (Region region : commerceAccountAddressAdminDisplayContext.getRegions()) {
 							%>
 
 								<aui:option label="<%= region.getName() %>" selected="<%= (commerceAddress != null) && (commerceAddress.getRegionId() == region.getRegionId()) %>" value="<%= region.getRegionId() %>" />
@@ -146,7 +139,8 @@ long regionId = commerceAccountAddressAdminDisplayContext.getRegionId();
 			selectDesc: 'nameCurrentValue',
 			selectId: 'countryId',
 			selectSort: '<%= true %>',
-			selectVal: '<%= countryId %>',
+			selectVal:
+				'<%= commerceAccountAddressAdminDisplayContext.getCountryId() %>',
 		},
 		{
 			select: '<portlet:namespace />regionId',
@@ -162,7 +156,8 @@ long regionId = commerceAccountAddressAdminDisplayContext.getRegionId();
 			},
 			selectDesc: 'name',
 			selectId: 'regionId',
-			selectVal: '<%= regionId %>',
+			selectVal:
+				'<%= commerceAccountAddressAdminDisplayContext.getRegionId() %>',
 		},
 	]);
 </aui:script>

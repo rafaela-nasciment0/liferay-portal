@@ -91,6 +91,17 @@ public interface KnowledgeBaseArticleResource {
 			Long knowledgeBaseArticleId, Rating rating)
 		throws Exception;
 
+	public Page<com.liferay.portal.vulcan.permission.Permission>
+			getKnowledgeBaseArticlePermissionsPage(
+				Long knowledgeBaseArticleId, String roleNames)
+		throws Exception;
+
+	public Page<com.liferay.portal.vulcan.permission.Permission>
+			putKnowledgeBaseArticlePermission(
+				Long knowledgeBaseArticleId,
+				com.liferay.portal.vulcan.permission.Permission[] permissions)
+		throws Exception;
+
 	public void putKnowledgeBaseArticleSubscribe(Long knowledgeBaseArticleId)
 		throws Exception;
 
@@ -138,6 +149,32 @@ public interface KnowledgeBaseArticleResource {
 
 	public Response postSiteKnowledgeBaseArticleBatch(
 			Long siteId, String callbackURL, Object object)
+		throws Exception;
+
+	public void deleteSiteKnowledgeBaseArticleByExternalReferenceCode(
+			Long siteId, String externalReferenceCode)
+		throws Exception;
+
+	public KnowledgeBaseArticle
+			getSiteKnowledgeBaseArticleByExternalReferenceCode(
+				Long siteId, String externalReferenceCode)
+		throws Exception;
+
+	public KnowledgeBaseArticle
+			putSiteKnowledgeBaseArticleByExternalReferenceCode(
+				Long siteId, String externalReferenceCode,
+				KnowledgeBaseArticle knowledgeBaseArticle)
+		throws Exception;
+
+	public Page<com.liferay.portal.vulcan.permission.Permission>
+			getSiteKnowledgeBaseArticlePermissionsPage(
+				Long siteId, String roleNames)
+		throws Exception;
+
+	public Page<com.liferay.portal.vulcan.permission.Permission>
+			putSiteKnowledgeBaseArticlePermission(
+				Long siteId,
+				com.liferay.portal.vulcan.permission.Permission[] permissions)
 		throws Exception;
 
 	public void putSiteKnowledgeBaseArticleSubscribe(Long siteId)

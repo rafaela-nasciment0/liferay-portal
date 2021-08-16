@@ -32,6 +32,7 @@ import com.liferay.portal.kernel.exception.NoSuchAccountException;
 import com.liferay.portal.kernel.exception.NoSuchPasswordPolicyException;
 import com.liferay.portal.kernel.exception.NoSuchVirtualHostException;
 import com.liferay.portal.kernel.exception.RequiredCompanyException;
+import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Account;
@@ -76,9 +77,13 @@ import com.liferay.portal.kernel.transaction.TransactionConfig;
 import com.liferay.portal.kernel.transaction.TransactionInvokerUtil;
 import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.HashMapDictionary;
+import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.PortletKeys;
+import com.liferay.portal.kernel.util.PrefsPropsUtil;
+import com.liferay.portal.kernel.util.PropsKeys;
 import com.liferay.portal.kernel.util.StringUtil;
+import com.liferay.portal.kernel.util.UnicodeProperties;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.test.rule.PermissionCheckerMethodTestRule;
 import com.liferay.portal.test.rule.SybaseDump;
@@ -96,6 +101,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.TimeZone;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -196,24 +202,24 @@ public class CompanyLocalServiceTest {
 
 		long userId = UserLocalServiceUtil.getDefaultUserId(companyId);
 
-		Organization companyOrganzation =
+		Organization companyOrganization =
 			OrganizationLocalServiceUtil.addOrganization(
 				userId, OrganizationConstants.DEFAULT_PARENT_ORGANIZATION_ID,
 				RandomTestUtil.randomString(), true);
 
-		Group companyOrganizationGroup = companyOrganzation.getGroup();
+		Group companyOrganizationGroup = companyOrganization.getGroup();
 
 		Group group = GroupTestUtil.addGroup(
 			companyId, userId, companyOrganizationGroup.getGroupId());
 
 		CompanyLocalServiceUtil.deleteCompany(company);
 
-		companyOrganzation = OrganizationLocalServiceUtil.fetchOrganization(
-			companyOrganzation.getOrganizationId());
+		companyOrganization = OrganizationLocalServiceUtil.fetchOrganization(
+			companyOrganization.getOrganizationId());
 
 		Assert.assertNull(
 			"The company organization should delete with the company",
-			companyOrganzation);
+			companyOrganization);
 
 		companyOrganizationGroup = GroupLocalServiceUtil.fetchGroup(
 			companyOrganizationGroup.getGroupId());
@@ -282,8 +288,8 @@ public class CompanyLocalServiceTest {
 		serviceContext.setUserId(userId);
 
 		DLAppLocalServiceUtil.addFileEntry(
-			userId, guestGroup.getGroupId(), 0, "test.xml", "text/xml",
-			"test.xml", "", "", "test".getBytes(), serviceContext);
+			null, userId, guestGroup.getGroupId(), 0, "test.xml", "text/xml",
+			"test.xml", "", "", "test".getBytes(), null, null, serviceContext);
 
 		CompanyLocalServiceUtil.deleteCompany(companyId);
 	}
@@ -410,23 +416,23 @@ public class CompanyLocalServiceTest {
 
 		User companyAdminUser = UserTestUtil.addCompanyAdminUser(company);
 
-		Organization companyOrganzation =
+		Organization companyOrganization =
 			OrganizationLocalServiceUtil.addOrganization(
 				companyAdminUser.getUserId(),
 				OrganizationConstants.DEFAULT_PARENT_ORGANIZATION_ID,
 				RandomTestUtil.randomString(), true);
 
-		Group companyOrganizationGroup = companyOrganzation.getGroup();
+		Group companyOrganizationGroup = companyOrganization.getGroup();
 
 		GroupTestUtil.enableLocalStaging(
 			companyOrganizationGroup, companyAdminUser.getUserId());
 
 		CompanyLocalServiceUtil.deleteCompany(company);
 
-		companyOrganzation = OrganizationLocalServiceUtil.fetchOrganization(
-			companyOrganzation.getOrganizationId());
+		companyOrganization = OrganizationLocalServiceUtil.fetchOrganization(
+			companyOrganization.getOrganizationId());
 
-		Assert.assertNull(companyOrganzation);
+		Assert.assertNull(companyOrganization);
 
 		companyOrganizationGroup = GroupLocalServiceUtil.fetchGroup(
 			companyOrganizationGroup.getGroupId());
@@ -625,11 +631,10 @@ public class CompanyLocalServiceTest {
 
 		CompanyLocalServiceUtil.deleteCompany(company);
 
-		for (long companyId : PortalInstances.getCompanyIds()) {
-			Assert.assertNotEquals(
+		CompanyLocalServiceUtil.forEachCompanyId(
+			companyId -> Assert.assertNotEquals(
 				"Company instance was not deleted", company.getCompanyId(),
-				companyId);
-		}
+				(long)companyId));
 	}
 
 	@Test
@@ -786,6 +791,86 @@ public class CompanyLocalServiceTest {
 			CompanyLocalServiceUtil.getCompanyByVirtualHost("0:0:0:0:0:0:0:1"));
 
 		CompanyLocalServiceUtil.deleteCompany(company);
+	}
+
+	@Test
+	public void testUpdateCompanyLocales() throws Exception {
+		long companyId = CompanyThreadLocal.getCompanyId();
+
+		try {
+			Company company = addCompany();
+
+			CompanyThreadLocal.setCompanyId(company.getCompanyId());
+
+			String languageId = "ca_ES";
+			TimeZone timeZone = company.getTimeZone();
+
+			CompanyLocalServiceUtil.updateDisplay(
+				company.getCompanyId(), languageId, timeZone.getID());
+
+			UnicodeProperties unicodeProperties = new UnicodeProperties();
+
+			unicodeProperties.put(PropsKeys.LOCALES, languageId);
+
+			CompanyLocalServiceUtil.updatePreferences(
+				company.getCompanyId(), unicodeProperties);
+
+			Assert.assertEquals(
+				Collections.singleton(LocaleUtil.fromLanguageId(languageId)),
+				LanguageUtil.getAvailableLocales());
+		}
+		finally {
+			CompanyThreadLocal.setCompanyId(companyId);
+		}
+	}
+
+	@Test
+	public void testUpdateCompanyLocalesUpdateGroupLocales() throws Exception {
+		Company company = addCompany();
+
+		String[] companyLanguageIds = PrefsPropsUtil.getStringArray(
+			company.getCompanyId(), PropsKeys.LOCALES, StringPool.COMMA,
+			PropsValues.LOCALES_ENABLED);
+
+		User user = UserTestUtil.getAdminUser(company.getCompanyId());
+
+		Group group = GroupTestUtil.addGroup(
+			company.getCompanyId(), user.getUserId(),
+			GroupConstants.DEFAULT_PARENT_GROUP_ID);
+
+		group = GroupTestUtil.updateDisplaySettings(
+			group.getGroupId(),
+			ListUtil.fromArray(LocaleUtil.fromLanguageIds(companyLanguageIds)),
+			LocaleUtil.getDefault());
+
+		UnicodeProperties groupTypeSettingsUnicodeProperties =
+			group.getTypeSettingsProperties();
+
+		Assert.assertEquals(
+			StringUtil.merge(companyLanguageIds),
+			groupTypeSettingsUnicodeProperties.getProperty(PropsKeys.LOCALES));
+
+		UnicodeProperties unicodeProperties = new UnicodeProperties();
+
+		String languageIds = "ca_ES,en_US";
+
+		unicodeProperties.put(PropsKeys.LOCALES, languageIds);
+
+		CompanyLocalServiceUtil.updatePreferences(
+			company.getCompanyId(), unicodeProperties);
+
+		Assert.assertEquals(
+			languageIds,
+			PrefsPropsUtil.getString(
+				company.getCompanyId(), PropsKeys.LOCALES));
+
+		group = GroupLocalServiceUtil.getGroup(group.getGroupId());
+
+		groupTypeSettingsUnicodeProperties = group.getTypeSettingsProperties();
+
+		Assert.assertEquals(
+			languageIds,
+			groupTypeSettingsUnicodeProperties.getProperty(PropsKeys.LOCALES));
 	}
 
 	@Test

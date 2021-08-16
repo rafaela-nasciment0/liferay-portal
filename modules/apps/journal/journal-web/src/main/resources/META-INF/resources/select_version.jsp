@@ -20,7 +20,6 @@
 long groupId = ParamUtil.getLong(request, "groupId");
 String articleId = ParamUtil.getString(request, "articleId");
 double sourceVersion = ParamUtil.getDouble(request, "sourceVersion");
-String eventName = ParamUtil.getString(request, "eventName", liferayPortletResponse.getNamespace() + "selectVersionFm");
 
 PortletURL portletURL = PortletURLBuilder.createRenderURL(
 	renderResponse
@@ -29,12 +28,12 @@ PortletURL portletURL = PortletURLBuilder.createRenderURL(
 ).setRedirect(
 	currentURL
 ).setParameter(
-	"groupId", String.valueOf(groupId)
-).setParameter(
 	"articleId", articleId
 ).setParameter(
-	"sourceVersion", String.valueOf(sourceVersion)
-).build();
+	"groupId", groupId
+).setParameter(
+	"sourceVersion", sourceVersion
+).buildPortletURL();
 %>
 
 <aui:form action="<%= portletURL.toString() %>" cssClass="container-fluid container-fluid-max-xl" method="post" name="selectVersionFm">
@@ -93,10 +92,3 @@ PortletURL portletURL = PortletURLBuilder.createRenderURL(
 		/>
 	</liferay-ui:search-container>
 </aui:form>
-
-<aui:script>
-	Liferay.Util.selectEntityHandler(
-		'#<portlet:namespace />selectVersionFm',
-		'<%= HtmlUtil.escapeJS(eventName) %>'
-	);
-</aui:script>

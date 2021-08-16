@@ -23,15 +23,12 @@
 }
 
 .info-bar-container .management-bar-header-right {
-	display: flex;
-	justify-content: flex-end;
+	float: right;
+	margin-right: 0;
+	position: relative;
 
-	a {
-		align-items: center;
-		display: flex;
-		height: 32px;
-		justify-content: center;
-		width: 32px;
+	> a {
+		padding: 0;
 	}
 }
 
@@ -62,10 +59,6 @@
 
 	.tbar-visible-xs {
 		display: none;
-	}
-
-	@media (min-width: 1880px) {
-		padding-right: 320px;
 	}
 
 	@media (max-width: 767px) {
@@ -100,6 +93,16 @@
 			border-top: 0;
 		}
 	}
+}
+
+.modal-footer .btn-toolbar .btn-secondary {
+	margin-right: 10px;
+}
+
+.modal-open .modal {
+	min-height: 325px;
+	min-width: 500px;
+	overflow-y: hidden !important;
 }
 
 .workflow-definition-container {

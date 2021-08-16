@@ -3243,25 +3243,25 @@ public class LayoutPageTemplateStructureRelPersistenceImpl
 		ServiceContext serviceContext =
 			ServiceContextThreadLocal.getServiceContext();
 
-		Date now = new Date();
+		Date date = new Date();
 
 		if (isNew && (layoutPageTemplateStructureRel.getCreateDate() == null)) {
 			if (serviceContext == null) {
-				layoutPageTemplateStructureRel.setCreateDate(now);
+				layoutPageTemplateStructureRel.setCreateDate(date);
 			}
 			else {
 				layoutPageTemplateStructureRel.setCreateDate(
-					serviceContext.getCreateDate(now));
+					serviceContext.getCreateDate(date));
 			}
 		}
 
 		if (!layoutPageTemplateStructureRelModelImpl.hasSetModifiedDate()) {
 			if (serviceContext == null) {
-				layoutPageTemplateStructureRel.setModifiedDate(now);
+				layoutPageTemplateStructureRel.setModifiedDate(date);
 			}
 			else {
 				layoutPageTemplateStructureRel.setModifiedDate(
-					serviceContext.getModifiedDate(now));
+					serviceContext.getModifiedDate(date));
 			}
 		}
 
@@ -3713,7 +3713,8 @@ public class LayoutPageTemplateStructureRelPersistenceImpl
 	public Set<String> getCTColumnNames(
 		CTColumnResolutionType ctColumnResolutionType) {
 
-		return _ctColumnNamesMap.get(ctColumnResolutionType);
+		return _ctColumnNamesMap.getOrDefault(
+			ctColumnResolutionType, Collections.emptySet());
 	}
 
 	@Override
@@ -3761,7 +3762,7 @@ public class LayoutPageTemplateStructureRelPersistenceImpl
 		ctIgnoreColumnNames.add("modifiedDate");
 		ctStrictColumnNames.add("layoutPageTemplateStructureId");
 		ctStrictColumnNames.add("segmentsExperienceId");
-		ctStrictColumnNames.add("data_");
+		ctMergeColumnNames.add("data_");
 
 		_ctColumnNamesMap.put(
 			CTColumnResolutionType.CONTROL, ctControlColumnNames);
@@ -4060,7 +4061,7 @@ public class LayoutPageTemplateStructureRelPersistenceImpl
 			return LayoutPageTemplateStructureRelTable.INSTANCE.getTableName();
 		}
 
-		private Object[] _getValue(
+		private static Object[] _getValue(
 			LayoutPageTemplateStructureRelModelImpl
 				layoutPageTemplateStructureRelModelImpl,
 			String[] columnNames, boolean original) {
@@ -4085,8 +4086,8 @@ public class LayoutPageTemplateStructureRelPersistenceImpl
 			return arguments;
 		}
 
-		private static Map<FinderPath, Long> _finderPathColumnBitmasksCache =
-			new ConcurrentHashMap<>();
+		private static final Map<FinderPath, Long>
+			_finderPathColumnBitmasksCache = new ConcurrentHashMap<>();
 
 	}
 

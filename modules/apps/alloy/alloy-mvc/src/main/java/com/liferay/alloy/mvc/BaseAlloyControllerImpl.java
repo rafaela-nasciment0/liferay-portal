@@ -684,7 +684,7 @@ public abstract class BaseAlloyControllerImpl implements AlloyController {
 			portletMode
 		).setWindowState(
 			windowState
-		).build();
+		).buildPortletURL();
 
 		if (parameters == null) {
 			return portletURL;
@@ -737,11 +737,11 @@ public abstract class BaseAlloyControllerImpl implements AlloyController {
 			Object... attributes)
 		throws Exception {
 
-		Map<String, Serializable> attributesMap = new HashMap<>();
-
 		if ((attributes.length == 0) || ((attributes.length % 2) != 0)) {
 			throw new Exception("Arguments length is not an even number");
 		}
+
+		Map<String, Serializable> attributesMap = new HashMap<>();
 
 		for (int i = 0; i < attributes.length; i += 2) {
 			String name = String.valueOf(attributes[i]);
@@ -1018,7 +1018,7 @@ public abstract class BaseAlloyControllerImpl implements AlloyController {
 				"action", actionPath
 			).setParameter(
 				"controller", controllerPath
-			).build();
+			).buildPortletURL();
 
 			if (Validator.isNotNull(format)) {
 				portletURL.setParameter("format", format);

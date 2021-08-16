@@ -75,6 +75,7 @@ import com.liferay.portal.kernel.security.auth.PrincipalThreadLocal;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
 import com.liferay.portal.kernel.security.permission.PermissionCheckerFactoryUtil;
 import com.liferay.portal.kernel.security.permission.PermissionThreadLocal;
+import com.liferay.portal.kernel.service.CompanyLocalService;
 import com.liferay.portal.kernel.service.GroupLocalService;
 import com.liferay.portal.kernel.service.OrganizationLocalService;
 import com.liferay.portal.kernel.service.RoleLocalService;
@@ -98,9 +99,10 @@ import com.liferay.portal.kernel.test.util.UserTestUtil;
 import com.liferay.portal.kernel.util.Constants;
 import com.liferay.portal.kernel.util.ContentTypes;
 import com.liferay.portal.kernel.util.HashMapBuilder;
-import com.liferay.portal.kernel.util.HashMapDictionary;
+import com.liferay.portal.kernel.util.HashMapDictionaryBuilder;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.LocalizationUtil;
+import com.liferay.portal.kernel.util.MapUtil;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Time;
@@ -122,11 +124,13 @@ import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.test.rule.PermissionCheckerMethodTestRule;
 import com.liferay.portal.test.rule.SynchronousMailTestRule;
+import com.liferay.portal.util.PortalInstances;
+
+import java.io.File;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
-import java.util.Dictionary;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -146,6 +150,9 @@ import org.junit.runner.RunWith;
 import org.osgi.service.cm.Configuration;
 import org.osgi.service.cm.ConfigurationAdmin;
 
+import org.springframework.core.io.FileSystemResourceLoader;
+import org.springframework.mock.web.MockServletContext;
+
 /**
  * @author Inácio Nery
  */
@@ -162,29 +169,38 @@ public class WorkflowTaskManagerImplTest {
 
 	@BeforeClass
 	public static void setUpClass() throws Exception {
+		_company = CompanyTestUtil.addCompany();
+
+		File file = new File("portal-web/docroot");
+
+		MockServletContext mockServletContext = new MockServletContext(
+			"file:" + file.getAbsolutePath(), new FileSystemResourceLoader());
+
+		PortalInstances.initCompany(mockServletContext, _company.getWebId());
+
+		_companyAdminUser = UserTestUtil.addCompanyAdminUser(_company);
+
 		_configuration = _configurationAdmin.getConfiguration(
 			"com.liferay.portal.workflow.configuration." +
 				"WorkflowDefinitionConfiguration",
 			StringPool.QUESTION);
 
-		Dictionary<String, Object> properties = new HashMapDictionary<>();
-
-		properties.put("company.administrator.can.publish", true);
-
-		ConfigurationTestUtil.saveConfiguration(_configuration, properties);
+		ConfigurationTestUtil.saveConfiguration(
+			_configuration,
+			HashMapDictionaryBuilder.<String, Object>put(
+				"company.administrator.can.publish", true
+			).build());
 	}
 
 	@AfterClass
 	public static void tearDownClass() throws Exception {
+		_companyLocalService.deleteCompany(_company);
+
 		ConfigurationTestUtil.deleteConfiguration(_configuration);
 	}
 
 	@Before
 	public void setUp() throws Exception {
-		_company = CompanyTestUtil.addCompany();
-
-		_companyAdminUser = UserTestUtil.addCompanyAdminUser(_company);
-
 		_group = GroupTestUtil.addGroup(
 			_company.getCompanyId(), _companyAdminUser.getUserId(), 0);
 
@@ -1075,6 +1091,46 @@ public class WorkflowTaskManagerImplTest {
 	}
 
 	@Test
+	public void testSearchWorkflowTasksByAssetTypesAndAssetPrimaryKeys()
+		throws Exception {
+
+		_activateSingleApproverWorkflow(BlogsEntry.class.getName(), 0, 0);
+		_activateSingleApproverWorkflow(DLFolder.class.getName(), 0, -1);
+
+		_addBlogsEntry();
+		_addFileVersion(DLFolderConstants.DEFAULT_PARENT_FOLDER_ID);
+
+		BlogsEntry blogsEntry = _addBlogsEntry();
+
+		List<WorkflowTask> workflowTasks =
+			_searchByAssetTypesAndAssetPrimaryKeys(null, null);
+
+		Assert.assertEquals(workflowTasks.toString(), 3, workflowTasks.size());
+
+		workflowTasks = _searchByAssetTypesAndAssetPrimaryKeys(
+			new String[] {BlogsEntry.class.getName()}, null);
+
+		Assert.assertEquals(workflowTasks.toString(), 2, workflowTasks.size());
+
+		workflowTasks = _searchByAssetTypesAndAssetPrimaryKeys(
+			new String[] {BlogsEntry.class.getName()},
+			new Long[] {blogsEntry.getEntryId()});
+
+		Assert.assertEquals(workflowTasks.toString(), 1, workflowTasks.size());
+
+		WorkflowTask workflowTask = workflowTasks.get(0);
+
+		Assert.assertEquals(
+			blogsEntry.getEntryId(),
+			MapUtil.getLong(
+				workflowTask.getOptionalAttributes(),
+				WorkflowConstants.CONTEXT_ENTRY_CLASS_PK));
+
+		_deactivateWorkflow(BlogsEntry.class.getName(), 0, 0);
+		_deactivateWorkflow(DLFolder.class.getName(), 0, -1);
+	}
+
+	@Test
 	public void testSearchWorkflowTasksOrderByModifiedDate() throws Exception {
 		_activateSingleApproverWorkflow(BlogsEntry.class.getName(), 0, 0);
 
@@ -1244,10 +1300,10 @@ public class WorkflowTaskManagerImplTest {
 		serviceContext.setAttribute("fileEntryTypeId", fileEntryTypeId);
 
 		FileEntry fileEntry = _dlAppLocalService.addFileEntry(
-			_adminUser.getUserId(), _group.getGroupId(), folderId,
+			null, _adminUser.getUserId(), _group.getGroupId(), folderId,
 			RandomTestUtil.randomString(), ContentTypes.TEXT_PLAIN,
 			RandomTestUtil.randomString(), StringPool.BLANK, StringPool.BLANK,
-			TestDataConstants.TEST_BYTE_ARRAY, serviceContext);
+			TestDataConstants.TEST_BYTE_ARRAY, null, null, serviceContext);
 
 		return fileEntry.getLatestFileVersion();
 	}
@@ -1284,8 +1340,8 @@ public class WorkflowTaskManagerImplTest {
 		String content = DDMStructureTestUtil.getSampleStructuredContent();
 
 		return _journalArticleLocalService.addArticle(
-			_adminUser.getUserId(), _group.getGroupId(), folderId, titleMap,
-			descriptionMap, content, ddmStructure.getStructureKey(),
+			null, _adminUser.getUserId(), _group.getGroupId(), folderId,
+			titleMap, descriptionMap, content, ddmStructure.getStructureKey(),
 			ddmTemplate.getTemplateKey(), _serviceContext);
 	}
 
@@ -1451,7 +1507,7 @@ public class WorkflowTaskManagerImplTest {
 				_log.debug(workflowException, workflowException);
 			}
 
-			String content = _read("join-xor-definition.xml");
+			String content = _read("join-xor-workflow-definition.xml");
 
 			_workflowDefinitionManager.deployWorkflowDefinition(
 				_adminUser.getCompanyId(), _adminUser.getUserId(), _JOIN_XOR,
@@ -1486,7 +1542,7 @@ public class WorkflowTaskManagerImplTest {
 			}
 
 			String content = _read(
-				"single-approver-definition-scripted-assignment.xml");
+				"single-approver-scripted-assignment-workflow-definition.xml");
 
 			_workflowDefinitionManager.deployWorkflowDefinition(
 				_adminUser.getCompanyId(), _adminUser.getUserId(),
@@ -1508,7 +1564,7 @@ public class WorkflowTaskManagerImplTest {
 			}
 
 			String content = _read(
-				"single-approver-definition-site-member.xml");
+				"single-approver-site-member-workflow-definition.xml");
 
 			_workflowDefinitionManager.deployWorkflowDefinition(
 				_adminUser.getCompanyId(), _adminUser.getUserId(),
@@ -1691,6 +1747,17 @@ public class WorkflowTaskManagerImplTest {
 			clazz.getClassLoader(), _getBasePath() + fileName);
 	}
 
+	private List<WorkflowTask> _searchByAssetTypesAndAssetPrimaryKeys(
+			String[] assetTypes, Long[] assetPrimaryKeys)
+		throws Exception {
+
+		return _workflowTaskManager.search(
+			_adminUser.getCompanyId(), _adminUser.getUserId(), null, null,
+			assetTypes, assetPrimaryKeys, null, null, null, null, false, true,
+			null, null, false, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
+			WorkflowComparatorFactoryUtil.getTaskModifiedDateComparator(true));
+	}
+
 	private int _searchCount(String keywords) throws Exception {
 		return _workflowTaskManager.searchCount(
 			_adminUser.getCompanyId(), _adminUser.getUserId(), keywords,
@@ -1754,7 +1821,8 @@ public class WorkflowTaskManagerImplTest {
 		FileEntry fileEntry = _dlAppService.updateFileEntry(
 			fileEntryId, StringPool.BLANK, ContentTypes.TEXT_PLAIN,
 			RandomTestUtil.randomString(), StringPool.BLANK, null,
-			DLVersionNumberIncrease.AUTOMATIC, null, 0, _serviceContext);
+			DLVersionNumberIncrease.AUTOMATIC, null, 0, null, null,
+			_serviceContext);
 
 		return fileEntry.getLatestFileVersion();
 	}
@@ -1822,6 +1890,12 @@ public class WorkflowTaskManagerImplTest {
 	private static final Log _log = LogFactoryUtil.getLog(
 		WorkflowTaskManagerImplTest.class);
 
+	private static Company _company;
+	private static User _companyAdminUser;
+
+	@Inject
+	private static CompanyLocalService _companyLocalService;
+
 	private static Configuration _configuration;
 
 	@Inject
@@ -1831,11 +1905,6 @@ public class WorkflowTaskManagerImplTest {
 
 	@Inject
 	private BlogsEntryLocalService _blogsEntryLocalService;
-
-	@DeleteAfterTestRun
-	private Company _company;
-
-	private User _companyAdminUser;
 
 	@Inject
 	private DDLRecordLocalService _ddlRecordLocalService;
@@ -1855,6 +1924,7 @@ public class WorkflowTaskManagerImplTest {
 	@Inject
 	private DLTrashService _dlTrashService;
 
+	@DeleteAfterTestRun
 	private Group _group;
 
 	@Inject

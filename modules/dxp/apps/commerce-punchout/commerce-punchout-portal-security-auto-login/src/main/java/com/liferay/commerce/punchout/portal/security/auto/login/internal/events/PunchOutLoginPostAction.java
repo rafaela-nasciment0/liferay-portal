@@ -144,11 +144,9 @@ public class PunchOutLoginPostAction extends Action {
 				punchOutUserId, commerceChannelGroupId, commerceAccountId,
 				commerceCurrencyId);
 
-			ServiceContext serviceContext = new ServiceContext();
-
 			commerceOrder = _commerceOrderLocalService.updateStatus(
 				punchOutUserId, commerceOrder.getCommerceOrderId(),
-				WorkflowConstants.STATUS_APPROVED, serviceContext,
+				WorkflowConstants.STATUS_APPROVED, new ServiceContext(),
 				Collections.emptyMap());
 		}
 
@@ -163,7 +161,7 @@ public class PunchOutLoginPostAction extends Action {
 			WebKeys.THEME_DISPLAY, _getThemeDisplay());
 
 		String cookieName = _commerceOrderHttpHelper.getCookieName(
-			commerceContext.getCommerceChannelId());
+			commerceOrder.getGroupId());
 
 		Cookie cookie = new Cookie(cookieName, commerceOrder.getUuid());
 

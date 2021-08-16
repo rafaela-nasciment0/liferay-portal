@@ -23,8 +23,7 @@ import {
 	convertToFormData,
 	useConfig,
 	useFormState,
-} from 'dynamic-data-mapping-form-renderer';
-import {ItemSelectorDialog} from 'frontend-js-web';
+} from 'data-engine-js-components-web';
 import React, {useEffect, useMemo, useState} from 'react';
 
 import {FieldBase} from '../FieldBase/ReactFieldBase.es';
@@ -72,7 +71,7 @@ function transformFileEntryProperties({fileEntryTitle, fileEntryURL, value}) {
 				fileEntryURL = fileEntry.url;
 			}
 		}
-		catch (e) {
+		catch (error) {
 			console.warn('Unable to parse JSON', value);
 		}
 	}
@@ -254,6 +253,8 @@ const GuestUploadFile = ({
 };
 
 const Main = ({
+	_onBlur,
+	_onFocus,
 	allowGuestUsers,
 	displayErrors: initialDisplayErrors,
 	editingLanguageId,
@@ -268,11 +269,10 @@ const Main = ({
 	maximumSubmissionLimitReached,
 	message,
 	name,
-	onBlur,
 	onChange,
-	onFocus,
 	placeholder,
 	readOnly,
+	showUploadPermissionMessage,
 	valid: initialValid,
 	value = '{}',
 	...otherProps
@@ -286,10 +286,12 @@ const Main = ({
 	const [valid, setValid] = useState(initialValid);
 	const [progress, setProgress] = useState(0);
 
+	const isSignedIn = Liferay.ThemeDisplay.isSignedIn();
+
 	const getErrorMessages = (errorMessage, isSignedIn) => {
 		const errorMessages = [errorMessage];
 
-		if (!isSignedIn && !allowGuestUsers) {
+		if (!allowGuestUsers && !isSignedIn) {
 			errorMessages.push(
 				Liferay.Language.get(
 					'you-need-to-be-signed-in-to-edit-this-field'
@@ -303,11 +305,28 @@ const Main = ({
 				)
 			);
 		}
+		else if (showUploadPermissionMessage) {
+			errorMessages.push(
+				Liferay.Language.get(
+					'you-need-to-be-assigned-to-the-same-site-where-the-form-was-created-to-use-this-field'
+				)
+			);
+		}
 
 		return errorMessages.join(' ');
 	};
 
-	const isSignedIn = Liferay.ThemeDisplay.isSignedIn();
+	useEffect(() => {
+		if ((!allowGuestUsers && !isSignedIn) || showUploadPermissionMessage) {
+			const ddmFormUploadPermissionMessage = document.querySelector(
+				`.ddm-form-upload-permission-message`
+			);
+
+			if (ddmFormUploadPermissionMessage) {
+				ddmFormUploadPermissionMessage.classList.remove('hide');
+			}
+		}
+	}, [allowGuestUsers, isSignedIn, showUploadPermissionMessage]);
 
 	useEffect(() => {
 		setCurrentValue(value);
@@ -336,38 +355,24 @@ const Main = ({
 		return repetitionsCounter === maximumRepetitions;
 	};
 
-	const handleVisibleChange = (event) => {
-		if (event.selectedItem) {
-			onFocus({}, event);
-		}
-		else {
-			onBlur({}, event);
-		}
-	};
+	const handleFieldChanged = (selectedItem) => {
+		if (selectedItem?.value) {
+			setCurrentValue(selectedItem.value);
 
-	const handleFieldChanged = (event) => {
-		const selectedItem = event.selectedItem;
-
-		if (selectedItem) {
-			const {value} = selectedItem;
-
-			setCurrentValue(value);
-
-			onChange(event, value);
+			onChange(selectedItem, selectedItem.value);
 		}
 	};
 
 	const handleSelectButtonClicked = ({portletNamespace}) => {
-		const itemSelectorDialog = new ItemSelectorDialog({
-			eventName: `${portletNamespace}selectDocumentLibrary`,
-			singleSelect: true,
+		Liferay.Util.openSelectionModal({
+			onSelect: handleFieldChanged,
+			selectEventName: `${portletNamespace}selectDocumentLibrary`,
+			title: Liferay.Util.sub(
+				Liferay.Language.get('select-x'),
+				Liferay.Language.get('document')
+			),
 			url: itemSelectorURL,
 		});
-
-		itemSelectorDialog.on('selectedItemChange', handleFieldChanged);
-		itemSelectorDialog.on('visibleChange', handleVisibleChange);
-
-		itemSelectorDialog.open();
 	};
 
 	const configureErrorMessage = (message) => {
@@ -462,7 +467,9 @@ const Main = ({
 	};
 
 	const hasCustomError =
-		(!isSignedIn && !allowGuestUsers) || maximumSubmissionLimitReached;
+		(!isSignedIn && !allowGuestUsers) ||
+		maximumSubmissionLimitReached ||
+		showUploadPermissionMessage;
 
 	return (
 		<FieldBase

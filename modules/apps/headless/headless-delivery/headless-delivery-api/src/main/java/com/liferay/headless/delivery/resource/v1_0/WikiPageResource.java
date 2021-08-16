@@ -51,6 +51,18 @@ public interface WikiPageResource {
 		return FactoryHolder.factory.create();
 	}
 
+	public void deleteSiteWikiPageByExternalReferenceCode(
+			Long siteId, String externalReferenceCode)
+		throws Exception;
+
+	public WikiPage getSiteWikiPageByExternalReferenceCode(
+			Long siteId, String externalReferenceCode)
+		throws Exception;
+
+	public WikiPage putSiteWikiPageByExternalReferenceCode(
+			Long siteId, String externalReferenceCode, WikiPage wikiPage)
+		throws Exception;
+
 	public Page<WikiPage> getWikiNodeWikiPagesPage(
 			Long wikiNodeId, String search,
 			com.liferay.portal.vulcan.aggregation.Aggregation aggregation,
@@ -82,6 +94,16 @@ public interface WikiPageResource {
 		throws Exception;
 
 	public Response putWikiPageBatch(String callbackURL, Object object)
+		throws Exception;
+
+	public Page<com.liferay.portal.vulcan.permission.Permission>
+			getWikiPagePermissionsPage(Long wikiPageId, String roleNames)
+		throws Exception;
+
+	public Page<com.liferay.portal.vulcan.permission.Permission>
+			putWikiPagePermission(
+				Long wikiPageId,
+				com.liferay.portal.vulcan.permission.Permission[] permissions)
 		throws Exception;
 
 	public void putWikiPageSubscribe(Long wikiPageId) throws Exception;

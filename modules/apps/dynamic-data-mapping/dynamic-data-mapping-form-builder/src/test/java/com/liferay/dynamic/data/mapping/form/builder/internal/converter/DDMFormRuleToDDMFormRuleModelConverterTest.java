@@ -35,7 +35,6 @@ import com.liferay.portal.kernel.util.StringUtil;
 
 import java.lang.reflect.Field;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -241,6 +240,20 @@ public class DDMFormRuleToDDMFormRuleModelConverterTest
 	}
 
 	@Test
+	public void testCustomCondition1() throws Exception {
+		assertConversionToModel(
+			"ddm-form-rules-custom-condition.json",
+			"ddm-form-rules-model-custom-condition.json");
+	}
+
+	@Test
+	public void testCustomCondition2() throws Exception {
+		assertConversionToConvertModel(
+			"ddm-form-rules-model-custom-condition.json",
+			"ddm-form-rules-custom-condition.json");
+	}
+
+	@Test
 	public void testIsEmptyCondition1() throws Exception {
 		assertConversionToModel(
 			"ddm-form-rules-is-empty-condition.json",
@@ -361,13 +374,8 @@ public class DDMFormRuleToDDMFormRuleModelConverterTest
 
 		matcher.find();
 
-		List<String> callFunctionParameters = new ArrayList<>(3);
-
-		callFunctionParameters.add(matcher.group(1));
-		callFunctionParameters.add(matcher.group(2));
-		callFunctionParameters.add(matcher.group(3));
-
-		return callFunctionParameters;
+		return ListUtil.fromArray(
+			matcher.group(1), matcher.group(2), matcher.group(3));
 	}
 
 	protected void setUpDDMExpressionFactory() throws Exception {

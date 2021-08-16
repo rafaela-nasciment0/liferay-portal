@@ -7480,25 +7480,25 @@ public class SiteNavigationMenuPersistenceImpl
 		ServiceContext serviceContext =
 			ServiceContextThreadLocal.getServiceContext();
 
-		Date now = new Date();
+		Date date = new Date();
 
 		if (isNew && (siteNavigationMenu.getCreateDate() == null)) {
 			if (serviceContext == null) {
-				siteNavigationMenu.setCreateDate(now);
+				siteNavigationMenu.setCreateDate(date);
 			}
 			else {
 				siteNavigationMenu.setCreateDate(
-					serviceContext.getCreateDate(now));
+					serviceContext.getCreateDate(date));
 			}
 		}
 
 		if (!siteNavigationMenuModelImpl.hasSetModifiedDate()) {
 			if (serviceContext == null) {
-				siteNavigationMenu.setModifiedDate(now);
+				siteNavigationMenu.setModifiedDate(date);
 			}
 			else {
 				siteNavigationMenu.setModifiedDate(
-					serviceContext.getModifiedDate(now));
+					serviceContext.getModifiedDate(date));
 			}
 		}
 
@@ -7932,7 +7932,8 @@ public class SiteNavigationMenuPersistenceImpl
 	public Set<String> getCTColumnNames(
 		CTColumnResolutionType ctColumnResolutionType) {
 
-		return _ctColumnNamesMap.get(ctColumnResolutionType);
+		return _ctColumnNamesMap.getOrDefault(
+			ctColumnResolutionType, Collections.emptySet());
 	}
 
 	@Override
@@ -7966,7 +7967,6 @@ public class SiteNavigationMenuPersistenceImpl
 	static {
 		Set<String> ctControlColumnNames = new HashSet<String>();
 		Set<String> ctIgnoreColumnNames = new HashSet<String>();
-		Set<String> ctMergeColumnNames = new HashSet<String>();
 		Set<String> ctStrictColumnNames = new HashSet<String>();
 
 		ctControlColumnNames.add("mvccVersion");
@@ -7987,7 +7987,6 @@ public class SiteNavigationMenuPersistenceImpl
 			CTColumnResolutionType.CONTROL, ctControlColumnNames);
 		_ctColumnNamesMap.put(
 			CTColumnResolutionType.IGNORE, ctIgnoreColumnNames);
-		_ctColumnNamesMap.put(CTColumnResolutionType.MERGE, ctMergeColumnNames);
 		_ctColumnNamesMap.put(
 			CTColumnResolutionType.PK,
 			Collections.singleton("siteNavigationMenuId"));
@@ -8337,7 +8336,7 @@ public class SiteNavigationMenuPersistenceImpl
 			return SiteNavigationMenuTable.INSTANCE.getTableName();
 		}
 
-		private Object[] _getValue(
+		private static Object[] _getValue(
 			SiteNavigationMenuModelImpl siteNavigationMenuModelImpl,
 			String[] columnNames, boolean original) {
 
@@ -8360,8 +8359,8 @@ public class SiteNavigationMenuPersistenceImpl
 			return arguments;
 		}
 
-		private static Map<FinderPath, Long> _finderPathColumnBitmasksCache =
-			new ConcurrentHashMap<>();
+		private static final Map<FinderPath, Long>
+			_finderPathColumnBitmasksCache = new ConcurrentHashMap<>();
 
 	}
 

@@ -575,24 +575,17 @@ public class LiferaySeleniumUtil {
 			return true;
 		}
 
-		if (Objects.equals(PropsValues.LIFERAY_PORTAL_BUNDLE, "6.2.10.1") ||
-			Objects.equals(PropsValues.LIFERAY_PORTAL_BUNDLE, "6.2.10.2") ||
-			Objects.equals(PropsValues.LIFERAY_PORTAL_BUNDLE, "6.2.10.3") ||
-			Objects.equals(PropsValues.LIFERAY_PORTAL_BUNDLE, "6.2.10.4") ||
-			Objects.equals(PropsValues.LIFERAY_PORTAL_BRANCH, "ee-6.2.10")) {
+		if ((Objects.equals(PropsValues.LIFERAY_PORTAL_BUNDLE, "6.2.10.1") ||
+			 Objects.equals(PropsValues.LIFERAY_PORTAL_BUNDLE, "6.2.10.2") ||
+			 Objects.equals(PropsValues.LIFERAY_PORTAL_BUNDLE, "6.2.10.3") ||
+			 Objects.equals(PropsValues.LIFERAY_PORTAL_BUNDLE, "6.2.10.4") ||
+			 Objects.equals(PropsValues.LIFERAY_PORTAL_BRANCH, "ee-6.2.10")) &&
+			(line.contains(
+				"com.liferay.portal.kernel.search.SearchException: " +
+					"java.nio.channels.ClosedByInterruptException") ||
+			 line.contains("org.apache.lucene.store.AlreadyClosedException"))) {
 
-			if (line.contains(
-					"com.liferay.portal.kernel.search.SearchException: " +
-						"java.nio.channels.ClosedByInterruptException")) {
-
-				return true;
-			}
-
-			if (line.contains(
-					"org.apache.lucene.store.AlreadyClosedException")) {
-
-				return true;
-			}
+			return true;
 		}
 
 		if (Validator.isNotNull(PropsValues.IGNORE_ERRORS)) {
@@ -678,8 +671,8 @@ public class LiferaySeleniumUtil {
 		return false;
 	}
 
-	public static void pause(String waitTime) throws Exception {
-		Thread.sleep(GetterUtil.getInteger(waitTime));
+	public static void pause(int duration) throws Exception {
+		Thread.sleep(duration);
 	}
 
 	public static void printJavaProcessStacktrace() throws Exception {

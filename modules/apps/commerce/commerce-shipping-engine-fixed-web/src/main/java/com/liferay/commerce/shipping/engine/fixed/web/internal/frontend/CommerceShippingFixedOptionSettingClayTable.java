@@ -244,10 +244,10 @@ public class CommerceShippingFixedOptionSettingClayTable
 				PortletRequest.ACTION_PHASE)
 		).setActionName(
 			"/commerce_shipping_methods/edit_commerce_shipping_fixed_option_rel"
+		).setCMD(
+			Constants.DELETE
 		).setRedirect(
 			redirect
-		).setParameter(
-			Constants.CMD, Constants.DELETE
 		).setParameter(
 			"commerceShippingFixedOptionRelId", shippingFixedOptionSettingId
 		).buildString();
@@ -264,7 +264,7 @@ public class CommerceShippingFixedOptionSettingClayTable
 				PortletProvider.Action.EDIT)
 		).setMVCRenderCommandName(
 			"/commerce_shipping_methods/edit_commerce_shipping_fixed_option_rel"
-		).build();
+		).buildPortletURL();
 
 		long commerceShippingMethodId = ParamUtil.getLong(
 			httpServletRequest, "commerceShippingMethodId");

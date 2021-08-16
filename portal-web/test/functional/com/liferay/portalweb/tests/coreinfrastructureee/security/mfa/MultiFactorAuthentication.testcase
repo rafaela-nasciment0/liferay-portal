@@ -13,7 +13,7 @@ definition {
 	setUp {
 		TestCase.setUpPortalInstance();
 
-		User.firstLoginPG();
+		User.firstLoginUI();
 	}
 
 	tearDown {
@@ -75,12 +75,13 @@ definition {
 
 		PortalInstances.viewCP(virtualHost = "www.able.com");
 
-		User.firstLoginPG(
+		User.firstLoginUI(
 			password = "test",
-			userEmailAddress = "test@www.able.com",
-			virtualHostsURL = "http://www.able.com:8080");
+			specificURL = "http://www.able.com:8080",
+			userEmailAddress = "test@www.able.com");
 
 		PortalSettings.gotoConfiguration(
+			baseURL = "http://www.able.com:8080",
 			configurationCategory = "Multi-Factor Authentication",
 			configurationName = "Multi-Factor Authentication and Email One-Time Password Configuration",
 			configurationScope = "Virtual Instance Scope");
@@ -118,6 +119,7 @@ definition {
 			value1 = "Multi-factor authentication has been enabled by the system administrator. If you do not want this you can disable it in Instance Settings.");
 
 		PortalSettings.gotoConfiguration(
+			baseURL = "http://www.able.com:8080",
 			configurationCategory = "Multi-Factor Authentication",
 			configurationName = "Multi-Factor Authentication and Email One-Time Password Configuration",
 			configurationScope = "Virtual Instance Scope");
@@ -170,7 +172,9 @@ definition {
 
 		SignOut.signOut();
 
-		SignIn.signIn(userEmailAddress = "test@liferay.com");
+		User.firstLoginUI(
+			password = "test",
+			userEmailAddress = "test@liferay.com");
 
 		MultiFactorAuthentication.sendOTPEmailPG();
 
@@ -211,12 +215,13 @@ definition {
 
 		PortalInstances.viewCP(virtualHost = "www.able.com");
 
-		User.firstLoginPG(
+		User.firstLoginUI(
 			password = "test",
-			userEmailAddress = "test@www.able.com",
-			virtualHostsURL = "http://www.able.com:8080");
+			specificURL = "http://www.able.com:8080",
+			userEmailAddress = "test@www.able.com");
 
 		PortalSettings.gotoConfiguration(
+			baseURL = "http://www.able.com:8080",
 			configurationCategory = "Multi-Factor Authentication",
 			configurationName = "Multi-Factor Authentication and Email One-Time Password Configuration",
 			configurationScope = "Virtual Instance Scope");
@@ -231,6 +236,7 @@ definition {
 		PortletEntry.update();
 
 		PortalSettings.gotoConfiguration(
+			baseURL = "http://www.able.com:8080",
 			configurationCategory = "Multi-Factor Authentication",
 			configurationName = "Time-Based One-Time Password Configuration",
 			configurationScope = "Virtual Instance Scope");
@@ -254,8 +260,9 @@ definition {
 
 		SignOut.signOutOfSpecificURL(url = "http://www.able.com:8080");
 
-		SignIn.signInSpecificURL(
-			url = "http://www.able.com:8080/",
+		User.firstLoginUI(
+			password = "test",
+			specificURL = "http://www.able.com:8080/",
 			userEmailAddress = "test@www.able.com");
 
 		AssertElementPresent(locator1 = "MultiFactorAuthentication#EMAIL_OTP_VERIFY_FIELD");
@@ -281,12 +288,13 @@ definition {
 
 		PortalInstances.viewCP(virtualHost = "www.able.com");
 
-		User.firstLoginPG(
+		User.firstLoginUI(
 			password = "test",
-			userEmailAddress = "test@www.able.com",
-			virtualHostsURL = "http://www.able.com:8080");
+			specificURL = "http://www.able.com:8080",
+			userEmailAddress = "test@www.able.com");
 
 		PortalSettings.gotoConfiguration(
+			baseURL = "http://www.able.com:8080",
 			configurationCategory = "Multi-Factor Authentication",
 			configurationName = "Multi-Factor Authentication and Email One-Time Password Configuration",
 			configurationScope = "Virtual Instance Scope");
@@ -294,6 +302,7 @@ definition {
 		MultiFactorAuthentication.configureOTP(enableOTP = "true");
 
 		PortalSettings.gotoConfiguration(
+			baseURL = "http://www.able.com:8080",
 			configurationCategory = "API Authentication",
 			configurationName = "Auto Login Basic Authentication Header",
 			configurationScope = "Virtual Instance Scope");
@@ -303,6 +312,7 @@ definition {
 		PortletEntry.save();
 
 		PortalSettings.gotoConfiguration(
+			baseURL = "http://www.able.com:8080",
 			configurationCategory = "API Authentication",
 			configurationName = "Basic Authentication Protocol Support",
 			configurationScope = "Virtual Instance Scope");
@@ -344,12 +354,13 @@ definition {
 
 		PortalInstances.viewCP(virtualHost = "www.able.com");
 
-		User.firstLoginPG(
+		User.firstLoginUI(
 			password = "test",
-			userEmailAddress = "test@www.able.com",
-			virtualHostsURL = "http://www.able.com:8080");
+			specificURL = "http://www.able.com:8080",
+			userEmailAddress = "test@www.able.com");
 
 		PortalSettings.gotoConfiguration(
+			baseURL = "http://www.able.com:8080",
 			configurationCategory = "Multi-Factor Authentication",
 			configurationName = "Multi-Factor Authentication and Email One-Time Password Configuration",
 			configurationScope = "Virtual Instance Scope");
@@ -366,8 +377,9 @@ definition {
 
 		SignOut.signOutOfSpecificURL(url = "http://www.able.com:8080");
 
-		SignIn.signInSpecificURL(
-			url = "http://www.able.com:8080/",
+		User.firstLoginUI(
+			password = "test",
+			specificURL = "http://www.able.com:8080/",
 			userEmailAddress = "test@www.able.com");
 
 		MultiFactorAuthentication.sendOTPEmailPG();
@@ -387,7 +399,7 @@ definition {
 
 		User.logoutPG();
 
-		User.loginPG(
+		User.firstLoginUI(
 			password = "test",
 			specificURL = "http://www.able.com:8080",
 			userEmailAddress = "test@www.able.com");
@@ -430,7 +442,9 @@ definition {
 
 		SignOut.signOut();
 
-		SignIn.signIn(userEmailAddress = "test@liferay.com");
+		User.firstLoginUI(
+			password = "test",
+			userEmailAddress = "test@liferay.com");
 
 		MultiFactorAuthentication.sendOTPEmailPG();
 
@@ -461,12 +475,13 @@ definition {
 
 		PortalInstances.viewCP(virtualHost = "www.able.com");
 
-		User.firstLoginPG(
+		User.firstLoginUI(
 			password = "test",
-			userEmailAddress = "test@www.able.com",
-			virtualHostsURL = "http://www.able.com:8080");
+			specificURL = "http://www.able.com:8080",
+			userEmailAddress = "test@www.able.com");
 
 		PortalSettings.gotoConfiguration(
+			baseURL = "http://www.able.com:8080",
 			configurationCategory = "Multi-Factor Authentication",
 			configurationName = "Multi-Factor Authentication and Email One-Time Password Configuration",
 			configurationScope = "Virtual Instance Scope");
@@ -483,8 +498,9 @@ definition {
 
 		SignOut.signOutOfSpecificURL(url = "http://www.able.com:8080");
 
-		SignIn.signInSpecificURL(
-			url = "http://www.able.com:8080/",
+		User.firstLoginUI(
+			password = "test",
+			specificURL = "http://www.able.com:8080/",
 			userEmailAddress = "test@www.able.com");
 
 		MultiFactorAuthentication.sendOTPEmailPG();
@@ -497,6 +513,7 @@ definition {
 			userPassword = "test");
 
 		PortalSettings.gotoConfiguration(
+			baseURL = "http://www.able.com:8080",
 			configurationCategory = "Multi-Factor Authentication",
 			configurationName = "Multi-Factor Authentication and Email One-Time Password Configuration",
 			configurationScope = "Virtual Instance Scope");
@@ -505,7 +522,7 @@ definition {
 
 		User.logoutPG(specificURL = "http://www.able.com:8080/");
 
-		User.loginPG(
+		User.firstLoginUI(
 			password = "test",
 			specificURL = "http://www.able.com:8080",
 			userEmailAddress = "test@www.able.com");
@@ -514,6 +531,8 @@ definition {
 	@description = "This is a use case for LPS-101746"
 	@priority = "5"
 	test EndUserPermissionCheck {
+		property custom.properties = "jsonws.web.service.paths.excludes=";
+
 		var portalURL = PropsUtil.get("portal.url");
 
 		JSONUser.addUser(
@@ -522,11 +541,10 @@ definition {
 			userLastName = "userln",
 			userScreenName = "usersn");
 
-		User.openUsersAdmin();
-
-		User.editPasswordCP(
-			userEmailAddress = "userea@liferay.com",
-			userScreenName = "usersn");
+		JSONUser.setFirstPassword(
+			agreeToTermsAndAnswerReminderQuery = "true",
+			requireReset = "false",
+			userEmailAddress = "userea@liferay.com");
 
 		PortalSettings.gotoConfiguration(
 			configurationCategory = "Multi-Factor Authentication",
@@ -556,7 +574,7 @@ definition {
 
 		User.logoutPG();
 
-		User.loginUserPG(
+		User.firstLoginUI(
 			password = "test",
 			userEmailAddress = "userea@liferay.com");
 
@@ -610,7 +628,9 @@ definition {
 
 		User.logoutPG();
 
-		SignIn.signIn(userEmailAddress = "userea@liferay.com");
+		User.firstLoginUI(
+			password = "test",
+			userEmailAddress = "userea@liferay.com");
 
 		MultiFactorAuthentication.sendOTPEmailPG();
 
@@ -650,7 +670,9 @@ definition {
 
 		SignOut.signOut();
 
-		SignIn.signIn(userEmailAddress = "test@liferay.com");
+		User.firstLoginUI(
+			password = "test",
+			userEmailAddress = "test@liferay.com");
 
 		MultiFactorAuthentication.sendOTPEmailPG();
 
@@ -705,7 +727,9 @@ definition {
 
 		User.logoutPG();
 
-		User.loginPG();
+		User.firstLoginUI(
+			password = "test",
+			userEmailAddress = "test@liferay.com");
 
 		ApplicationsMenu.gotoPortlet(
 			category = "Security",
@@ -735,7 +759,9 @@ definition {
 
 		SignOut.signOut();
 
-		SignIn.signIn(userEmailAddress = "test@liferay.com");
+		User.firstLoginUI(
+			password = "test",
+			userEmailAddress = "test@liferay.com");
 
 		MultiFactorAuthentication.sendOTPEmailPG();
 
@@ -780,12 +806,13 @@ definition {
 
 		PortalInstances.viewCP(virtualHost = "www.able.com");
 
-		User.firstLoginPG(
+		User.firstLoginUI(
 			password = "test",
-			userEmailAddress = "test@www.able.com",
-			virtualHostsURL = "http://www.able.com:8080");
+			specificURL = "http://www.able.com:8080",
+			userEmailAddress = "test@www.able.com");
 
 		PortalSettings.gotoConfiguration(
+			baseURL = "http://www.able.com:8080",
 			configurationCategory = "Multi-Factor Authentication",
 			configurationName = "Multi-Factor Authentication and Email One-Time Password Configuration",
 			configurationScope = "Virtual Instance Scope");
@@ -803,6 +830,7 @@ definition {
 			locator1 = "SystemSettings#SCOPED_CONFIGURATION_NAME");
 
 		PortalSettings.gotoConfiguration(
+			baseURL = "http://www.able.com:8080",
 			configurationCategory = "Multi-Factor Authentication",
 			configurationName = "IP Address Configuration",
 			configurationScope = "Virtual Instance Scope");
@@ -811,12 +839,13 @@ definition {
 
 		UserBar.signOut();
 
-		User.loginPG(
+		User.firstLoginUI(
 			password = "test",
 			specificURL = "http://www.able.com:8080",
 			userEmailAddress = "test@www.able.com");
 
 		PortalSettings.gotoConfiguration(
+			baseURL = "http://www.able.com:8080",
 			configurationCategory = "Multi-Factor Authentication",
 			configurationName = "IP Address Configuration",
 			configurationScope = "Virtual Instance Scope");
@@ -827,8 +856,9 @@ definition {
 
 		UserBar.signOut();
 
-		SignIn.signInSpecificURL(
-			url = "http://www.able.com:8080",
+		User.firstLoginUI(
+			password = "test",
+			specificURL = "http://www.able.com:8080/",
 			userEmailAddress = "test@www.able.com");
 
 		AssertElementPresent(locator1 = "MultiFactorAuthentication#EMAIL_OTP_VERIFY_SEND_EMAIL_BUTTON");
@@ -846,6 +876,7 @@ definition {
 	@description = "This is a use case for LPS-101720"
 	@priority = "5"
 	test LoginWithOTPEnabled {
+		property custom.properties = "jsonws.web.service.paths.excludes=";
 		property database.types = "db2,hypersonic,mariadb,mysql,oracle,postgresql,sqlserver,sybase";
 		property test.name.skip.portal.instance = "MultiFactorAuthentication#LoginWithOTPEnabled";
 
@@ -857,11 +888,10 @@ definition {
 			userLastName = "userln",
 			userScreenName = "usersn");
 
-		User.openUsersAdmin();
-
-		User.editPasswordCP(
-			userEmailAddress = "userea@liferay.com",
-			userScreenName = "usersn");
+		JSONUser.setFirstPassword(
+			agreeToTermsAndAnswerReminderQuery = "true",
+			requireReset = "false",
+			userEmailAddress = "userea@liferay.com");
 
 		PortalSettings.gotoConfiguration(
 			configurationCategory = "Multi-Factor Authentication",
@@ -880,7 +910,9 @@ definition {
 
 		SignOut.signOut();
 
-		SignIn.signIn(userEmailAddress = "userea@liferay.com");
+		User.firstLoginUI(
+			password = "test",
+			userEmailAddress = "userea@liferay.com");
 
 		MultiFactorAuthentication.sendOTPEmailPG();
 
@@ -894,6 +926,7 @@ definition {
 	@description = "This is a use case for LPS-98267"
 	@priority = "5"
 	test LoginWithTOTPEnabledForEndUser {
+		property custom.properties = "jsonws.web.service.paths.excludes=";
 		property test.name.skip.portal.instance = "MultiFactorAuthentication#LoginWithTOTPEnabledForEndUser";
 
 		var portalURL = PropsUtil.get("portal.url");
@@ -904,11 +937,10 @@ definition {
 			userLastName = "userln",
 			userScreenName = "usersn");
 
-		User.openUsersAdmin();
-
-		User.editPasswordCP(
-			userEmailAddress = "userea@liferay.com",
-			userScreenName = "usersn");
+		JSONUser.setFirstPassword(
+			agreeToTermsAndAnswerReminderQuery = "true",
+			requireReset = "false",
+			userEmailAddress = "userea@liferay.com");
 
 		PortalSettings.gotoConfiguration(
 			configurationCategory = "Multi-Factor Authentication",
@@ -926,7 +958,9 @@ definition {
 
 		SignOut.signOut();
 
-		SignIn.signIn(userEmailAddress = "userea@liferay.com");
+		User.firstLoginUI(
+			password = "test",
+			userEmailAddress = "userea@liferay.com");
 
 		MultiFactorAuthentication.sendOTPEmailPG();
 
@@ -946,7 +980,9 @@ definition {
 
 		SignOut.signOut();
 
-		SignIn.signIn(userEmailAddress = "userea@liferay.com");
+		User.firstLoginUI(
+			password = "test",
+			userEmailAddress = "userea@liferay.com");
 
 		AssertElementPresent(locator1 = "MultiFactorAuthentication#TOTP_FIELD");
 
@@ -965,7 +1001,9 @@ definition {
 
 		SignOut.signOut();
 
-		SignIn.signIn(userEmailAddress = "userea@liferay.com");
+		User.firstLoginUI(
+			password = "test",
+			userEmailAddress = "userea@liferay.com");
 
 		AssertElementPresent(locator1 = "MultiFactorAuthentication#EMAIL_OTP_VERIFY_SEND_EMAIL_BUTTON");
 
@@ -989,19 +1027,25 @@ definition {
 
 		PortalInstances.viewCP(virtualHost = "www.able.com");
 
-		User.firstLoginPG(
+		User.firstLoginUI(
 			password = "test",
-			userEmailAddress = "test@www.able.com",
-			virtualHostsURL = "http://www.able.com:8080");
+			specificURL = "http://www.able.com:8080",
+			userEmailAddress = "test@www.able.com");
 
 		PortalSettings.gotoConfiguration(
+			baseURL = "http://www.able.com:8080",
 			configurationCategory = "Multi-Factor Authentication",
 			configurationName = "Multi-Factor Authentication and Email One-Time Password Configuration",
 			configurationScope = "Virtual Instance Scope");
 
+		MultiFactorAuthentication.configureOTPEmailSender(
+			emailAddress = "test@www.able.com",
+			emailSenderName = "Joe Bloggs");
+
 		MultiFactorAuthentication.configureOTP(enableOTP = "true");
 
 		PortalSettings.gotoConfiguration(
+			baseURL = "http://www.able.com:8080",
 			configurationCategory = "Multi-Factor Authentication",
 			configurationName = "Time-Based One-Time Password Configuration",
 			configurationScope = "Virtual Instance Scope");
@@ -1027,6 +1071,7 @@ definition {
 	@description = "This is a use case for LPS-115566"
 	@priority = "4"
 	test RemoveCurrentTOTPWontAffectOthers {
+		property custom.properties = "jsonws.web.service.paths.excludes=";
 		property test.name.skip.portal.instance = "MultiFactorAuthentication#RemoveCurrentTOTPWontAffectOthers";
 
 		var portalURL = PropsUtil.get("portal.url");
@@ -1037,23 +1082,25 @@ definition {
 			userLastName = "userln",
 			userScreenName = "usersn");
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Users",
-			panel = "Control Panel",
-			portlet = "Users and Organizations");
-
-		User.editPasswordCP(
-			userEmailAddress = "userea@liferay.com",
-			userScreenName = "usersn");
+		JSONUser.setFirstPassword(
+			agreeToTermsAndAnswerReminderQuery = "true",
+			requireReset = "false",
+			userEmailAddress = "userea@liferay.com");
 
 		SignOut.signOut();
 
-		SignIn.signIn(userEmailAddress = "test@liferay.com");
+		User.firstLoginUI(
+			password = "test",
+			userEmailAddress = "test@liferay.com");
 
 		PortalSettings.gotoConfiguration(
 			configurationCategory = "Multi-Factor Authentication",
 			configurationName = "Multi-Factor Authentication and Email One-Time Password Configuration",
 			configurationScope = "Virtual Instance Scope");
+
+		MultiFactorAuthentication.configureOTPEmailSender(
+			emailAddress = "test@liferay.com",
+			emailSenderName = "Joe Bloggs");
 
 		MultiFactorAuthentication.configureOTP(enableOTP = "true");
 
@@ -1072,7 +1119,9 @@ definition {
 
 		SignOut.signOut();
 
-		SignIn.signIn(userEmailAddress = "userea@liferay.com");
+		User.firstLoginUI(
+			password = "test",
+			userEmailAddress = "userea@liferay.com");
 
 		MultiFactorAuthentication.sendOTPEmailPG();
 
@@ -1095,7 +1144,9 @@ definition {
 
 		SignOut.signOut();
 
-		SignIn.signIn(userEmailAddress = "test@liferay.com");
+		User.firstLoginUI(
+			password = "test",
+			userEmailAddress = "test@liferay.com");
 
 		AssertElementPresent(locator1 = "MultiFactorAuthentication#TOTP_FIELD");
 	}
@@ -1141,6 +1192,10 @@ definition {
 			configurationName = "Multi-Factor Authentication and Email One-Time Password Configuration",
 			configurationScope = "Virtual Instance Scope");
 
+		MultiFactorAuthentication.configureOTPEmailSender(
+			emailAddress = "test@liferay.com",
+			emailSenderName = "Joe Bloggs");
+
 		MultiFactorAuthentication.configureOTP(enableOTP = "true");
 
 		PortalSettings.gotoConfiguration(
@@ -1164,7 +1219,9 @@ definition {
 
 		SignOut.signOut();
 
-		SignIn.signIn(userEmailAddress = "test@liferay.com");
+		User.firstLoginUI(
+			password = "test",
+			userEmailAddress = "test@liferay.com");
 
 		AssertClick(
 			locator1 = "MultiFactorAuthentication#MFA_CHECKER_LINK",
@@ -1192,12 +1249,13 @@ definition {
 
 		PortalInstances.viewCP(virtualHost = "www.able.com");
 
-		User.firstLoginPG(
+		User.firstLoginUI(
 			password = "test",
-			userEmailAddress = "test@www.able.com",
-			virtualHostsURL = "http://www.able.com:8080");
+			specificURL = "http://www.able.com:8080",
+			userEmailAddress = "test@www.able.com");
 
 		PortalSettings.gotoConfiguration(
+			baseURL = "http://www.able.com:8080",
 			configurationCategory = "Multi-Factor Authentication",
 			configurationName = "Multi-Factor Authentication and Email One-Time Password Configuration",
 			configurationScope = "Virtual Instance Scope");
@@ -1231,7 +1289,9 @@ definition {
 
 		SignOut.signOut();
 
-		SignIn.signIn(userEmailAddress = "test@liferay.com");
+		User.firstLoginUI(
+			password = "test",
+			userEmailAddress = "test@liferay.com");
 
 		MultiFactorAuthentication.sendOTPEmailPG();
 
@@ -1282,19 +1342,25 @@ definition {
 
 		PortalInstances.viewCP(virtualHost = "www.able.com");
 
-		User.firstLoginPG(
+		User.firstLoginUI(
 			password = "test",
-			userEmailAddress = "test@www.able.com",
-			virtualHostsURL = "http://www.able.com:8080");
+			specificURL = "http://www.able.com:8080",
+			userEmailAddress = "test@www.able.com");
 
 		PortalSettings.gotoConfiguration(
+			baseURL = "http://www.able.com:8080",
 			configurationCategory = "Multi-Factor Authentication",
 			configurationName = "Multi-Factor Authentication and Email One-Time Password Configuration",
 			configurationScope = "Virtual Instance Scope");
 
+		MultiFactorAuthentication.configureOTPEmailSender(
+			emailAddress = "test@www.able.com",
+			emailSenderName = "Joe Bloggs");
+
 		MultiFactorAuthentication.configureOTP(enableOTP = "true");
 
 		PortalSettings.gotoConfiguration(
+			baseURL = "http://www.able.com:8080",
 			configurationCategory = "Multi-Factor Authentication",
 			configurationName = "Time-Based One-Time Password Configuration",
 			configurationScope = "Virtual Instance Scope");
@@ -1303,8 +1369,9 @@ definition {
 
 		SignOut.signOutOfSpecificURL(url = "http://www.able.com:8080");
 
-		SignIn.signInSpecificURL(
-			url = "http://www.able.com:8080/",
+		User.firstLoginUI(
+			password = "test",
+			specificURL = "http://www.able.com:8080/",
 			userEmailAddress = "test@www.able.com");
 
 		MultiFactorAuthentication.sendOTPEmailPG();
@@ -1326,8 +1393,9 @@ definition {
 
 		SignOut.signOutOfSpecificURL(url = "http://www.able.com:8080");
 
-		SignIn.signInSpecificURL(
-			url = "http://www.able.com:8080/",
+		User.firstLoginUI(
+			password = "test",
+			specificURL = "http://www.able.com:8080/",
 			userEmailAddress = "test@www.able.com");
 
 		Type(

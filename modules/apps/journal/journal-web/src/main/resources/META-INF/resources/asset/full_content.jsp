@@ -56,14 +56,14 @@ JournalArticleDisplay articleDisplay = (JournalArticleDisplay)request.getAttribu
 			).setRedirect(
 				pageRedirect
 			).setParameter(
-				"cur", String.valueOf(cur)
+				"cur", cur
+			).setParameter(
+				"groupId", articleDisplay.getGroupId()
 			).setParameter(
 				"type", assetRendererFactory.getType()
 			).setParameter(
-				"groupId", String.valueOf(articleDisplay.getGroupId())
-			).setParameter(
 				"urlTitle", articleDisplay.getUrlTitle()
-			).build()
+			).buildPortletURL()
 		%>'
 		total="<%= articleDisplay.getNumberOfPages() %>"
 		type="article"

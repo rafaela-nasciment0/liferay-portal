@@ -14,6 +14,10 @@
 
 package com.liferay.document.library.web.internal.display.context.logic;
 
+import com.liferay.digital.signature.configuration.DigitalSignatureConfiguration;
+import com.liferay.digital.signature.configuration.DigitalSignatureConfigurationUtil;
+import com.liferay.digital.signature.constants.DigitalSignatureConstants;
+import com.liferay.digital.signature.constants.DigitalSignaturePortletKeys;
 import com.liferay.document.library.constants.DLPortletKeys;
 import com.liferay.document.library.display.context.DLUIItemKeys;
 import com.liferay.document.library.kernel.document.conversion.DocumentConversionUtil;
@@ -40,6 +44,8 @@ import com.liferay.portal.kernel.portlet.LiferayPortletRequest;
 import com.liferay.portal.kernel.portlet.LiferayPortletResponse;
 import com.liferay.portal.kernel.portlet.LiferayWindowState;
 import com.liferay.portal.kernel.portlet.PortletURLUtil;
+import com.liferay.portal.kernel.portlet.RequestBackedPortletURLFactory;
+import com.liferay.portal.kernel.portlet.RequestBackedPortletURLFactoryUtil;
 import com.liferay.portal.kernel.repository.capabilities.TrashCapability;
 import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.repository.model.FileShortcut;
@@ -70,6 +76,7 @@ import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
+import com.liferay.portal.util.PropsValues;
 import com.liferay.staging.StagingGroupHelper;
 import com.liferay.staging.StagingGroupHelperUtil;
 import com.liferay.taglib.security.PermissionsURLTag;
@@ -252,6 +259,47 @@ public class UIItemsBuilder {
 			getSubmitFormJavaScript(Constants.CHECKOUT, null));
 	}
 
+	public void addCollectDigitalSignatureMenuItem(List<MenuItem> menuItems) {
+		DigitalSignatureConfiguration digitalSignatureConfiguration =
+			DigitalSignatureConfigurationUtil.getDigitalSignatureConfiguration(
+				_themeDisplay.getCompanyId(), _themeDisplay.getSiteGroupId());
+
+		if (!digitalSignatureConfiguration.enabled() ||
+			!ArrayUtil.contains(
+				DigitalSignatureConstants.ALLOWED_FILE_EXTENSIONS,
+				_fileEntry.getExtension())) {
+
+			return;
+		}
+
+		RequestBackedPortletURLFactory requestBackedPortletURLFactory =
+			RequestBackedPortletURLFactoryUtil.create(_httpServletRequest);
+
+		_addURLUIItem(
+			new URLMenuItem(), menuItems,
+			DLUIItemKeys.COLLECT_DIGITAL_SIGNATURE,
+			LanguageUtil.get(_resourceBundle, "collect-digital-signature"),
+			PortletURLBuilder.create(
+				requestBackedPortletURLFactory.createActionURL(
+					DigitalSignaturePortletKeys.COLLECT_DIGITAL_SIGNATURE)
+			).setBackURL(
+				_getCurrentURL()
+			).setParameter(
+				"fileEntryId", _fileEntry.getFileEntryId()
+			).buildString());
+	}
+
+	public void addCollectDigitalSignatureToolbarItem(
+			List<ToolbarItem> toolbarItems)
+		throws PortalException {
+
+		_addJavaScriptUIItem(
+			new JavaScriptToolbarItem(), toolbarItems,
+			DLUIItemKeys.COLLECT_DIGITAL_SIGNATURE,
+			LanguageUtil.get(_resourceBundle, "collect-digital-signature"),
+			null);
+	}
+
 	public void addCompareToMenuItem(List<MenuItem> menuItems)
 		throws PortalException {
 
@@ -312,8 +360,8 @@ public class UIItemsBuilder {
 			"compareVersionURL",
 			PortletURLBuilder.create(
 				_getRenderURL("/document_library/compare_versions", null)
-			).setParameter(
-				"backURL", _getCurrentURL()
+			).setBackURL(
+				_getCurrentURL()
 			).buildString());
 		template.put(
 			"dialogTitle",
@@ -522,6 +570,25 @@ public class UIItemsBuilder {
 				")"),
 			_dlURLHelper.getDownloadURL(
 				_fileEntry, _fileVersion, _themeDisplay, StringPool.BLANK));
+	}
+
+	public void addEditImageItem(List<MenuItem> menuItems)
+		throws PortalException {
+
+		if ((_fileShortcut != null) ||
+			!_fileEntryDisplayContextHelper.
+				isCheckoutDocumentActionAvailable() ||
+			!ArrayUtil.contains(
+				PropsValues.DL_FILE_ENTRY_PREVIEW_IMAGE_MIME_TYPES,
+				_fileVersion.getMimeType())) {
+
+			return;
+		}
+
+		_addJavaScriptUIItem(
+			new JavaScriptMenuItem(), menuItems, DLUIItemKeys.EDIT_IMAGE,
+			LanguageUtil.get(_resourceBundle, "edit-image"),
+			_getEditImageOnClickJavaScript());
 	}
 
 	public void addEditMenuItem(List<MenuItem> menuItems)
@@ -765,14 +832,14 @@ public class UIItemsBuilder {
 				_getActionURL("/document_library/publish_file_entry")
 			).setParameter(
 				"fileEntryId", _fileEntry.getFileEntryId()
-			).build();
+			).buildPortletURL();
 		}
 		else {
 			portletURL = PortletURLBuilder.create(
 				_getActionURL("/document_library/publish_file_shortcut")
 			).setParameter(
 				"fileShortcutId", _fileShortcut.getFileShortcutId()
-			).build();
+			).buildPortletURL();
 		}
 
 		portletURL.setParameter("redirect", StringPool.BLANK);
@@ -857,7 +924,7 @@ public class UIItemsBuilder {
 				"/document_library/edit_file_entry", Constants.CHECKIN)
 		).setParameter(
 			"fileEntryId", _fileEntry.getFileEntryId()
-		).build();
+		).buildPortletURL();
 
 		if (!_versioningStrategy.isOverridable()) {
 			URLMenuItem urlMenuItem = new URLMenuItem();
@@ -1045,19 +1112,21 @@ public class UIItemsBuilder {
 	private PortletURL _getActionURL(
 		String mvcActionCommandName, String cmd, String redirect) {
 
-		PortletURL portletURL = PortletURLBuilder.createActionURL(
+		return PortletURLBuilder.createActionURL(
 			_getLiferayPortletResponse()
 		).setActionName(
 			mvcActionCommandName
-		).build();
+		).setCMD(
+			() -> {
+				if (Validator.isNotNull(cmd)) {
+					return cmd;
+				}
 
-		if (Validator.isNotNull(cmd)) {
-			portletURL.setParameter(Constants.CMD, cmd);
-		}
-
-		portletURL.setParameter("redirect", redirect);
-
-		return portletURL;
+				return null;
+			}
+		).setRedirect(
+			redirect
+		).buildPortletURL();
 	}
 
 	private PortletURL _getControlPanelRenderURL(String mvcRenderCommandName) {
@@ -1075,11 +1144,15 @@ public class UIItemsBuilder {
 				PortletRequest.RENDER_PHASE)
 		).setMVCRenderCommandName(
 			mvcRenderCommandName
-		).build();
+		).setRedirect(
+			() -> {
+				if (Validator.isNotNull(redirect)) {
+					return redirect;
+				}
 
-		if (Validator.isNotNull(redirect)) {
-			portletURL.setParameter("redirect", redirect);
-		}
+				return null;
+			}
+		).buildPortletURL();
 
 		if (_fileShortcut != null) {
 			portletURL.setParameter(
@@ -1141,6 +1214,23 @@ public class UIItemsBuilder {
 		return _getActionURL(mvcActionCommandName, cmd);
 	}
 
+	private String _getEditImageOnClickJavaScript() {
+		StringBundler sb = new StringBundler(6);
+
+		sb.append(getNamespace());
+		sb.append("editWithImageEditor({fileEntryId: '");
+		sb.append(_fileEntry.getFileEntryId());
+		sb.append("', imageURL: '");
+		sb.append(
+			HtmlUtil.escapeJS(
+				_dlURLHelper.getPreviewURL(
+					_fileEntry, _fileVersion, _themeDisplay,
+					StringPool.BLANK)));
+		sb.append("'});");
+
+		return sb.toString();
+	}
+
 	private LiferayPortletRequest _getLiferayPortletRequest() {
 		PortletRequest portletRequest =
 			(PortletRequest)_httpServletRequest.getAttribute(
@@ -1196,11 +1286,15 @@ public class UIItemsBuilder {
 			_getLiferayPortletResponse()
 		).setMVCRenderCommandName(
 			mvcRenderCommandName
-		).build();
+		).setRedirect(
+			() -> {
+				if (Validator.isNotNull(redirect)) {
+					return redirect;
+				}
 
-		if (Validator.isNotNull(redirect)) {
-			portletURL.setParameter("redirect", redirect);
-		}
+				return null;
+			}
+		).buildPortletURL();
 
 		if (_fileShortcut != null) {
 			portletURL.setParameter(
@@ -1298,7 +1392,7 @@ public class UIItemsBuilder {
 	private final DLURLHelper _dlURLHelper;
 	private final FileEntry _fileEntry;
 	private final FileEntryDisplayContextHelper _fileEntryDisplayContextHelper;
-	private FileShortcut _fileShortcut;
+	private final FileShortcut _fileShortcut;
 	private final FileShortcutDisplayContextHelper
 		_fileShortcutDisplayContextHelper;
 	private final FileVersion _fileVersion;

@@ -10363,11 +10363,24 @@ public class DDMStructurePersistenceImpl
 				continue;
 			}
 
-			if (entityCache.getResult(
-					DDMStructureImpl.class, ddmStructure.getPrimaryKey()) ==
-						null) {
+			DDMStructure cachedDDMStructure =
+				(DDMStructure)entityCache.getResult(
+					DDMStructureImpl.class, ddmStructure.getPrimaryKey());
 
+			if (cachedDDMStructure == null) {
 				cacheResult(ddmStructure);
+			}
+			else {
+				DDMStructureModelImpl ddmStructureModelImpl =
+					(DDMStructureModelImpl)ddmStructure;
+				DDMStructureModelImpl cachedDDMStructureModelImpl =
+					(DDMStructureModelImpl)cachedDDMStructure;
+
+				ddmStructureModelImpl.setClassName(
+					cachedDDMStructureModelImpl.getClassName());
+
+				ddmStructureModelImpl.setDDMForm(
+					cachedDDMStructureModelImpl.getDDMForm());
 			}
 		}
 	}
@@ -10578,24 +10591,24 @@ public class DDMStructurePersistenceImpl
 		ServiceContext serviceContext =
 			ServiceContextThreadLocal.getServiceContext();
 
-		Date now = new Date();
+		Date date = new Date();
 
 		if (isNew && (ddmStructure.getCreateDate() == null)) {
 			if (serviceContext == null) {
-				ddmStructure.setCreateDate(now);
+				ddmStructure.setCreateDate(date);
 			}
 			else {
-				ddmStructure.setCreateDate(serviceContext.getCreateDate(now));
+				ddmStructure.setCreateDate(serviceContext.getCreateDate(date));
 			}
 		}
 
 		if (!ddmStructureModelImpl.hasSetModifiedDate()) {
 			if (serviceContext == null) {
-				ddmStructure.setModifiedDate(now);
+				ddmStructure.setModifiedDate(date);
 			}
 			else {
 				ddmStructure.setModifiedDate(
-					serviceContext.getModifiedDate(now));
+					serviceContext.getModifiedDate(date));
 			}
 		}
 
@@ -11020,7 +11033,8 @@ public class DDMStructurePersistenceImpl
 	public Set<String> getCTColumnNames(
 		CTColumnResolutionType ctColumnResolutionType) {
 
-		return _ctColumnNamesMap.get(ctColumnResolutionType);
+		return _ctColumnNamesMap.getOrDefault(
+			ctColumnResolutionType, Collections.emptySet());
 	}
 
 	@Override
@@ -11054,7 +11068,6 @@ public class DDMStructurePersistenceImpl
 	static {
 		Set<String> ctControlColumnNames = new HashSet<String>();
 		Set<String> ctIgnoreColumnNames = new HashSet<String>();
-		Set<String> ctMergeColumnNames = new HashSet<String>();
 		Set<String> ctStrictColumnNames = new HashSet<String>();
 
 		ctControlColumnNames.add("mvccVersion");
@@ -11083,7 +11096,6 @@ public class DDMStructurePersistenceImpl
 			CTColumnResolutionType.CONTROL, ctControlColumnNames);
 		_ctColumnNamesMap.put(
 			CTColumnResolutionType.IGNORE, ctIgnoreColumnNames);
-		_ctColumnNamesMap.put(CTColumnResolutionType.MERGE, ctMergeColumnNames);
 		_ctColumnNamesMap.put(
 			CTColumnResolutionType.PK, Collections.singleton("structureId"));
 		_ctColumnNamesMap.put(
@@ -11526,7 +11538,7 @@ public class DDMStructurePersistenceImpl
 			return DDMStructureTable.INSTANCE.getTableName();
 		}
 
-		private Object[] _getValue(
+		private static Object[] _getValue(
 			DDMStructureModelImpl ddmStructureModelImpl, String[] columnNames,
 			boolean original) {
 
@@ -11548,8 +11560,8 @@ public class DDMStructurePersistenceImpl
 			return arguments;
 		}
 
-		private static Map<FinderPath, Long> _finderPathColumnBitmasksCache =
-			new ConcurrentHashMap<>();
+		private static final Map<FinderPath, Long>
+			_finderPathColumnBitmasksCache = new ConcurrentHashMap<>();
 
 	}
 

@@ -14,10 +14,11 @@
 
 import {
 	FieldUtil,
+	PagesVisitor,
 	RulesSupport,
-	SettingsContext,
-} from 'dynamic-data-mapping-form-builder';
-import {PagesVisitor} from 'dynamic-data-mapping-form-renderer';
+} from 'data-engine-js-components-web';
+import {EVENT_TYPES as CORE_EVENT_TYPES} from 'data-engine-taglib';
+import {SettingsContext} from 'dynamic-data-mapping-form-builder';
 
 import {EVENT_TYPES} from '../eventTypes.es';
 
@@ -27,7 +28,7 @@ import {EVENT_TYPES} from '../eventTypes.es';
  */
 export default (state, action) => {
 	switch (action.type) {
-		case EVENT_TYPES.SIDEBAR.BLUR: {
+		case CORE_EVENT_TYPES.SIDEBAR.FIELD.BLUR: {
 			const {focusedField} = state;
 
 			if (

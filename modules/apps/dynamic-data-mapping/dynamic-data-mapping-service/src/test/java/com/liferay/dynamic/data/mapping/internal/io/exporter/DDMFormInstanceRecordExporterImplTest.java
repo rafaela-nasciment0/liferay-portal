@@ -273,40 +273,38 @@ public class DDMFormInstanceRecordExporterImplTest extends PowerMockito {
 
 		localizedValue1.addString(locale, "Campo 1");
 
-		LocalizedValue localizedValue2 = new LocalizedValue();
-
-		localizedValue2.addString(locale, "Campo 2");
-
-		Map<String, DDMFormField> ddmFormFieldMap =
-			HashMapBuilder.<String, DDMFormField>put(
-				"field1",
-				() -> {
-					DDMFormField ddmFormField1 = new DDMFormField(
-						"field1", "text");
-
-					ddmFormField1.setFieldReference("reference1");
-
-					ddmFormField1.setLabel(localizedValue1);
-
-					return ddmFormField1;
-				}
-			).put(
-				"field2",
-				() -> {
-					DDMFormField ddmFormField2 = new DDMFormField(
-						"field2", "text");
-
-					ddmFormField2.setFieldReference("reference2");
-
-					ddmFormField2.setLabel(localizedValue2);
-
-					return ddmFormField2;
-				}
-			).build();
-
 		Map<String, String> ddmFormFieldsLabel =
 			ddmFormInstanceRecordExporterImpl.getDDMFormFieldsLabel(
-				ddmFormFieldMap, locale);
+				HashMapBuilder.<String, DDMFormField>put(
+					"field1",
+					() -> {
+						DDMFormField ddmFormField1 = new DDMFormField(
+							"field1", "text");
+
+						ddmFormField1.setFieldReference("reference1");
+
+						ddmFormField1.setLabel(localizedValue1);
+
+						return ddmFormField1;
+					}
+				).put(
+					"field2",
+					() -> {
+						DDMFormField ddmFormField2 = new DDMFormField(
+							"field2", "text");
+
+						ddmFormField2.setFieldReference("reference2");
+
+						LocalizedValue localizedValue2 = new LocalizedValue();
+
+						localizedValue2.addString(locale, "Campo 2");
+
+						ddmFormField2.setLabel(localizedValue2);
+
+						return ddmFormField2;
+					}
+				).build(),
+				locale);
 
 		Assert.assertEquals("Autor", ddmFormFieldsLabel.get("author"));
 		Assert.assertEquals("Idioma", ddmFormFieldsLabel.get("languageId"));
@@ -332,17 +330,13 @@ public class DDMFormInstanceRecordExporterImplTest extends PowerMockito {
 
 		ddmFormField.setFieldReference("reference1");
 
-		List<DDMFormFieldValue> ddmFormFieldValues = new ArrayList<>();
-
 		DDMFormFieldValue ddmFormFieldValue =
 			DDMFormValuesTestUtil.createDDMFormFieldValueWithReference(
 				"field1", "reference1", new UnlocalizedValue("value1"));
 
-		ddmFormFieldValues.add(ddmFormFieldValue);
-
 		Map<String, List<DDMFormFieldValue>> ddmFormFieldValueMap =
 			HashMapBuilder.<String, List<DDMFormFieldValue>>put(
-				"reference1", ddmFormFieldValues
+				"reference1", ListUtil.fromArray(ddmFormFieldValue)
 			).build();
 
 		Locale locale = new Locale("pt", "BR");

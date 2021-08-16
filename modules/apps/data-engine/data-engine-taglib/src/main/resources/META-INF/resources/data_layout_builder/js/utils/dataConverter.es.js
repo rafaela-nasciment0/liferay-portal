@@ -12,45 +12,10 @@
  * details.
  */
 
-import {FieldSupport} from 'dynamic-data-mapping-form-builder';
-import {PagesVisitor} from 'dynamic-data-mapping-form-renderer';
+import {FieldSupport, PagesVisitor} from 'data-engine-js-components-web';
 
 import {getDataDefinitionField as getDataDefinitionFieldUtils} from './dataDefinition.es';
-import {
-	normalizeDataDefinition,
-	normalizeDataLayout,
-	normalizeDataLayoutRows,
-} from './normalizers.es';
-
-export function getDataDefinitionFieldSet({
-	allowInvalidAvailableLocalesForProperty,
-	availableLanguageIds,
-	defaultLanguageId,
-	editingLanguageId,
-	fieldSet,
-	fieldTypes,
-}) {
-	const dataLayoutPages = (
-		fieldSet.defaultDataLayout || getDefaultDataLayout(fieldSet)
-	).dataLayoutPages;
-
-	if (!availableLanguageIds.includes(defaultLanguageId)) {
-		availableLanguageIds = [...availableLanguageIds, defaultLanguageId];
-	}
-
-	return {
-		fieldSet: getFieldSetDDMForm({
-			allowInvalidAvailableLocalesForProperty,
-			availableLanguageIds,
-			editingLanguageId,
-			fieldSet,
-			fieldTypes,
-		}),
-		...(fieldSet.id && {
-			rows: normalizeDataLayoutRows(dataLayoutPages),
-		}),
-	};
-}
+import {normalizeDataDefinition, normalizeDataLayout} from './normalizers.es';
 
 export function getDDMFormField({
 	dataDefinition,
@@ -63,11 +28,11 @@ export function getDDMFormField({
 		dataDefinition,
 		fieldName
 	);
+	const {fieldType, nestedDataDefinitionFields} = dataDefinitionField;
 
-	if (dataDefinitionField.fieldType === 'ddm-text-html') {
+	if (fieldType === 'ddm-text-html') {
 		dataDefinitionField.fieldType = 'rich_text';
 	}
-
 	const settingsContext = getDDMFormFieldSettingsContext({
 		dataDefinitionField,
 		defaultLanguageId,
@@ -75,39 +40,33 @@ export function getDDMFormField({
 		fieldTypes,
 	});
 
-	const ddmFormField = {
-		nestedFields: dataDefinitionField.nestedDataDefinitionFields,
-		settingsContext,
-	};
+	const nestedFields = nestedDataDefinitionFields.map(({name: fieldName}) =>
+		getDDMFormField({
+			dataDefinition,
+			defaultLanguageId,
+			editingLanguageId,
+			fieldName,
+			fieldTypes,
+		})
+	);
+
+	const ddmFormField = {nestedFields, settingsContext};
 	const visitor = new PagesVisitor(settingsContext.pages);
 
 	visitor.mapFields((field) => {
-		const {fieldName} = field;
-		let {value} = field;
-
-		if (fieldName === 'options' && value) {
-			value = value[editingLanguageId];
+		const {fieldName, localizable, type, value} = field;
+		if (type === 'options' && value) {
+			ddmFormField[fieldName] = value[editingLanguageId];
 		}
 		else if (fieldName === 'name') {
 			ddmFormField.fieldName = value;
 		}
-
-		ddmFormField[fieldName] = value;
+		else {
+			ddmFormField[fieldName] = localizable
+				? value[editingLanguageId] ?? value[defaultLanguageId]
+				: value;
+		}
 	});
-
-	if (ddmFormField.nestedFields.length > 0) {
-		ddmFormField.nestedFields = ddmFormField.nestedFields.map(
-			(nestedField) =>
-				getDDMFormField({
-					dataDefinition,
-					defaultLanguageId,
-					editingLanguageId,
-					fieldName: nestedField.name,
-					fieldTypes,
-				})
-		);
-	}
-
 	if (!ddmFormField.instanceId) {
 		ddmFormField.instanceId = FieldSupport.generateInstanceId(8);
 	}
@@ -118,7 +77,7 @@ export function getDDMFormField({
 export function getDDMFormFieldSettingsContext({
 	dataDefinitionField,
 	defaultLanguageId = themeDisplay.getDefaultLanguageId(),
-	editingLanguageId = themeDisplay.getDefaultLanguageId(),
+	editingLanguageId = defaultLanguageId,
 	fieldTypes,
 }) {
 	const {settingsContext} = fieldTypes.find(({name}) => {
@@ -136,13 +95,7 @@ export function getDDMFormFieldSettingsContext({
 				_fromDDMFormToDataDefinitionPropertyName(fieldName)
 			);
 
-			let value = propertyValue ?? field.value;
-
-			if (localizable && propertyValue && fieldName !== 'label') {
-				value =
-					propertyValue[editingLanguageId] ||
-					propertyValue[defaultLanguageId];
-			}
+			const value = propertyValue ?? field.value;
 
 			let localizedValue = {};
 
@@ -360,37 +313,51 @@ export function getDDMSettingsContextWithVisualProperties({
  */
 export function getFieldSetDDMForm({
 	allowInvalidAvailableLocalesForProperty,
-	availableLanguageIds,
 	editingLanguageId,
 	fieldSet,
 	fieldTypes,
 }) {
 	const {defaultDataLayout, defaultLanguageId} = fieldSet;
 
-	let newDataDefinition = {
-		availableLanguageIds,
-		...fieldSet,
-	};
-
-	if (!allowInvalidAvailableLocalesForProperty) {
-		newDataDefinition = normalizeDataDefinition(
-			newDataDefinition,
-			defaultLanguageId
-		);
-	}
-
-	const fieldSetDataLayout = normalizeDataLayout(
+	const {dataLayoutPages} = normalizeDataLayout(
 		defaultDataLayout,
 		defaultLanguageId
 	);
 
-	return _getDDMForm({
-		dataDefinition: newDataDefinition,
-		dataLayout: fieldSetDataLayout,
-		defaultLanguageId,
-		editingLanguageId,
-		fieldTypes,
-	});
+	const dataDefinition = allowInvalidAvailableLocalesForProperty
+		? fieldSet
+		: normalizeDataDefinition(fieldSet, defaultLanguageId);
+
+	const pages = dataLayoutPages.map((dataLayoutPage) => ({
+		rows: dataLayoutPage.dataLayoutRows.map((dataLayoutRow) => ({
+			columns: dataLayoutRow.dataLayoutColumns.map(
+				({columnSize, fieldNames}) => ({
+					fields: fieldNames.map((fieldName) =>
+						getDDMFormField({
+							dataDefinition,
+							defaultLanguageId,
+							editingLanguageId,
+							fieldName,
+							fieldTypes,
+						})
+					),
+					size: columnSize,
+				})
+			),
+		})),
+	}));
+
+	const {description, id, name} = dataDefinition;
+
+	return {
+		description:
+			description[editingLanguageId] ?? description[defaultLanguageId],
+		id,
+		localizedDescription: description,
+		localizedTitle: name,
+		pages,
+		title: name[editingLanguageId] ?? name[defaultLanguageId],
+	};
 }
 
 export function getFormData({
@@ -495,42 +462,6 @@ function _getDataDefinitionFieldPropertyValue(
 	}
 
 	return dataDefinitionField[propertyName];
-}
-
-function _getDDMForm({
-	dataDefinition,
-	dataLayout = getDefaultDataLayout(dataDefinition),
-	defaultLanguageId: fieldSetDefaultLanguageId,
-	editingLanguageId,
-	fieldTypes,
-}) {
-	const {defaultLanguageId, name} = dataDefinition;
-
-	return {
-		description: dataDefinition.description[editingLanguageId],
-		id: dataDefinition.id,
-		localizedDescription: dataDefinition.description,
-		localizedTitle: name,
-		pages: dataLayout.dataLayoutPages.map((dataLayoutPage) => ({
-			rows: dataLayoutPage.dataLayoutRows.map((dataLayoutRow) => ({
-				columns: dataLayoutRow.dataLayoutColumns.map(
-					({columnSize, fieldNames}) => ({
-						fields: fieldNames.map((fieldName) =>
-							getDDMFormField({
-								dataDefinition,
-								defaultLanguageId: fieldSetDefaultLanguageId,
-								editingLanguageId,
-								fieldName,
-								fieldTypes,
-							})
-						),
-						size: columnSize,
-					})
-				),
-			})),
-		})),
-		title: name[editingLanguageId] || name[defaultLanguageId],
-	};
 }
 
 function _isCustomProperty(name) {

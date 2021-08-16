@@ -76,7 +76,7 @@ import com.liferay.portal.kernel.test.util.ServiceContextTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.test.util.UserTestUtil;
 import com.liferay.portal.kernel.util.HashMapBuilder;
-import com.liferay.portal.kernel.util.HashMapDictionary;
+import com.liferay.portal.kernel.util.HashMapDictionaryBuilder;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
@@ -100,7 +100,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -121,11 +120,9 @@ public class JournalArticleSearchTest extends BaseSearchTestCase {
 	public static void setUpClass() throws Exception {
 		ConfigurationTestUtil.saveConfiguration(
 			DDMIndexerConfiguration.class.getName(),
-			new HashMapDictionary() {
-				{
-					put("enableLegacyDDMIndexFields", false);
-				}
-			});
+			HashMapDictionaryBuilder.<String, Object>put(
+				"enableLegacyDDMIndexFields", false
+			).build());
 	}
 
 	@AfterClass
@@ -277,7 +274,6 @@ public class JournalArticleSearchTest extends BaseSearchTestCase {
 		testOrderHelper.testOrderByDDMNumberField();
 	}
 
-	@Ignore
 	@Test
 	public void testOrderByDDMNumberFieldRepeatable() throws Exception {
 		TestOrderHelper testOrderHelper =

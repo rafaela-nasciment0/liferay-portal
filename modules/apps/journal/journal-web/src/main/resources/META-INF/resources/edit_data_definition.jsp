@@ -75,7 +75,7 @@ editDDMStructureURL.setParameter("ddmStructureId", String.valueOf(ddmStructureId
 					<div class="journal-article-button-row tbar-section text-right">
 						<aui:button cssClass="btn-secondary btn-sm mr-3" href="<%= redirect %>" type="cancel" />
 
-						<aui:button cssClass="btn-sm mr-3" type="submit" value="save" />
+						<aui:button cssClass="btn-sm mr-3" id="submitButton" type="submit" value="save" />
 					</div>
 				</li>
 			</ul>
@@ -113,7 +113,10 @@ editDDMStructureURL.setParameter("ddmStructureId", String.valueOf(ddmStructureId
 						dataDefinitionId="<%= ddmStructureId %>"
 						groupId="<%= groupId %>"
 						namespace="<%= liferayPortletResponse.getNamespace() %>"
+						scopes='<%= SetUtil.fromCollection(Arrays.asList("journal")) %>'
+						searchableFieldsDisabled="<%= !journalEditDDMStructuresDisplayContext.isStructureFieldIndexableEnable() %>"
 						singlePage="<%= true %>"
+						submitButtonId='<%= liferayPortletResponse.getNamespace() + "submitButton" %>'
 					/>
 				</div>
 			</div>

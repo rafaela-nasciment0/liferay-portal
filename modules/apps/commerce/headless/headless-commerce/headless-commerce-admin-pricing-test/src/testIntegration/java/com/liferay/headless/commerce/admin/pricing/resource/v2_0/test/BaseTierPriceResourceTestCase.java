@@ -344,21 +344,6 @@ public abstract class BaseTierPriceResourceTestCase {
 
 		assertEquals(randomTierPrice, postTierPrice);
 		assertValid(postTierPrice);
-
-		randomTierPrice = randomTierPrice();
-
-		assertHttpResponseStatusCode(
-			404,
-			tierPriceResource.getTierPriceByExternalReferenceCodeHttpResponse(
-				randomTierPrice.getExternalReferenceCode()));
-
-		testPostPriceEntryByExternalReferenceCodeTierPrice_addTierPrice(
-			randomTierPrice);
-
-		assertHttpResponseStatusCode(
-			200,
-			tierPriceResource.getTierPriceByExternalReferenceCodeHttpResponse(
-				randomTierPrice.getExternalReferenceCode()));
 	}
 
 	protected TierPrice
@@ -488,20 +473,6 @@ public abstract class BaseTierPriceResourceTestCase {
 
 		assertEquals(randomTierPrice, postTierPrice);
 		assertValid(postTierPrice);
-
-		randomTierPrice = randomTierPrice();
-
-		assertHttpResponseStatusCode(
-			404,
-			tierPriceResource.getTierPriceByExternalReferenceCodeHttpResponse(
-				randomTierPrice.getExternalReferenceCode()));
-
-		testPostPriceEntryIdTierPrice_addTierPrice(randomTierPrice);
-
-		assertHttpResponseStatusCode(
-			200,
-			tierPriceResource.getTierPriceByExternalReferenceCodeHttpResponse(
-				randomTierPrice.getExternalReferenceCode()));
 	}
 
 	protected TierPrice testPostPriceEntryIdTierPrice_addTierPrice(
@@ -975,7 +946,7 @@ public abstract class BaseTierPriceResourceTestCase {
 		List<GraphQLField> graphQLFields = new ArrayList<>();
 
 		for (Field field :
-				ReflectionUtil.getDeclaredFields(
+				getDeclaredFields(
 					com.liferay.headless.commerce.admin.pricing.dto.v2_0.
 						TierPrice.class)) {
 
@@ -1010,7 +981,7 @@ public abstract class BaseTierPriceResourceTestCase {
 				}
 
 				List<GraphQLField> childrenGraphQLFields = getGraphQLFields(
-					ReflectionUtil.getDeclaredFields(clazz));
+					getDeclaredFields(clazz));
 
 				graphQLFields.add(
 					new GraphQLField(field.getName(), childrenGraphQLFields));
@@ -1266,6 +1237,17 @@ public abstract class BaseTierPriceResourceTestCase {
 		}
 
 		return false;
+	}
+
+	protected Field[] getDeclaredFields(Class clazz) throws Exception {
+		Stream<Field> stream = Stream.of(
+			ReflectionUtil.getDeclaredFields(clazz));
+
+		return stream.filter(
+			field -> !field.isSynthetic()
+		).toArray(
+			Field[]::new
+		);
 	}
 
 	protected java.util.Collection<EntityField> getEntityFields()

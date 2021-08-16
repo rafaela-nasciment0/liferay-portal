@@ -516,20 +516,6 @@ public abstract class BaseOrderResourceTestCase {
 
 		assertEquals(randomOrder, postOrder);
 		assertValid(postOrder);
-
-		randomOrder = randomOrder();
-
-		assertHttpResponseStatusCode(
-			404,
-			orderResource.getOrderByExternalReferenceCodeHttpResponse(
-				randomOrder.getExternalReferenceCode()));
-
-		testPostOrder_addOrder(randomOrder);
-
-		assertHttpResponseStatusCode(
-			200,
-			orderResource.getOrderByExternalReferenceCodeHttpResponse(
-				randomOrder.getExternalReferenceCode()));
 	}
 
 	protected Order testPostOrder_addOrder(Order order) throws Exception {
@@ -1493,6 +1479,14 @@ public abstract class BaseOrderResourceTestCase {
 				continue;
 			}
 
+			if (Objects.equals("taxAmountValue", additionalAssertFieldName)) {
+				if (order.getTaxAmountValue() == null) {
+					valid = false;
+				}
+
+				continue;
+			}
+
 			if (Objects.equals("total", additionalAssertFieldName)) {
 				if (order.getTotal() == null) {
 					valid = false;
@@ -1736,7 +1730,7 @@ public abstract class BaseOrderResourceTestCase {
 		List<GraphQLField> graphQLFields = new ArrayList<>();
 
 		for (Field field :
-				ReflectionUtil.getDeclaredFields(
+				getDeclaredFields(
 					com.liferay.headless.commerce.admin.order.dto.v1_0.Order.
 						class)) {
 
@@ -1771,7 +1765,7 @@ public abstract class BaseOrderResourceTestCase {
 				}
 
 				List<GraphQLField> childrenGraphQLFields = getGraphQLFields(
-					ReflectionUtil.getDeclaredFields(clazz));
+					getDeclaredFields(clazz));
 
 				graphQLFields.add(
 					new GraphQLField(field.getName(), childrenGraphQLFields));
@@ -2668,6 +2662,17 @@ public abstract class BaseOrderResourceTestCase {
 				continue;
 			}
 
+			if (Objects.equals("taxAmountValue", additionalAssertFieldName)) {
+				if (!Objects.deepEquals(
+						order1.getTaxAmountValue(),
+						order2.getTaxAmountValue())) {
+
+					return false;
+				}
+
+				continue;
+			}
+
 			if (Objects.equals("total", additionalAssertFieldName)) {
 				if (!Objects.deepEquals(order1.getTotal(), order2.getTotal())) {
 					return false;
@@ -2961,6 +2966,17 @@ public abstract class BaseOrderResourceTestCase {
 		}
 
 		return false;
+	}
+
+	protected Field[] getDeclaredFields(Class clazz) throws Exception {
+		Stream<Field> stream = Stream.of(
+			ReflectionUtil.getDeclaredFields(clazz));
+
+		return stream.filter(
+			field -> !field.isSynthetic()
+		).toArray(
+			Field[]::new
+		);
 	}
 
 	protected java.util.Collection<EntityField> getEntityFields()
@@ -3581,6 +3597,11 @@ public abstract class BaseOrderResourceTestCase {
 			return sb.toString();
 		}
 
+		if (entityFieldName.equals("taxAmountValue")) {
+			throw new IllegalArgumentException(
+				"Invalid entity field " + entityFieldName);
+		}
+
 		if (entityFieldName.equals("total")) {
 			throw new IllegalArgumentException(
 				"Invalid entity field " + entityFieldName);
@@ -3839,9 +3860,9 @@ public abstract class BaseOrderResourceTestCase {
 				subtotalWithTaxAmountFormatted = StringUtil.toLowerCase(
 					RandomTestUtil.randomString());
 				subtotalWithTaxAmountValue = RandomTestUtil.randomDouble();
-				taxAmount = RandomTestUtil.randomDouble();
 				taxAmountFormatted = StringUtil.toLowerCase(
 					RandomTestUtil.randomString());
+				taxAmountValue = RandomTestUtil.randomDouble();
 				totalAmount = RandomTestUtil.randomDouble();
 				totalDiscountAmount = RandomTestUtil.randomDouble();
 				totalDiscountAmountFormatted = StringUtil.toLowerCase(

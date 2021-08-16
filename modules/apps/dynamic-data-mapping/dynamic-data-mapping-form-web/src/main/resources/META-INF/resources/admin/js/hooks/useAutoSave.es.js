@@ -13,18 +13,19 @@
  */
 
 import {useIsMounted} from '@liferay/frontend-js-react-web';
-import {sub} from 'dynamic-data-mapping-form-builder/js/util/strings.es';
 import {
 	FormSupport,
+	StringUtils,
 	convertToFormData,
 	makeFetch,
 	useConfig,
 	useFormState,
-} from 'dynamic-data-mapping-form-renderer';
+} from 'data-engine-js-components-web';
 import objectHash from 'object-hash';
 import React, {useCallback, useContext, useEffect, useRef} from 'react';
 
 import {useStateSync} from './useStateSync.es';
+import {useValidateFormWithObjects} from './useValidateFormWithObjects';
 
 const AutoSaveContext = React.createContext({});
 
@@ -75,7 +76,7 @@ const updateAutoSaveMessage = ({
 		`#${portletNamespace}autosaveMessage`
 	);
 
-	autoSaveMessageNode.innerHTML = sub(
+	autoSaveMessageNode.innerHTML = StringUtils.sub(
 		saveAsDraft
 			? Liferay.Language.get('draft-x')
 			: Liferay.Language.get('saved-x'),
@@ -116,6 +117,8 @@ export const AutoSaveProvider = ({children, interval, published, url}) => {
 
 	const lastKnownHashRulesRef = useRef(null);
 
+	const validateFormWithObjects = useValidateFormWithObjects();
+
 	const getCurrentStateHash = useCallback(
 		() =>
 			getStateHash({
@@ -141,40 +144,44 @@ export const AutoSaveProvider = ({children, interval, published, url}) => {
 	);
 
 	const doSave = useCallback(
-		(saveAsDraft = true) => {
+		async (saveAsDraft = true) => {
 			const lastKnownHash = getCurrentStateHash();
 
 			doSyncInput();
 
-			pendingRequestRef.current = makeFetch({
-				body: getFormData({
-					name: localizedName,
-					portletNamespace,
-					published,
-					saveAsDraft,
-				}),
-				url,
-			})
-				.then((response) => {
-					pendingRequestRef.current = null;
+			const isValidToSaveForm = await validateFormWithObjects();
 
-					defineIds(portletNamespace, response);
-
-					lastKnownHashRef.current = lastKnownHash;
-
-					updateAutoSaveMessage({
-						modifiedDate: response.modifiedDate,
+			if (isValidToSaveForm) {
+				pendingRequestRef.current = makeFetch({
+					body: getFormData({
+						name: localizedName,
 						portletNamespace,
+						published,
 						saveAsDraft,
-					});
-
-					return response;
+					}),
+					url,
 				})
-				.catch((error) => {
-					pendingRequestRef.current = null;
+					.then((response) => {
+						pendingRequestRef.current = null;
 
-					console.error(error);
-				});
+						defineIds(portletNamespace, response);
+
+						lastKnownHashRef.current = lastKnownHash;
+
+						updateAutoSaveMessage({
+							modifiedDate: response.modifiedDate,
+							portletNamespace,
+							saveAsDraft,
+						});
+
+						return response;
+					})
+					.catch((error) => {
+						pendingRequestRef.current = null;
+
+						console.error(error);
+					});
+			}
 
 			return pendingRequestRef.current;
 		},
@@ -187,6 +194,7 @@ export const AutoSaveProvider = ({children, interval, published, url}) => {
 			portletNamespace,
 			published,
 			url,
+			validateFormWithObjects,
 		]
 	);
 

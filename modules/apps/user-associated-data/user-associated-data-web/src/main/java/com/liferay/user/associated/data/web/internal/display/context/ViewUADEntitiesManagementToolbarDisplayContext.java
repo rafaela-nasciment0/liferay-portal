@@ -84,8 +84,8 @@ public class ViewUADEntitiesManagementToolbarDisplayContext
 	public String getClearResultsURL() {
 		return PortletURLBuilder.create(
 			getPortletURL()
-		).setParameter(
-			"keywords", (String)null
+		).setKeywords(
+			(String)null
 		).buildString();
 	}
 
@@ -144,7 +144,7 @@ public class ViewUADEntitiesManagementToolbarDisplayContext
 				liferayPortletResponse
 			).setParameters(
 				portletURL.getParameterMap()
-			).build();
+			).buildPortletURL();
 		}
 
 		String[] parameterNames = {

@@ -28,10 +28,10 @@ PortletURL portletURL = PortletURLBuilder.createRenderURL(
 ).setMVCPath(
 	"/select_rule_group.jsp"
 ).setParameter(
-	"groupId", String.valueOf(groupId)
-).setParameter(
 	"eventName", eventName
-).build();
+).setParameter(
+	"groupId", groupId
+).buildPortletURL();
 
 RuleGroupSearch ruleGroupSearch = new RuleGroupSearch(liferayPortletRequest, portletURL);
 

@@ -14,8 +14,11 @@
 
 import React, {useEffect, useRef, useState} from 'react';
 
+import {CONTAINER_DISPLAY_OPTIONS} from '../config/constants/containerDisplayOptions';
 import {
 	ARROW_DOWN_KEYCODE,
+	ARROW_LEFT_KEYCODE,
+	ARROW_RIGHT_KEYCODE,
 	ARROW_UP_KEYCODE,
 	BACKSPACE_KEYCODE,
 	D_KEYCODE,
@@ -23,8 +26,10 @@ import {
 	Z_KEYCODE,
 } from '../config/constants/keycodes';
 import {MOVE_ITEM_DIRECTIONS} from '../config/constants/moveItemDirections';
+import {useActiveItemId, useSelectItem} from '../contexts/ControlsContext';
+import {useDispatch, useSelector} from '../contexts/StoreContext';
+import {useWidgets} from '../contexts/WidgetsContext';
 import selectCanUpdatePageStructure from '../selectors/selectCanUpdatePageStructure';
-import {useDispatch, useSelector} from '../store/index';
 import deleteItem from '../thunks/deleteItem';
 import duplicateItem from '../thunks/duplicateItem';
 import moveItem from '../thunks/moveItem';
@@ -33,7 +38,6 @@ import undoThunk from '../thunks/undo';
 import canBeDuplicated from '../utils/canBeDuplicated';
 import canBeRemoved from '../utils/canBeRemoved';
 import canBeSaved from '../utils/canBeSaved';
-import {useActiveItemId, useSelectItem} from './Controls';
 import SaveFragmentCompositionModal from './SaveFragmentCompositionModal';
 
 const ctrlOrMeta = (event) =>
@@ -60,20 +64,13 @@ const isWithinIframe = () => {
 export default function ShortcutManager() {
 	const activeItemId = useActiveItemId();
 	const dispatch = useDispatch();
-	const selectItem = useSelectItem();
-
 	const canUpdatePageStructure = useSelector(selectCanUpdatePageStructure);
-
 	const [openSaveModal, setOpenSaveModal] = useState(false);
-
+	const selectItem = useSelectItem();
 	const state = useSelector((state) => state);
+	const widgets = useWidgets();
 
-	const {
-		fragmentEntryLinks,
-		layoutData,
-		segmentsExperienceId,
-		widgets,
-	} = state;
+	const {fragmentEntryLinks, layoutData, segmentsExperienceId} = state;
 
 	const activeItem = layoutData.items[activeItemId];
 
@@ -120,7 +117,8 @@ export default function ShortcutManager() {
 		const currentPosition = parentItem.children.indexOf(itemId);
 
 		const direction =
-			event.keyCode === ARROW_UP_KEYCODE
+			event.keyCode === ARROW_UP_KEYCODE ||
+			event.keyCode === ARROW_LEFT_KEYCODE
 				? MOVE_ITEM_DIRECTIONS.UP
 				: MOVE_ITEM_DIRECTIONS.DOWN;
 
@@ -175,9 +173,30 @@ export default function ShortcutManager() {
 				!!layoutData.items[activeItemId] &&
 				!isEditableField(event.target) &&
 				!isInteractiveElement(event.target),
-			isKeyCombination: (event) =>
-				event.keyCode === ARROW_UP_KEYCODE ||
-				event.keyCode === ARROW_DOWN_KEYCODE,
+			isKeyCombination: (event) => {
+				if (!activeItem) {
+					return false;
+				}
+
+				const {parentId} = activeItem;
+
+				const parentItem = layoutData.items[parentId];
+
+				if (
+					parentItem.config.contentDisplay ===
+					CONTAINER_DISPLAY_OPTIONS.flexRow
+				) {
+					return (
+						event.keyCode === ARROW_RIGHT_KEYCODE ||
+						event.keyCode === ARROW_LEFT_KEYCODE
+					);
+				}
+
+				return (
+					event.keyCode === ARROW_UP_KEYCODE ||
+					event.keyCode === ARROW_DOWN_KEYCODE
+				);
+			},
 		},
 		remove: {
 			action: remove,
@@ -185,7 +204,6 @@ export default function ShortcutManager() {
 				canUpdatePageStructure &&
 				!!layoutData.items[activeItemId] &&
 				canBeRemoved(layoutData.items[activeItemId], layoutData) &&
-				!isEditableField(event.target) &&
 				!isInteractiveElement(event.target),
 			isKeyCombination: (event) => event.keyCode === BACKSPACE_KEYCODE,
 		},

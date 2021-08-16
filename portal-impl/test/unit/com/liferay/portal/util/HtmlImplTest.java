@@ -81,7 +81,7 @@ public class HtmlImplTest {
 
 	@Test
 	public void testEscapeExtendedASCIICharacters() {
-		StringBuilder sb = new StringBuilder(256);
+		StringBundler sb = new StringBundler(256);
 
 		for (int i = 0; i < 256; i++) {
 			if (Character.isLetterOrDigit(i)) {
@@ -105,11 +105,11 @@ public class HtmlImplTest {
 			"javascript%3aalert(&#39;hello&#39;);",
 			_htmlImpl.escapeHREF("javascript:alert('hello');"));
 		Assert.assertEquals(
-			"data%3atext/html;base64,PHNjcmlwdD5hbGVydCgndGVzdDMnKTwvc2NyaX" +
-				"B0Pg",
+			"data%3atext/html;base64," +
+				"PHNjcmlwdD5hbGVydCgndGVzdDMnKTwvc2NyaXB0Pg",
 			_htmlImpl.escapeHREF(
-				"data:text/html;base64,PHNjcmlwdD5hbGVydCgndGVzdDMnKTwvc2NyaX" +
-					"B0Pg"));
+				"data:text/html;base64," +
+					"PHNjcmlwdD5hbGVydCgndGVzdDMnKTwvc2NyaXB0Pg"));
 		Assert.assertEquals(
 			"http://localhost:8080",
 			_htmlImpl.escapeHREF("http://localhost:8080"));
@@ -191,6 +191,10 @@ public class HtmlImplTest {
 		Assert.assertEquals(
 			"http://localhost:8080",
 			_htmlImpl.escapeJSLink("http://localhost:8080"));
+		Assert.assertEquals(
+			"javascript%3a//localhost:800/123%0aalert(document.domain)",
+			_htmlImpl.escapeJSLink(
+				"\tjavascript://localhost:800/123%0aalert(document.domain)"));
 	}
 
 	@Test
@@ -388,7 +392,15 @@ public class HtmlImplTest {
 	}
 
 	@Test
-	public void testStripHtmlWithScripTag() {
+	public void testStripHtmlWithNoscriptTag() {
+		Assert.assertEquals(
+			"Hello World!",
+			_htmlImpl.stripHtml(
+				"<body>Hello<noscript>No JavaScript</noscript> World!</body>"));
+	}
+
+	@Test
+	public void testStripHtmlWithScriptTag() {
 		Assert.assertEquals(
 			"Hello World!",
 			_htmlImpl.stripHtml(

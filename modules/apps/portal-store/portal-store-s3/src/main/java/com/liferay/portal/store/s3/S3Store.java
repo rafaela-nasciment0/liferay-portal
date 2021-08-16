@@ -157,13 +157,14 @@ public class S3Store implements Store {
 
 		_s3FileCache.cleanUpCacheFiles();
 
-		try (S3Object s3Object = getS3Object(
-				companyId, repositoryId, fileName, versionLabel)) {
+		try {
+			S3Object s3Object = getS3Object(
+				companyId, repositoryId, fileName, versionLabel);
 
 			ObjectMetadata objectMetadata = s3Object.getObjectMetadata();
 
 			return _s3FileCache.getCacheFileInputStream(
-				fileName, s3Object::getObjectContent,
+				s3Object, fileName, s3Object::getObjectContent,
 				objectMetadata.getLastModified());
 		}
 		catch (IOException ioException) {
@@ -433,18 +434,38 @@ public class S3Store implements Store {
 	protected AmazonS3 getAmazonS3(
 		AWSCredentialsProvider awsCredentialsProvider) {
 
-		return AmazonS3ClientBuilder.standard(
-		).withCredentials(
-			awsCredentialsProvider
-		).withClientConfiguration(
-			getClientConfiguration()
-		).withEndpointConfiguration(
-			new AwsClientBuilder.EndpointConfiguration(
-				_s3StoreConfiguration.s3Endpoint(),
-				_s3StoreConfiguration.s3Region())
-		).withPathStyleAccessEnabled(
-			_s3StoreConfiguration.s3PathStyle()
-		).build();
+		if (Validator.isNotNull(_s3StoreConfiguration.s3Endpoint()) &&
+			Validator.isNotNull(_s3StoreConfiguration.s3Region())) {
+
+			return AmazonS3ClientBuilder.standard(
+			).withCredentials(
+				awsCredentialsProvider
+			).withClientConfiguration(
+				getClientConfiguration()
+			).withEndpointConfiguration(
+				new AwsClientBuilder.EndpointConfiguration(
+					_s3StoreConfiguration.s3Endpoint(),
+					_s3StoreConfiguration.s3Region())
+			).withPathStyleAccessEnabled(
+				_s3StoreConfiguration.s3PathStyle()
+			).build();
+		}
+
+		AmazonS3ClientBuilder amazonS3ClientBuilder =
+			AmazonS3ClientBuilder.standard(
+			).withCredentials(
+				awsCredentialsProvider
+			).withClientConfiguration(
+				getClientConfiguration()
+			).withPathStyleAccessEnabled(
+				_s3StoreConfiguration.s3PathStyle()
+			);
+
+		if (Validator.isNotNull(_s3StoreConfiguration.s3Region())) {
+			amazonS3ClientBuilder.setRegion(_s3StoreConfiguration.s3Region());
+		}
+
+		return amazonS3ClientBuilder.build();
 	}
 
 	protected AWSCredentialsProvider getAWSCredentialsProvider() {

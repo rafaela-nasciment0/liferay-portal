@@ -241,8 +241,6 @@ public class OrganizationIndexerIndexedFieldsTest {
 		).put(
 			Field.USER_ID, String.valueOf(organization.getUserId())
 		).put(
-			Field.USER_NAME, StringUtil.toLowerCase(organization.getUserName())
-		).put(
 			"country", _organizationFixture.getCountryNames(organization)
 		).put(
 			"nameTreePath", organization.getName()
@@ -254,6 +252,14 @@ public class OrganizationIndexerIndexedFieldsTest {
 			String.valueOf(organization.getParentOrganizationId())
 		).put(
 			"region",
+			() -> {
+				Region region = regionService.getRegion(
+					organization.getRegionId());
+
+				return StringUtil.toLowerCase(region.getName());
+			}
+		).put(
+			Field.getSortableFieldName("region"),
 			() -> {
 				Region region = regionService.getRegion(
 					organization.getRegionId());

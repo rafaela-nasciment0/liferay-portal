@@ -20,8 +20,9 @@ import com.liferay.content.dashboard.item.action.ContentDashboardItemAction;
 import com.liferay.content.dashboard.item.action.exception.ContentDashboardItemActionException;
 import com.liferay.content.dashboard.item.action.provider.ContentDashboardItemActionProvider;
 import com.liferay.content.dashboard.web.internal.item.action.ContentDashboardItemActionProviderTracker;
-import com.liferay.content.dashboard.web.internal.item.type.ContentDashboardItemType;
+import com.liferay.content.dashboard.web.internal.item.type.ContentDashboardItemSubtype;
 import com.liferay.info.field.InfoFieldValue;
+import com.liferay.info.item.InfoItemClassDetails;
 import com.liferay.info.item.InfoItemReference;
 import com.liferay.info.item.provider.InfoItemFieldValuesProvider;
 import com.liferay.journal.model.JournalArticle;
@@ -60,7 +61,7 @@ public class JournalArticleContentDashboardItem
 		List<AssetCategory> assetCategories, List<AssetTag> assetTags,
 		ContentDashboardItemActionProviderTracker
 			contentDashboardItemActionProviderTracker,
-		ContentDashboardItemType contentDashboardItemType, Group group,
+		ContentDashboardItemSubtype contentDashboardItemSubtype, Group group,
 		InfoItemFieldValuesProvider<JournalArticle> infoItemFieldValuesProvider,
 		JournalArticle journalArticle, Language language,
 		JournalArticle latestApprovedJournalArticle, Portal portal) {
@@ -81,7 +82,7 @@ public class JournalArticleContentDashboardItem
 
 		_contentDashboardItemActionProviderTracker =
 			contentDashboardItemActionProviderTracker;
-		_contentDashboardItemType = contentDashboardItemType;
+		_contentDashboardItemSubtype = contentDashboardItemSubtype;
 		_group = group;
 		_infoItemFieldValuesProvider = infoItemFieldValuesProvider;
 		_journalArticle = journalArticle;
@@ -172,8 +173,8 @@ public class JournalArticleContentDashboardItem
 	}
 
 	@Override
-	public ContentDashboardItemType getContentDashboardItemType() {
-		return _contentDashboardItemType;
+	public ContentDashboardItemSubtype getContentDashboardItemSubtype() {
+		return _contentDashboardItemSubtype;
 	}
 
 	@Override
@@ -265,15 +266,15 @@ public class JournalArticleContentDashboardItem
 
 	@Override
 	public Object getDisplayFieldValue(String fieldName, Locale locale) {
-		InfoFieldValue<Object> infoItemFieldValue =
-			_infoItemFieldValuesProvider.getInfoItemFieldValue(
+		InfoFieldValue<Object> infoFieldValue =
+			_infoItemFieldValuesProvider.getInfoFieldValue(
 				_journalArticle, fieldName);
 
-		if (infoItemFieldValue == null) {
+		if (infoFieldValue == null) {
 			return null;
 		}
 
-		return infoItemFieldValue.getValue(locale);
+		return infoFieldValue.getValue(locale);
 	}
 
 	@Override
@@ -311,6 +312,14 @@ public class JournalArticleContentDashboardItem
 	@Override
 	public String getTitle(Locale locale) {
 		return _journalArticle.getTitle(locale);
+	}
+
+	@Override
+	public String getTypeLabel(Locale locale) {
+		InfoItemClassDetails infoItemClassDetails = new InfoItemClassDetails(
+			JournalArticle.class.getName());
+
+		return infoItemClassDetails.getLabel(locale);
 	}
 
 	@Override
@@ -407,7 +416,7 @@ public class JournalArticleContentDashboardItem
 					WorkflowConstants.getStatusLabel(
 						curJournalArticle.getStatus())),
 				WorkflowConstants.getStatusStyle(curJournalArticle.getStatus()),
-				curJournalArticle.getVersion())
+				String.valueOf(curJournalArticle.getVersion()))
 		);
 	}
 
@@ -418,7 +427,7 @@ public class JournalArticleContentDashboardItem
 	private final List<AssetTag> _assetTags;
 	private final ContentDashboardItemActionProviderTracker
 		_contentDashboardItemActionProviderTracker;
-	private final ContentDashboardItemType _contentDashboardItemType;
+	private final ContentDashboardItemSubtype _contentDashboardItemSubtype;
 	private final Group _group;
 	private final InfoItemFieldValuesProvider<JournalArticle>
 		_infoItemFieldValuesProvider;

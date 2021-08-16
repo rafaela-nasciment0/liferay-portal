@@ -184,12 +184,13 @@ public class PortalInstances {
 	public static long[] getCompanyIdsBySQL() throws SQLException {
 		List<Long> companyIds = new ArrayList<>();
 
-		try (Connection con = DataAccess.getConnection();
-			PreparedStatement ps = con.prepareStatement(_GET_COMPANY_IDS);
-			ResultSet rs = ps.executeQuery()) {
+		try (Connection connection = DataAccess.getConnection();
+			PreparedStatement preparedStatement = connection.prepareStatement(
+				_GET_COMPANY_IDS);
+			ResultSet resultSet = preparedStatement.executeQuery()) {
 
-			while (rs.next()) {
-				long companyId = rs.getLong("companyId");
+			while (resultSet.next()) {
+				long companyId = resultSet.getLong("companyId");
 
 				companyIds.add(companyId);
 			}
@@ -212,21 +213,19 @@ public class PortalInstances {
 		}
 
 		try {
-			List<Company> companies = CompanyLocalServiceUtil.getCompanies(
-				false);
+			List<String> webIdsList = new ArrayList<>();
 
-			List<String> webIdsList = new ArrayList<>(companies.size());
+			CompanyLocalServiceUtil.forEachCompany(
+				company -> {
+					String webId = company.getWebId();
 
-			for (Company company : companies) {
-				String webId = company.getWebId();
-
-				if (webId.equals(PropsValues.COMPANY_DEFAULT_WEB_ID)) {
-					webIdsList.add(0, webId);
-				}
-				else {
-					webIdsList.add(webId);
-				}
-			}
+					if (webId.equals(PropsValues.COMPANY_DEFAULT_WEB_ID)) {
+						webIdsList.add(0, webId);
+					}
+					else {
+						webIdsList.add(webId);
+					}
+				});
 
 			_webIds = webIdsList.toArray(new String[0]);
 		}

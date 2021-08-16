@@ -24,6 +24,7 @@ import com.liferay.knowledge.base.constants.AdminActivityKeys;
 import com.liferay.knowledge.base.constants.KBArticleConstants;
 import com.liferay.knowledge.base.constants.KBConstants;
 import com.liferay.knowledge.base.constants.KBFolderConstants;
+import com.liferay.knowledge.base.exception.DuplicateKBArticleExternalReferenceCodeException;
 import com.liferay.knowledge.base.exception.KBArticleContentException;
 import com.liferay.knowledge.base.exception.KBArticleParentException;
 import com.liferay.knowledge.base.exception.KBArticlePriorityException;
@@ -145,10 +146,10 @@ public class KBArticleLocalServiceImpl extends KBArticleLocalServiceBaseImpl {
 
 	@Override
 	public KBArticle addKBArticle(
-			long userId, long parentResourceClassNameId,
-			long parentResourcePrimKey, String title, String urlTitle,
-			String content, String description, String sourceURL,
-			String[] sections, String[] selectedFileNames,
+			String externalReferenceCode, long userId,
+			long parentResourceClassNameId, long parentResourcePrimKey,
+			String title, String urlTitle, String content, String description,
+			String sourceURL, String[] sections, String[] selectedFileNames,
 			ServiceContext serviceContext)
 		throws PortalException {
 
@@ -160,6 +161,14 @@ public class KBArticleLocalServiceImpl extends KBArticleLocalServiceBaseImpl {
 		urlTitle = normalizeUrlTitle(urlTitle);
 		double priority = getPriority(groupId, parentResourcePrimKey);
 
+		long kbArticleId = counterLocalService.increment();
+
+		if (Validator.isNull(externalReferenceCode)) {
+			externalReferenceCode = String.valueOf(kbArticleId);
+		}
+
+		_validateExternalReferenceCode(externalReferenceCode, groupId);
+
 		validate(title, content, sourceURL);
 		validateParent(parentResourceClassNameId, parentResourcePrimKey);
 
@@ -169,8 +178,6 @@ public class KBArticleLocalServiceImpl extends KBArticleLocalServiceBaseImpl {
 		urlTitle = StringUtil.toLowerCase(urlTitle);
 
 		validateUrlTitle(groupId, kbFolderId, urlTitle);
-
-		long kbArticleId = counterLocalService.increment();
 
 		long resourcePrimKey = counterLocalService.increment();
 
@@ -185,6 +192,7 @@ public class KBArticleLocalServiceImpl extends KBArticleLocalServiceBaseImpl {
 		kbArticle.setCompanyId(user.getCompanyId());
 		kbArticle.setUserId(user.getUserId());
 		kbArticle.setUserName(user.getFullName());
+		kbArticle.setExternalReferenceCode(externalReferenceCode);
 		kbArticle.setRootResourcePrimKey(rootResourcePrimKey);
 		kbArticle.setParentResourceClassNameId(parentResourceClassNameId);
 		kbArticle.setParentResourcePrimKey(parentResourcePrimKey);
@@ -525,6 +533,14 @@ public class KBArticleLocalServiceImpl extends KBArticleLocalServiceBaseImpl {
 	}
 
 	@Override
+	public KBArticle fetchLatestKBArticleByExternalReferenceCode(
+		long groupId, String externalReferenceCode) {
+
+		return kbArticlePersistence.fetchByG_ERC_Last(
+			groupId, externalReferenceCode, new KBArticleVersionComparator());
+	}
+
+	@Override
 	public KBArticle fetchLatestKBArticleByUrlTitle(
 		long groupId, long kbFolderId, String urlTitle, int status) {
 
@@ -811,6 +827,15 @@ public class KBArticleLocalServiceImpl extends KBArticleLocalServiceBaseImpl {
 	}
 
 	@Override
+	public KBArticle getLatestKBArticleByExternalReferenceCode(
+			long groupId, String externalReferenceCode)
+		throws PortalException {
+
+		return kbArticlePersistence.findByG_ERC_First(
+			groupId, externalReferenceCode, new KBArticleVersionComparator());
+	}
+
+	@Override
 	public KBArticle getLatestKBArticleByUrlTitle(
 			long groupId, long kbFolderId, String urlTitle, int status)
 		throws PortalException {
@@ -856,15 +881,15 @@ public class KBArticleLocalServiceImpl extends KBArticleLocalServiceBaseImpl {
 		}
 
 		if (status == WorkflowConstants.STATUS_ANY) {
-			return kbArticlePersistence.findByG_S_L(
+			return kbArticlePersistence.findByG_LikeS_L(
 				groupId, array, true, start, end, orderByComparator);
 		}
 		else if (status == WorkflowConstants.STATUS_APPROVED) {
-			return kbArticlePersistence.findByG_S_M(
+			return kbArticlePersistence.findByG_LikeS_M(
 				groupId, array, true, start, end, orderByComparator);
 		}
 
-		return kbArticlePersistence.findByG_S_S(
+		return kbArticlePersistence.findByG_LikeS_S(
 			groupId, array, status, start, end, orderByComparator);
 	}
 
@@ -879,13 +904,13 @@ public class KBArticleLocalServiceImpl extends KBArticleLocalServiceBaseImpl {
 		}
 
 		if (status == WorkflowConstants.STATUS_ANY) {
-			return kbArticlePersistence.countByG_S_L(groupId, array, true);
+			return kbArticlePersistence.countByG_LikeS_L(groupId, array, true);
 		}
 		else if (status == WorkflowConstants.STATUS_APPROVED) {
-			return kbArticlePersistence.countByG_S_M(groupId, array, true);
+			return kbArticlePersistence.countByG_LikeS_M(groupId, array, true);
 		}
 
-		return kbArticlePersistence.countByG_S_S(groupId, array, status);
+		return kbArticlePersistence.countByG_LikeS_S(groupId, array, status);
 	}
 
 	@Override
@@ -1116,6 +1141,8 @@ public class KBArticleLocalServiceImpl extends KBArticleLocalServiceBaseImpl {
 			kbArticle.setUserId(user.getUserId());
 			kbArticle.setUserName(user.getFullName());
 			kbArticle.setCreateDate(oldKBArticle.getCreateDate());
+			kbArticle.setExternalReferenceCode(
+				oldKBArticle.getExternalReferenceCode());
 			kbArticle.setRootResourcePrimKey(
 				oldKBArticle.getRootResourcePrimKey());
 			kbArticle.setParentResourceClassNameId(
@@ -1271,7 +1298,7 @@ public class KBArticleLocalServiceImpl extends KBArticleLocalServiceBaseImpl {
 
 		User user = userLocalService.getUser(userId);
 		boolean main = false;
-		Date now = new Date();
+		Date date = new Date();
 
 		if (status == WorkflowConstants.STATUS_APPROVED) {
 			main = true;
@@ -1288,7 +1315,7 @@ public class KBArticleLocalServiceImpl extends KBArticleLocalServiceBaseImpl {
 		kbArticle.setStatus(status);
 		kbArticle.setStatusByUserId(user.getUserId());
 		kbArticle.setStatusByUserName(user.getFullName());
-		kbArticle.setStatusDate(serviceContext.getModifiedDate(now));
+		kbArticle.setStatusDate(serviceContext.getModifiedDate(date));
 
 		kbArticle = kbArticlePersistence.update(kbArticle);
 
@@ -2016,6 +2043,21 @@ public class KBArticleLocalServiceImpl extends KBArticleLocalServiceBaseImpl {
 
 		if (!kbArticles.isEmpty()) {
 			throw new KBArticleUrlTitleException.MustNotBeDuplicate(urlTitle);
+		}
+	}
+
+	private void _validateExternalReferenceCode(
+			String externalReferenceCode, long groupId)
+		throws PortalException {
+
+		KBArticle kbArticle = fetchLatestKBArticleByExternalReferenceCode(
+			groupId, externalReferenceCode);
+
+		if (kbArticle != null) {
+			throw new DuplicateKBArticleExternalReferenceCodeException(
+				StringBundler.concat(
+					"Duplicate knowledge base article external reference code ",
+					externalReferenceCode, " in group ", groupId));
 		}
 	}
 

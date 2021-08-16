@@ -594,11 +594,11 @@ public class FragmentEntryProcessorEditableTest {
 			RepositoryProviderUtil.getLocalRepository(_group.getGroupId());
 
 		return localRepository.addFileEntry(
-			TestPropsValues.getUserId(),
+			null, TestPropsValues.getUserId(),
 			DLFolderConstants.DEFAULT_PARENT_FOLDER_ID,
 			RandomTestUtil.randomString(), ContentTypes.IMAGE_JPEG,
 			RandomTestUtil.randomString(), StringPool.BLANK, StringPool.BLANK,
-			inputStream, bytes.length, serviceContext);
+			inputStream, bytes.length, null, null, serviceContext);
 	}
 
 	private JournalArticle _addJournalArticle(
@@ -631,7 +631,7 @@ public class FragmentEntryProcessorEditableTest {
 			user.getTimeZone());
 
 		return _journalArticleLocalService.addArticle(
-			user.getUserId(), _group.getGroupId(), 0,
+			null, user.getUserId(), _group.getGroupId(), 0,
 			JournalArticleConstants.CLASS_NAME_ID_DEFAULT, 0, StringPool.BLANK,
 			true, JournalArticleConstants.VERSION_DEFAULT,
 			HashMapBuilder.put(
@@ -639,6 +639,9 @@ public class FragmentEntryProcessorEditableTest {
 			).build(),
 			HashMapBuilder.put(
 				defaultLocale, defaultLocale.toString()
+			).build(),
+			HashMapBuilder.put(
+				defaultLocale, RandomTestUtil.randomString()
 			).build(),
 			_getStructuredContent(
 				fieldId,

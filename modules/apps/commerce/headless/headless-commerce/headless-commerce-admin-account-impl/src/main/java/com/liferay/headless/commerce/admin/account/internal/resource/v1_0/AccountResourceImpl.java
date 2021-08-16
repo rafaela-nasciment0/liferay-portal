@@ -74,6 +74,7 @@ import com.liferay.portal.vulcan.util.SearchUtil;
 
 import java.io.IOException;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -204,8 +205,9 @@ public class AccountResourceImpl
 		throws Exception {
 
 		return SearchUtil.search(
+			Collections.emptyMap(),
 			booleanQuery -> booleanQuery.getPreBooleanFilter(), filter,
-			AccountEntry.class, search, pagination,
+			AccountEntry.class.getName(), search, pagination,
 			queryConfig -> queryConfig.setSelectedFieldNames(
 				Field.ENTRY_CLASS_PK),
 			new UnsafeConsumer() {
@@ -217,10 +219,10 @@ public class AccountResourceImpl
 				}
 
 			},
+			sorts,
 			document -> _toAccount(
 				_commerceAccountService.fetchCommerceAccount(
-					GetterUtil.getLong(document.get(Field.ENTRY_CLASS_PK)))),
-			sorts);
+					GetterUtil.getLong(document.get(Field.ENTRY_CLASS_PK)))));
 	}
 
 	@Override
@@ -264,14 +266,15 @@ public class AccountResourceImpl
 	@Override
 	public Account postAccount(Account account) throws Exception {
 		CommerceAccount commerceAccount =
-			_commerceAccountService.upsertCommerceAccount(
+			_commerceAccountService.addOrUpdateCommerceAccount(
 				account.getName(),
 				CommerceAccountConstants.DEFAULT_PARENT_ACCOUNT_ID, true, null,
 				_getEmailAddress(account, null), account.getTaxId(),
 				GetterUtil.get(
 					account.getType(),
 					CommerceAccountConstants.ACCOUNT_TYPE_PERSONAL),
-				true, account.getExternalReferenceCode(),
+				GetterUtil.getBoolean(account.getActive(), true),
+				account.getExternalReferenceCode(),
 				_serviceContextHelper.getServiceContext());
 
 		if (_isValidId(account.getDefaultBillingAccountAddressId())) {
@@ -481,9 +484,14 @@ public class AccountResourceImpl
 			commerceAccount.getCommerceAccountId(), account.getName(), true,
 			null, _getEmailAddress(account, commerceAccount),
 			GetterUtil.get(account.getTaxId(), commerceAccount.getTaxId()),
-			commerceAccount.isActive(),
-			account.getDefaultBillingAccountAddressId(),
-			account.getDefaultShippingAccountAddressId(),
+			GetterUtil.getBoolean(
+				account.getActive(), commerceAccount.isActive()),
+			GetterUtil.getLong(
+				account.getDefaultBillingAccountAddressId(),
+				commerceAccount.getDefaultBillingAddressId()),
+			GetterUtil.getLong(
+				account.getDefaultShippingAccountAddressId(),
+				commerceAccount.getDefaultShippingAddressId()),
 			account.getExternalReferenceCode(), serviceContext);
 
 		// Expando

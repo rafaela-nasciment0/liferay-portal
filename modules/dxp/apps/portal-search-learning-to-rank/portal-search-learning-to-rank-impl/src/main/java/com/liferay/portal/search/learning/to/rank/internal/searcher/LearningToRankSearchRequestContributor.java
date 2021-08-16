@@ -20,7 +20,6 @@ import com.liferay.portal.search.learning.to.rank.configuration.LearningToRankCo
 import com.liferay.portal.search.query.Queries;
 import com.liferay.portal.search.query.Query;
 import com.liferay.portal.search.rescore.Rescore;
-import com.liferay.portal.search.rescore.RescoreBuilder;
 import com.liferay.portal.search.rescore.RescoreBuilderFactory;
 import com.liferay.portal.search.searcher.SearchRequest;
 import com.liferay.portal.search.searcher.SearchRequestBuilder;
@@ -57,10 +56,7 @@ public class LearningToRankSearchRequestContributor
 		SearchRequestBuilder searchRequestBuilder =
 			searchRequestBuilderFactory.builder(searchRequest);
 
-		List<Rescore> rescores = getRescores(
-			searchRequest, rescoreBuilderFactory.getRescoreBuilder());
-
-		searchRequestBuilder.rescores(rescores);
+		searchRequestBuilder.rescores(getRescores(searchRequest));
 
 		return searchRequestBuilder.build();
 	}
@@ -88,11 +84,9 @@ public class LearningToRankSearchRequestContributor
 			).toString());
 	}
 
-	protected List<Rescore> getRescores(
-		SearchRequest searchRequest, RescoreBuilder rescoreBuilder) {
-
+	protected List<Rescore> getRescores(SearchRequest searchRequest) {
 		return Arrays.asList(
-			rescoreBuilder.query(
+			rescoreBuilderFactory.builder(
 				getRescoreQuery(_model, searchRequest.getQueryString())
 			).windowSize(
 				1000
@@ -108,7 +102,7 @@ public class LearningToRankSearchRequestContributor
 	@Reference
 	protected SearchRequestBuilderFactory searchRequestBuilderFactory;
 
-	private boolean _enabled;
-	private String _model;
+	private volatile boolean _enabled;
+	private volatile String _model;
 
 }

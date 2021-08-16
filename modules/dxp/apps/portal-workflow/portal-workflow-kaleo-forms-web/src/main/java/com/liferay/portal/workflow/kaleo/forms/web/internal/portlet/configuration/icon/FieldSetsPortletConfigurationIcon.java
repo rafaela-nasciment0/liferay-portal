@@ -81,8 +81,8 @@ public class FieldSetsPortletConfigurationIcon
 				themeDisplay.getPlid(), PortletRequest.RENDER_PHASE)
 		).setMVCPath(
 			"/view.jsp"
-		).setParameter(
-			"backURL", themeDisplay.getURLCurrent()
+		).setBackURL(
+			themeDisplay.getURLCurrent()
 		).setParameter(
 			"groupId", themeDisplay.getScopeGroupId()
 		).setParameter(
@@ -90,9 +90,9 @@ public class FieldSetsPortletConfigurationIcon
 		).setParameter(
 			"refererWebDAVToken", WebDAVUtil.getStorageToken(portlet)
 		).setParameter(
-			"showAncestorScopes", Boolean.TRUE.toString()
+			"showAncestorScopes", true
 		).setParameter(
-			"showManageTemplates", Boolean.TRUE.toString()
+			"showManageTemplates", true
 		).buildString();
 	}
 

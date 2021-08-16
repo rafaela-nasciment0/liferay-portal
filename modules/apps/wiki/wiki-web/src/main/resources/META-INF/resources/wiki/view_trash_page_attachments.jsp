@@ -62,12 +62,12 @@ WikiNode node = (WikiNode)request.getAttribute(WikiWebKeys.WIKI_NODE);
 	).setRedirect(
 		currentURL
 	).setParameter(
-		"nodeId", String.valueOf(wikiPage.getNodeId())
+		"nodeId", wikiPage.getNodeId()
 	).setParameter(
 		"title", wikiPage.getTitle()
 	).setWindowState(
 		LiferayWindowState.POP_UP
-	).build();
+	).buildPortletURL();
 
 	boolean paginate = false;
 	boolean showPageAttachmentAction = true;

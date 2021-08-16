@@ -3,7 +3,7 @@ definition {
 
 	property portal.release = "true";
 	property portal.upstream = "true";
-	property testray.main.component.name = "Commerce";
+	property testray.main.component.name = "Product Info Management";
 
 	setUp {
 		TestCase.setUpPortalInstance();
@@ -11,13 +11,6 @@ definition {
 		User.firstLoginPG();
 
 		CommerceConfiguration.commerceStoreFrontSetUp();
-
-		ApplicationsMenu.gotoPortlet(
-			category = "Configuration",
-			panel = "Control Panel",
-			portlet = "Search");
-
-		SearchAdministration.executeSearchActions(actionsDescription = "Reindex all search indexes.");
 	}
 
 	tearDown {
@@ -48,30 +41,170 @@ definition {
 	}
 
 	@description = "This is a test for COMMERCE-6086. AddAChannelFilter"
-	@ignore = "true"
 	@priority = "3"
 	test AddAChannelFilter {
 		property portal.acceptance = "false";
 
-		// TODO COMMERCE-6086 AddAChannelFilter
+		// TODO Review
+
+		CommerceNavigator.gotoPortlet(
+			category = "Store Management",
+			portlet = "Channels");
+
+		Click(locator1 = "Button#PLUS");
+
+		CommerceEntry.addNewChannelsEntry(
+			channelCurrency = "US Dollar",
+			channelName = "Test Channel",
+			channelType = "Site");
+
+		CommerceNavigator.gotoPortlet(
+			category = "Product Management",
+			portlet = "Products");
+
+		CPCommerceCatalog.newProductsEntry(
+			productCatalog = "Master",
+			productName = "Simple T-Shirt",
+			productType = "Simple");
+
+		CommerceEntry.gotoMenuTab(menuTab = "Visibility");
+
+		Click(
+			key_name = "Channels",
+			locator1 = "ToggleSwitch#ENABLE_SPECIFIC_TOGGLE_SWITCH");
+
+		Click(locator1 = "Button#PLUS");
+
+		SelectFrameTop();
+
+		SelectFrame.selectFrameNoLoading(locator1 = "IFrame#MODAL_BODY");
+
+		Check(
+			key_checkboxName = "Test Channel",
+			locator1 = "Checkbox#ENABLE_CHECKBOX");
+
+		SelectFrameTop();
+
+		Button.click(button = "Add");
+
+		Alert.viewSuccessMessage();
 	}
 
 	@description = "This is a test for COMMERCE-6089. RemoveAccountGroupFilter"
-	@ignore = "true"
 	@priority = "3"
 	test RemoveAccountGroupFilter {
 		property portal.acceptance = "false";
+		property portal.upstream = "quarantine";
 
-		// TODO COMMERCE-6089 RemoveAccountGroupFilter
+		// TODO Review
+
+		ApplicationsMenu.gotoPortlet(
+			category = "Users",
+			panel = "Control Panel",
+			portlet = "Account Groups");
+
+		Click(locator1 = "Button#PLUS");
+
+		CommerceEntry.addNewAccountGroupsEntry(entryName = "Guest");
+
+		Button.clickSave();
+
+		CommerceNavigator.gotoPortlet(
+			category = "Product Management",
+			portlet = "Products");
+
+		CPCommerceCatalog.newProductsEntry(
+			productCatalog = "Master",
+			productName = "Simple T-Shirt",
+			productType = "Simple");
+
+		CommerceEntry.gotoMenuTab(menuTab = "Visibility");
+
+		Click(
+			key_name = "Account Groups",
+			locator1 = "ToggleSwitch#ENABLE_SPECIFIC_TOGGLE_SWITCH");
+
+		ClickNoError.clickNoMouseOver(
+			key_webContentTitle = "Add Account Group Relation to Simple T-Shirt",
+			locator1 = "Button#BUTTON_PLUS_PRODUCT_VISIBILITY");
+
+		SelectFrame.selectFrameNoLoading(locator1 = "IFrame#MODAL_BODY");
+
+		Check(
+			key_checkboxName = "Guest",
+			locator1 = "Checkbox#ENABLE_CHECKBOX");
+
+		SelectFrameTop();
+
+		Button.click(button = "Add");
+
+		SelectFrameTop();
+
+		AssertElementPresent(locator1 = "Message#SUCCESS");
+
+		Button.click(button = "Delete");
+
+		SelectFrameTop();
+
+		AssertElementPresent(locator1 = "Message#SUCCESS");
+
+		Click(
+			key_name = "Account Groups",
+			locator1 = "ToggleSwitch#ENABLE_SPECIFIC_TOGGLE_SWITCH");
 	}
 
 	@description = "This is a test for COMMERCE-6087. RemoveAChannelFilter"
-	@ignore = "true"
 	@priority = "3"
 	test RemoveAChannelFilter {
 		property portal.acceptance = "false";
 
-		// TODO COMMERCE-6087 RemoveAChannelFilter
+		CommerceNavigator.gotoPortlet(
+			category = "Store Management",
+			portlet = "Channels");
+
+		Click(locator1 = "Button#PLUS");
+
+		CommerceEntry.addNewChannelsEntry(
+			channelCurrency = "US Dollar",
+			channelName = "Test Channel",
+			channelType = "Site");
+
+		CommerceNavigator.gotoPortlet(
+			category = "Product Management",
+			portlet = "Products");
+
+		CPCommerceCatalog.newProductsEntry(
+			productCatalog = "Master",
+			productName = "Simple T-Shirt",
+			productType = "Simple");
+
+		CommerceEntry.gotoMenuTab(menuTab = "Visibility");
+
+		Click(
+			key_name = "Channels",
+			locator1 = "ToggleSwitch#ENABLE_SPECIFIC_TOGGLE_SWITCH");
+
+		Click(locator1 = "Button#PLUS");
+
+		SelectFrame.selectFrameNoLoading(locator1 = "IFrame#MODAL_BODY");
+
+		Check(
+			key_checkboxName = "Test Channel",
+			locator1 = "Checkbox#ENABLE_CHECKBOX");
+
+		SelectFrameTop();
+
+		Button.click(button = "Add");
+
+		Alert.viewSuccessMessage();
+
+		Button.click(button = "Delete");
+
+		Alert.viewSuccessMessage();
+
+		Click(
+			key_name = "Channels",
+			locator1 = "ToggleSwitch#ENABLE_SPECIFIC_TOGGLE_SWITCH");
 	}
 
 }

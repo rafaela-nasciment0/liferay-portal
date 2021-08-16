@@ -16,6 +16,7 @@ package com.liferay.portal.workflow.metrics.rest.resource.v1_0.test.helper;
 
 import com.liferay.petra.function.UnsafeSupplier;
 import com.liferay.petra.reflect.ReflectionUtil;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.log.Log;
@@ -26,6 +27,7 @@ import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.DateUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.search.document.Document;
 import com.liferay.portal.search.document.DocumentBuilder;
@@ -49,6 +51,7 @@ import com.liferay.portal.workflow.metrics.rest.client.dto.v1_0.Node;
 import com.liferay.portal.workflow.metrics.rest.client.dto.v1_0.NodeMetric;
 import com.liferay.portal.workflow.metrics.rest.client.dto.v1_0.Process;
 import com.liferay.portal.workflow.metrics.rest.client.dto.v1_0.ProcessMetric;
+import com.liferay.portal.workflow.metrics.rest.client.dto.v1_0.SLAResult;
 import com.liferay.portal.workflow.metrics.rest.client.dto.v1_0.Task;
 import com.liferay.portal.workflow.metrics.search.index.InstanceWorkflowMetricsIndexer;
 import com.liferay.portal.workflow.metrics.search.index.NodeWorkflowMetricsIndexer;
@@ -60,6 +63,7 @@ import java.io.Serializable;
 
 import java.lang.reflect.Method;
 
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -72,6 +76,7 @@ import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.commons.lang.time.DateUtils;
 
 import org.junit.Assert;
 
@@ -218,25 +223,25 @@ public class WorkflowMetricsRESTTestHelper {
 
 		String randomString = RandomTestUtil.randomString();
 
-		NodeMetric task = new NodeMetric() {
-			{
-				durationAvg = Objects.equals(status, "COMPLETED") ? 1000L : 0L;
-				instanceCount = 1L;
-				node = new Node() {
-					{
-						id = RandomTestUtil.randomLong();
-						label = randomString;
-						name = randomString;
-					}
-				};
-				onTimeInstanceCount = 0L;
-				overdueInstanceCount = 0L;
-			}
-		};
-
 		return addNodeMetric(
-			assignee, companyId, instanceSuplier, task, processId, status, user,
-			"1.0");
+			assignee, companyId, instanceSuplier,
+			new NodeMetric() {
+				{
+					durationAvg =
+						Objects.equals(status, "COMPLETED") ? 1000L : 0L;
+					instanceCount = 1L;
+					node = new Node() {
+						{
+							id = RandomTestUtil.randomLong();
+							label = randomString;
+							name = randomString;
+						}
+					};
+					onTimeInstanceCount = 0L;
+					overdueInstanceCount = 0L;
+				}
+			},
+			processId, status, user, "1.0");
 	}
 
 	public NodeMetric addNodeMetric(
@@ -273,7 +278,7 @@ public class WorkflowMetricsRESTTestHelper {
 
 			addTask(
 				assignee, companyId, nodeMetric.getDurationAvg(), instance,
-				node.getName(), node.getId(), processId, taskId, user);
+				node.getName(), node.getId(), processId, taskId, user, version);
 
 			if (instance.getCompleted()) {
 				completeInstance(companyId, instance);
@@ -350,12 +355,40 @@ public class WorkflowMetricsRESTTestHelper {
 			Instance instance = addInstance(companyId, false, process.getId());
 
 			if (onTimeInstanceCount > 0) {
-				addSLAInstanceResult(companyId, instance, true);
+				addSLAInstanceResults(
+					companyId, instance,
+					new SLAResult() {
+						{
+							dateModified = DateUtils.truncate(
+								RandomTestUtil.nextDate(), Calendar.SECOND);
+							dateOverdue = DateUtils.truncate(
+								RandomTestUtil.nextDate(), Calendar.SECOND);
+							id = RandomTestUtil.randomLong();
+							name = null;
+							onTime = true;
+							remainingTime = 1L;
+							status = null;
+						}
+					});
 
 				onTimeInstanceCount--;
 			}
 			else if (overdueInstanceCount > 0) {
-				addSLAInstanceResult(companyId, instance, false);
+				addSLAInstanceResults(
+					companyId, instance,
+					new SLAResult() {
+						{
+							dateModified = DateUtils.truncate(
+								RandomTestUtil.nextDate(), Calendar.SECOND);
+							dateOverdue = DateUtils.truncate(
+								RandomTestUtil.nextDate(), Calendar.SECOND);
+							id = RandomTestUtil.randomLong();
+							name = null;
+							onTime = false;
+							remainingTime = -1L;
+							status = null;
+						}
+					});
 
 				overdueInstanceCount--;
 			}
@@ -391,26 +424,28 @@ public class WorkflowMetricsRESTTestHelper {
 		return addProcessMetric(companyId, processMetric);
 	}
 
-	public void addSLAInstanceResult(
-			long companyId, Instance instance, boolean onTime)
+	public void addSLAInstanceResults(
+			long companyId, Instance instance, SLAResult... slaResults)
 		throws Exception {
 
-		long slaDefinitionId = RandomTestUtil.randomLong();
+		for (SLAResult slaResult : slaResults) {
+			_invokeAddDocument(
+				_getIndexer(_CLASS_NAME_SLA_INSTANCE_RESULT_INDEXER),
+				_creatWorkflowMetricsSLAInstanceResultDocument(
+					companyId, instance, slaResult));
 
-		_invokeAddDocument(
-			_getIndexer(_CLASS_NAME_SLA_INSTANCE_RESULT_INDEXER),
-			_creatWorkflowMetricsSLAInstanceResultDocument(
-				companyId, Objects.nonNull(instance.getDateCompletion()),
-				instance.getId(), onTime, instance.getProcessId(),
-				slaDefinitionId));
+			_assertCount(
+				_slaInstanceResultWorkflowMetricsIndexNameBuilder.getIndexName(
+					companyId),
+				"companyId", companyId, "deleted", false, "instanceCompleted",
+				Objects.nonNull(instance.getDateCompletion()), "instanceId",
+				instance.getId(), "onTime", slaResult.getOnTime(), "processId",
+				instance.getProcessId(), "remainingTime",
+				slaResult.getRemainingTime(), "slaDefinitionId",
+				slaResult.getId());
+		}
 
-		_assertCount(
-			_slaInstanceResultWorkflowMetricsIndexNameBuilder.getIndexName(
-				companyId),
-			"companyId", companyId, "deleted", false, "instanceCompleted",
-			Objects.nonNull(instance.getDateCompletion()), "instanceId",
-			instance.getId(), "onTime", onTime, "processId",
-			instance.getProcessId(), "slaDefinitionId", slaDefinitionId);
+		_updateInstance(companyId, instance, slaResults);
 	}
 
 	public void addSLATaskResult(
@@ -447,13 +482,13 @@ public class WorkflowMetricsRESTTestHelper {
 		return addTask(
 			assignee, companyId, 0L, instance, RandomTestUtil.randomString(),
 			RandomTestUtil.randomLong(), instance.getProcessId(),
-			RandomTestUtil.randomLong(), user);
+			RandomTestUtil.randomLong(), user, "1.0");
 	}
 
 	public Task addTask(
 			Assignee assignee, long companyId, long durationAvg,
 			Instance instance, String name, long nodeId, long processId,
-			long taskId, User user)
+			long taskId, User user, String processVersion)
 		throws Exception {
 
 		Task task = new Task();
@@ -472,7 +507,7 @@ public class WorkflowMetricsRESTTestHelper {
 		task.setName(name);
 		task.setNodeId(nodeId);
 		task.setProcessId(processId);
-		task.setProcessVersion("1.0");
+		task.setProcessVersion(processVersion);
 
 		return addTask(companyId, instance, task, user);
 	}
@@ -702,30 +737,12 @@ public class WorkflowMetricsRESTTestHelper {
 			"version", version);
 	}
 
-	protected String getDate(Date date) {
-		try {
-			return DateUtil.getDate(
-				date, "yyyyMMddHHmmss", LocaleUtil.getDefault());
-		}
-		catch (Exception exception) {
-			if (_log.isWarnEnabled()) {
-				_log.warn(exception, exception);
-			}
-
-			return null;
-		}
-	}
-
 	private void _assertCount(
 			Consumer<BooleanQuery> booleanQueryConsumer, long expectedCount,
 			String indexName, Object... parameters)
 		throws Exception {
 
-		if (_searchEngineAdapter == null) {
-			return;
-		}
-
-		if (parameters == null) {
+		if ((_searchEngineAdapter == null) || (parameters == null)) {
 			return;
 		}
 
@@ -783,8 +800,7 @@ public class WorkflowMetricsRESTTestHelper {
 	}
 
 	private Document _creatWorkflowMetricsSLAInstanceResultDocument(
-		long companyId, boolean instanceCompleted, long instanceId,
-		boolean onTime, long processId, long slaDefinitionId) {
+		long companyId, Instance instance, SLAResult slaResult) {
 
 		DocumentBuilder documentBuilder = _documentBuilderFactory.builder();
 
@@ -793,25 +809,40 @@ public class WorkflowMetricsRESTTestHelper {
 		).setValue(
 			"deleted", false
 		).setValue(
-			"elapsedTime", onTime ? 1000 : -1000
+			"elapsedTime", slaResult.getOnTime() ? 1000 : -1000
 		).setValue(
-			"instanceCompleted", instanceCompleted
+			"instanceCompleted", Objects.nonNull(instance.getDateCompletion())
 		).setValue(
-			"instanceId", instanceId
+			"instanceId", instance.getId()
 		).setValue(
-			"onTime", onTime
+			"modifiedDate", _getDateString(slaResult.getDateModified())
 		).setValue(
-			"processId", processId
+			"onTime", slaResult.getOnTime()
 		).setValue(
-			"slaDefinitionId", slaDefinitionId
+			"overdueDate", _getDateString(slaResult.getDateOverdue())
 		).setValue(
-			"status", "RUNNING"
-		).setString(
+			"processId", instance.getProcessId()
+		).setValue(
+			"remainingTime", slaResult.getRemainingTime()
+		).setValue(
+			"slaDefinitionId", slaResult.getId()
+		);
+
+		if (slaResult.getStatus() != null) {
+			SLAResult.Status status = slaResult.getStatus();
+
+			documentBuilder.setValue("status", status.getValue());
+		}
+		else {
+			documentBuilder.setValue(
+				"status", SLAResult.Status.RUNNING.getValue());
+		}
+
+		documentBuilder.setString(
 			"uid",
 			_digest(
-				"WorkflowMetricsSLAInstanceResult", companyId, instanceId,
-				processId, slaDefinitionId)
-		);
+				"WorkflowMetricsSLAInstanceResult", companyId, instance.getId(),
+				instance.getProcessId(), slaResult.getId()));
 
 		return documentBuilder.build();
 	}
@@ -836,7 +867,7 @@ public class WorkflowMetricsRESTTestHelper {
 
 		if (Objects.equals(status, "COMPLETED")) {
 			documentBuilder.setDate(
-				"completionDate", getDate(new Date())
+				"completionDate", _getDateString(new Date())
 			).setValue(
 				"completionUserId", assigneeId
 			);
@@ -940,13 +971,27 @@ public class WorkflowMetricsRESTTestHelper {
 	}
 
 	private String _digest(String indexNamePrefix, Serializable... parts) {
-		StringBuilder sb = new StringBuilder();
+		StringBundler sb = new StringBundler();
 
 		for (Serializable part : parts) {
 			sb.append(part);
 		}
 
 		return indexNamePrefix + DigestUtils.sha256Hex(sb.toString());
+	}
+
+	private String _getDateString(Date date) {
+		try {
+			return DateUtil.getDate(
+				date, "yyyyMMddHHmmss", LocaleUtil.getDefault());
+		}
+		catch (Exception exception) {
+			if (_log.isWarnEnabled()) {
+				_log.warn(exception, exception);
+			}
+
+			return null;
+		}
 	}
 
 	private Object _getIndexer(String className) throws Exception {
@@ -1029,6 +1074,64 @@ public class WorkflowMetricsRESTTestHelper {
 			}
 
 			return new Date();
+		}
+	}
+
+	private void _updateInstance(
+			long companyId, Instance instance, SLAResult... slaResults)
+		throws Exception {
+
+		DocumentBuilder documentBuilder = _documentBuilderFactory.builder();
+
+		Document document = documentBuilder.setValue(
+			"slaResults",
+			Stream.of(
+				slaResults
+			).map(
+				slaResult -> HashMapBuilder.put(
+					"onTime", String.valueOf(slaResult.getOnTime())
+				).put(
+					"overdueDate", _getDateString(slaResult.getDateOverdue())
+				).put(
+					"remainingTime",
+					String.valueOf(slaResult.getRemainingTime())
+				).put(
+					"slaDefinitionId", String.valueOf(slaResult.getId())
+				).put(
+					"status", slaResult.getStatusAsString()
+				).build()
+			).toArray()
+		).setString(
+			"uid",
+			_digest("WorkflowMetricsInstance", companyId, instance.getId())
+		).build();
+
+		_searchEngineAdapter.execute(
+			new UpdateDocumentRequest(
+				_instanceWorkflowMetricsIndexNameBuilder.getIndexName(
+					companyId),
+				document.getString("uid"), document));
+
+		for (SLAResult slaResult : slaResults) {
+			IdempotentRetryAssert.retryAssert(
+				3, TimeUnit.SECONDS,
+				() -> {
+					_assertCount(
+						booleanQuery -> booleanQuery.addMustQueryClauses(
+							_queries.nested(
+								"slaResults",
+								_queries.term(
+									"slaResults.overdueDate",
+									_getDateString(
+										slaResult.getDateOverdue())))),
+						1,
+						_instanceWorkflowMetricsIndexNameBuilder.getIndexName(
+							companyId),
+						"companyId", companyId, "deleted", false, "instanceId",
+						instance.getId(), "processId", instance.getProcessId());
+
+					return null;
+				});
 		}
 	}
 

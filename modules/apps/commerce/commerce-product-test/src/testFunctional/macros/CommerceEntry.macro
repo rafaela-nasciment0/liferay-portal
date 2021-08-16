@@ -1,9 +1,9 @@
 definition {
 
-	macro addFullDescriptionViaAlloyEditor {
-		AlloyEditor.typeEditor(
-			content = "${entryFullDescription}",
-			editor = "description");
+	macro addFullDescriptionViaCKEditor {
+		Type.typeCKEditor(
+			locator1 = "CKEditor#BODY_FIELD",
+			value1 = "${entryFullDescription}");
 	}
 
 	macro addNewAccountGroupsEntry {
@@ -139,10 +139,35 @@ definition {
 			value1 = "${entryName}");
 
 		Type(
-			locator1 = "CommerceEntry#CODE_FIELD",
+			key_fieldLabel = "Code",
+			locator1 = "TextInput#GENERIC_TEXT_INPUT",
 			value1 = "${code}");
 
-		Check.checkToggleSwitch(locator1 = "CommerceEntry#PRIMARY_CHECKBOX");
+		if (isSet(symbol)) {
+			Type(
+				key_fieldLabel = "Symbol",
+				locator1 = "TextInput#GENERIC_TEXT_INPUT",
+				value1 = "${symbol}");
+		}
+
+		if (isSet(formatPattern)) {
+			Type(
+				key_fieldLabel = "Format Pattern",
+				locator1 = "TextInput#GENERIC_TEXT_INPUT",
+				value1 = "${formatPattern}");
+		}
+
+		if (!(isSet(isPrimary)) || "${isPrimary}" == "true") {
+			Check.checkToggleSwitch(locator1 = "CommerceEntry#PRIMARY_CHECKBOX");
+		}
+		else {
+			if (isSet(exchangeRate)) {
+				Type(
+					key_fieldLabel = "Exchange Rate with US Dollar",
+					locator1 = "TextInput#GENERIC_TEXT_INPUT",
+					value1 = "${exchangeRate}");
+			}
+		}
 
 		Check.checkToggleSwitch(locator1 = "CommerceEntry#ACTIVE_CHECKBOX");
 	}
@@ -160,6 +185,8 @@ definition {
 	}
 
 	macro addNewDiscountsEntry {
+		Pause(locator1 = "3000");
+
 		SelectFrame.selectFrameNoLoading(locator1 = "IFrame#MODAL_IFRAME");
 
 		Type(
@@ -249,6 +276,13 @@ definition {
 		Check.checkToggleSwitch(
 			key_toggleSwitchLabel = "Enabled",
 			locator1 = "ToggleSwitch#ANY_TOGGLE_SWITCH");
+
+		if (isSet(entryTo)) {
+			Type(
+				key_fieldLabel = "To",
+				locator1 = "TextInput#GENERIC_TEXT_INPUT",
+				value1 = "${entryTo}");
+		}
 
 		Type(
 			locator1 = "CommerceEntry#NOTIFICATION_TEMPLATE_FROM_ADDRESS_FIELD",
@@ -369,7 +403,88 @@ definition {
 			locator1 = "CommerceEntry#SHORT_DESCRIPTION_FIELD",
 			value1 = "${productShortDescription}");
 
-		CommerceEntry.addFullDescriptionViaAlloyEditor(entryFullDescription = "${productFullDescription}");
+		CommerceEntry.addFullDescriptionViaCKEditor(entryFullDescription = "${productFullDescription}");
+	}
+
+	macro AddShippingOptionSettingsVariableRate {
+		Click(locator1 = "Button#PLUS");
+
+		SelectFrame.selectFrameNoLoading(locator1 = "CommerceEntry#IFRAME_SIDE_PANEL");
+
+		Select(
+			key_fieldLabel = "Shipping Option",
+			locator1 = "Select#GENERIC_SELECT_FIELD",
+			value1 = "${key_shippingOption}");
+
+		Select(
+			key_fieldLabel = "Warehouse",
+			locator1 = "Select#GENERIC_SELECT_FIELD",
+			value1 = "${key_Warehouse}");
+
+		Select(
+			key_fieldLabel = "Country",
+			locator1 = "Select#GENERIC_SELECT_FIELD",
+			value1 = "${key_country}");
+
+		Select(
+			key_fieldLabel = "Region",
+			locator1 = "Select#GENERIC_SELECT_FIELD",
+			value1 = "${key_region}");
+
+		Type(
+			key_fieldLabel = "Zip",
+			locator1 = "TextInput#GENERIC_TEXT_INPUT",
+			value1 = "${key_zip}");
+
+		Type(
+			key_fieldLabel = "Weight From",
+			locator1 = "TextInput#GENERIC_TEXT_INPUT",
+			value1 = "${key_weightFrom}");
+
+		Type(
+			key_fieldLabel = "Weight To",
+			locator1 = "TextInput#GENERIC_TEXT_INPUT",
+			value1 = "${key_weightTo}");
+
+		Type(
+			key_fieldLabel = "Fixed Price",
+			locator1 = "TextInput#GENERIC_TEXT_INPUT",
+			value1 = "${key_fixedPrice}");
+
+		Type(
+			key_fieldLabel = "Price per Unit of Weight",
+			locator1 = "TextInput#GENERIC_TEXT_INPUT",
+			value1 = "${key_priceUnitWeight}");
+
+		Type(
+			key_fieldLabel = "Subtotal Percentage Price",
+			locator1 = "TextInput#GENERIC_TEXT_INPUT",
+			value1 = "${key_subtotal}");
+
+		Button.clickSave();
+	}
+
+	macro AddShippingOptionVariableRate {
+		Click(locator1 = "Button#PLUS");
+
+		SelectFrame.selectFrameNoLoading(locator1 = "CommerceEntry#IFRAME_SIDE_PANEL");
+
+		Type(
+			key_fieldLabel = "Name",
+			locator1 = "TextInput#GENERIC_TEXT_INPUT",
+			value1 = "${key_name}");
+
+		Type(
+			key_fieldLabel = "Description",
+			locator1 = "TextInput#GENERIC_TEXT_INPUT",
+			value1 = "${key_description}");
+
+		Type(
+			key_fieldLabel = "Priority",
+			locator1 = "TextInput#GENERIC_TEXT_INPUT",
+			value1 = "${key_priority}");
+
+		Button.clickSave();
 	}
 
 	macro addSKUsEntry {
@@ -382,8 +497,49 @@ definition {
 			optionValue = "${optionValue}");
 	}
 
+	macro addTaxCategory {
+		Click(locator1 = "Button#PLUS");
+
+		Type(
+			key_fieldLabel = "External Reference Code",
+			locator1 = "TextInput#GENERIC_TEXT_INPUT",
+			value1 = "${keyReferenceCode}");
+
+		Type(
+			key_fieldLabel = "Name",
+			locator1 = "CommerceEntry#NAME_FIELD",
+			value1 = "${keyName}");
+
+		Type(
+			key_fieldLabel = "Description",
+			locator1 = "TextInput#GENERIC_TEXT_INPUT",
+			value1 = "${keyDescription}");
+
+		Button.clickSave();
+
+		CommerceNavigator.gotoEntry(entryName = "${keyName}");
+
+		AssertTextEquals(
+			key_fieldLabel = "External Reference Code",
+			locator1 = "TextInput#GENERIC_TEXT_INPUT",
+			value1 = "${keyReferenceCode}");
+
+		AssertTextEquals(
+			key_fieldLabel = "Name",
+			locator1 = "TextInput#GENERIC_TEXT_INPUT",
+			value1 = "${keyName}");
+
+		AssertTextEquals(
+			key_fieldLabel = "Description",
+			locator1 = "TextInput#GENERIC_TEXT_INPUT",
+			value1 = "${keyDescription}");
+
+		Click(locator1 = "Button#BACK");
+	}
+
 	macro checkImageName {
 		echo("number is: ${number} image is: ${image} uploadFileName is: ${uploadFileName}");
+
 		if ("${number}" != "") {
 			AssertElementPresent(
 				key_entry = "Commerce_${image} (${number}).jpg",
@@ -519,8 +675,22 @@ definition {
 		AssertElementNotPresent(locator1 = "Message#ERROR");
 	}
 
+	macro deleteTaxCategory {
+		Click(
+			locator1 = "Icon#SVG_ELLIPSIS",
+			value1 = "${keyName}");
+
+		MenuItem.clickNoError(menuItem = "Delete");
+
+		AssertConfirm.waitForConfirmation(value1 = "Are you sure you want to delete this? It will be deleted immediately.");
+
+		AssertElementNotPresent(
+			key_value = "${keyName}",
+			locator1 = "TextInput#GENERIC_TEXT_INPUT");
+	}
+
 	macro editEntryFullDescription {
-		CommerceEntry.addFullDescriptionViaAlloyEditor(entryFullDescription = "${newEntryFullDescription}");
+		CommerceEntry.addFullDescriptionViaCKEditor(entryFullDescription = "${newEntryFullDescription}");
 	}
 
 	macro editEntryName {
@@ -533,6 +703,44 @@ definition {
 		Type(
 			locator1 = "CommerceEntry#SHORT_DESCRIPTION_FIELD",
 			value1 = "${newEntryShortDescription}");
+	}
+
+	macro editTaxCategory {
+		Type(
+			key_fieldLabel = "External Reference Code",
+			locator1 = "TextInput#GENERIC_TEXT_INPUT",
+			value1 = "${keyReferenceCode}");
+
+		Type(
+			key_fieldLabel = "Name",
+			locator1 = "CommerceEntry#NAME_FIELD",
+			value1 = "${keyName}");
+
+		Type(
+			key_fieldLabel = "Description",
+			locator1 = "TextInput#GENERIC_TEXT_INPUT",
+			value1 = "${keyDescription}");
+
+		Button.clickSave();
+
+		CommerceNavigator.gotoEntry(entryName = "${keyName}");
+
+		AssertTextEquals(
+			key_fieldLabel = "External Reference Code",
+			locator1 = "TextInput#GENERIC_TEXT_INPUT",
+			value1 = "${keyReferenceCode}");
+
+		AssertTextEquals(
+			key_fieldLabel = "Name",
+			locator1 = "TextInput#GENERIC_TEXT_INPUT",
+			value1 = "${keyName}");
+
+		AssertTextEquals(
+			key_fieldLabel = "Description",
+			locator1 = "TextInput#GENERIC_TEXT_INPUT",
+			value1 = "${keyDescription}");
+
+		Click(locator1 = "Button#BACK");
 	}
 
 	macro gotoBreadcrumb {
@@ -931,7 +1139,7 @@ definition {
 	macro viewPaginationResults {
 		AssertTextEquals(
 			locator1 = "CommerceEntry#PAGINATION_RESULTS",
-			value1 = "${results}");
+			value1 = "Showing 11 to 20 of 54");
 	}
 
 	macro viewPriceListEntry {

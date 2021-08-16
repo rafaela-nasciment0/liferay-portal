@@ -35,10 +35,10 @@ long classPK = selLayout.getPlid();
 	PortletURL editLayoutSetURL = PortletURLBuilder.createRenderURL(
 		liferayPortletResponse
 	).setParameter(
-		"selPlid", String.valueOf(LayoutConstants.DEFAULT_PLID)
+		"groupId", selLayout.getGroupId()
 	).setParameter(
-		"groupId", String.valueOf(selLayout.getGroupId())
-	).build();
+		"selPlid", LayoutConstants.DEFAULT_PLID
+	).buildPortletURL();
 
 	Group group = GroupLocalServiceUtil.getGroup(selLayout.getGroupId());
 

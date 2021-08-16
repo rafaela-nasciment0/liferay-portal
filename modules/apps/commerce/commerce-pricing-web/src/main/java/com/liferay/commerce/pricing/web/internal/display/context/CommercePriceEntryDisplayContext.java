@@ -91,7 +91,7 @@ public class CommercePriceEntryDisplayContext
 		}
 
 		CommerceMoney priceCommerceMoney =
-			instanceBaseCommercePriceEntry.getPriceMoney(
+			instanceBaseCommercePriceEntry.getPriceCommerceMoney(
 				commercePriceList.getCommerceCurrencyId());
 
 		return priceCommerceMoney.format(
@@ -157,10 +157,10 @@ public class CommercePriceEntryDisplayContext
 		).setRedirect(
 			commercePricingRequestHelper.getCurrentURL()
 		).setParameter(
-			"commercePriceListId", getCommercePriceListId()
-		).setParameter(
 			"commercePriceEntryId", "{priceEntryId}"
-		).build();
+		).setParameter(
+			"commercePriceListId", getCommercePriceListId()
+		).buildPortletURL();
 
 		try {
 			portletURL.setWindowState(LiferayWindowState.POP_UP);

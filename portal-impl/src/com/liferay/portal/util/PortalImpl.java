@@ -23,6 +23,7 @@ import com.liferay.expando.kernel.model.ExpandoColumnConstants;
 import com.liferay.exportimport.kernel.staging.StagingUtil;
 import com.liferay.layout.admin.kernel.model.LayoutTypePortletConstants;
 import com.liferay.petra.encryptor.Encryptor;
+import com.liferay.petra.portlet.url.builder.PortletURLBuilder;
 import com.liferay.petra.string.CharPool;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
@@ -111,6 +112,7 @@ import com.liferay.portal.kernel.portlet.PortletURLFactoryUtil;
 import com.liferay.portal.kernel.portlet.RequestBackedPortletURLFactory;
 import com.liferay.portal.kernel.portlet.RequestBackedPortletURLFactoryUtil;
 import com.liferay.portal.kernel.portlet.UserAttributes;
+import com.liferay.portal.kernel.redirect.RedirectURLSettingsUtil;
 import com.liferay.portal.kernel.security.auth.AlwaysAllowDoAsUser;
 import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
 import com.liferay.portal.kernel.security.auth.FullNameGenerator;
@@ -464,8 +466,6 @@ public class PortalImpl implements Portal {
 		Arrays.sort(_sortedSystemSiteRoles, new StringComparator());
 
 		// Reserved parameter names
-
-		_reservedParams = new HashSet<>();
 
 		// Portal authentication
 
@@ -948,29 +948,30 @@ public class PortalImpl implements Portal {
 			return null;
 		}
 
-		String domain = uri.getHost();
+		String path = uri.getPath();
 
-		String protocol = uri.getScheme();
+		if (Validator.isNotNull(path) && url.startsWith(path)) {
 
-		if (domain == null) {
-			if (uri.getPath() == null) {
-				return null;
-			}
-
-			// Specs allow URL of protocol followed by path, but we do not
-
-			if (protocol != null) {
-				return null;
-			}
-
-			// The URL is a relative path
+			// Relative URL
 
 			return url;
 		}
 
-		// Specs regard URL starting with double slashes as valid, but we do not
+		String protocol = uri.getScheme();
 
 		if (protocol == null) {
+
+			// Protocol is required
+
+			return null;
+		}
+
+		String domain = uri.getHost();
+
+		if (Validator.isNull(domain)) {
+
+			// Absolute URL must have a domain
+
 			return null;
 		}
 
@@ -978,10 +979,14 @@ public class PortalImpl implements Portal {
 			return url;
 		}
 
-		String securityMode = PropsValues.REDIRECT_URL_SECURITY_MODE;
+		long companyId = CompanyThreadLocal.getCompanyId();
+
+		String securityMode = RedirectURLSettingsUtil.getSecurityMode(
+			companyId);
 
 		if (securityMode.equals("domain")) {
-			String[] allowedDomains = PropsValues.REDIRECT_URL_DOMAINS_ALLOWED;
+			String[] allowedDomains = RedirectURLSettingsUtil.getAllowedDomains(
+				companyId);
 
 			if (allowedDomains.length == 0) {
 				return url;
@@ -1010,16 +1015,10 @@ public class PortalImpl implements Portal {
 			url = null;
 		}
 		else {
-			if (!securityMode.equals("ip") && _log.isWarnEnabled()) {
-				_log.warn(
-					StringBundler.concat(
-						"Property \"", PropsKeys.REDIRECT_URL_SECURITY_MODE,
-						"\" has invalid value: ", securityMode));
-			}
+			String[] allowedIPs = RedirectURLSettingsUtil.getAllowedIPs(
+				companyId);
 
-			String[] allowedIps = PropsValues.REDIRECT_URL_IPS_ALLOWED;
-
-			if (allowedIps.length == 0) {
+			if (allowedIPs.length == 0) {
 				return url;
 			}
 
@@ -1032,7 +1031,7 @@ public class PortalImpl implements Portal {
 				boolean serverIpIsHostAddress = _computerAddresses.contains(
 					hostAddress);
 
-				for (String ip : allowedIps) {
+				for (String ip : allowedIPs) {
 					if ((serverIpIsHostAddress && ip.equals("SERVER_IP")) ||
 						ip.equals(hostAddress)) {
 
@@ -1082,7 +1081,7 @@ public class PortalImpl implements Portal {
 			WebKeys.RENDER_PORTLET_COLUMN_ID);
 
 		if (columnId != null) {
-			sb.append(JS.getSafeName(columnId.toString()));
+			sb.append(HtmlUtil.getAUICompatibleId(columnId.toString()));
 		}
 
 		sb.append(StringPool.UNDERLINE);
@@ -1091,7 +1090,7 @@ public class PortalImpl implements Portal {
 			WebKeys.RENDER_PORTLET_COLUMN_POS);
 
 		if (columnPos != null) {
-			sb.append(JS.getSafeName(columnPos.toString()));
+			sb.append(HtmlUtil.getAUICompatibleId(columnPos.toString()));
 		}
 
 		return sb.toString();
@@ -1440,7 +1439,7 @@ public class PortalImpl implements Portal {
 			 _requiresLayoutFriendlyURL(
 				 siteGroup.getFriendlyURL(),
 				 themeDisplay.getLayoutFriendlyURL(layout),
-				 groupFriendlyURL)) ||
+				 StringUtil.toLowerCase(groupFriendlyURL))) ||
 			groupFriendlyURL.endsWith(
 				StringPool.SLASH + layout.getLayoutId())) {
 
@@ -1652,19 +1651,20 @@ public class PortalImpl implements Portal {
 			return ClassNameLocalServiceUtil.getClassNameId(value);
 		}
 
-		try (Connection con = DataAccess.getConnection()) {
-			if (PortalUpgradeProcess.isInLatestSchemaVersion(con)) {
+		try (Connection connection = DataAccess.getConnection()) {
+			if (PortalUpgradeProcess.isInLatestSchemaVersion(connection)) {
 				return ClassNameLocalServiceUtil.getClassNameId(value);
 			}
 
-			try (PreparedStatement ps = con.prepareStatement(
-					"select classNameId from ClassName_ where value = ?")) {
+			try (PreparedStatement preparedStatement =
+					connection.prepareStatement(
+						"select classNameId from ClassName_ where value = ?")) {
 
-				ps.setString(1, value);
+				preparedStatement.setString(1, value);
 
-				try (ResultSet rs = ps.executeQuery()) {
-					if (rs.next()) {
-						return rs.getLong("classNameId");
+				try (ResultSet resultSet = preparedStatement.executeQuery()) {
+					if (resultSet.next()) {
+						return resultSet.getLong("classNameId");
 					}
 				}
 			}
@@ -1856,16 +1856,19 @@ public class PortalImpl implements Portal {
 					layout.getGroupId(), false);
 			}
 
-			PortletURL createAccountURL = PortletURLFactoryUtil.create(
-				httpServletRequest, PortletKeys.LOGIN, plid,
-				PortletRequest.RENDER_PHASE);
-
-			createAccountURL.setParameter(
-				"saveLastPath", Boolean.FALSE.toString());
-			createAccountURL.setParameter(
-				"mvcRenderCommandName", "/login/create_account");
-			createAccountURL.setPortletMode(PortletMode.VIEW);
-			createAccountURL.setWindowState(WindowState.MAXIMIZED);
+			PortletURL createAccountURL = PortletURLBuilder.create(
+				PortletURLFactoryUtil.create(
+					httpServletRequest, PortletKeys.LOGIN, plid,
+					PortletRequest.RENDER_PHASE)
+			).setMVCRenderCommandName(
+				"/login/create_account"
+			).setParameter(
+				"saveLastPath", false
+			).setPortletMode(
+				PortletMode.VIEW
+			).setWindowState(
+				WindowState.MAXIMIZED
+			).buildPortletURL();
 
 			if (!PropsValues.COMPANY_SECURITY_AUTH_REQUIRES_HTTPS) {
 				return createAccountURL.toString();
@@ -3600,7 +3603,10 @@ public class PortalImpl implements Portal {
 		HttpServletRequest originalHttpServletRequest =
 			getOriginalServletRequest(httpServletRequest);
 
-		if (originalHttpServletRequest.getPathInfo() == null) {
+		StringBuffer originRequestURL =
+			originalHttpServletRequest.getRequestURL();
+
+		if (originRequestURL.indexOf(_PUBLIC_GROUP_SERVLET_MAPPING) < 0) {
 			requestURI = originalHttpServletRequest.getRequestURI();
 		}
 
@@ -3669,7 +3675,9 @@ public class PortalImpl implements Portal {
 
 			String i18nPath = StringPool.SLASH + i18nPathLanguageId;
 
-			localizedFriendlyURL += i18nPath;
+			if (!requestURI.contains(i18nPath)) {
+				localizedFriendlyURL += i18nPath;
+			}
 		}
 
 		localizedFriendlyURL += requestURI;
@@ -4137,8 +4145,6 @@ public class PortalImpl implements Portal {
 	public String getPortalURL(Layout layout, ThemeDisplay themeDisplay)
 		throws PortalException {
 
-		String serverName = themeDisplay.getServerName();
-
 		if (layout == null) {
 			layout = themeDisplay.getLayout();
 		}
@@ -4157,7 +4163,8 @@ public class PortalImpl implements Portal {
 		}
 
 		return getPortalURL(
-			serverName, themeDisplay.getServerPort(), themeDisplay.isSecure());
+			themeDisplay.getServerName(), themeDisplay.getServerPort(),
+			themeDisplay.isSecure());
 	}
 
 	@Override
@@ -5886,20 +5893,22 @@ public class PortalImpl implements Portal {
 				Layout layout = (Layout)httpServletRequest.getAttribute(
 					WebKeys.LAYOUT);
 
-				PortletURL portletURL = PortletURLFactoryUtil.create(
-					httpServletRequest, PortletKeys.DIRECTORY, layout,
-					PortletRequest.RENDER_PHASE);
-
-				portletURL.setParameter(
-					"struts_action", "/directory/view_user");
-				portletURL.setParameter(
-					"p_u_i_d", String.valueOf(user.getUserId()));
-				portletURL.setPortletMode(PortletMode.VIEW);
-				portletURL.setWindowState(WindowState.MAXIMIZED);
-
 				userName = StringBundler.concat(
-					"<a href=\"", portletURL.toString(), "\">",
-					HtmlUtil.escape(userName), "</a>");
+					"<a href=\"",
+					PortletURLBuilder.create(
+						PortletURLFactoryUtil.create(
+							httpServletRequest, PortletKeys.DIRECTORY, layout,
+							PortletRequest.RENDER_PHASE)
+					).setParameter(
+						"struts_action", "/directory/view_user"
+					).setParameter(
+						"p_u_i_d", user.getUserId()
+					).setPortletMode(
+						PortletMode.VIEW
+					).setWindowState(
+						WindowState.MAXIMIZED
+					).buildString(),
+					"\">", HtmlUtil.escape(userName), "</a>");
 			}
 		}
 		catch (Exception exception) {
@@ -6332,13 +6341,10 @@ public class PortalImpl implements Portal {
 	public boolean isLoginRedirectRequired(
 		HttpServletRequest httpServletRequest) {
 
-		if (PropsValues.COMPANY_SECURITY_AUTH_REQUIRES_HTTPS &&
-			!httpServletRequest.isSecure()) {
+		if ((PropsValues.COMPANY_SECURITY_AUTH_REQUIRES_HTTPS &&
+			 !httpServletRequest.isSecure()) ||
+			SSOUtil.isLoginRedirectRequired(getCompanyId(httpServletRequest))) {
 
-			return true;
-		}
-
-		if (SSOUtil.isLoginRedirectRequired(getCompanyId(httpServletRequest))) {
 			return true;
 		}
 
@@ -6722,13 +6728,17 @@ public class PortalImpl implements Portal {
 			Validator.isNotNull(
 				PropsValues.SITES_FRIENDLY_URL_PAGE_NOT_FOUND)) {
 
-			redirect = PropsValues.SITES_FRIENDLY_URL_PAGE_NOT_FOUND;
+			redirect = _get18nErrorRedirect(
+				httpServletRequest,
+				PropsValues.SITES_FRIENDLY_URL_PAGE_NOT_FOUND);
 		}
 		else if ((exception instanceof NoSuchLayoutException) &&
 				 Validator.isNotNull(
 					 PropsValues.LAYOUT_FRIENDLY_URL_PAGE_NOT_FOUND)) {
 
-			redirect = PropsValues.LAYOUT_FRIENDLY_URL_PAGE_NOT_FOUND;
+			redirect = _get18nErrorRedirect(
+				httpServletRequest,
+				PropsValues.LAYOUT_FRIENDLY_URL_PAGE_NOT_FOUND);
 
 			httpServletRequest.setAttribute(
 				NoSuchLayoutException.class.getName(), Boolean.TRUE);
@@ -8032,19 +8042,11 @@ public class PortalImpl implements Portal {
 			}
 		}
 
-		if (StringUtil.equalsIgnoreCase(domain, PropsValues.WEB_SERVER_HOST)) {
-			return true;
-		}
+		if (StringUtil.equalsIgnoreCase(domain, PropsValues.WEB_SERVER_HOST) ||
+			isValidVirtualHostname(domain) ||
+			StringUtil.equalsIgnoreCase(domain, getCDNHostHttp(companyId)) ||
+			StringUtil.equalsIgnoreCase(domain, getCDNHostHttps(companyId))) {
 
-		if (isValidVirtualHostname(domain)) {
-			return true;
-		}
-
-		if (StringUtil.equalsIgnoreCase(domain, getCDNHostHttp(companyId))) {
-			return true;
-		}
-
-		if (StringUtil.equalsIgnoreCase(domain, getCDNHostHttps(companyId))) {
 			return true;
 		}
 
@@ -8235,6 +8237,19 @@ public class PortalImpl implements Portal {
 		}
 
 		return false;
+	}
+
+	private String _get18nErrorRedirect(
+		HttpServletRequest httpServletRequest, String redirect) {
+
+		String i18nErrorPath = GetterUtil.getString(
+			httpServletRequest.getAttribute(WebKeys.I18N_ERROR_PATH));
+
+		if (Validator.isNull(i18nErrorPath)) {
+			return redirect;
+		}
+
+		return i18nErrorPath.concat(redirect);
 	}
 
 	private Map<Locale, String> _getAlternateURLs(
@@ -8759,7 +8774,9 @@ public class PortalImpl implements Portal {
 		String siteGroupFriendlyURL, String layoutFriendlyURL,
 		String groupFriendlyURL) {
 
-		if (groupFriendlyURL.contains(_PUBLIC_GROUP_SERVLET_MAPPING)) {
+		if (groupFriendlyURL.contains(
+				_PUBLIC_GROUP_SERVLET_MAPPING + StringPool.SLASH)) {
+
 			if (groupFriendlyURL.contains(
 					StringBundler.concat(
 						_PUBLIC_GROUP_SERVLET_MAPPING, siteGroupFriendlyURL,
@@ -8843,7 +8860,7 @@ public class PortalImpl implements Portal {
 		_portalLocalInetSocketAddress = new AtomicReference<>();
 	private final AtomicReference<InetSocketAddress>
 		_portalServerInetSocketAddress = new AtomicReference<>();
-	private final Set<String> _reservedParams;
+	private final Set<String> _reservedParams = new HashSet<>();
 	private final AtomicReference<InetSocketAddress>
 		_securePortalLocalInetSocketAddress = new AtomicReference<>();
 	private final AtomicReference<InetSocketAddress>

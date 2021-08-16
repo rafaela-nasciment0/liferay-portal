@@ -29,6 +29,9 @@ import com.liferay.portal.deploy.hot.ServiceWrapperRegistry;
 import com.liferay.portal.events.StartupHelperUtil;
 import com.liferay.portal.kernel.bean.PortalBeanLocatorUtil;
 import com.liferay.portal.kernel.cache.thread.local.ThreadLocalCacheManager;
+import com.liferay.portal.kernel.dao.db.DB;
+import com.liferay.portal.kernel.dao.db.DBManagerUtil;
+import com.liferay.portal.kernel.dao.db.DBType;
 import com.liferay.portal.kernel.deploy.hot.HotDeployUtil;
 import com.liferay.portal.kernel.exception.LoggedExceptionInInitializerError;
 import com.liferay.portal.kernel.log.Log;
@@ -36,8 +39,6 @@ import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.messaging.MessageBus;
 import com.liferay.portal.kernel.scheduler.SchedulerEngineHelper;
 import com.liferay.portal.kernel.servlet.DirectServletRegistryUtil;
-import com.liferay.portal.kernel.servlet.PortletSessionListenerManager;
-import com.liferay.portal.kernel.servlet.SerializableSessionAttributeListener;
 import com.liferay.portal.kernel.servlet.ServletContextClassLoaderPool;
 import com.liferay.portal.kernel.servlet.ServletContextPool;
 import com.liferay.portal.kernel.util.ClearThreadLocalUtil;
@@ -49,9 +50,7 @@ import com.liferay.portal.kernel.util.PropsKeys;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.SystemProperties;
 import com.liferay.portal.kernel.util.Validator;
-import com.liferay.portal.module.framework.ModuleFrameworkUtilAdapter;
-import com.liferay.portal.servlet.AxisServlet;
-import com.liferay.portal.servlet.PortalSessionListener;
+import com.liferay.portal.module.framework.ModuleFrameworkUtil;
 import com.liferay.portal.spring.aop.DynamicProxyCreator;
 import com.liferay.portal.spring.compat.CompatBeanDefinitionRegistryPostProcessor;
 import com.liferay.portal.spring.configurator.ConfigurableApplicationContextConfigurator;
@@ -71,20 +70,27 @@ import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+import java.sql.Driver;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+
+import java.util.Enumeration;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.FutureTask;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
-import javax.servlet.ServletRegistration;
 
 import javax.sql.DataSource;
+
+import org.apache.tika.config.ServiceLoader;
 
 import org.springframework.beans.CachedIntrospectionResults;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
@@ -115,7 +121,7 @@ public class PortalContextLoaderListener extends ContextLoaderListener {
 		ApplicationContext applicationContext =
 			ContextLoader.getCurrentWebApplicationContext();
 
-		ModuleFrameworkUtilAdapter.unregisterContext(applicationContext);
+		ModuleFrameworkUtil.unregisterContext(applicationContext);
 
 		ThreadLocalCacheManager.destroy();
 
@@ -150,22 +156,17 @@ public class PortalContextLoaderListener extends ContextLoaderListener {
 
 		super.contextDestroyed(servletContextEvent);
 
-		try {
-			ModuleFrameworkUtilAdapter.stopRuntime();
-		}
-		catch (Exception exception) {
-			_log.error(exception, exception);
-		}
+		_cleanUpJDBCDrivers();
 
 		try {
-			ModuleFrameworkUtilAdapter.stopFramework(
+			ModuleFrameworkUtil.stopFramework(
 				PropsValues.MODULE_FRAMEWORK_STOP_WAIT_TIMEOUT);
 		}
 		catch (Exception exception) {
 			_log.error(exception, exception);
 		}
 
-		ModuleFrameworkUtilAdapter.unregisterContext(_arrayApplicationContext);
+		ModuleFrameworkUtil.unregisterContext(_arrayApplicationContext);
 
 		_arrayApplicationContext.close();
 
@@ -247,7 +248,7 @@ public class PortalContextLoaderListener extends ContextLoaderListener {
 		}
 
 		try {
-			ModuleFrameworkUtilAdapter.initFramework();
+			ModuleFrameworkUtil.initFramework();
 
 			DBInitUtil.init();
 
@@ -289,6 +290,8 @@ public class PortalContextLoaderListener extends ContextLoaderListener {
 			MessageBus.class, PortalExecutorManager.class,
 			SchedulerEngineHelper.class);
 
+		ServiceLoader.setContextClassLoader(portalClassLoader);
+
 		FutureTask<Void> springInitTask = null;
 
 		if (PropsValues.MODULE_FRAMEWORK_CONCURRENT_STARTUP_ENABLED) {
@@ -302,18 +305,16 @@ public class PortalContextLoaderListener extends ContextLoaderListener {
 			Thread springInitThread = new Thread(
 				springInitTask, "Portal Spring Init Thread");
 
+			springInitThread.setContextClassLoader(portalClassLoader);
 			springInitThread.setDaemon(true);
 
 			springInitThread.start();
 		}
 
 		try {
-			ModuleFrameworkUtilAdapter.registerContext(
-				_arrayApplicationContext);
+			ModuleFrameworkUtil.registerContext(_arrayApplicationContext);
 
-			ModuleFrameworkUtilAdapter.startFramework();
-
-			ModuleFrameworkUtilAdapter.startRuntime();
+			ModuleFrameworkUtil.startFramework();
 		}
 		catch (Exception exception) {
 			throw new RuntimeException(exception);
@@ -366,7 +367,7 @@ public class PortalContextLoaderListener extends ContextLoaderListener {
 				StartupHelperUtil.setUpgrading(false);
 			}
 			else {
-				ModuleFrameworkUtilAdapter.registerContext(applicationContext);
+				ModuleFrameworkUtil.registerContext(applicationContext);
 			}
 		}
 		catch (Exception exception) {
@@ -374,10 +375,6 @@ public class PortalContextLoaderListener extends ContextLoaderListener {
 		}
 
 		CustomJspBagRegistryUtil.getCustomJspBags();
-
-		initServlets(servletContext);
-
-		initListeners(servletContext);
 	}
 
 	protected void clearFilteredPropertyDescriptorsCache(
@@ -437,25 +434,48 @@ public class PortalContextLoaderListener extends ContextLoaderListener {
 			new CompatBeanDefinitionRegistryPostProcessor());
 	}
 
-	protected void initListeners(ServletContext servletContext) {
-		if (PropsValues.SESSION_VERIFY_SERIALIZABLE_ATTRIBUTE) {
-			servletContext.addListener(
-				SerializableSessionAttributeListener.class);
+	private void _cleanUpJDBCDrivers() {
+		Enumeration<Driver> enumeration = DriverManager.getDrivers();
+
+		while (enumeration.hasMoreElements()) {
+			Driver driver = enumeration.nextElement();
+
+			Class<?> driverClass = driver.getClass();
+
+			if (PortalClassLoaderUtil.isPortalClassLoader(
+					driverClass.getClassLoader())) {
+
+				try {
+					DriverManager.deregisterDriver(driver);
+				}
+				catch (SQLException sqlException) {
+					if (_log.isWarnEnabled()) {
+						_log.warn(
+							"Unable to deregister driver " + driver,
+							sqlException);
+					}
+				}
+			}
 		}
 
-		servletContext.addListener(PortalSessionListener.class);
-		servletContext.addListener(PortletSessionListenerManager.class);
-	}
+		DB db = DBManagerUtil.getDB();
 
-	protected void initServlets(ServletContext servletContext) {
-		if (PropsValues.AXIS_SERVLET_ENABLED) {
-			ServletRegistration.Dynamic dynamic = servletContext.addServlet(
-				"Axis Servlet", new AxisServlet());
+		DBType dbType = db.getDBType();
 
-			dynamic.addMapping(PropsValues.AXIS_SERVLET_MAPPING);
+		if (dbType == DBType.MYSQL) {
+			try {
+				Class<?> clazz = Class.forName(
+					"com.mysql.cj.jdbc.AbandonedConnectionCleanupThread");
 
-			dynamic.setAsyncSupported(true);
-			dynamic.setLoadOnStartup(1);
+				Method method = clazz.getMethod("checkedShutdown");
+
+				method.invoke(null);
+			}
+			catch (Exception exception) {
+				if (_log.isWarnEnabled()) {
+					_log.warn("Unable to cleanly shut down MySQL", exception);
+				}
+			}
 		}
 	}
 

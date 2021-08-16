@@ -52,6 +52,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.function.BiConsumer;
@@ -90,7 +91,7 @@ public class AssetEntryModelImpl
 		{"visible", Types.BOOLEAN}, {"startDate", Types.TIMESTAMP},
 		{"endDate", Types.TIMESTAMP}, {"publishDate", Types.TIMESTAMP},
 		{"expirationDate", Types.TIMESTAMP}, {"mimeType", Types.VARCHAR},
-		{"title", Types.VARCHAR}, {"description", Types.CLOB},
+		{"title", Types.CLOB}, {"description", Types.CLOB},
 		{"summary", Types.CLOB}, {"url", Types.VARCHAR},
 		{"layoutUuid", Types.VARCHAR}, {"height", Types.INTEGER},
 		{"width", Types.INTEGER}, {"priority", Types.DOUBLE}
@@ -120,7 +121,7 @@ public class AssetEntryModelImpl
 		TABLE_COLUMNS_MAP.put("publishDate", Types.TIMESTAMP);
 		TABLE_COLUMNS_MAP.put("expirationDate", Types.TIMESTAMP);
 		TABLE_COLUMNS_MAP.put("mimeType", Types.VARCHAR);
-		TABLE_COLUMNS_MAP.put("title", Types.VARCHAR);
+		TABLE_COLUMNS_MAP.put("title", Types.CLOB);
 		TABLE_COLUMNS_MAP.put("description", Types.CLOB);
 		TABLE_COLUMNS_MAP.put("summary", Types.CLOB);
 		TABLE_COLUMNS_MAP.put("url", Types.VARCHAR);
@@ -131,7 +132,7 @@ public class AssetEntryModelImpl
 	}
 
 	public static final String TABLE_SQL_CREATE =
-		"create table AssetEntry (mvccVersion LONG default 0 not null,ctCollectionId LONG default 0 not null,entryId LONG not null,groupId LONG,companyId LONG,userId LONG,userName VARCHAR(75) null,createDate DATE null,modifiedDate DATE null,classNameId LONG,classPK LONG,classUuid VARCHAR(75) null,classTypeId LONG,listable BOOLEAN,visible BOOLEAN,startDate DATE null,endDate DATE null,publishDate DATE null,expirationDate DATE null,mimeType VARCHAR(75) null,title STRING null,description TEXT null,summary TEXT null,url STRING null,layoutUuid VARCHAR(75) null,height INTEGER,width INTEGER,priority DOUBLE,primary key (entryId, ctCollectionId))";
+		"create table AssetEntry (mvccVersion LONG default 0 not null,ctCollectionId LONG default 0 not null,entryId LONG not null,groupId LONG,companyId LONG,userId LONG,userName VARCHAR(75) null,createDate DATE null,modifiedDate DATE null,classNameId LONG,classPK LONG,classUuid VARCHAR(75) null,classTypeId LONG,listable BOOLEAN,visible BOOLEAN,startDate DATE null,endDate DATE null,publishDate DATE null,expirationDate DATE null,mimeType VARCHAR(75) null,title TEXT null,description TEXT null,summary TEXT null,url STRING null,layoutUuid VARCHAR(75) null,height INTEGER,width INTEGER,priority DOUBLE,primary key (entryId, ctCollectionId))";
 
 	public static final String TABLE_SQL_DROP = "drop table AssetEntry";
 
@@ -1437,7 +1438,9 @@ public class AssetEntryModelImpl
 		for (Map.Entry<String, Object> entry :
 				_columnOriginalValues.entrySet()) {
 
-			if (entry.getValue() != getColumnValue(entry.getKey())) {
+			if (!Objects.equals(
+					entry.getValue(), getColumnValue(entry.getKey()))) {
+
 				_columnBitmask |= _columnBitmasks.get(entry.getKey());
 			}
 		}

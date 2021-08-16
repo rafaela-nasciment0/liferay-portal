@@ -135,11 +135,9 @@ public class OrphanPortletsDisplayContext {
 			Portlet portlet = PortletLocalServiceUtil.getPortletById(
 				themeDisplay.getCompanyId(), portletId);
 
-			if (portlet.isSystem()) {
-				continue;
-			}
+			if (portlet.isSystem() ||
+				explicitlyAddedPortletIds.contains(portletId)) {
 
-			if (explicitlyAddedPortletIds.contains(portletId)) {
 				continue;
 			}
 
@@ -200,11 +198,11 @@ public class OrphanPortletsDisplayContext {
 			_liferayPortletResponse
 		).setMVCPath(
 			"/orphan_portlets.jsp"
-		).setParameter(
-			"backURL", getBackURL()
+		).setBackURL(
+			getBackURL()
 		).setParameter(
 			"displayStyle", getDisplayStyle()
-		).build();
+		).buildPortletURL();
 	}
 
 	public Layout getSelLayout() {

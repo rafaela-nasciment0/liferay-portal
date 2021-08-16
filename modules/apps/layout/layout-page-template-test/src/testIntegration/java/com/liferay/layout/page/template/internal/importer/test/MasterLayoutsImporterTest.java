@@ -29,6 +29,7 @@ import com.liferay.layout.util.structure.DropZoneLayoutStructureItem;
 import com.liferay.layout.util.structure.LayoutStructure;
 import com.liferay.layout.util.structure.LayoutStructureItem;
 import com.liferay.petra.string.CharPool;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.User;
@@ -256,7 +257,7 @@ public class MasterLayoutsImporterTest {
 	private File _generateZipFile(String testCaseName) throws Exception {
 		ZipWriter zipWriter = ZipWriterFactoryUtil.getZipWriter();
 
-		StringBuilder sb = new StringBuilder(3);
+		StringBundler sb = new StringBundler(3);
 
 		sb.append(_BASE_PATH + testCaseName);
 		sb.append(StringPool.FORWARD_SLASH + _ROOT_FOLDER);
@@ -467,15 +468,9 @@ public class MasterLayoutsImporterTest {
 
 		@Override
 		public List<FragmentEntry> getFragmentEntries() {
-			List<FragmentEntry> fragmentEntries = new ArrayList<>();
-
-			fragmentEntries.add(
-				_getFragmentEntry(TEST_MASTER_PAGE_FRAGMENT_ENTRY_1, 0));
-
-			fragmentEntries.add(
+			return ListUtil.fromArray(
+				_getFragmentEntry(TEST_MASTER_PAGE_FRAGMENT_ENTRY_1, 0),
 				_getFragmentEntry(TEST_MASTER_PAGE_FRAGMENT_ENTRY_2, 0));
-
-			return fragmentEntries;
 		}
 
 		@Override

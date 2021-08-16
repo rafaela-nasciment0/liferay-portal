@@ -201,10 +201,10 @@ public class CommerceCategoryDisplayPageClayTable
 				PortletRequest.ACTION_PHASE)
 		).setActionName(
 			"/commerce_channels/edit_asset_category_cp_display_layout"
+		).setCMD(
+			Constants.DELETE
 		).setRedirect(
 			redirect
-		).setParameter(
-			Constants.CMD, Constants.DELETE
 		).setParameter(
 			"cpDisplayLayoutId", categoryDisplayPageId
 		).buildString();
@@ -220,7 +220,7 @@ public class CommerceCategoryDisplayPageClayTable
 				PortletProvider.Action.MANAGE)
 		).setMVCRenderCommandName(
 			"/commerce_channels/edit_asset_category_cp_display_layout"
-		).build();
+		).buildPortletURL();
 
 		long commerceChannelId = ParamUtil.getLong(
 			httpServletRequest, "commerceChannelId");

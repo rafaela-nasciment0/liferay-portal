@@ -16,20 +16,27 @@ import './FieldBase.scss';
 
 import ClayButton from '@clayui/button';
 import ClayIcon from '@clayui/icon';
+import ClayLabel from '@clayui/label';
+import ClayPopover from '@clayui/popover';
 import classNames from 'classnames';
 import {
 	Layout,
 	getRepeatedIndex,
 	useForm,
 	useFormState,
-} from 'dynamic-data-mapping-form-renderer';
-import {EVENT_TYPES as CORE_EVENT_TYPES} from 'dynamic-data-mapping-form-renderer/js/core/actions/eventTypes.es';
-import moment from 'moment';
-import React, {useMemo} from 'react';
+} from 'data-engine-js-components-web';
+import {EVENT_TYPES as CORE_EVENT_TYPES} from 'data-engine-js-components-web/js/core/actions/eventTypes.es';
+import moment from 'moment/min/moment-with-locales';
+import React, {useMemo, useState} from 'react';
 
-const convertInputValue = (fieldType, value) => {
+const convertInputValue = (fieldType, locale, value) => {
 	if (fieldType === 'date') {
-		const date = moment(value).toDate();
+		const momentLocale = moment().locale(locale);
+
+		const date = moment(value, [
+			momentLocale.localeData().longDateFormat('L'),
+			'YYYY-MM-DD',
+		]).toDate();
 
 		if (moment(date).isValid()) {
 			return moment(date).format('YYYY-MM-DD');
@@ -64,28 +71,105 @@ const getDefaultRows = (nestedFields) => {
 	});
 };
 
-const FieldProperties = ({required, tooltip}) => {
-	return (
-		<>
-			{required && (
-				<span className="ddm-label-required reference-mark">
-					<ClayIcon symbol="asterisk" />
-				</span>
-			)}
+const getFieldDetails = (props) => {
+	let fieldDetails = '';
 
-			{tooltip && (
-				<span className="ddm-tooltip">
-					<ClayIcon symbol="question-circle-full" title={tooltip} />
+	const {errorMessage, hasError, required, text, tip} = props;
+
+	if (tip) {
+		fieldDetails += Liferay.Util.escape(tip) + '<br>';
+	}
+
+	if (text) {
+		fieldDetails += Liferay.Util.escape(text) + '<br>';
+	}
+
+	if (hasError) {
+		fieldDetails += Liferay.Util.escape(errorMessage);
+	}
+	else if (required) {
+		fieldDetails += Liferay.Language.get('required');
+	}
+
+	return fieldDetails;
+};
+
+const HideFieldProperty = () => {
+	return (
+		<ClayLabel className="ml-1" displayType="secondary">
+			{Liferay.Language.get('hidden')}
+		</ClayLabel>
+	);
+};
+
+const LabelProperty = ({hideField, label}) => {
+	return hideField ? <span className="text-secondary">{label}</span> : label;
+};
+
+const RequiredProperty = () => {
+	return (
+		<span className="ddm-label-required reference-mark">
+			<ClayIcon symbol="asterisk" />
+		</span>
+	);
+};
+
+const TooltipProperty = ({showPopover, tooltip}) => {
+	return showPopover ? (
+		<Popover tooltip={tooltip} />
+	) : (
+		<span className="ddm-tooltip" title={tooltip}>
+			<ClayIcon symbol="question-circle-full" />
+		</span>
+	);
+};
+
+const Popover = ({tooltip}) => {
+	const [isPopoverVisible, setPopoverVisible] = useState(false);
+
+	const POPOVER_IMAGE_HEIGHT = 170;
+	const POPOVER_IMAGE_WIDTH = 232;
+	const POPOVER_MAX_WIDTH = 256;
+
+	return (
+		<ClayPopover
+			alignPosition="right-bottom"
+			data-testid="clayPopover"
+			disableScroll
+			header={Liferay.Language.get('input-mask-format')}
+			show={isPopoverVisible}
+			style={{maxWidth: POPOVER_MAX_WIDTH}}
+			trigger={
+				<span
+					className="ddm-tooltip"
+					onMouseOut={() => setPopoverVisible(false)}
+					onMouseOver={() => setPopoverVisible(true)}
+				>
+					<ClayIcon symbol="question-circle-full" />
 				</span>
-			)}
-		</>
+			}
+		>
+			<p>{tooltip}</p>
+
+			<img
+				alt={Liferay.Language.get('input-mask-format')}
+				height={POPOVER_IMAGE_HEIGHT}
+				src={`${themeDisplay.getPathThemeImages()}/forms/input_mask_format.png`}
+				width={POPOVER_IMAGE_WIDTH}
+			/>
+		</ClayPopover>
 	);
 };
 
 function FieldBase({
+	accessible = true,
 	children,
 	displayErrors,
 	errorMessage,
+	fieldName,
+	hideField,
+	hideEditedFlag,
+	id,
 	label,
 	localizedValue = {},
 	name,
@@ -106,58 +190,50 @@ function FieldBase({
 }) {
 	const {editingLanguageId} = useFormState();
 	const dispatch = useForm();
-	const inputEditedName = name + '_edited';
 
-	const localizedValueArray = useMemo(() => {
-		const languageValues = [];
+	const hasError = displayErrors && errorMessage && !valid;
+
+	const fieldDetails = getFieldDetails({
+		errorMessage,
+		hasError,
+		required,
+		text,
+		tip,
+	});
+
+	const fieldDetailsId = id || name;
+
+	const hiddenTranslations = useMemo(() => {
+		const array = [];
 
 		if (!localizedValue) {
-			return languageValues;
+			return array;
 		}
 
 		Object.keys(localizedValue).forEach((key) => {
 			if (key !== editingLanguageId) {
-				languageValues.push({
-					name: name.replace(editingLanguageId, key),
+				array.push({
+					inputName: name.replace(editingLanguageId, key),
+					locale: key,
 					value: localizedValue[key],
 				});
 			}
 		});
 
-		return languageValues;
+		return array;
 	}, [localizedValue, editingLanguageId, name]);
 
+	const inputEditedName = name + '_edited';
 	const renderLabel =
-		(label && showLabel) || required || tooltip || repeatable;
-
+		(label && showLabel) || hideField || repeatable || required || tooltip;
 	const repeatedIndex = useMemo(() => getRepeatedIndex(name), [name]);
-
 	const showLegend =
 		type &&
 		(type === 'checkbox_multiple' ||
 			type === 'grid' ||
 			type === 'paragraph' ||
 			type === 'radio');
-
-	const fieldDetailsId = name + '_fieldDetails';
-	const hasError = displayErrors && errorMessage && !valid;
-
-	let fieldDetails = '';
-
-	if (tip) {
-		fieldDetails += tip + '<br>';
-	}
-
-	if (text) {
-		fieldDetails += text + '<br>';
-	}
-
-	if (hasError) {
-		fieldDetails += errorMessage;
-	}
-	else if (required) {
-		fieldDetails += Liferay.Language.get('required');
-	}
+	const showPopover = fieldName === 'inputMaskFormat';
 
 	return (
 		<div
@@ -223,33 +299,56 @@ function FieldBase({
 								className="lfr-ddm-legend"
 								tabIndex="0"
 							>
-								{label && showLabel && label}
+								{showLabel && label}
 
-								<FieldProperties
-									required={required}
-									tooltip={tooltip}
-								/>
+								{required && <RequiredProperty />}
+
+								{tooltip && (
+									<TooltipProperty
+										showPopover={showPopover}
+										tooltip={tooltip}
+									/>
+								)}
 							</legend>
 							{children}
 						</fieldset>
 					) : (
 						<>
 							<label
-								aria-describedby={fieldDetailsId}
 								className={classNames({
 									'ddm-empty': !showLabel && !required,
 									'ddm-label': showLabel || required,
 								})}
+								htmlFor={fieldDetailsId}
 								tabIndex="0"
 							>
-								{label && showLabel && label}
+								{showLabel && label && (
+									<LabelProperty
+										hideField={hideField}
+										label={label}
+									/>
+								)}
 
-								<FieldProperties
-									required={required}
+								{required && <RequiredProperty />}
+
+								{hideField && <HideFieldProperty />}
+
+								{showLabel && tooltip && (
+									<TooltipProperty
+										showPopover={showPopover}
+										tooltip={tooltip}
+									/>
+								)}
+							</label>
+
+							{children}
+
+							{!showLabel && tooltip && (
+								<TooltipProperty
+									showPopover={showPopover}
 									tooltip={tooltip}
 								/>
-							</label>
-							{children}
+							)}
 						</>
 					)}
 				</>
@@ -257,26 +356,32 @@ function FieldBase({
 
 			{!renderLabel && children}
 
-			{localizedValueArray.length > 0 &&
-				localizedValueArray.map((language) => (
+			{hiddenTranslations.length > 0 &&
+				hiddenTranslations.map((translation) => (
 					<input
-						key={language.name}
-						name={language.name}
+						key={translation.inputName}
+						name={translation.inputName}
 						type="hidden"
 						value={
-							language.value
-								? convertInputValue(type, language.value)
+							translation.value
+								? convertInputValue(
+										type,
+										translation.locale,
+										translation.value
+								  )
 								: ''
 						}
 					/>
 				))}
 
-			<input
-				key={inputEditedName}
-				name={inputEditedName}
-				type="hidden"
-				value={localizedValue[editingLanguageId] !== undefined}
-			/>
+			{!hideEditedFlag && (
+				<input
+					key={inputEditedName}
+					name={inputEditedName}
+					type="hidden"
+					value={localizedValue[editingLanguageId] !== undefined}
+				/>
+			)}
 
 			{typeof tip === 'string' && (
 				<span aria-hidden="true" className="form-text">
@@ -292,7 +397,7 @@ function FieldBase({
 				</span>
 			)}
 
-			{fieldDetails && (
+			{accessible && fieldDetails && (
 				<span
 					className="sr-only"
 					dangerouslySetInnerHTML={{

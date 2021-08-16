@@ -32,7 +32,7 @@ if (addURL == null) {
 		renderResponse
 	).setActionName(
 		"/site_navigation_admin/add_site_navigation_menu_item"
-	).build();
+	).buildPortletURL();
 }
 
 portletDisplay.setShowBackIcon(true);
@@ -54,7 +54,7 @@ renderResponse.setTitle(LanguageUtil.format(request, "add-x", siteNavigationMenu
 		<aui:fieldset>
 
 			<%
-			siteNavigationMenuItemType.renderAddPage(request, PipingServletResponse.createPipingServletResponse(pageContext));
+			siteNavigationMenuItemType.renderAddPage(request, PipingServletResponseFactory.createPipingServletResponse(pageContext));
 			%>
 
 		</aui:fieldset>

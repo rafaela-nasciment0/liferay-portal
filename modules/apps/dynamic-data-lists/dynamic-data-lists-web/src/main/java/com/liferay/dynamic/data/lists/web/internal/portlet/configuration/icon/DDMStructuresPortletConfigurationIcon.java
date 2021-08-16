@@ -77,8 +77,8 @@ public class DDMStructuresPortletConfigurationIcon
 				PortletRequest.RENDER_PHASE)
 		).setMVCPath(
 			"/view.jsp"
-		).setParameter(
-			"backURL", themeDisplay.getURLCurrent()
+		).setBackURL(
+			themeDisplay.getURLCurrent()
 		).setParameter(
 			"groupId", themeDisplay.getScopeGroupId()
 		).setParameter(
@@ -86,7 +86,7 @@ public class DDMStructuresPortletConfigurationIcon
 		).setParameter(
 			"refererWebDAVToken", WebDAVUtil.getStorageToken(portlet)
 		).setParameter(
-			"showAncestorScopes", Boolean.TRUE.toString()
+			"showAncestorScopes", true
 		).buildString();
 	}
 

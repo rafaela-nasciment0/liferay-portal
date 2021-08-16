@@ -27,11 +27,11 @@ PortletURL portletURL = PortletURLBuilder.createRenderURL(
 	"/export_import/export_import"
 ).setRedirect(
 	ParamUtil.getString(request, "redirect")
+).setPortletResource(
+	portletResource
 ).setParameter(
 	"returnToFullPageURL", returnToFullPageURL
-).setParameter(
-	"portletResource", portletResource
-).build();
+).buildPortletURL();
 %>
 
 <c:choose>

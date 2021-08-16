@@ -17,6 +17,7 @@ package com.liferay.source.formatter.checks;
 import com.liferay.petra.string.CharPool;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.util.StringUtil;
+import com.liferay.portal.kernel.util.Validator;
 import com.liferay.source.formatter.checks.util.SourceUtil;
 import com.liferay.source.formatter.parser.JavaClass;
 import com.liferay.source.formatter.parser.JavaTerm;
@@ -48,8 +49,13 @@ public class JavaClassNameCheck extends BaseJavaTermCheck {
 			return javaTerm.getContent();
 		}
 
-		String className = javaClass.getName();
 		String packageName = javaClass.getPackageName();
+
+		if (Validator.isNull(packageName)) {
+			return javaTerm.getContent();
+		}
+
+		String className = javaClass.getName();
 
 		_checkTypo(fileName, className, packageName, 1);
 
@@ -89,12 +95,24 @@ public class JavaClassNameCheck extends BaseJavaTermCheck {
 		List<String> enforceImplementedClassNames = getAttributeValues(
 			_ENFORCE_IMPLEMENTED_CLASS_NAMES_KEY, absolutePath);
 
+		outerLoop:
 		for (String implementedClassName : enforceImplementedClassNames) {
 			if (!implementedClassNames.contains(implementedClassName)) {
 				continue;
 			}
 
-			if (!className.endsWith(implementedClassName)) {
+			for (String extendedClassName : javaClass.getExtendedClassNames()) {
+				if (extendedClassName.startsWith("Base") &&
+					!extendedClassName.endsWith(implementedClassName)) {
+
+					continue outerLoop;
+				}
+			}
+
+			if (!className.endsWith(implementedClassName) &&
+				((implementedClassNames.size() == 1) ||
+				 implementedClassName.equals("ScreenNavigationCategory"))) {
+
 				addMessage(
 					fileName,
 					StringBundler.concat(

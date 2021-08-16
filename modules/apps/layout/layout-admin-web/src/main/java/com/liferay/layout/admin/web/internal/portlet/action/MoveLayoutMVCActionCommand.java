@@ -15,10 +15,11 @@
 package com.liferay.layout.admin.web.internal.portlet.action;
 
 import com.liferay.layout.admin.constants.LayoutAdminPortletKeys;
-import com.liferay.layout.admin.web.internal.configuration.LayoutConverterConfiguration;
+import com.liferay.layout.admin.web.internal.configuration.FFLayoutTranslationConfiguration;
 import com.liferay.layout.admin.web.internal.display.context.LayoutsAdminDisplayContext;
 import com.liferay.layout.admin.web.internal.display.context.MillerColumnsDisplayContext;
 import com.liferay.layout.admin.web.internal.handler.LayoutExceptionRequestHandler;
+import com.liferay.layout.admin.web.internal.servlet.taglib.util.LayoutActionDropdownItemsProvider;
 import com.liferay.layout.util.LayoutCopyHelper;
 import com.liferay.layout.util.template.LayoutConverterRegistry;
 import com.liferay.portal.configuration.metatype.bnd.util.ConfigurableUtil;
@@ -35,6 +36,9 @@ import com.liferay.portal.kernel.service.LayoutService;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.staging.StagingGroupHelper;
+import com.liferay.translation.exporter.TranslationInfoItemFieldValuesExporterTracker;
+import com.liferay.translation.security.permission.TranslationPermission;
+import com.liferay.translation.url.provider.TranslationURLProvider;
 
 import java.util.Iterator;
 import java.util.Map;
@@ -51,7 +55,7 @@ import org.osgi.service.component.annotations.Reference;
  * @author Eudaldo Alonso
  */
 @Component(
-	configurationPid = "com.liferay.layout.admin.web.internal.configuration.LayoutConverterConfiguration",
+	configurationPid = "com.liferay.layout.admin.web.internal.configuration.FFLayoutTranslationConfiguration",
 	immediate = true,
 	property = {
 		"javax.portlet.name=" + LayoutAdminPortletKeys.GROUP_PAGES,
@@ -64,8 +68,8 @@ public class MoveLayoutMVCActionCommand extends BaseAddLayoutMVCActionCommand {
 	@Activate
 	@Modified
 	protected void activate(Map<String, Object> properties) {
-		_layoutConverterConfiguration = ConfigurableUtil.createConfigurable(
-			LayoutConverterConfiguration.class, properties);
+		_ffLayoutTranslationConfiguration = ConfigurableUtil.createConfigurable(
+			FFLayoutTranslationConfiguration.class, properties);
 	}
 
 	@Override
@@ -105,13 +109,22 @@ public class MoveLayoutMVCActionCommand extends BaseAddLayoutMVCActionCommand {
 			LiferayPortletResponse liferayPortletResponse =
 				_portal.getLiferayPortletResponse(actionResponse);
 
+			LayoutsAdminDisplayContext layoutsAdminDisplayContext =
+				new LayoutsAdminDisplayContext(
+					_layoutConverterRegistry, _layoutCopyHelper,
+					liferayPortletRequest, liferayPortletResponse,
+					_stagingGroupHelper);
+
 			MillerColumnsDisplayContext millerColumnsDisplayContext =
 				new MillerColumnsDisplayContext(
-					new LayoutsAdminDisplayContext(
-						_layoutConverterConfiguration, _layoutConverterRegistry,
-						_layoutCopyHelper, liferayPortletRequest,
-						liferayPortletResponse, _stagingGroupHelper),
-					liferayPortletRequest, liferayPortletResponse);
+					new LayoutActionDropdownItemsProvider(
+						_ffLayoutTranslationConfiguration,
+						_portal.getHttpServletRequest(liferayPortletRequest),
+						layoutsAdminDisplayContext, _translationPermission,
+						_translationURLProvider),
+					layoutsAdminDisplayContext, liferayPortletRequest,
+					liferayPortletResponse,
+					_translationInfoItemFieldValuesExporterTracker);
 
 			JSONObject jsonObject = JSONUtil.put(
 				"layoutColumns",
@@ -128,7 +141,8 @@ public class MoveLayoutMVCActionCommand extends BaseAddLayoutMVCActionCommand {
 		}
 	}
 
-	private volatile LayoutConverterConfiguration _layoutConverterConfiguration;
+	private volatile FFLayoutTranslationConfiguration
+		_ffLayoutTranslationConfiguration;
 
 	@Reference
 	private LayoutConverterRegistry _layoutConverterRegistry;
@@ -147,5 +161,15 @@ public class MoveLayoutMVCActionCommand extends BaseAddLayoutMVCActionCommand {
 
 	@Reference
 	private StagingGroupHelper _stagingGroupHelper;
+
+	@Reference
+	private TranslationInfoItemFieldValuesExporterTracker
+		_translationInfoItemFieldValuesExporterTracker;
+
+	@Reference
+	private TranslationPermission _translationPermission;
+
+	@Reference
+	private TranslationURLProvider _translationURLProvider;
 
 }

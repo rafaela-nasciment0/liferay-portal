@@ -3485,23 +3485,23 @@ public class MBBanPersistenceImpl
 		ServiceContext serviceContext =
 			ServiceContextThreadLocal.getServiceContext();
 
-		Date now = new Date();
+		Date date = new Date();
 
 		if (isNew && (mbBan.getCreateDate() == null)) {
 			if (serviceContext == null) {
-				mbBan.setCreateDate(now);
+				mbBan.setCreateDate(date);
 			}
 			else {
-				mbBan.setCreateDate(serviceContext.getCreateDate(now));
+				mbBan.setCreateDate(serviceContext.getCreateDate(date));
 			}
 		}
 
 		if (!mbBanModelImpl.hasSetModifiedDate()) {
 			if (serviceContext == null) {
-				mbBan.setModifiedDate(now);
+				mbBan.setModifiedDate(date);
 			}
 			else {
-				mbBan.setModifiedDate(serviceContext.getModifiedDate(now));
+				mbBan.setModifiedDate(serviceContext.getModifiedDate(date));
 			}
 		}
 
@@ -3918,7 +3918,8 @@ public class MBBanPersistenceImpl
 	public Set<String> getCTColumnNames(
 		CTColumnResolutionType ctColumnResolutionType) {
 
-		return _ctColumnNamesMap.get(ctColumnResolutionType);
+		return _ctColumnNamesMap.getOrDefault(
+			ctColumnResolutionType, Collections.emptySet());
 	}
 
 	@Override
@@ -3952,7 +3953,6 @@ public class MBBanPersistenceImpl
 	static {
 		Set<String> ctControlColumnNames = new HashSet<String>();
 		Set<String> ctIgnoreColumnNames = new HashSet<String>();
-		Set<String> ctMergeColumnNames = new HashSet<String>();
 		Set<String> ctStrictColumnNames = new HashSet<String>();
 
 		ctControlColumnNames.add("mvccVersion");
@@ -3971,7 +3971,6 @@ public class MBBanPersistenceImpl
 			CTColumnResolutionType.CONTROL, ctControlColumnNames);
 		_ctColumnNamesMap.put(
 			CTColumnResolutionType.IGNORE, ctIgnoreColumnNames);
-		_ctColumnNamesMap.put(CTColumnResolutionType.MERGE, ctMergeColumnNames);
 		_ctColumnNamesMap.put(
 			CTColumnResolutionType.PK, Collections.singleton("banId"));
 		_ctColumnNamesMap.put(
@@ -4252,7 +4251,7 @@ public class MBBanPersistenceImpl
 			return MBBanTable.INSTANCE.getTableName();
 		}
 
-		private Object[] _getValue(
+		private static Object[] _getValue(
 			MBBanModelImpl mbBanModelImpl, String[] columnNames,
 			boolean original) {
 
@@ -4273,8 +4272,8 @@ public class MBBanPersistenceImpl
 			return arguments;
 		}
 
-		private static Map<FinderPath, Long> _finderPathColumnBitmasksCache =
-			new ConcurrentHashMap<>();
+		private static final Map<FinderPath, Long>
+			_finderPathColumnBitmasksCache = new ConcurrentHashMap<>();
 
 	}
 

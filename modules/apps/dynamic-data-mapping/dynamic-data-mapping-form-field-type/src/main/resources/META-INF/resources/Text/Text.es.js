@@ -16,11 +16,12 @@ import ClayAutocomplete from '@clayui/autocomplete';
 import ClayDropDown from '@clayui/drop-down';
 import {ClayInput} from '@clayui/form';
 import {usePrevious} from '@liferay/frontend-js-react-web';
-import {normalizeFieldName} from 'dynamic-data-mapping-form-renderer';
-import React, {useEffect, useMemo, useRef, useState} from 'react';
+import {normalizeFieldName} from 'data-engine-js-components-web';
+import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 
 import {FieldBase} from '../FieldBase/ReactFieldBase.es';
 import {useSyncValue} from '../hooks/useSyncValue.es';
+import withConfirmationField from '../util/withConfirmationField.es';
 
 const Text = ({
 	defaultLanguageId,
@@ -30,6 +31,7 @@ const Text = ({
 	id,
 	localizable,
 	localizedValue,
+	maxLength,
 	name,
 	onBlur,
 	onChange,
@@ -87,11 +89,13 @@ const Text = ({
 
 	return (
 		<ClayInput
+			aria-labelledby={id}
 			className="ddm-field-text"
 			dir={Liferay.Language.direction[editingLanguageId]}
 			disabled={disabled}
 			id={id}
 			lang={editingLanguageId}
+			maxLength={maxLength}
 			name={name}
 			onBlur={(event) => {
 				if (fieldName == 'fieldReference') {
@@ -102,8 +106,13 @@ const Text = ({
 				}
 			}}
 			onChange={(event) => {
+				const {value} = event.target;
+
 				if (fieldName === 'fieldReference' || fieldName === 'name') {
-					event.target.value = normalizeFieldName(event.target.value);
+					event.target.value = normalizeFieldName(value);
+				}
+				else if (fieldName === 'inputMaskFormat') {
+					event.target.value = value.replace(/[1-8]/g, '');
 				}
 
 				setValue(event.target.value);
@@ -134,6 +143,7 @@ const Textarea = ({
 
 	return (
 		<textarea
+			aria-labelledby={id}
 			className="ddm-field-text form-control"
 			dir={Liferay.Language.direction[editingLanguageId]}
 			disabled={disabled}
@@ -167,6 +177,7 @@ const Autocomplete = ({
 	syncDelay,
 	value: initialValue,
 }) => {
+	const [selectedItem, setSelectedItem] = useState(false);
 	const [value, setValue] = useSyncValue(initialValue, syncDelay);
 	const [visible, setVisible] = useState(false);
 	const inputRef = useRef(null);
@@ -179,26 +190,27 @@ const Autocomplete = ({
 		(item) => item && item.match(escapeChars(value))
 	);
 
+	const isValidItem = useCallback(() => {
+		return (
+			!selectedItem &&
+			filteredItems.length > 1 &&
+			!filteredItems.includes(value)
+		);
+	}, [filteredItems, selectedItem, value]);
+
 	useEffect(() => {
-		if (filteredItems.length === 1 && filteredItems.includes(value)) {
+		const ddmPageContainerLayout = inputRef.current.closest(
+			'.ddm-page-container-layout'
+		);
+
+		if (
+			!isValidItem() &&
+			ddmPageContainerLayout &&
+			ddmPageContainerLayout.classList.contains('hide')
+		) {
 			setVisible(false);
 		}
-		else {
-			const ddmPageContainerLayout = inputRef.current.closest(
-				'.ddm-page-container-layout'
-			);
-
-			if (
-				ddmPageContainerLayout &&
-				ddmPageContainerLayout.classList.contains('hide')
-			) {
-				setVisible(false);
-			}
-			else {
-				setVisible(!!value);
-			}
-		}
-	}, [filteredItems, value]);
+	}, [filteredItems, isValidItem, value, selectedItem]);
 
 	const handleFocus = (event, direction) => {
 		const target = event.target;
@@ -233,6 +245,7 @@ const Autocomplete = ({
 	return (
 		<ClayAutocomplete>
 			<ClayAutocomplete.Input
+				aria-labelledby={id}
 				dir={Liferay.Language.direction[editingLanguageId]}
 				disabled={disabled}
 				id={id}
@@ -241,9 +254,17 @@ const Autocomplete = ({
 				onBlur={onBlur}
 				onChange={(event) => {
 					setValue(event.target.value);
+					setVisible(!!event.target.value);
+					setSelectedItem(false);
 					onChange(event);
 				}}
-				onFocus={onFocus}
+				onFocus={(event) => {
+					if (isValidItem() && event.target.value) {
+						setVisible(true);
+					}
+
+					onFocus(event);
+				}}
 				onKeyDown={(event) => {
 					if (
 						(event.key === 'Tab' || event.key === 'ArrowDown') &&
@@ -293,12 +314,14 @@ const Autocomplete = ({
 							{Liferay.Language.get('no-results-were-found')}
 						</ClayDropDown.Item>
 					)}
-					{filteredItems.map((label) => (
+					{filteredItems.map((label, index) => (
 						<ClayAutocomplete.Item
-							key={label}
+							key={index}
 							match={value}
 							onClick={() => {
 								setValue(label);
+								setVisible(false);
+								setSelectedItem(true);
 								onChange({target: {value: label}});
 							}}
 							value={label}
@@ -326,6 +349,7 @@ const Main = ({
 	id,
 	localizable,
 	localizedValue = {},
+	maxLength,
 	name,
 	onBlur,
 	onChange,
@@ -351,9 +375,12 @@ const Main = ({
 				: `singleline`
 		];
 
+	const fieldDetailsId = id ? id + '_fieldDetails' : name + '_fieldDetails';
+
 	return (
 		<FieldBase
 			{...otherProps}
+			fieldName={fieldName}
 			id={id}
 			localizedValue={localizedValue}
 			name={name}
@@ -364,9 +391,10 @@ const Main = ({
 				disabled={readOnly}
 				editingLanguageId={editingLanguageId}
 				fieldName={fieldName}
-				id={id}
+				id={fieldDetailsId}
 				localizable={localizable}
 				localizedValue={localizedValue}
+				maxLength={maxLength}
 				name={name}
 				onBlur={onBlur}
 				onChange={onChange}
@@ -383,4 +411,4 @@ const Main = ({
 
 Main.displayName = 'Text';
 
-export default Main;
+export default withConfirmationField(Main);

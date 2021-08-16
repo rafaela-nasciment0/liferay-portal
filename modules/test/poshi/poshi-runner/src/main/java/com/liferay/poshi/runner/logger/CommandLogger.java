@@ -18,12 +18,13 @@ import com.liferay.poshi.core.PoshiContext;
 import com.liferay.poshi.core.PoshiGetterUtil;
 import com.liferay.poshi.core.PoshiStackTraceUtil;
 import com.liferay.poshi.core.PoshiVariablesUtil;
+import com.liferay.poshi.core.selenium.LiferaySelenium;
 import com.liferay.poshi.core.util.FileUtil;
 import com.liferay.poshi.core.util.GetterUtil;
 import com.liferay.poshi.core.util.StringUtil;
 import com.liferay.poshi.core.util.Validator;
 import com.liferay.poshi.runner.exception.PoshiRunnerLoggerException;
-import com.liferay.poshi.runner.selenium.LiferaySeleniumUtil;
+import com.liferay.poshi.runner.selenium.SeleniumUtil;
 import com.liferay.poshi.runner.util.HtmlUtil;
 
 import java.util.List;
@@ -613,13 +614,10 @@ public final class CommandLogger {
 	}
 
 	private boolean _isCommand(Element element) {
-		if (!Objects.equals(element.getName(), "condition") &&
-			!Objects.equals(element.getName(), "execute")) {
+		if ((!Objects.equals(element.getName(), "condition") &&
+			 !Objects.equals(element.getName(), "execute")) ||
+			Validator.isNull(element.attributeValue("function"))) {
 
-			return false;
-		}
-
-		if (Validator.isNull(element.attributeValue("function"))) {
 			return false;
 		}
 
@@ -676,7 +674,9 @@ public final class CommandLogger {
 		testClassCommandName = StringUtil.replace(
 			testClassCommandName, "#", "_");
 
-		LiferaySeleniumUtil.captureScreen(
+		LiferaySelenium liferaySelenium = SeleniumUtil.getSelenium();
+
+		liferaySelenium.saveScreenshot(
 			FileUtil.getCanonicalPath(".") + "/test-results/" +
 				testClassCommandName + "/screenshots/" + screenshotName +
 					detailsLinkId + ".jpg");

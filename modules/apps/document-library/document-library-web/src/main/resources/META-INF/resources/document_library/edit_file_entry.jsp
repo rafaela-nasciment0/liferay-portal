@@ -496,7 +496,7 @@ renderResponse.setTitle(headerTitle);
 				%>
 
 				<c:if test="<%= !scopeGroup.isCompany() && !scopeGroup.isDepot() %>">
-					<aui:fieldset collapsed="<%= true %>" collapsible="<%= true %>" label="display-page-template">
+					<aui:fieldset collapsed="<%= true %>" collapsible="<%= true %>" label="display-page">
 						<liferay-asset:select-asset-display-page
 							classNameId="<%= PortalUtil.getClassNameId(FileEntry.class) %>"
 							classPK="<%= (fileEntry != null) ? fileEntry.getFileEntryId() : 0 %>"
@@ -536,6 +536,25 @@ renderResponse.setTitle(headerTitle);
 							classPK="<%= assetClassPK %>"
 						/>
 					</aui:fieldset>
+
+					<c:if test="<%= FFExpirationDateReviewDateConfigurationUtil.expirationDateEnabled() || FFExpirationDateReviewDateConfigurationUtil.reviewDateEnabled() %>">
+						<aui:fieldset collapsed="<%= true %>" collapsible="<%= true %>" label="expiration-date">
+							<c:if test="<%= FFExpirationDateReviewDateConfigurationUtil.expirationDateEnabled() %>">
+								<liferay-ui:error exception="<%= FileEntryExpirationDateException.class %>" message="please-enter-a-valid-expiration-date" />
+								<liferay-ui:error exception="<%= FileEntryReviewDateException.class %>" message="please-enter-a-valid-review-date" />
+
+								<p class="text-secondary">
+									<liferay-ui:message key="including-an-expiration-date-will-allow-your-documents-or-media-to-expire-automatically-and-become-unpublished" />
+								</p>
+
+								<aui:input dateTogglerCheckboxLabel="never-expire" disabled="<%= dlEditFileEntryDisplayContext.isNeverExpire() %>" name="expirationDate" wrapperCssClass="expiration-date" />
+							</c:if>
+
+							<c:if test="<%= FFExpirationDateReviewDateConfigurationUtil.reviewDateEnabled() %>">
+								<aui:input dateTogglerCheckboxLabel="never-review" disabled="<%= dlEditFileEntryDisplayContext.isNeverReview() %>" name="reviewDate" wrapperCssClass="review-date" />
+							</c:if>
+						</aui:fieldset>
+					</c:if>
 
 					<aui:fieldset collapsed="<%= true %>" collapsible="<%= true %>" label="related-assets">
 						<liferay-asset:input-asset-links
@@ -733,5 +752,5 @@ else {
 %>
 
 <%!
-private static Log _log = LogFactoryUtil.getLog("com_liferay_document_library_web.document_library.edit_file_entry_jsp");
+private static final Log _log = LogFactoryUtil.getLog("com_liferay_document_library_web.document_library.edit_file_entry_jsp");
 %>

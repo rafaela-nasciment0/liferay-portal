@@ -49,7 +49,7 @@ import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
-import com.liferay.taglib.servlet.PipingServletResponse;
+import com.liferay.taglib.servlet.PipingServletResponseFactory;
 
 import java.util.List;
 import java.util.Locale;
@@ -435,11 +435,9 @@ public class DDMHelperImpl implements DDMHelper {
 					curLocalizedValue.getDefaultLocale(), entry.getKey());
 			}
 
-			if (Validator.isNull(optionValueKey)) {
-				return localizedValue;
-			}
+			if (Validator.isNull(optionValueKey) ||
+				Objects.equals(optionValueKey, entry.getKey())) {
 
-			if (Objects.equals(optionValueKey, entry.getKey())) {
 				return localizedValue;
 			}
 		}
@@ -517,7 +515,8 @@ public class DDMHelperImpl implements DDMHelper {
 
 		if (pageContext != null) {
 			httpServletResponse =
-				PipingServletResponse.createPipingServletResponse(pageContext);
+				PipingServletResponseFactory.createPipingServletResponse(
+					pageContext);
 		}
 
 		DDMFormRenderingContext ddmFormRenderingContext =

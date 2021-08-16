@@ -164,21 +164,21 @@ public class JournalHistoryDisplayContext {
 			"/view_article_history.jsp"
 		).setRedirect(
 			_getRedirect()
-		).setParameter(
-			"backURL", getBackURL()
-		).setParameter(
-			"referringPortletResource", getReferringPortletResource()
-		).setParameter(
-			"groupId", _article.getGroupId()
+		).setBackURL(
+			getBackURL()
 		).setParameter(
 			"articleId", _article.getArticleId()
 		).setParameter(
 			"displayStyle", getDisplayStyle()
 		).setParameter(
+			"groupId", _article.getGroupId()
+		).setParameter(
 			"orderByCol", getOrderByCol()
 		).setParameter(
 			"orderByType", getOrderByType()
-		).build();
+		).setParameter(
+			"referringPortletResource", getReferringPortletResource()
+		).buildPortletURL();
 	}
 
 	public String getReferringPortletResource() {

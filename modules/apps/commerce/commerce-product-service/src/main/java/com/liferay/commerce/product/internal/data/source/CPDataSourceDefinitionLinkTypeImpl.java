@@ -27,7 +27,6 @@ import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.search.Field;
 import com.liferay.portal.kernel.search.SearchContext;
 import com.liferay.portal.kernel.util.HashMapBuilder;
-import com.liferay.portal.kernel.util.LinkedHashMapBuilder;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 
@@ -81,7 +80,7 @@ public class CPDataSourceDefinitionLinkTypeImpl implements CPDataSource {
 
 		SearchContext searchContext = new SearchContext();
 
-		Map<String, Serializable> attributes =
+		searchContext.setAttributes(
 			HashMapBuilder.<String, Serializable>put(
 				Field.STATUS, WorkflowConstants.STATUS_APPROVED
 			).put(
@@ -91,18 +90,8 @@ public class CPDataSourceDefinitionLinkTypeImpl implements CPDataSource {
 				"definitionLinkType", _cpDefinitionLinkTypeConfiguration.type()
 			).put(
 				"excludedCPDefinitionId", cpCatalogEntry.getCPDefinitionId()
-			).put(
-				"params",
-				LinkedHashMapBuilder.<String, Object>put(
-					"keywords", StringPool.STAR
-				).build()
-			).build();
-
-		searchContext.setAttributes(attributes);
-
+			).build());
 		searchContext.setCompanyId(_portal.getCompanyId(httpServletRequest));
-
-		searchContext.setKeywords(StringPool.STAR);
 
 		return _cpDefinitionHelper.search(
 			_portal.getScopeGroupId(httpServletRequest), searchContext,

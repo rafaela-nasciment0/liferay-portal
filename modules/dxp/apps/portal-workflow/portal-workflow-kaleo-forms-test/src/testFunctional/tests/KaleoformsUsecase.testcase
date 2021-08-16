@@ -580,9 +580,10 @@ definition {
 			panel = "Control Panel",
 			portlet = "Roles");
 
-		Role.assignRegRoleCP(
-			roleTitle = "KaleoRegRole Name",
-			userScreenName = "usersn");
+		Role.addAssignee(
+			assigneeName = "userfn userln",
+			assigneeType = "Users",
+			roleTitle = "KaleoRegRole Name");
 
 		User.logoutAndLoginPG(
 			userLoginEmailAddress = "userea@liferay.com",
@@ -699,9 +700,10 @@ definition {
 			panel = "Control Panel",
 			portlet = "Roles");
 
-		Role.assignRegRoleCP(
-			roleTitle = "Portal Content Reviewer",
-			userScreenName = "usersn");
+		Role.addAssignee(
+			assigneeName = "userfn userln",
+			assigneeType = "Users",
+			roleTitle = "Portal Content Reviewer");
 
 		Navigator.openURL();
 
@@ -862,9 +864,10 @@ definition {
 			panel = "Control Panel",
 			portlet = "Roles");
 
-		Role.assignRegRoleCP(
-			roleTitle = "Portal Content Reviewer",
-			userScreenName = "usersn");
+		Role.addAssignee(
+			assigneeName = "userfn userln",
+			assigneeType = "Users",
+			roleTitle = "Portal Content Reviewer");
 
 		Navigator.openURL();
 
@@ -946,7 +949,7 @@ definition {
 			workflowAssetType = "${workflowAssetType}",
 			workflowTask = "Review");
 
-		Workflow.assignByDetails(user = "userfn userln");
+		Workflow.assignByDetails(user = "usersn (userfn userln)");
 
 		User.logoutAndLoginPG(
 			userLoginEmailAddress = "userea@liferay.com",
@@ -1030,9 +1033,10 @@ definition {
 			panel = "Control Panel",
 			portlet = "Roles");
 
-		Role.assignRegRoleCP(
-			roleTitle = "Portal Content Reviewer",
-			userScreenName = "usersn");
+		Role.addAssignee(
+			assigneeName = "userfn userln",
+			assigneeType = "Users",
+			roleTitle = "Portal Content Reviewer");
 
 		Navigator.openURL();
 
@@ -1242,9 +1246,10 @@ definition {
 			panel = "Control Panel",
 			portlet = "Roles");
 
-		Role.assignRegRoleCP(
-			roleTitle = "KaleoRegRole Name",
-			userScreenName = "usersn");
+		Role.addAssignee(
+			assigneeName = "userfn userln",
+			assigneeType = "Users",
+			roleTitle = "KaleoRegRole Name");
 
 		Navigator.openURL();
 
@@ -1389,9 +1394,10 @@ definition {
 			panel = "Control Panel",
 			portlet = "Roles");
 
-		Role.assignRegRoleCP(
-			roleTitle = "KaleoRegRole Name",
-			userScreenName = "usersn");
+		Role.addAssignee(
+			assigneeName = "userfn userln",
+			assigneeType = "Users",
+			roleTitle = "KaleoRegRole Name");
 
 		User.logoutAndLoginPG(
 			userLoginEmailAddress = "userea@liferay.com",
@@ -1589,8 +1595,6 @@ definition {
 
 	@priority = "3"
 	test CompleteProcessAndAssertFieldOrder {
-		property portal.upstream = "quarantine";
-
 		Navigator.openURL();
 
 		ProductMenu.gotoPortlet(
@@ -1607,14 +1611,14 @@ definition {
 			fieldName = "Select");
 
 		DynamicDataMapping.addField(
-			field = "Text Box",
-			fieldFieldLabel = "Text Box",
-			fieldName = "TextBox");
+			field = "Text",
+			fieldFieldLabel = "Text1",
+			fieldName = "Text1");
 
 		DynamicDataMapping.addField(
 			field = "Text",
-			fieldFieldLabel = "Text",
-			fieldName = "Text");
+			fieldFieldLabel = "Text2",
+			fieldName = "Text2");
 
 		KaleoFormsAdmin.saveFieldSet();
 
@@ -1654,7 +1658,7 @@ definition {
 
 		KaleoFormsAdmin.addForm(kfFormName = "Review Task Form");
 
-		DynamicDataMapping.deleteField(fieldFieldLabel = "Text Box");
+		DynamicDataMapping.deleteField(fieldFieldLabel = "Text1");
 
 		KaleoFormsAdmin.saveForm();
 
@@ -1682,13 +1686,13 @@ definition {
 			fieldName = "Select",
 			kfProcessFieldData = "option 2");
 
-		KaleoFormsAdmin.populateFieldTextBox(
-			fieldName = "TextBox",
-			kfProcessFieldData = "Test Box Description");
+		KaleoFormsAdmin.populateFieldText(
+			fieldName = "Text1",
+			kfProcessFieldData = "Test 1 Description");
 
 		KaleoFormsAdmin.populateFieldText(
-			fieldName = "Text",
-			kfProcessFieldData = "Test Description");
+			fieldName = "Text2",
+			kfProcessFieldData = "Test 2 Description");
 
 		AssertTextEquals(
 			locator1 = "//div[contains(@class,'field-wrapper')][1]//label",
@@ -1696,11 +1700,11 @@ definition {
 
 		AssertTextEquals(
 			locator1 = "//div[contains(@class,'field-wrapper')][2]//label",
-			value1 = "Text Box");
+			value1 = "Text1");
 
 		AssertTextEquals(
 			locator1 = "//div[contains(@class,'field-wrapper')][3]//label",
-			value1 = "Text");
+			value1 = "Text2");
 
 		KaleoFormsAdmin.saveProcessRecord();
 
@@ -1725,10 +1729,10 @@ definition {
 			fieldValue = "option 2");
 
 		WorkflowAsset.previewViewContent(
-			fieldLabel = "Text",
-			fieldValue = "Test Description");
+			fieldLabel = "Text2",
+			fieldValue = "Test 2 Description");
 
-		WorkflowAsset.previewViewContentFieldNotPresent(fieldLabel = "Text Box");
+		WorkflowAsset.previewViewContentFieldNotPresent(fieldLabel = "Text1");
 
 		UserBar.gotoDropdownItem(dropdownItem = "My Workflow Tasks");
 
@@ -1751,10 +1755,10 @@ definition {
 			fieldValue = "option 2");
 
 		WorkflowAsset.previewViewContent(
-			fieldLabel = "Text",
-			fieldValue = "Test Description");
+			fieldLabel = "Text2",
+			fieldValue = "Test 2 Description");
 
-		WorkflowAsset.previewViewContentFieldNotPresent(fieldLabel = "Text Box");
+		WorkflowAsset.previewViewContentFieldNotPresent(fieldLabel = "Text1");
 
 		AssertTextEquals(
 			locator1 = "//div[contains(@class,'field-wrapper')][1]//label",
@@ -1762,11 +1766,13 @@ definition {
 
 		AssertTextEquals(
 			locator1 = "//div[contains(@class,'field-wrapper')][2]//label",
-			value1 = "Text");
+			value1 = "Text2");
 	}
 
 	@priority = "5"
 	test CompleteProcessAndViewNotifications {
+		property portal.acceptance = "true";
+
 		Navigator.openURL();
 
 		ProductMenu.gotoPortlet(
@@ -2103,7 +2109,6 @@ definition {
 	test CompleteProcessWithUploadedDefinition {
 		property portal.acceptance = "true";
 		property test.name.skip.portal.instance = "KaleoformsUsecase#CompleteProcessWithUploadedDefinition";
-		property testray.component.names = "Training";
 
 		ApplicationsMenu.gotoPortlet(
 			category = "Workflow",
@@ -2498,6 +2503,7 @@ definition {
 			fieldValue = "Test Data");
 	}
 
+	@ignore = "true"
 	@priority = "3"
 	test EditProcessFieldSetAfterFormSubmission {
 		Navigator.openURL();
@@ -2670,14 +2676,6 @@ definition {
 			category = "Content &amp; Data",
 			portlet = "Kaleo Forms Admin");
 
-		KaleoFormsAdmin.viewProcess(kfProcessName = "Kaleo Forms Process");
-
-		KaleoFormsAdmin.editProcess(kfProcessName = "Kaleo Forms Process");
-
-		KaleoFormsAdmin.editProcessDetails();
-
-		KaleoFormsAdmin.next();
-
 		KaleoFormsAdmin.addFieldSet(
 			kfFieldSetName = "${kfFieldSetName} Edit",
 			kfProcessName = "${kfProcessName}");
@@ -2688,6 +2686,18 @@ definition {
 			fieldName = "Date");
 
 		KaleoFormsAdmin.saveFieldSet();
+
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			portlet = "Kaleo Forms Admin");
+
+		KaleoFormsAdmin.viewProcess(kfProcessName = "Kaleo Forms Process");
+
+		KaleoFormsAdmin.editProcess(kfProcessName = "Kaleo Forms Process");
+
+		KaleoFormsAdmin.editProcessDetails();
+
+		KaleoFormsAdmin.next();
 
 		KaleoFormsAdmin.chooseFieldSet(
 			kfFieldSetName = "${kfFieldSetName} Edit",
@@ -3114,12 +3124,6 @@ definition {
 			category = "Content &amp; Data",
 			portlet = "Kaleo Forms Admin");
 
-		KaleoFormsAdmin.editProcess(kfProcessName = "Kaleo Forms Process");
-
-		KaleoFormsAdmin.editProcessDetails(kfPendingForm = "true");
-
-		KaleoFormsAdmin.next();
-
 		KaleoFormsAdmin.addFieldSet(
 			kfFieldSetName = "${kfFieldSetName} Edit",
 			kfProcessName = "${kfProcessName}");
@@ -3130,6 +3134,16 @@ definition {
 			fieldName = "Date");
 
 		KaleoFormsAdmin.saveFieldSet();
+
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			portlet = "Kaleo Forms Admin");
+
+		KaleoFormsAdmin.editProcess(kfProcessName = "Kaleo Forms Process");
+
+		KaleoFormsAdmin.editProcessDetails(kfPendingForm = "true");
+
+		KaleoFormsAdmin.next();
 
 		KaleoFormsAdmin.chooseFieldSet(
 			kfFieldSetName = "${kfFieldSetName} Edit",
@@ -3236,14 +3250,6 @@ definition {
 			category = "Content &amp; Data",
 			portlet = "Kaleo Forms Admin");
 
-		KaleoFormsAdmin.viewProcess(kfProcessName = "Kaleo Forms Process");
-
-		KaleoFormsAdmin.editProcess(kfProcessName = "Kaleo Forms Process");
-
-		KaleoFormsAdmin.editProcessDetails();
-
-		KaleoFormsAdmin.next();
-
 		KaleoFormsAdmin.addFieldSet(
 			kfFieldSetName = "${kfFieldSetName} Edit",
 			kfProcessName = "${kfProcessName}");
@@ -3254,6 +3260,18 @@ definition {
 			fieldName = "Date");
 
 		KaleoFormsAdmin.saveFieldSet();
+
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			portlet = "Kaleo Forms Admin");
+
+		KaleoFormsAdmin.viewProcess(kfProcessName = "Kaleo Forms Process");
+
+		KaleoFormsAdmin.editProcess(kfProcessName = "Kaleo Forms Process");
+
+		KaleoFormsAdmin.editProcessDetails();
+
+		KaleoFormsAdmin.next();
 
 		KaleoFormsAdmin.chooseFieldSet(
 			kfFieldSetName = "${kfFieldSetName} Edit",
@@ -4085,6 +4103,8 @@ definition {
 
 	@priority = "5"
 	test ViewApprovedProcessRecords {
+		property portal.acceptance = "true";
+
 		Navigator.openURL();
 
 		ProductMenu.gotoPortlet(
@@ -4272,9 +4292,10 @@ definition {
 			panel = "Control Panel",
 			portlet = "Roles");
 
-		Role.assignRegRoleCP(
-			roleTitle = "Administrator",
-			userScreenName = "usersn");
+		Role.addAssignee(
+			assigneeName = "userfn userln",
+			assigneeType = "Users",
+			roleTitle = "Administrator");
 
 		User.logoutAndLoginPG(
 			userLoginEmailAddress = "userea@liferay.com",
@@ -5207,6 +5228,8 @@ definition {
 
 	@priority = "5"
 	test WithdrawProcess {
+		property portal.acceptance = "true";
+
 		Navigator.openURL();
 
 		ProductMenu.gotoPortlet(

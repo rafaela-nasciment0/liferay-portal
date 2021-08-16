@@ -2687,25 +2687,25 @@ public class CommerceShipmentPersistenceImpl
 		ServiceContext serviceContext =
 			ServiceContextThreadLocal.getServiceContext();
 
-		Date now = new Date();
+		Date date = new Date();
 
 		if (isNew && (commerceShipment.getCreateDate() == null)) {
 			if (serviceContext == null) {
-				commerceShipment.setCreateDate(now);
+				commerceShipment.setCreateDate(date);
 			}
 			else {
 				commerceShipment.setCreateDate(
-					serviceContext.getCreateDate(now));
+					serviceContext.getCreateDate(date));
 			}
 		}
 
 		if (!commerceShipmentModelImpl.hasSetModifiedDate()) {
 			if (serviceContext == null) {
-				commerceShipment.setModifiedDate(now);
+				commerceShipment.setModifiedDate(date);
 			}
 			else {
 				commerceShipment.setModifiedDate(
-					serviceContext.getModifiedDate(now));
+					serviceContext.getModifiedDate(date));
 			}
 		}
 
@@ -3174,6 +3174,13 @@ public class CommerceShipmentPersistenceImpl
 						commerceShipmentModelImpl.getColumnBitmask(columnName);
 				}
 
+				if (finderPath.isBaseModelResult() &&
+					(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION ==
+						finderPath.getCacheName())) {
+
+					finderPathColumnBitmask |= _ORDER_BY_COLUMNS_BITMASK;
+				}
+
 				_finderPathColumnBitmasksCache.put(
 					finderPath, finderPathColumnBitmask);
 			}
@@ -3196,7 +3203,7 @@ public class CommerceShipmentPersistenceImpl
 			return CommerceShipmentTable.INSTANCE.getTableName();
 		}
 
-		private Object[] _getValue(
+		private static Object[] _getValue(
 			CommerceShipmentModelImpl commerceShipmentModelImpl,
 			String[] columnNames, boolean original) {
 
@@ -3219,8 +3226,19 @@ public class CommerceShipmentPersistenceImpl
 			return arguments;
 		}
 
-		private static Map<FinderPath, Long> _finderPathColumnBitmasksCache =
-			new ConcurrentHashMap<>();
+		private static final Map<FinderPath, Long>
+			_finderPathColumnBitmasksCache = new ConcurrentHashMap<>();
+
+		private static final long _ORDER_BY_COLUMNS_BITMASK;
+
+		static {
+			long orderByColumnsBitmask = 0;
+
+			orderByColumnsBitmask |= CommerceShipmentModelImpl.getColumnBitmask(
+				"createDate");
+
+			_ORDER_BY_COLUMNS_BITMASK = orderByColumnsBitmask;
+		}
 
 	}
 

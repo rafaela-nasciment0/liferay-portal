@@ -2916,24 +2916,24 @@ public class JournalFeedPersistenceImpl
 		ServiceContext serviceContext =
 			ServiceContextThreadLocal.getServiceContext();
 
-		Date now = new Date();
+		Date date = new Date();
 
 		if (isNew && (journalFeed.getCreateDate() == null)) {
 			if (serviceContext == null) {
-				journalFeed.setCreateDate(now);
+				journalFeed.setCreateDate(date);
 			}
 			else {
-				journalFeed.setCreateDate(serviceContext.getCreateDate(now));
+				journalFeed.setCreateDate(serviceContext.getCreateDate(date));
 			}
 		}
 
 		if (!journalFeedModelImpl.hasSetModifiedDate()) {
 			if (serviceContext == null) {
-				journalFeed.setModifiedDate(now);
+				journalFeed.setModifiedDate(date);
 			}
 			else {
 				journalFeed.setModifiedDate(
-					serviceContext.getModifiedDate(now));
+					serviceContext.getModifiedDate(date));
 			}
 		}
 
@@ -3355,7 +3355,8 @@ public class JournalFeedPersistenceImpl
 	public Set<String> getCTColumnNames(
 		CTColumnResolutionType ctColumnResolutionType) {
 
-		return _ctColumnNamesMap.get(ctColumnResolutionType);
+		return _ctColumnNamesMap.getOrDefault(
+			ctColumnResolutionType, Collections.emptySet());
 	}
 
 	@Override
@@ -3389,7 +3390,6 @@ public class JournalFeedPersistenceImpl
 	static {
 		Set<String> ctControlColumnNames = new HashSet<String>();
 		Set<String> ctIgnoreColumnNames = new HashSet<String>();
-		Set<String> ctMergeColumnNames = new HashSet<String>();
 		Set<String> ctStrictColumnNames = new HashSet<String>();
 
 		ctControlColumnNames.add("mvccVersion");
@@ -3421,7 +3421,6 @@ public class JournalFeedPersistenceImpl
 			CTColumnResolutionType.CONTROL, ctControlColumnNames);
 		_ctColumnNamesMap.put(
 			CTColumnResolutionType.IGNORE, ctIgnoreColumnNames);
-		_ctColumnNamesMap.put(CTColumnResolutionType.MERGE, ctMergeColumnNames);
 		_ctColumnNamesMap.put(
 			CTColumnResolutionType.PK, Collections.singleton("id_"));
 		_ctColumnNamesMap.put(
@@ -3670,6 +3669,13 @@ public class JournalFeedPersistenceImpl
 						journalFeedModelImpl.getColumnBitmask(columnName);
 				}
 
+				if (finderPath.isBaseModelResult() &&
+					(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION ==
+						finderPath.getCacheName())) {
+
+					finderPathColumnBitmask |= _ORDER_BY_COLUMNS_BITMASK;
+				}
+
 				_finderPathColumnBitmasksCache.put(
 					finderPath, finderPathColumnBitmask);
 			}
@@ -3691,7 +3697,7 @@ public class JournalFeedPersistenceImpl
 			return JournalFeedTable.INSTANCE.getTableName();
 		}
 
-		private Object[] _getValue(
+		private static Object[] _getValue(
 			JournalFeedModelImpl journalFeedModelImpl, String[] columnNames,
 			boolean original) {
 
@@ -3713,8 +3719,19 @@ public class JournalFeedPersistenceImpl
 			return arguments;
 		}
 
-		private static Map<FinderPath, Long> _finderPathColumnBitmasksCache =
-			new ConcurrentHashMap<>();
+		private static final Map<FinderPath, Long>
+			_finderPathColumnBitmasksCache = new ConcurrentHashMap<>();
+
+		private static final long _ORDER_BY_COLUMNS_BITMASK;
+
+		static {
+			long orderByColumnsBitmask = 0;
+
+			orderByColumnsBitmask |= JournalFeedModelImpl.getColumnBitmask(
+				"feedId");
+
+			_ORDER_BY_COLUMNS_BITMASK = orderByColumnsBitmask;
+		}
 
 	}
 

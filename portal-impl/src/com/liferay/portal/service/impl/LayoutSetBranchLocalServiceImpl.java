@@ -124,9 +124,10 @@ public class LayoutSetBranchLocalServiceImpl
 			long layoutSetBranchLogoId = counterLocalService.increment();
 
 			imageLocalService.updateImage(
-				layoutSetBranchLogoId, logoImage.getTextObj(),
-				logoImage.getType(), logoImage.getHeight(),
-				logoImage.getWidth(), logoImage.getSize());
+				layoutSetBranch.getCompanyId(), layoutSetBranchLogoId,
+				logoImage.getTextObj(), logoImage.getType(),
+				logoImage.getHeight(), logoImage.getWidth(),
+				logoImage.getSize());
 
 			layoutSetBranch.setLogoId(layoutSetBranchLogoId);
 		}
@@ -363,8 +364,19 @@ public class LayoutSetBranchLocalServiceImpl
 		List<LayoutSetBranch> layoutSetBranches =
 			layoutSetBranchPersistence.findByG_P(groupId, privateLayout);
 
+		LayoutSetBranch masterLayoutSetBranch = null;
+
 		for (LayoutSetBranch layoutSetBranch : layoutSetBranches) {
-			deleteLayoutSetBranch(layoutSetBranch, includeMaster);
+			if (layoutSetBranch.isMaster()) {
+				masterLayoutSetBranch = layoutSetBranch;
+			}
+			else {
+				deleteLayoutSetBranch(layoutSetBranch, includeMaster);
+			}
+		}
+
+		if (masterLayoutSetBranch != null) {
+			deleteLayoutSetBranch(masterLayoutSetBranch, includeMaster);
 		}
 	}
 

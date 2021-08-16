@@ -27,15 +27,12 @@ import com.liferay.portal.model.impl.GroupImpl;
  */
 public class CommerceChannelImpl extends CommerceChannelBaseImpl {
 
-	public CommerceChannelImpl() {
-	}
-
 	@Override
 	public Group getGroup() {
 		if (getCommerceChannelId() > 0) {
 			try {
-				return CommerceChannelLocalServiceUtil.getCommerceChannelGroup(
-					getCommerceChannelId());
+				return CommerceChannelLocalServiceUtil.
+					fetchCommerceChannelGroup(getCommerceChannelId());
 			}
 			catch (Exception exception) {
 				_log.error("Unable to get commerce channel group", exception);
@@ -48,6 +45,10 @@ public class CommerceChannelImpl extends CommerceChannelBaseImpl {
 	@Override
 	public long getGroupId() {
 		Group group = getGroup();
+
+		if (group == null) {
+			return 0;
+		}
 
 		return group.getGroupId();
 	}

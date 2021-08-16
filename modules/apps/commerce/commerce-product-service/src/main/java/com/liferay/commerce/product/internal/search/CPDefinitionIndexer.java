@@ -14,6 +14,7 @@
 
 package com.liferay.commerce.product.internal.search;
 
+import com.liferay.commerce.account.constants.CommerceAccountConstants;
 import com.liferay.commerce.account.model.CommerceAccountGroupRel;
 import com.liferay.commerce.account.service.CommerceAccountGroupRelService;
 import com.liferay.commerce.media.CommerceMediaResolver;
@@ -207,32 +208,33 @@ public class CPDefinitionIndexer extends BaseIndexer<CPDefinition> {
 			long commerceChannelId = GetterUtil.getLong(
 				attributes.get("commerceChannelGroupId"));
 
-			BooleanFilter channelBooleanFiler = new BooleanFilter();
+			BooleanFilter channelBooleanFilter = new BooleanFilter();
 
-			BooleanFilter channelFilterEnableBooleanFiler = new BooleanFilter();
+			BooleanFilter channelFilterEnableBooleanFilter =
+				new BooleanFilter();
 
-			channelFilterEnableBooleanFiler.addTerm(
+			channelFilterEnableBooleanFilter.addTerm(
 				CPField.CHANNEL_FILTER_ENABLED, Boolean.TRUE.toString(),
 				BooleanClauseOccur.MUST);
 
 			if (commerceChannelId > 0) {
-				channelFilterEnableBooleanFiler.addTerm(
+				channelFilterEnableBooleanFilter.addTerm(
 					CPField.CHANNEL_GROUP_IDS,
 					String.valueOf(commerceChannelId), BooleanClauseOccur.MUST);
 			}
 			else {
-				channelFilterEnableBooleanFiler.addTerm(
+				channelFilterEnableBooleanFilter.addTerm(
 					CPField.CHANNEL_GROUP_IDS, "-1", BooleanClauseOccur.MUST);
 			}
 
-			channelBooleanFiler.add(
-				channelFilterEnableBooleanFiler, BooleanClauseOccur.SHOULD);
-			channelBooleanFiler.addTerm(
+			channelBooleanFilter.add(
+				channelFilterEnableBooleanFilter, BooleanClauseOccur.SHOULD);
+			channelBooleanFilter.addTerm(
 				CPField.CHANNEL_FILTER_ENABLED, Boolean.FALSE.toString(),
 				BooleanClauseOccur.SHOULD);
 
 			contextBooleanFilter.add(
-				channelBooleanFiler, BooleanClauseOccur.MUST);
+				channelBooleanFilter, BooleanClauseOccur.MUST);
 
 			long[] commerceAccountGroupIds = GetterUtil.getLongValues(
 				searchContext.getAttribute("commerceAccountGroupIds"), null);
@@ -723,21 +725,22 @@ public class CPDefinitionIndexer extends BaseIndexer<CPDefinition> {
 		if (cpAttachmentFileEntryId == 0) {
 			document.addKeyword(
 				CPField.DEFAULT_IMAGE_FILE_URL,
-				_commerceMediaResolver.getDefaultUrl(
+				_commerceMediaResolver.getDefaultURL(
 					cpDefinition.getGroupId()));
 		}
 		else {
 			document.addKeyword(
 				CPField.DEFAULT_IMAGE_FILE_URL,
-				_commerceMediaResolver.getUrl(
+				_commerceMediaResolver.getURL(
+					CommerceAccountConstants.ACCOUNT_ID_GUEST,
 					cpAttachmentFileEntryId, false, false, false));
 		}
 
-		if ((cpDefinition.getStatus() != WorkflowConstants.STATUS_APPROVED) ||
-			((cpDefinition.getCPDefinitionId() !=
+		if ((cpDefinition.getStatus() != WorkflowConstants.STATUS_APPROVED) &&
+			(cpDefinition.getCPDefinitionId() !=
 				cProduct.getPublishedCPDefinitionId()) &&
-			 _cpDefinitionLocalService.isVersionable(
-				 cpDefinition.getCPDefinitionId()))) {
+			_cpDefinitionLocalService.isVersionable(
+				cpDefinition.getCPDefinitionId())) {
 
 			document.addKeyword(Field.HIDDEN, true);
 		}
@@ -755,7 +758,17 @@ public class CPDefinitionIndexer extends BaseIndexer<CPDefinition> {
 		if (cpInstances.size() == 1) {
 			CPInstance cpInstance = cpInstances.get(0);
 
-			document.addNumber(CPField.BASE_PRICE, cpInstance.getPrice());
+			BigDecimal price = cpInstance.getPrice();
+			BigDecimal promoPrice = cpInstance.getPromoPrice();
+
+			if ((promoPrice.compareTo(BigDecimal.ZERO) > 0) &&
+				CommerceBigDecimalUtil.lt(promoPrice, price)) {
+
+				document.addNumber(CPField.BASE_PRICE, promoPrice);
+			}
+			else {
+				document.addNumber(CPField.BASE_PRICE, price);
+			}
 		}
 		else if (!cpInstances.isEmpty()) {
 			CPInstance firstCPInstance = cpInstances.get(0);
@@ -776,6 +789,14 @@ public class CPDefinitionIndexer extends BaseIndexer<CPDefinition> {
 							CommercePriceListConstants.TYPE_PRICE_LIST);
 
 				BigDecimal price = commercePriceEntry.getPrice();
+
+				BigDecimal promoPrice = cpInstance.getPromoPrice();
+
+				if ((promoPrice.compareTo(BigDecimal.ZERO) > 0) &&
+					CommerceBigDecimalUtil.lt(promoPrice, price)) {
+
+					price = promoPrice;
+				}
 
 				if (CommerceBigDecimalUtil.lt(price, lowestPrice)) {
 					lowestPrice = price;

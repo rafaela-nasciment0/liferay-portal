@@ -36,6 +36,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 
@@ -354,8 +355,14 @@ public class ExpandoRowModelImpl
 		return _modifiedDate;
 	}
 
+	public boolean hasSetModifiedDate() {
+		return _setModifiedDate;
+	}
+
 	@Override
 	public void setModifiedDate(Date modifiedDate) {
+		_setModifiedDate = true;
+
 		if (_columnOriginalValues == Collections.EMPTY_MAP) {
 			_setColumnOriginalValues();
 		}
@@ -423,7 +430,9 @@ public class ExpandoRowModelImpl
 		for (Map.Entry<String, Object> entry :
 				_columnOriginalValues.entrySet()) {
 
-			if (entry.getValue() != getColumnValue(entry.getKey())) {
+			if (!Objects.equals(
+					entry.getValue(), getColumnValue(entry.getKey()))) {
+
 				_columnBitmask |= _columnBitmasks.get(entry.getKey());
 			}
 		}
@@ -526,6 +535,8 @@ public class ExpandoRowModelImpl
 	@Override
 	public void resetOriginalValues() {
 		_columnOriginalValues = Collections.emptyMap();
+
+		_setModifiedDate = false;
 
 		_columnBitmask = 0;
 	}
@@ -633,6 +644,7 @@ public class ExpandoRowModelImpl
 	private long _rowId;
 	private long _companyId;
 	private Date _modifiedDate;
+	private boolean _setModifiedDate;
 	private long _tableId;
 	private long _classPK;
 

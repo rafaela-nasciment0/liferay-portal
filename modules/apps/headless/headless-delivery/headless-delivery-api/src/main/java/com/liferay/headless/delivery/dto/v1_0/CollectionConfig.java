@@ -57,7 +57,7 @@ public class CollectionConfig implements Serializable {
 		return ObjectMapperUtil.readValue(CollectionConfig.class, json);
 	}
 
-	@Schema
+	@Schema(description = "The page collection's reference.")
 	@Valid
 	public Object getCollectionReference() {
 		return collectionReference;
@@ -82,12 +82,14 @@ public class CollectionConfig implements Serializable {
 		}
 	}
 
-	@GraphQLField
+	@GraphQLField(description = "The page collection's reference.")
 	@JsonProperty(access = JsonProperty.Access.READ_WRITE)
 	@NotNull
 	protected Object collectionReference;
 
-	@Schema
+	@Schema(
+		description = "The page collection's type (Collection, CollectionProvider)."
+	)
 	@Valid
 	public CollectionType getCollectionType() {
 		return collectionType;
@@ -122,7 +124,9 @@ public class CollectionConfig implements Serializable {
 		}
 	}
 
-	@GraphQLField
+	@GraphQLField(
+		description = "The page collection's type (Collection, CollectionProvider)."
+	)
 	@JsonProperty(access = JsonProperty.Access.READ_WRITE)
 	@NotNull
 	protected CollectionType collectionType;
@@ -197,13 +201,17 @@ public class CollectionConfig implements Serializable {
 
 		@JsonCreator
 		public static CollectionType create(String value) {
+			if ((value == null) || value.equals("")) {
+				return null;
+			}
+
 			for (CollectionType collectionType : values()) {
 				if (Objects.equals(collectionType.getValue(), value)) {
 					return collectionType;
 				}
 			}
 
-			return null;
+			throw new IllegalArgumentException("Invalid enum value: " + value);
 		}
 
 		@JsonValue

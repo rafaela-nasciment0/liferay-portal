@@ -20,7 +20,6 @@ import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.util.NaturalOrderStringComparator;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.tools.ToolsUtil;
-import com.liferay.source.formatter.checks.util.JSPSourceUtil;
 import com.liferay.source.formatter.checks.util.JavaSourceUtil;
 
 import java.util.List;
@@ -37,7 +36,7 @@ public class MethodCallsOrderCheck extends BaseFileCheck {
 	protected String doProcess(
 		String fileName, String absolutePath, String content) {
 
-		return _sortMethodCalls(fileName, content);
+		return _sortMethodCalls(content);
 	}
 
 	private String _getMethodCall(String content, int start) {
@@ -127,8 +126,44 @@ public class MethodCallsOrderCheck extends BaseFileCheck {
 		}
 	}
 
+	private String _getTypeName(String content, int lineNumber) {
+		int level = 0;
+
+		while (true) {
+			if (lineNumber == 0) {
+				return null;
+			}
+
+			String trimmedLine = StringUtil.trim(getLine(content, lineNumber));
+
+			if (trimmedLine.endsWith("(") && (level == 0)) {
+				if (trimmedLine.startsWith(").")) {
+					level -= getLevel(trimmedLine);
+					lineNumber--;
+
+					continue;
+				}
+
+				Matcher matcher = _typeNamePattern.matcher(trimmedLine);
+
+				if (matcher.find()) {
+					return matcher.group(2);
+				}
+
+				return null;
+			}
+
+			level -= getLevel(trimmedLine);
+			lineNumber--;
+		}
+	}
+
 	private boolean _isAllowedVariableType(
 		String content, String variableName, String[] variableTypeNames) {
+
+		if (variableName == null) {
+			return false;
+		}
 
 		if (variableTypeNames.length == 0) {
 			return true;
@@ -232,7 +267,9 @@ public class MethodCallsOrderCheck extends BaseFileCheck {
 		}
 
 		Pattern pattern = Pattern.compile(
-			"\\W(\\w+)\\.(<[\\w\\[\\]\\?<>, ]*>)?" + methodName + "\\(");
+			StringBundler.concat(
+				"(\\W(\\w+)\\.(<[\\w\\[\\]\\?<>, ]*>)?|[\n\t]\\)\\.)",
+				methodName, "\\("));
 
 		Matcher matcher = pattern.matcher(content);
 
@@ -240,9 +277,14 @@ public class MethodCallsOrderCheck extends BaseFileCheck {
 			new ParameterNameComparator();
 
 		while (matcher.find()) {
-			if (!_isAllowedVariableType(
-					content, matcher.group(1), variableTypeNames)) {
+			String typeName = matcher.group(2);
 
+			if (typeName == null) {
+				typeName = _getTypeName(
+					content, getLineNumber(content, matcher.start()));
+			}
+
+			if (!_isAllowedVariableType(content, typeName, variableTypeNames)) {
 				continue;
 			}
 
@@ -314,22 +356,23 @@ public class MethodCallsOrderCheck extends BaseFileCheck {
 		return content;
 	}
 
-	private String _sortMethodCalls(String fileName, String content) {
+	private String _sortMethodCalls(String content) {
 		content = _sortChainedMethodCalls(
 			content, "put", 2, "ConcurrentHashMapBuilder", "HashMapBuilder",
 			"JSONObject", "JSONUtil", "SoyContext", "TreeMapBuilder");
+		content = _sortChainedMethodCalls(
+			content, "setParameter", 2, "PortletURLBuilder");
 
 		content = _sortMethodCallsByMethodName(
-			content, "DropdownItem", "LabelItem", "NavigationItem");
+			content, "DropdownItem", "LabelItem", "NavigationItem",
+			"SearchContext", "ServiceContext");
 
 		content = _sortMethodCallsByParameter(
-			fileName, content, "add", "ConcurrentSkipListSet", "HashSet",
-			"TreeSet");
+			content, "add", "ConcurrentSkipListSet", "HashSet", "TreeSet");
 		content = _sortMethodCallsByParameter(
-			fileName, content, "put", "ConcurrentHashMap", "HashMap",
-			"JSONObject", "SortedMap", "TreeMap");
-		content = _sortMethodCallsByParameter(
-			fileName, content, "setAttribute");
+			content, "put", "ConcurrentHashMap", "HashMap", "JSONObject",
+			"SortedMap", "TreeMap");
+		content = _sortMethodCallsByParameter(content, "setAttribute");
 
 		return content;
 	}
@@ -380,8 +423,7 @@ public class MethodCallsOrderCheck extends BaseFileCheck {
 	}
 
 	private String _sortMethodCallsByParameter(
-		String fileName, String content, String methodName,
-		String... variableTypeNames) {
+		String content, String methodName, String... variableTypeNames) {
 
 		content = _sortAnonymousClassMethodCalls(
 			content, methodName, variableTypeNames);
@@ -398,8 +440,7 @@ public class MethodCallsOrderCheck extends BaseFileCheck {
 		while (matcher.find()) {
 			if (!_isAllowedVariableType(
 					content, matcher.group(2), variableTypeNames) ||
-				((fileName.endsWith(".jsp") || fileName.endsWith(".jspf")) &&
-				 !JSPSourceUtil.isJavaSource(content, matcher.start()))) {
+				!isJavaSource(content, matcher.start())) {
 
 				continue;
 			}
@@ -423,6 +464,9 @@ public class MethodCallsOrderCheck extends BaseFileCheck {
 
 		return content;
 	}
+
+	private static final Pattern _typeNamePattern = Pattern.compile(
+		"(\\A|\\W)(\\w+)\\.\\w+\\(");
 
 	private class MethodCallComparator extends ParameterNameComparator {
 

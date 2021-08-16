@@ -110,8 +110,6 @@ import javax.servlet.http.HttpServletRequest;
 
 import jodd.bean.BeanUtil;
 
-import jodd.util.NameValue;
-
 import org.osgi.framework.Bundle;
 import org.osgi.framework.FrameworkUtil;
 import org.osgi.service.component.annotations.Component;
@@ -163,8 +161,8 @@ public class SyncDLObjectServiceImpl extends SyncDLObjectServiceBaseImpl {
 			populateServiceContext(serviceContext, group.getGroupId());
 
 			FileEntry fileEntry = dlAppService.addFileEntry(
-				repositoryId, folderId, sourceFileName, mimeType, title,
-				description, changeLog, file, serviceContext);
+				null, repositoryId, folderId, sourceFileName, mimeType, title,
+				description, changeLog, file, null, null, serviceContext);
 
 			return toSyncDLObject(
 				fileEntry, SyncDLObjectConstants.EVENT_ADD, checksum);
@@ -252,10 +250,9 @@ public class SyncDLObjectServiceImpl extends SyncDLObjectServiceBaseImpl {
 
 			dlAppService.cancelCheckOut(fileEntryId);
 
-			fileEntry = dlAppLocalService.getFileEntry(fileEntryId);
-
 			return toSyncDLObject(
-				fileEntry, SyncDLObjectConstants.EVENT_CANCEL_CHECK_OUT);
+				dlAppLocalService.getFileEntry(fileEntryId),
+				SyncDLObjectConstants.EVENT_CANCEL_CHECK_OUT);
 		}
 		catch (PortalException portalException) {
 			throw new PortalException(
@@ -282,10 +279,9 @@ public class SyncDLObjectServiceImpl extends SyncDLObjectServiceBaseImpl {
 				DLVersionNumberIncrease.fromMajorVersion(majorVersion),
 				changeLog, serviceContext);
 
-			fileEntry = dlAppLocalService.getFileEntry(fileEntryId);
-
 			return toSyncDLObject(
-				fileEntry, SyncDLObjectConstants.EVENT_CHECK_IN);
+				dlAppLocalService.getFileEntry(fileEntryId),
+				SyncDLObjectConstants.EVENT_CHECK_IN);
 		}
 		catch (PortalException portalException) {
 			throw new PortalException(
@@ -308,10 +304,9 @@ public class SyncDLObjectServiceImpl extends SyncDLObjectServiceBaseImpl {
 
 			dlAppService.checkOutFileEntry(fileEntryId, serviceContext);
 
-			fileEntry = dlAppLocalService.getFileEntry(fileEntryId);
-
 			return toSyncDLObject(
-				fileEntry, SyncDLObjectConstants.EVENT_CHECK_OUT);
+				dlAppLocalService.getFileEntry(fileEntryId),
+				SyncDLObjectConstants.EVENT_CHECK_OUT);
 		}
 		catch (PortalException portalException) {
 			throw new PortalException(
@@ -387,10 +382,10 @@ public class SyncDLObjectServiceImpl extends SyncDLObjectServiceBaseImpl {
 			populateServiceContext(serviceContext, group.getGroupId());
 
 			FileEntry fileEntry = dlAppService.addFileEntry(
-				repositoryId, folderId, sourceFileName,
+				null, repositoryId, folderId, sourceFileName,
 				sourceFileEntry.getMimeType(), title, null, null,
 				fileVersion.getContentStream(false), sourceFileEntry.getSize(),
-				serviceContext);
+				null, null, serviceContext);
 
 			return toSyncDLObject(
 				fileEntry, SyncDLObjectConstants.EVENT_ADD,
@@ -701,7 +696,7 @@ public class SyncDLObjectServiceImpl extends SyncDLObjectServiceBaseImpl {
 				};
 			}
 
-			int count = syncDLObjectPersistence.countByM_R_NotE(
+			int count = syncDLObjectPersistence.countByGtM_R_NotE(
 				lastAccessTime, repositoryId, events);
 
 			if (count == 0) {
@@ -729,7 +724,7 @@ public class SyncDLObjectServiceImpl extends SyncDLObjectServiceBaseImpl {
 			List<SyncDLObject> syncDLObjects = null;
 
 			if (retrieveFromCache) {
-				syncDLObjects = syncDLObjectPersistence.findByM_R_NotE(
+				syncDLObjects = syncDLObjectPersistence.findByGtM_R_NotE(
 					lastAccessTime, repositoryId, events, start, end,
 					new SyncDLObjectModifiedTimeComparator());
 			}
@@ -1045,10 +1040,9 @@ public class SyncDLObjectServiceImpl extends SyncDLObjectServiceBaseImpl {
 
 			dlTrashService.restoreFileEntryFromTrash(fileEntryId);
 
-			fileEntry = dlAppLocalService.getFileEntry(fileEntryId);
-
 			return toSyncDLObject(
-				fileEntry, SyncDLObjectConstants.EVENT_RESTORE);
+				dlAppLocalService.getFileEntry(fileEntryId),
+				SyncDLObjectConstants.EVENT_RESTORE);
 		}
 		catch (PortalException portalException) {
 			throw new PortalException(
@@ -1068,9 +1062,9 @@ public class SyncDLObjectServiceImpl extends SyncDLObjectServiceBaseImpl {
 
 			dlTrashService.restoreFolderFromTrash(folderId);
 
-			folder = dlAppLocalService.getFolder(folderId);
-
-			return toSyncDLObject(folder, SyncDLObjectConstants.EVENT_RESTORE);
+			return toSyncDLObject(
+				dlAppLocalService.getFolder(folderId),
+				SyncDLObjectConstants.EVENT_RESTORE);
 		}
 		catch (PortalException portalException) {
 			throw new PortalException(
@@ -1174,6 +1168,7 @@ public class SyncDLObjectServiceImpl extends SyncDLObjectServiceBaseImpl {
 				fileEntryId, sourceFileName, mimeType, title, description,
 				changeLog,
 				DLVersionNumberIncrease.fromMajorVersion(majorVersion), file,
+				fileEntry.getExpirationDate(), fileEntry.getReviewDate(),
 				serviceContext);
 
 			return toSyncDLObject(
@@ -1605,15 +1600,15 @@ public class SyncDLObjectServiceImpl extends SyncDLObjectServiceBaseImpl {
 
 		serviceContext.setRequest(serviceContextThreadLocal.getRequest());
 
-		List<NameValue<String, Object>> innerParameters =
+		List<Map.Entry<String, Object>> innerParameters =
 			jsonWebServiceActionParametersMap.getInnerParameters(
 				"serviceContext");
 
 		if (innerParameters != null) {
-			for (NameValue<String, Object> innerParameter : innerParameters) {
+			for (Map.Entry<String, Object> innerParameter : innerParameters) {
 				try {
-					BeanUtil.setProperty(
-						serviceContext, innerParameter.getName(),
+					BeanUtil.pojo.setProperty(
+						serviceContext, innerParameter.getKey(),
 						innerParameter.getValue());
 				}
 				catch (Exception exception) {

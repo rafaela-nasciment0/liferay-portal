@@ -97,6 +97,7 @@ Group group = siteAdministrationPanelCategoryDisplayContext.getGroup();
 			<c:if test="<%= !group.isDepot() && !group.isCompany() %>">
 				<clay:button
 					cssClass="list-group-heading navigation-link panel-header-link"
+					disabled="<%= !siteAdministrationPanelCategoryDisplayContext.isShowLayoutsTree() %>"
 					displayType="unstyled"
 					icon="pages-tree"
 					id='<%= liferayPortletResponse.getNamespace() + "pagesTreeSidenavToggleId" %>'
@@ -126,7 +127,7 @@ Group group = siteAdministrationPanelCategoryDisplayContext.getGroup();
 		"selPpid", portletDisplay.getId()
 	).setWindowState(
 		LiferayWindowState.EXCLUSIVE
-	).build();
+	).buildPortletURL();
 	%>
 
 	<aui:script sandbox="<%= true %>">
@@ -175,5 +176,5 @@ Group group = siteAdministrationPanelCategoryDisplayContext.getGroup();
 </c:if>
 
 <%!
-private static Log _log = LogFactoryUtil.getLog("com_liferay_product_navigation_site_administration.sites.site_administration_body_jsp");
+private static final Log _log = LogFactoryUtil.getLog("com_liferay_product_navigation_site_administration.sites.site_administration_body_jsp");
 %>

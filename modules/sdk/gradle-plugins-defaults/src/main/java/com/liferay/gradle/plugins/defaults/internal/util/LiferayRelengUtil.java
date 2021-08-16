@@ -198,12 +198,8 @@ public class LiferayRelengUtil {
 
 		Project rootProject = project.getRootProject();
 
-		String gitId = GitUtil.getGitResult(
-			project, rootProject.getProjectDir(), "rev-parse", "--short",
-			"HEAD");
-
 		File gitResultsDir = new File(
-			rootProject.getBuildDir(), "releng/git-results/" + gitId);
+			rootProject.getBuildDir(), "releng/git-results");
 
 		StringBuilder sb = new StringBuilder();
 
@@ -226,7 +222,7 @@ public class LiferayRelengUtil {
 
 		String result = GitUtil.getGitResult(
 			project, artifactProjectDir, "log", "--format=%s",
-			artifactGitId + "..HEAD", ".");
+			artifactGitId + "..HEAD", ":(exclude)test", ".");
 
 		String[] lines = result.split("\\r?\\n");
 
@@ -235,11 +231,9 @@ public class LiferayRelengUtil {
 				logger.info("Git Commit: {}", line);
 			}
 
-			if (Validator.isNull(line)) {
-				continue;
-			}
+			if (Validator.isNull(line) ||
+				line.contains(_IGNORED_MESSAGE_PATTERN)) {
 
-			if (line.contains(_IGNORED_MESSAGE_PATTERN)) {
 				continue;
 			}
 

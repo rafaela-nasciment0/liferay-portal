@@ -368,6 +368,20 @@ public class OrganizationLocalServiceImpl
 			passwordPolicyId, Organization.class.getName(), organizationIds);
 	}
 
+	@Override
+	public void addUserOrganizationByEmailAddress(
+			String emailAddress, long organizationId)
+		throws PortalException {
+
+		Organization organization = organizationPersistence.findByPrimaryKey(
+			organizationId);
+
+		User user = userPersistence.findByC_EA(
+			organization.getCompanyId(), emailAddress);
+
+		addUserOrganization(user.getUserId(), organizationId);
+	}
+
 	/**
 	 * Deletes the organization's logo.
 	 *
@@ -485,6 +499,20 @@ public class OrganizationLocalServiceImpl
 		organizationPersistence.remove(organization);
 
 		return organization;
+	}
+
+	@Override
+	public void deleteUserOrganizationByEmailAddress(
+			String emailAddress, long organizationId)
+		throws PortalException {
+
+		Organization organization = organizationPersistence.findByPrimaryKey(
+			organizationId);
+
+		User user = userPersistence.findByC_EA(
+			organization.getCompanyId(), emailAddress);
+
+		deleteUserOrganization(user.getUserId(), organizationId);
 	}
 
 	/**
@@ -688,7 +716,7 @@ public class OrganizationLocalServiceImpl
 	public List<Organization> getOrganizations(
 		long companyId, String treePath) {
 
-		return organizationPersistence.findByC_T(companyId, treePath);
+		return organizationPersistence.findByC_LikeT(companyId, treePath);
 	}
 
 	/**
@@ -1094,12 +1122,13 @@ public class OrganizationLocalServiceImpl
 		}
 
 		if (!ListUtil.isEmpty(organizationsTree)) {
-			LinkedHashMap<String, Object> params =
+			int count = userFinder.countByUser(
+				userId,
 				LinkedHashMapBuilder.<String, Object>put(
 					"usersOrgsTree", organizationsTree
-				).build();
+				).build());
 
-			if (userFinder.countByUser(userId, params) > 0) {
+			if (count > 0) {
 				return true;
 			}
 		}
@@ -1145,7 +1174,7 @@ public class OrganizationLocalServiceImpl
 					long previousId, long companyId, long parentPrimaryKey,
 					int size) {
 
-					return organizationPersistence.findByO_C_P(
+					return organizationPersistence.findByGtO_C_P(
 						previousId, companyId, parentPrimaryKey,
 						QueryUtil.ALL_POS, size,
 						new OrganizationIdComparator(true));
@@ -2051,7 +2080,6 @@ public class OrganizationLocalServiceImpl
 
 		String city = null;
 		String country = null;
-		String emailAddress = null;
 		String firstName = null;
 		String fullName = null;
 		String lastName = null;
@@ -2067,7 +2095,6 @@ public class OrganizationLocalServiceImpl
 		if (Validator.isNotNull(keywords)) {
 			city = keywords;
 			country = keywords;
-			emailAddress = keywords;
 			firstName = keywords;
 			fullName = keywords;
 			lastName = keywords;
@@ -2096,7 +2123,6 @@ public class OrganizationLocalServiceImpl
 
 		Map<String, Serializable> attributes = searchContext.getAttributes();
 
-		attributes.put("emailAddress", emailAddress);
 		attributes.put("firstName", firstName);
 		attributes.put("fullName", fullName);
 		attributes.put("lastName", lastName);
@@ -2223,10 +2249,11 @@ public class OrganizationLocalServiceImpl
 		sb.append(organization.getOrganizationId());
 		sb.append(StringPool.FORWARD_SLASH);
 
-		List<Organization> organizations = organizationPersistence.findByC_T(
-			organization.getCompanyId(),
-			CustomSQLUtil.keywords(sb.toString())[0], QueryUtil.ALL_POS,
-			QueryUtil.ALL_POS, new OrganizationNameComparator(true));
+		List<Organization> organizations =
+			organizationPersistence.findByC_LikeT(
+				organization.getCompanyId(),
+				CustomSQLUtil.keywords(sb.toString())[0], QueryUtil.ALL_POS,
+				QueryUtil.ALL_POS, new OrganizationNameComparator(true));
 
 		long[] organizationIds = new long[organizations.size()];
 

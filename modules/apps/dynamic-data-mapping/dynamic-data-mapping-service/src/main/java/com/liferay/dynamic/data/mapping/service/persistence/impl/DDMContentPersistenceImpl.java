@@ -2773,23 +2773,24 @@ public class DDMContentPersistenceImpl
 		ServiceContext serviceContext =
 			ServiceContextThreadLocal.getServiceContext();
 
-		Date now = new Date();
+		Date date = new Date();
 
 		if (isNew && (ddmContent.getCreateDate() == null)) {
 			if (serviceContext == null) {
-				ddmContent.setCreateDate(now);
+				ddmContent.setCreateDate(date);
 			}
 			else {
-				ddmContent.setCreateDate(serviceContext.getCreateDate(now));
+				ddmContent.setCreateDate(serviceContext.getCreateDate(date));
 			}
 		}
 
 		if (!ddmContentModelImpl.hasSetModifiedDate()) {
 			if (serviceContext == null) {
-				ddmContent.setModifiedDate(now);
+				ddmContent.setModifiedDate(date);
 			}
 			else {
-				ddmContent.setModifiedDate(serviceContext.getModifiedDate(now));
+				ddmContent.setModifiedDate(
+					serviceContext.getModifiedDate(date));
 			}
 		}
 
@@ -3213,7 +3214,8 @@ public class DDMContentPersistenceImpl
 	public Set<String> getCTColumnNames(
 		CTColumnResolutionType ctColumnResolutionType) {
 
-		return _ctColumnNamesMap.get(ctColumnResolutionType);
+		return _ctColumnNamesMap.getOrDefault(
+			ctColumnResolutionType, Collections.emptySet());
 	}
 
 	@Override
@@ -3247,7 +3249,6 @@ public class DDMContentPersistenceImpl
 	static {
 		Set<String> ctControlColumnNames = new HashSet<String>();
 		Set<String> ctIgnoreColumnNames = new HashSet<String>();
-		Set<String> ctMergeColumnNames = new HashSet<String>();
 		Set<String> ctStrictColumnNames = new HashSet<String>();
 
 		ctControlColumnNames.add("mvccVersion");
@@ -3267,7 +3268,6 @@ public class DDMContentPersistenceImpl
 			CTColumnResolutionType.CONTROL, ctControlColumnNames);
 		_ctColumnNamesMap.put(
 			CTColumnResolutionType.IGNORE, ctIgnoreColumnNames);
-		_ctColumnNamesMap.put(CTColumnResolutionType.MERGE, ctMergeColumnNames);
 		_ctColumnNamesMap.put(
 			CTColumnResolutionType.PK, Collections.singleton("contentId"));
 		_ctColumnNamesMap.put(
@@ -3520,7 +3520,7 @@ public class DDMContentPersistenceImpl
 			return DDMContentTable.INSTANCE.getTableName();
 		}
 
-		private Object[] _getValue(
+		private static Object[] _getValue(
 			DDMContentModelImpl ddmContentModelImpl, String[] columnNames,
 			boolean original) {
 
@@ -3542,8 +3542,8 @@ public class DDMContentPersistenceImpl
 			return arguments;
 		}
 
-		private static Map<FinderPath, Long> _finderPathColumnBitmasksCache =
-			new ConcurrentHashMap<>();
+		private static final Map<FinderPath, Long>
+			_finderPathColumnBitmasksCache = new ConcurrentHashMap<>();
 
 	}
 

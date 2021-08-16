@@ -12,6 +12,12 @@
  * details.
  */
 
+import {State} from '@liferay/frontend-js-state-web';
+import {
+	STR_NULL_IMAGE_FILE_ENTRY_ID,
+	imageSelectorCoverImageAtom,
+} from 'item-selector-taglib';
+
 const CSS_INVISIBLE = 'invisible';
 const STR_BLANK = '';
 const STR_CHANGE = 'change';
@@ -31,8 +37,8 @@ const STRINGS = {
 	),
 };
 
-function addNamespace(obj, namespace) {
-	return Object.entries(obj).reduce((memo, [key, value]) => ({
+function addNamespace(object, namespace) {
+	return Object.entries(object).reduce((memo, [key, value]) => ({
 		...memo,
 		[`${namespace}${key}`]: value,
 	}));
@@ -128,11 +134,9 @@ export default class Blogs {
 			'.cover-image-caption'
 		);
 
-		Liferay.on('coverImageDeleted', this._removeCaption, this);
-		Liferay.on(
-			['coverImageUploaded', 'coverImageSelected'],
-			this._showCaption,
-			this
+		this._imageSelectorCoverImageSubscription = State.subscribe(
+			imageSelectorCoverImageAtom,
+			(data) => this._updateCaption(data)
 		);
 
 		const publishButton = this._getElementById('publishButton');
@@ -439,6 +443,9 @@ export default class Blogs {
 								);
 							}
 
+							this._getElementById('urlTitle').value =
+								message.urlTitle;
+
 							if (saveStatus) {
 								const saveText = entry?.pending
 									? strings.savedAtMessage
@@ -509,6 +516,15 @@ export default class Blogs {
 		}
 	}
 
+	_updateCaption(imageData) {
+		if (imageData.fileEntryId !== STR_NULL_IMAGE_FILE_ENTRY_ID) {
+			this._showCaption();
+		}
+		else {
+			this._removeCaption();
+		}
+	}
+
 	_updateContentImages(finalContent, attributeDataImageId) {
 		const originalContent = window[
 			`${this._config.namespace}contentEditor`
@@ -528,26 +544,26 @@ export default class Blogs {
 			const tempImageId = image.getAttribute(attributeDataImageId);
 
 			if (tempImageId) {
-				const el = document.querySelector(
+				const element = document.querySelector(
 					`img[${attributeDataImageId}="${tempImageId}"]`
 				);
 
-				if (el) {
+				if (element) {
 					const finalImage = finalContentImages[i];
 
-					if (el.tagName === finalImage.tagName) {
-						el.removeAttribute('data-cke-saved-src');
+					if (element.tagName === finalImage.tagName) {
+						element.removeAttribute('data-cke-saved-src');
 
 						for (let j = 0; j < finalImage.attributes.length; j++) {
 							const attr = finalImage.attributes[j];
 
-							el.setAttribute(attr.name, attr.value);
+							element.setAttribute(attr.name, attr.value);
 						}
 
-						el.removeAttribute(attributeDataImageId);
+						element.removeAttribute(attributeDataImageId);
 					}
 					else {
-						el.replaceWith(finalContentImages[i]);
+						element.replaceWith(finalContentImages[i]);
 					}
 				}
 			}
@@ -570,11 +586,8 @@ export default class Blogs {
 		this._eventsHandles.forEach((removeListener) => removeListener());
 		this._eventsHandles = [];
 
-		Liferay.detach('coverImageDeleted', this._removeCaption);
-		Liferay.detach(
-			['coverImageUploaded', 'coverImageSelected'],
-			this._showCaption
-		);
+		this._imageSelectorCoverImageSubscription.dispose();
+		this._imageSelectorCoverImageSubscription = null;
 	}
 
 	setCustomDescription(text) {

@@ -14,6 +14,7 @@
 
 package com.liferay.frontend.editor.ckeditor.web.internal.editor.configuration;
 
+import com.liferay.document.library.kernel.util.AudioProcessorUtil;
 import com.liferay.frontend.editor.ckeditor.web.internal.constants.CKEditorConstants;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.editor.configuration.EditorConfigContributor;
@@ -22,11 +23,8 @@ import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.language.LanguageUtil;
-import com.liferay.portal.kernel.log.Log;
-import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.ColorScheme;
 import com.liferay.portal.kernel.portlet.RequestBackedPortletURLFactory;
-import com.liferay.portal.kernel.resource.bundle.ResourceBundleLoader;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.HtmlUtil;
@@ -36,13 +34,9 @@ import com.liferay.portal.kernel.xuggler.XugglerUtil;
 
 import java.util.Locale;
 import java.util.Map;
-import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 
 import org.osgi.service.component.annotations.Component;
-import org.osgi.service.component.annotations.Reference;
-import org.osgi.service.component.annotations.ReferencePolicy;
-import org.osgi.service.component.annotations.ReferencePolicyOption;
 
 /**
  * @author Ambrín Chaudhary
@@ -157,18 +151,8 @@ public class CKEditorConfigContributor extends BaseCKEditorConfigContributor {
 	}
 
 	protected JSONArray getStyleFormatsJSONArray(Locale locale) {
-		ResourceBundle resourceBundle = null;
-
-		try {
-			resourceBundle = _resourceBundleLoader.loadResourceBundle(locale);
-		}
-		catch (MissingResourceException missingResourceException) {
-			if (_log.isDebugEnabled()) {
-				_log.debug(missingResourceException, missingResourceException);
-			}
-
-			resourceBundle = ResourceBundleUtil.EMPTY_RESOURCE_BUNDLE;
-		}
+		ResourceBundle resourceBundle = ResourceBundleUtil.getBundle(
+			locale, "com.liferay.frontend.editor.lang");
 
 		return JSONUtil.putAll(
 			getStyleFormatJSONObject(
@@ -195,13 +179,13 @@ public class CKEditorConfigContributor extends BaseCKEditorConfigContributor {
 				null),
 			getStyleFormatJSONObject(
 				LanguageUtil.get(resourceBundle, "info-message"), "div",
-				"portlet-msg-info"),
+				"overflow-auto portlet-msg-info"),
 			getStyleFormatJSONObject(
 				LanguageUtil.get(resourceBundle, "alert-message"), "div",
-				"portlet-msg-alert"),
+				"overflow-auto portlet-msg-alert"),
 			getStyleFormatJSONObject(
 				LanguageUtil.get(resourceBundle, "error-message"), "div",
-				"portlet-msg-error"));
+				"overflow-auto portlet-msg-error"));
 	}
 
 	protected JSONArray getToolbarSimpleJSONArray(
@@ -214,7 +198,7 @@ public class CKEditorConfigContributor extends BaseCKEditorConfigContributor {
 			toJSONArray("['Link', Unlink]"),
 			toJSONArray("['Table', 'ImageSelector', 'VideoSelector']"));
 
-		if (XugglerUtil.isEnabled()) {
+		if (AudioProcessorUtil.isEnabled() || XugglerUtil.isEnabled()) {
 			jsonArray.put(toJSONArray("['AudioSelector']"));
 		}
 
@@ -260,15 +244,5 @@ public class CKEditorConfigContributor extends BaseCKEditorConfigContributor {
 
 		return jsonArray;
 	}
-
-	private static final Log _log = LogFactoryUtil.getLog(
-		CKEditorConfigContributor.class);
-
-	@Reference(
-		policy = ReferencePolicy.DYNAMIC,
-		policyOption = ReferencePolicyOption.GREEDY,
-		target = "(bundle.symbolic.name=com.liferay.frontend.editor.lang)"
-	)
-	private volatile ResourceBundleLoader _resourceBundleLoader;
 
 }

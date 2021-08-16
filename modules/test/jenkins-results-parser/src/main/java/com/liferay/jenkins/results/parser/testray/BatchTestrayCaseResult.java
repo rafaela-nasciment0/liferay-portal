@@ -85,6 +85,16 @@ public class BatchTestrayCaseResult extends TestrayCaseResult {
 			return null;
 		}
 
+		String result = build.getResult();
+
+		if (result == null) {
+			return "Failed to finish build on CI";
+		}
+
+		if (result.equals("ABORTED")) {
+			return "Aborted prior to running test";
+		}
+
 		String errorMessage = build.getFailureMessage();
 
 		if (JenkinsResultsParserUtil.isNullOrEmpty(errorMessage)) {
@@ -161,6 +171,7 @@ public class BatchTestrayCaseResult extends TestrayCaseResult {
 	public List<TestrayAttachment> getTestrayAttachments() {
 		List<TestrayAttachment> testrayAttachments = new ArrayList<>();
 
+		testrayAttachments.add(_getBuildResultTopLevelTestrayAttachment());
 		testrayAttachments.add(_getJenkinsConsoleTestrayAttachment());
 		testrayAttachments.add(_getJenkinsConsoleTopLevelTestrayAttachment());
 		testrayAttachments.add(_getJenkinsReportTestrayAttachment());
@@ -205,6 +216,26 @@ public class BatchTestrayCaseResult extends TestrayCaseResult {
 
 	protected AxisTestClassGroup getAxisTestClassGroup() {
 		return _axisTestClassGroup;
+	}
+
+	private TestrayAttachment _getBuildResultTopLevelTestrayAttachment() {
+		TopLevelBuild topLevelBuild = getTopLevelBuild();
+
+		if (topLevelBuild == null) {
+			return null;
+		}
+
+		TestrayAttachment testrayAttachment =
+			TestrayFactory.newTestrayAttachment(
+				this, "Build Result (Top Level)",
+				JenkinsResultsParserUtil.combine(
+					_getTopLevelBuildURLPath(), "/build-result.json.gz"));
+
+		if (!testrayAttachment.exists()) {
+			return null;
+		}
+
+		return testrayAttachment;
 	}
 
 	private TestrayAttachment _getJenkinsConsoleTestrayAttachment() {

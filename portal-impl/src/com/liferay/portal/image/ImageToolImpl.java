@@ -30,7 +30,7 @@ import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.PropsKeys;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.model.impl.ImageImpl;
-import com.liferay.portal.module.framework.ModuleFrameworkUtilAdapter;
+import com.liferay.portal.module.framework.ModuleFrameworkUtil;
 import com.liferay.portal.util.FileImpl;
 import com.liferay.portal.util.PropsUtil;
 import com.liferay.portal.util.PropsValues;
@@ -77,6 +77,10 @@ import net.jmge.gif.Gif89Encoder;
 import org.im4java.core.IMOperation;
 
 import org.monte.media.jpeg.CMYKJPEGImageReaderSpi;
+
+import org.osgi.framework.Bundle;
+import org.osgi.framework.BundleContext;
+import org.osgi.framework.launch.Framework;
 
 /**
  * @author Brian Wing Shun Chan
@@ -372,10 +376,17 @@ public class ImageToolImpl implements ImageTool {
 					inputStream = classLoader.getResourceAsStream(name);
 				}
 				else {
-					URL url = ModuleFrameworkUtilAdapter.getBundleResource(
-						bundleId, name);
+					Framework framework = ModuleFrameworkUtil.getFramework();
 
-					inputStream = url.openStream();
+					BundleContext bundleContext = framework.getBundleContext();
+
+					Bundle bundle = bundleContext.getBundle(bundleId);
+
+					if (bundle != null) {
+						URL url = bundle.getResource(name);
+
+						inputStream = url.openStream();
+					}
 				}
 			}
 

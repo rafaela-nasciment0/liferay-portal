@@ -40,11 +40,9 @@ if (wikiPageItemSelectorViewDisplayContext.isSearch()) {
 
 	wikiPagesSearchContainer.setTotal(hits.getLength());
 
-	List<SearchResult> searchResults = SearchResultUtil.getSearchResults(hits, themeDisplay.getLocale());
-
 	List<WikiPage> results = new ArrayList<>();
 
-	for (SearchResult searchResult : searchResults) {
+	for (SearchResult searchResult : SearchResultUtil.getSearchResults(hits, themeDisplay.getLocale())) {
 		WikiPage wikiPage = WikiPageLocalServiceUtil.getPage(searchResult.getClassPK());
 
 		results.add(wikiPage);
@@ -65,13 +63,13 @@ else {
 </style>
 
 <%
-PortletURL searchBaseURL = PortletURLBuilder.create(
-	PortletURLUtil.clone(currentURLObj, liferayPortletResponse)
-).setParameter(
-	"resetCur", Boolean.TRUE.toString()
-).build();
-
-String searchURL = HttpUtil.removeParameter(searchBaseURL.toString(), liferayPortletResponse.getNamespace() + "keywords");
+String searchURL = HttpUtil.removeParameter(
+	PortletURLBuilder.create(
+		PortletURLUtil.clone(currentURLObj, liferayPortletResponse)
+	).setParameter(
+		"resetCur", true
+	).buildString(),
+	liferayPortletResponse.getNamespace() + "keywords");
 %>
 
 <clay:management-toolbar

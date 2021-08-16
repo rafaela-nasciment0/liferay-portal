@@ -74,13 +74,13 @@ public class SelectBasicTemplatesNavigationCard implements NavigationCard {
 					_renderResponse
 				).setMVCRenderCommandName(
 					"/layout_admin/add_layout"
-				).setParameter(
-					"backURL", redirect
-				).setParameter(
-					"selPlid", ParamUtil.getLong(_httpServletRequest, "selPlid")
+				).setBackURL(
+					redirect
 				).setParameter(
 					"privateLayout",
 					ParamUtil.getBoolean(_httpServletRequest, "privateLayout")
+				).setParameter(
+					"selPlid", ParamUtil.getLong(_httpServletRequest, "selPlid")
 				).setParameter(
 					"type", _type
 				).setWindowState(

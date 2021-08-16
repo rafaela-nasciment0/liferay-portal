@@ -112,13 +112,13 @@ public class CommerceProductInstanceDataSetActionProvider
 				CPPortletKeys.CP_DEFINITIONS, PortletRequest.ACTION_PHASE)
 		).setActionName(
 			"/cp_definitions/edit_cp_instance"
+		).setCMD(
+			Constants.DELETE
 		).setRedirect(
 			redirect
 		).setParameter(
-			Constants.CMD, Constants.DELETE
-		).setParameter(
 			"cpInstanceId", cpInstanceId
-		).build();
+		).buildPortletURL();
 	}
 
 	private PortletURL _getSkuEditURL(
@@ -135,7 +135,7 @@ public class CommerceProductInstanceDataSetActionProvider
 			"cpDefinitionId", cpInstance.getCPDefinitionId()
 		).setParameter(
 			"cpInstanceId", cpInstance.getCPInstanceId()
-		).build();
+		).buildPortletURL();
 
 		try {
 			portletURL.setWindowState(LiferayWindowState.POP_UP);

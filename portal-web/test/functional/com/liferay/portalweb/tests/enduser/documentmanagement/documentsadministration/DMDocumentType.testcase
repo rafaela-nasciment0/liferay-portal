@@ -3,7 +3,7 @@ definition {
 
 	property portal.release = "true";
 	property portal.upstream = "true";
-	property testray.main.component.name = "Documents Management";
+	property testray.main.component.name = "Document Management";
 
 	setUp {
 		TestCase.setUpPortalInstance();
@@ -28,6 +28,7 @@ definition {
 
 	@description = "This test covers LPS-127049. It ensures that a document can be created with duplicate fields."
 	@priority = "4"
+	@refactorneeded
 	test AddDuplicateFields {
 		DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "guest");
 
@@ -41,7 +42,7 @@ definition {
 			fieldFieldLabel = "Numeric",
 			fieldName = "Numeric");
 
-		DataEngine.editFieldRepeatable(fieldFieldLabel = "Numeric");
+		DataEngine.toggleFieldRepeatable(fieldFieldLabel = "Numeric");
 
 		DDLDataDefinition.save();
 
@@ -63,7 +64,7 @@ definition {
 		Click(locator1 = "FormFields#FIELD_ADD_DUPLICATE");
 
 		Type(
-			key_fieldName = "Numeric",
+			key_fieldLabel = "Numeric",
 			locator1 = "TextInput#NUMERIC",
 			value1 = "123");
 
@@ -82,6 +83,7 @@ definition {
 	}
 
 	@priority = "5"
+	@refactorneeded
 	test AddEntryWithMetadataSet {
 		property portal.acceptance = "true";
 		property testray.component.names = "Training";
@@ -116,9 +118,7 @@ definition {
 
 		DMNavigator.gotoAddDocumentTypeCP(dmDocumentTypeName = "DM Document Type Name");
 
-		AssertElementPresent(
-			key_fieldFieldLabel = "Date",
-			locator1 = "Icon#ASTERISK_DATE_FIELD");
+		FormFields.viewRequiredAsteriskDataField(fieldFieldLabel = "Date");
 
 		DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "guest");
 
@@ -141,6 +141,7 @@ definition {
 
 	@description = "This test covers LPS-123711. It ensures that the document type cannot be published if the title is left blank."
 	@priority = "4"
+	@refactorneeded
 	test AddEntryWithNoTitle {
 		DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "guest");
 
@@ -169,7 +170,7 @@ definition {
 		DMNavigator.gotoAddDocumentTypeCP(dmDocumentTypeName = "DM Document Type Name");
 
 		Type(
-			key_fieldName = "Numeric",
+			key_fieldLabel = "Numeric",
 			locator1 = "TextInput#NUMERIC",
 			value1 = "123");
 
@@ -190,6 +191,7 @@ definition {
 	}
 
 	@priority = "4"
+	@refactorneeded
 	test AddMultipleEntries {
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
@@ -243,8 +245,68 @@ definition {
 		DMDocumentType.viewMenulistOption(dmDocumentTypeName = "DM Document Type 3 Name");
 	}
 
+	@description = "This test covers LPS-129777. It ensures that a predefined image can be added via image field."
+	@priority = "4"
+	@refactorneeded
+	test AddPredefinedImageViaImageField {
+		JSONDocument.addFileWithUploadedFile(
+			dmDocumentDescription = "DM Document Description",
+			dmDocumentTitle = "Document_1.jpg",
+			groupName = "Guest",
+			mimeType = "image/jpeg",
+			sourceFileName = "Document_1.jpg");
+
+		DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "guest");
+
+		DMNavigator.gotoDocumentType();
+
+		LexiconEntry.gotoAdd();
+
+		PortletEntry.inputName(name = "DM Document Type Name");
+
+		DataEngine.addField(
+			fieldFieldLabel = "Image",
+			fieldName = "Image");
+
+		DataEngine.editImageFieldPredefinedValue(
+			fieldFieldLabel = "Image",
+			imageFileName = "Document_1.jpg",
+			selectFromCurrentSite = "true");
+
+		AssertElementPresent(
+			key_imageFileName = "Document_1.jpg",
+			locator1 = "DDMEditStructure#FORM_FIELD_CONTAINER_PREDEFINED_IMAGE");
+
+		DDLDataDefinition.save();
+
+		DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "guest");
+
+		DMNavigator.gotoAddDocumentTypeCP(dmDocumentTypeName = "DM Document Type Name");
+
+		PortletEntry.inputTitle(title = "DM Document Title");
+
+		AssertElementPresent(
+			key_fieldFieldLabel = "Image",
+			key_image = "Document_1.jpg",
+			locator1 = "DocumentsAndMediaDocument#CUSTOM_FIELD_IMAGE_PREVIEW");
+
+		PortletEntry.publish();
+
+		DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "guest");
+
+		LexiconEntry.gotoEntryMenuItem(
+			menuItem = "Edit",
+			rowEntry = "DM Document Title");
+
+		AssertElementPresent(
+			key_fieldFieldLabel = "Image",
+			key_image = "Document_1.jpg",
+			locator1 = "DocumentsAndMediaDocument#CUSTOM_FIELD_IMAGE_PREVIEW");
+	}
+
 	@description = "This test covers LPS-127602. It ensures that a predefined image can be added."
 	@priority = "4"
+	@refactorneeded
 	test AddPredefinedImageViaRichText {
 		DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "guest");
 
@@ -286,8 +348,37 @@ definition {
 			locator1 = "DDMEditStructure#FORM_FIELD_CONTAINER_PREDEFINED_IMAGE");
 	}
 
+	@description = "This test covers LPS-109066. It ensures that the localizable field available languages can be displayed correctly."
+	@priority = "3"
+	test CanViewLocalizableFieldCorrectAvailableLanguages {
+		CustomFields.addCP(
+			customFieldName = "Document Text Field",
+			customFieldType = "Input Field",
+			customInputDataType = "Text",
+			localization = "true",
+			modelResource = "com.liferay.document.library.kernel.model.DLFileEntry");
+
+		DMNavigator.openToAddDocumentType(siteURLKey = "guest");
+
+		DMDocumentType.add(
+			dmDocumentTypeDescription = "DM Document Type Description",
+			dmDocumentTypeFieldNames = "Text",
+			dmDocumentTypeName = "DM Document Type Name",
+			skipNavigation = "true");
+
+		DMNavigator.openToAddEntry(
+			documentTypeName = "DM Document Type Name",
+			groupName = "Guest",
+			siteURLKey = "guest");
+
+		DMDocument.viewTypeFieldLocalizableLanguages(localizableLanguages = "ar-SA,ca-ES,zh-CN,nl-NL,fi-FI,fr-FR,de-DE,hu-HU,ja-JP,pt-BR,es-ES,sv-SE");
+
+		DMDocument.viewCustomFieldLocalizableLanguages(localizableLanguages = "ar-SA,ca-ES,zh-CN,nl-NL,fi-FI,fr-FR,de-DE,hu-HU,ja-JP,pt-BR,es-ES,sv-SE");
+	}
+
 	@description = "This test covers LPS-127598. It ensures that a user can check out a document with the custom field via editing."
 	@priority = "4"
+	@refactorneeded
 	test CheckOutDocumentWithCustomField {
 		DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "guest");
 
@@ -321,6 +412,7 @@ definition {
 	}
 
 	@priority = "4"
+	@refactorneeded
 	test DeleteEntry {
 		ProductMenu.gotoPortlet(
 			category = "Content &amp; Data",
@@ -354,6 +446,7 @@ definition {
 
 	@description = "This ensures that the user can delete fields within a document type ."
 	@priority = "3"
+	@refactorneeded
 	test DeleteFields {
 		DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "guest");
 
@@ -398,6 +491,7 @@ definition {
 	}
 
 	@priority = "5"
+	@refactorneeded
 	test EditEntry {
 		property testray.component.names = "Training";
 
@@ -436,202 +530,9 @@ definition {
 		DMDocumentType.viewMenulistOption(dmDocumentTypeName = "DM Document Type Name Edit");
 	}
 
-	@priority = "5"
-	test UpdateEntryWithPermissions {
-		property custom.properties = "jsonws.web.service.paths.excludes=";
-		property test.name.skip.portal.instance = "DocumentsadministrationUsecase#UpdateDocumentTypeWithPermissions";
-		property testray.component.names = "Training";
-
-		var siteName = TestCase.getSiteName(siteName = "${siteName}");
-
-		ProductMenu.gotoPortlet(
-			category = "Content &amp; Data",
-			portlet = "Documents and Media");
-
-		DMNavigator.gotoDocumentType();
-
-		DMDocumentType.add(
-			dmDocumentTypeDescription = "Images",
-			dmDocumentTypeFieldNames = "Text,Date",
-			dmDocumentTypeName = "Photos");
-
-		ApplicationsMenu.gotoPortlet(
-			category = "System",
-			panel = "Control Panel",
-			portlet = "Server Administration");
-
-		ServerAdministration.executeServerResourcesActions(actionsDescription = "Clean up permissions.");
-
-		Navigator.openURL();
-
-		JSONRole.addRegularRole(
-			roleKey = "Technical Writer",
-			roleTitle = "Technical Writer");
-
-		for (var resourceActionIndex : list "DELETE,VIEW,UPDATE") {
-			Permissions.definePermissionViaJSONAPI(
-				resourceAction = "${resourceActionIndex}",
-				resourceName = "com.liferay.document.library.kernel.model.DLFileEntryType",
-				roleTitle = "Technical Writer");
-		}
-
-		Permissions.definePermissionViaJSONAPI(
-			resourceAction = "VIEW",
-			resourceName = "com_liferay_document_library_web_portlet_DLAdminPortlet",
-			roleTitle = "Technical Writer");
-
-		for (var resourceActionIndex : list "VIEW,ADD_FOLDER,ADD_DOCUMENT") {
-			Permissions.definePermissionViaJSONAPI(
-				resourceAction = "${resourceActionIndex}",
-				resourceName = "com.liferay.document.library",
-				roleTitle = "Site Member",
-				roleType = "site");
-		}
-
-		for (var resourceActionIndex : list "UPDATE,DELETE") {
-			Permissions.definePermissionViaJSONAPI(
-				resourceAction = "${resourceActionIndex}",
-				resourceName = "com.liferay.document.library.kernel.model.DLFileEntry",
-				roleTitle = "Site Member",
-				roleType = "site");
-		}
-
-		for (var resourceActionIndex : list "UPDATE,ADD_SUBFOLDER,ADD_DOCUMENT") {
-			Permissions.definePermissionViaJSONAPI(
-				resourceAction = "${resourceActionIndex}",
-				resourceName = "com.liferay.document.library.kernel.model.DLFolder",
-				roleTitle = "Site Member",
-				roleType = "site");
-		}
-
-		Permissions.definePermissionViaJSONAPI(
-			resourceAction = "VIEW_SITE_ADMINISTRATION",
-			resourceName = "com.liferay.portal.kernel.model.Group",
-			roleTitle = "Site Member",
-			roleType = "site");
-
-		for (var resourceActionIndex : list "VIEW,ACCESS_IN_CONTROL_PANEL") {
-			Permissions.definePermissionViaJSONAPI(
-				resourceAction = "${resourceActionIndex}",
-				resourceName = "com_liferay_document_library_web_portlet_DLAdminPortlet",
-				roleTitle = "Site Member",
-				roleType = "site");
-		}
-
-		JSONUser.addUser(
-			userEmailAddress = "userea@liferay.com",
-			userFirstName = "userfn",
-			userLastName = "userln",
-			userScreenName = "usersn");
-
-		JSONUser.setFirstPassword(
-			agreeToTermsAndAnswerReminderQuery = "true",
-			requireReset = "false",
-			userEmailAddress = "userea@liferay.com");
-
-		ApplicationsMenu.gotoPortlet(
-			category = "Users",
-			panel = "Control Panel",
-			portlet = "Users and Organizations");
-
-		Site.assignUserSitesCP(
-			siteName = "${siteName}",
-			userScreenName = "usersn");
-
-		ApplicationsMenu.gotoPortlet(
-			category = "Users",
-			panel = "Control Panel",
-			portlet = "Users and Organizations");
-
-		User.assignRegularRoleCP(
-			roleTitle = "Technical Writer",
-			userScreenName = "usersn");
-
-		JSONUser.addUser(
-			userEmailAddress = "userea2@liferay.com",
-			userFirstName = "userfn2",
-			userLastName = "userln2",
-			userScreenName = "usersn2");
-
-		JSONUser.setFirstPassword(
-			agreeToTermsAndAnswerReminderQuery = "true",
-			requireReset = "false",
-			userEmailAddress = "userea2@liferay.com");
-
-		ApplicationsMenu.gotoPortlet(
-			category = "Users",
-			panel = "Control Panel",
-			portlet = "Users and Organizations");
-
-		Site.assignUserSitesCP(
-			siteName = "${siteName}",
-			userScreenName = "usersn2");
-
-		ProductMenu.gotoPortlet(
-			category = "Site Builder",
-			portlet = "Pages",
-			site = "${siteName}");
-
-		SitePages.addPublicPage(
-			pageName = "Documents and Media Page",
-			sitePageType = "Widget Page");
-
-		SitePages.configurePage(
-			columnName = "1 Column",
-			pageName = "Documents and Media Page",
-			privacy = "Public Pages",
-			sitePageType = "Widget Page");
-
-		Navigator.gotoPage(pageName = "Documents and Media Page");
-
-		Portlet.addPG(portletName = "Documents and Media");
-
-		DMDocument.enableActionsMenuOnPortlet();
-
-		Navigator.gotoPage(pageName = "Documents and Media Page");
-
-		LexiconEntry.changeDisplayStyle(displayStyle = "list");
-
-		User.logoutPG();
-
-		User.loginUserPG(
-			password = "test",
-			userEmailAddress = "userea@liferay.com");
-
-		ProductMenu.gotoPortlet(
-			category = "Content &amp; Data",
-			portlet = "Documents and Media");
-
-		AssertVisible(
-			locator1 = "Portlet#HEADER",
-			value1 = "Documents and Media");
-
-		DMNavigator.gotoDocumentType();
-
-		DMDocumentType.edit(
-			dmDocumentTypeFieldNames = "Image",
-			dmDocumentTypeName = "Photos",
-			rowNum = "2");
-
-		User.logoutPG();
-
-		User.loginUserPG(
-			password = "test",
-			userEmailAddress = "userea2@liferay.com");
-
-		Navigator.gotoPage(pageName = "Documents and Media Page");
-
-		DMDocument.viewCannotAddRepository();
-
-		ProductMenu.gotoPortlet(
-			category = "Content &amp; Data",
-			portlet = "Documents and Media");
-
-		DMDocumentType.viewNoAvailableActionsViaDocumentTypesPG();
-	}
-
 	@description = "This ensures that the user can create a document using edited image field inside document type."
 	@priority = "4"
+	@refactorneeded
 	test ViewDocumentwithEditedImageField {
 		DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "guest");
 
@@ -673,9 +574,7 @@ definition {
 			key_fieldFieldLabel = "Photo",
 			locator1 = "DDMEditStructure#FORM_FIELD_CONTAINER_LABEL");
 
-		AssertElementPresent(
-			key_fieldFieldLabel = "Photo",
-			locator1 = "Icon#ASTERISK_DATE_FIELD");
+		FormFields.viewRequiredAsteriskDataField(fieldFieldLabel = "Photo");
 
 		DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "guest");
 
@@ -697,6 +596,7 @@ definition {
 
 	@description = "This ensures that the user can create a document using edited text field inside document type."
 	@priority = "4"
+	@refactorneeded
 	test ViewDocumentwithEditedTextField {
 		DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "guest");
 
@@ -744,9 +644,7 @@ definition {
 			key_fieldFieldLabel = "Company",
 			locator1 = "DDMEditStructure#FORM_FIELD_CONTAINER_LABEL");
 
-		AssertElementPresent(
-			key_fieldFieldLabel = "Company",
-			locator1 = "Icon#ASTERISK_DATE_FIELD");
+		FormFields.viewRequiredAsteriskDataField(fieldFieldLabel = "Company");
 
 		DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "guest");
 
@@ -767,6 +665,7 @@ definition {
 
 	@description = "This ensures that the user can create a document using edited upload field inside document type."
 	@priority = "4"
+	@refactorneeded
 	test ViewDocumentwithEditedUploadField {
 		JSONDocument.addFileWithUploadedFile(
 			dmDocumentTitle = "Document_1.doc",
@@ -815,9 +714,7 @@ definition {
 			key_fieldFieldLabel = "Resume",
 			locator1 = "DDMEditStructure#FORM_FIELD_CONTAINER_LABEL");
 
-		AssertElementPresent(
-			key_fieldFieldLabel = "Resume",
-			locator1 = "Icon#ASTERISK_DATE_FIELD");
+		FormFields.viewRequiredAsteriskDataField(fieldFieldLabel = "Resume");
 
 		DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "guest");
 
@@ -838,6 +735,7 @@ definition {
 
 	@description = "This test covers LPS-127131. It ensures that a user can view document with repeatable Image field when editing."
 	@priority = "4"
+	@refactorneeded
 	test ViewDocumentwithRepeatableImageField {
 		DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "guest");
 
@@ -851,7 +749,7 @@ definition {
 			fieldFieldLabel = "Image",
 			fieldName = "Image");
 
-		DataEngine.editFieldRepeatable(fieldFieldLabel = "Image");
+		DataEngine.toggleFieldRepeatable(fieldFieldLabel = "Image");
 
 		DDLDataDefinition.save();
 
@@ -863,10 +761,10 @@ definition {
 
 		Click(locator1 = "FormFields#FIELD_ADD_DUPLICATE");
 
-		AssertClick(
-			key_fieldFieldLabel = "Image",
-			locator1 = "WCEditWebContent#SELECT_BUTTON",
-			value1 = "Select");
+		Click(
+			fieldLabel = "Image",
+			locator1 = "Button#BUTTON_LABEL",
+			text = "Select");
 
 		ItemSelector.uploadFile(uploadFileName = "Document_1.jpg");
 
@@ -896,6 +794,7 @@ definition {
 
 	@description = "This test covers LPS-128182. It ensures that the translated document field can be localized properly."
 	@priority = "3"
+	@refactorneeded
 	test ViewLocalizedDocumentField {
 		JSONLayout.addPublicLayout(
 			groupName = "Guest",
@@ -950,20 +849,17 @@ definition {
 
 		Navigator.gotoPage(pageName = "Documents and Media Page");
 
-		Navigator.ensureLocaleURL(locale = "es");
-
-		AssertClick(
-			key_dmDocumentTitle = "DM Document Title",
-			locator1 = "DocumentsAndMedia#DESCRIPTIVE_LIST_DOCUMENT_TITLE",
-			value1 = "DM Document Title");
+		DMNavigator.gotoDocumentPG(dmDocumentTitle = "DM Document Title");
 
 		DMDocument.viewDocumentTypePG(
 			fieldFieldLabel = "Text",
+			locale = "es",
 			textContent = "Texto de prueba");
 	}
 
 	@description = "This test covers LPS-127092. It ensures that the translated document type can be localized properly."
 	@priority = "5"
+	@refactorneeded
 	test ViewLocalizedDocumentType {
 		DMNavigator.openDocumentsAndMediaAdmin(siteURLKey = "guest");
 

@@ -2176,23 +2176,23 @@ public class MDRRulePersistenceImpl
 		ServiceContext serviceContext =
 			ServiceContextThreadLocal.getServiceContext();
 
-		Date now = new Date();
+		Date date = new Date();
 
 		if (isNew && (mdrRule.getCreateDate() == null)) {
 			if (serviceContext == null) {
-				mdrRule.setCreateDate(now);
+				mdrRule.setCreateDate(date);
 			}
 			else {
-				mdrRule.setCreateDate(serviceContext.getCreateDate(now));
+				mdrRule.setCreateDate(serviceContext.getCreateDate(date));
 			}
 		}
 
 		if (!mdrRuleModelImpl.hasSetModifiedDate()) {
 			if (serviceContext == null) {
-				mdrRule.setModifiedDate(now);
+				mdrRule.setModifiedDate(date);
 			}
 			else {
-				mdrRule.setModifiedDate(serviceContext.getModifiedDate(now));
+				mdrRule.setModifiedDate(serviceContext.getModifiedDate(date));
 			}
 		}
 
@@ -2680,6 +2680,13 @@ public class MDRRulePersistenceImpl
 						mdrRuleModelImpl.getColumnBitmask(columnName);
 				}
 
+				if (finderPath.isBaseModelResult() &&
+					(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION ==
+						finderPath.getCacheName())) {
+
+					finderPathColumnBitmask |= _ORDER_BY_COLUMNS_BITMASK;
+				}
+
 				_finderPathColumnBitmasksCache.put(
 					finderPath, finderPathColumnBitmask);
 			}
@@ -2701,7 +2708,7 @@ public class MDRRulePersistenceImpl
 			return MDRRuleTable.INSTANCE.getTableName();
 		}
 
-		private Object[] _getValue(
+		private static Object[] _getValue(
 			MDRRuleModelImpl mdrRuleModelImpl, String[] columnNames,
 			boolean original) {
 
@@ -2722,8 +2729,19 @@ public class MDRRulePersistenceImpl
 			return arguments;
 		}
 
-		private static Map<FinderPath, Long> _finderPathColumnBitmasksCache =
-			new ConcurrentHashMap<>();
+		private static final Map<FinderPath, Long>
+			_finderPathColumnBitmasksCache = new ConcurrentHashMap<>();
+
+		private static final long _ORDER_BY_COLUMNS_BITMASK;
+
+		static {
+			long orderByColumnsBitmask = 0;
+
+			orderByColumnsBitmask |= MDRRuleModelImpl.getColumnBitmask(
+				"createDate");
+
+			_ORDER_BY_COLUMNS_BITMASK = orderByColumnsBitmask;
+		}
 
 	}
 

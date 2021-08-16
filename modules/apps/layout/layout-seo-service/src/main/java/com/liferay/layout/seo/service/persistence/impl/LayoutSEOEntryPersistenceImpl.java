@@ -2051,24 +2051,25 @@ public class LayoutSEOEntryPersistenceImpl
 		ServiceContext serviceContext =
 			ServiceContextThreadLocal.getServiceContext();
 
-		Date now = new Date();
+		Date date = new Date();
 
 		if (isNew && (layoutSEOEntry.getCreateDate() == null)) {
 			if (serviceContext == null) {
-				layoutSEOEntry.setCreateDate(now);
+				layoutSEOEntry.setCreateDate(date);
 			}
 			else {
-				layoutSEOEntry.setCreateDate(serviceContext.getCreateDate(now));
+				layoutSEOEntry.setCreateDate(
+					serviceContext.getCreateDate(date));
 			}
 		}
 
 		if (!layoutSEOEntryModelImpl.hasSetModifiedDate()) {
 			if (serviceContext == null) {
-				layoutSEOEntry.setModifiedDate(now);
+				layoutSEOEntry.setModifiedDate(date);
 			}
 			else {
 				layoutSEOEntry.setModifiedDate(
-					serviceContext.getModifiedDate(now));
+					serviceContext.getModifiedDate(date));
 			}
 		}
 
@@ -2496,7 +2497,8 @@ public class LayoutSEOEntryPersistenceImpl
 	public Set<String> getCTColumnNames(
 		CTColumnResolutionType ctColumnResolutionType) {
 
-		return _ctColumnNamesMap.get(ctColumnResolutionType);
+		return _ctColumnNamesMap.getOrDefault(
+			ctColumnResolutionType, Collections.emptySet());
 	}
 
 	@Override
@@ -2530,7 +2532,6 @@ public class LayoutSEOEntryPersistenceImpl
 	static {
 		Set<String> ctControlColumnNames = new HashSet<String>();
 		Set<String> ctIgnoreColumnNames = new HashSet<String>();
-		Set<String> ctMergeColumnNames = new HashSet<String>();
 		Set<String> ctStrictColumnNames = new HashSet<String>();
 
 		ctControlColumnNames.add("mvccVersion");
@@ -2559,7 +2560,6 @@ public class LayoutSEOEntryPersistenceImpl
 			CTColumnResolutionType.CONTROL, ctControlColumnNames);
 		_ctColumnNamesMap.put(
 			CTColumnResolutionType.IGNORE, ctIgnoreColumnNames);
-		_ctColumnNamesMap.put(CTColumnResolutionType.MERGE, ctMergeColumnNames);
 		_ctColumnNamesMap.put(
 			CTColumnResolutionType.PK,
 			Collections.singleton("layoutSEOEntryId"));
@@ -2798,7 +2798,7 @@ public class LayoutSEOEntryPersistenceImpl
 			return LayoutSEOEntryTable.INSTANCE.getTableName();
 		}
 
-		private Object[] _getValue(
+		private static Object[] _getValue(
 			LayoutSEOEntryModelImpl layoutSEOEntryModelImpl,
 			String[] columnNames, boolean original) {
 
@@ -2821,8 +2821,8 @@ public class LayoutSEOEntryPersistenceImpl
 			return arguments;
 		}
 
-		private static Map<FinderPath, Long> _finderPathColumnBitmasksCache =
-			new ConcurrentHashMap<>();
+		private static final Map<FinderPath, Long>
+			_finderPathColumnBitmasksCache = new ConcurrentHashMap<>();
 
 	}
 

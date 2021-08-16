@@ -2,11 +2,13 @@
 <head>
 <title>APConfiguration</title>
 </head>
+
 <body>
-<table cellpadding="1" cellspacing="1" border="1">
+<table border="1" cellpadding="1" cellspacing="1">
 <thead>
 <tr><td rowspan="1" colspan="3">APConfiguration</td></tr>
 </thead>
+
 <tbody>
 <!--ASSET_SELECTION-->
 <tr>
@@ -21,7 +23,7 @@
 </tr>
 <tr>
 	<td>ASSET_SELECTION_INFO_LIST_PROVIDER</td>
-	<td>//input[contains(@id,'selectionStyleInfoListProvider')]</td>
+	<td>//input[contains(@id,'selectionStyleInfoCollectionProvider')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -140,6 +142,11 @@
 	<td></td>
 </tr>
 <tr>
+	<td>SOURCE_SCOPE_FILTER_BY_FIELD_SELECT_BUTTON_ENABLED</td>
+	<td>//div[@class='asset-subtype']//span[contains(@id,'AssetRendererFactoryOptions') and @class='asset-subtypefields']/span/button[not(@disabled)]</td>
+	<td></td>
+</tr>
+<tr>
 	<td></td>
 	<td></td>
 	<td></td>
@@ -246,7 +253,7 @@
 </tr>
 <tr>
 	<td>ORDERING_AND_GROUPING_ORDER_DIRECTIONAL_ICON</td>
-	<td>//div[contains(@class,'order-by-type')]//a[contains(.,'${key_sortOrder}')][span//*[name()='svg'][contains(@class,'icon-order-arrow')]]</td>
+	<td>//div[contains(@class,'order-by-type')]//a[contains(.,'${key_sortOrder}')][span//*[name()='svg'][contains(@class,'icon-order')]]</td>
 	<td></td>
 </tr>
 <tr>
@@ -257,12 +264,12 @@
 <!--ASSET_SELECTION_MANUAL_ASSET_ENTRIES-->
 <tr>
 	<td>ASSET_SELECTION_MANUAL_ASSET_ENTRIES_SELECT_BUTTON</td>
-	<td>//div[contains(.,'Asset Entries')]/following-sibling::div//a[@title='Select']</td>
+	<td>//fieldset[./*[normalize-space()='Asset Entries']]//a[normalize-space()='Select']</td>
 	<td></td>
 </tr>
 <tr>
 	<td>ASSET_SELECTION_MANUAL_ASSET_ENTRIES_SELECT_IN_DEPOT</td>
-	<td>//div[contains(.,'Asset Entries')]/following-sibling::div//a[@title='Select in ${key_depotName}']</td>
+	<td>//fieldset[./*[normalize-space()='Asset Entries']]//a[normalize-space()='Select in ${key_depotName}']</td>
 	<td></td>
 </tr>
 <tr>

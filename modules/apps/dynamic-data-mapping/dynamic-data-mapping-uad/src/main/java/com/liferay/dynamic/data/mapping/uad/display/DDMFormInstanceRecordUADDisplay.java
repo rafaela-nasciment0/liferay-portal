@@ -20,6 +20,7 @@ import com.liferay.dynamic.data.mapping.model.DDMFormInstanceRecord;
 import com.liferay.dynamic.data.mapping.service.DDMFormInstanceLocalService;
 import com.liferay.dynamic.data.mapping.storage.DDMFormValues;
 import com.liferay.dynamic.data.mapping.uad.util.DDMUADUtil;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.exception.PortalException;
@@ -34,7 +35,6 @@ import com.liferay.portal.kernel.util.LocaleThreadLocal;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.ResourceBundleUtil;
-import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
@@ -285,8 +285,6 @@ public class DDMFormInstanceRecordUADDisplay
 
 		public DDMFormInstanceRecordUADUserCache(long formInstanceId) {
 			_formInstanceId = formInstanceId;
-
-			_ddmFormInstanceRecordUADUserMap = new HashMap<>();
 		}
 
 		public List<DDMFormInstanceRecord> getDDMFormInstanceRecords(
@@ -316,7 +314,7 @@ public class DDMFormInstanceRecordUADDisplay
 		}
 
 		private final Map<Long, List<DDMFormInstanceRecord>>
-			_ddmFormInstanceRecordUADUserMap;
+			_ddmFormInstanceRecordUADUserMap = new HashMap<>();
 		private final long _formInstanceId;
 
 	}

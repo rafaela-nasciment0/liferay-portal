@@ -247,20 +247,6 @@ public abstract class BaseDiscountResourceTestCase {
 
 		assertEquals(randomDiscount, postDiscount);
 		assertValid(postDiscount);
-
-		randomDiscount = randomDiscount();
-
-		assertHttpResponseStatusCode(
-			404,
-			discountResource.getDiscountByExternalReferenceCodeHttpResponse(
-				randomDiscount.getExternalReferenceCode()));
-
-		testPostDiscount_addDiscount(randomDiscount);
-
-		assertHttpResponseStatusCode(
-			200,
-			discountResource.getDiscountByExternalReferenceCodeHttpResponse(
-				randomDiscount.getExternalReferenceCode()));
 	}
 
 	protected Discount testPostDiscount_addDiscount(Discount discount)
@@ -779,7 +765,7 @@ public abstract class BaseDiscountResourceTestCase {
 		List<GraphQLField> graphQLFields = new ArrayList<>();
 
 		for (Field field :
-				ReflectionUtil.getDeclaredFields(
+				getDeclaredFields(
 					com.liferay.headless.commerce.admin.pricing.dto.v1_0.
 						Discount.class)) {
 
@@ -814,7 +800,7 @@ public abstract class BaseDiscountResourceTestCase {
 				}
 
 				List<GraphQLField> childrenGraphQLFields = getGraphQLFields(
-					ReflectionUtil.getDeclaredFields(clazz));
+					getDeclaredFields(clazz));
 
 				graphQLFields.add(
 					new GraphQLField(field.getName(), childrenGraphQLFields));
@@ -1133,6 +1119,17 @@ public abstract class BaseDiscountResourceTestCase {
 		}
 
 		return false;
+	}
+
+	protected Field[] getDeclaredFields(Class clazz) throws Exception {
+		Stream<Field> stream = Stream.of(
+			ReflectionUtil.getDeclaredFields(clazz));
+
+		return stream.filter(
+			field -> !field.isSynthetic()
+		).toArray(
+			Field[]::new
+		);
 	}
 
 	protected java.util.Collection<EntityField> getEntityFields()

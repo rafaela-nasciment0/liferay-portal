@@ -151,6 +151,9 @@ public interface LayoutRevisionLocalService
 	public <T> T dslQuery(DSLQuery dslQuery);
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public int dslQueryCount(DSLQuery dslQuery);
+
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public DynamicQuery dynamicQuery();
 
 	/**
@@ -222,6 +225,10 @@ public interface LayoutRevisionLocalService
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public LayoutRevision fetchLatestLayoutRevision(
 		long layoutSetBranchId, long plid);
+
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public LayoutRevision fetchLatestLayoutRevision(
+		long layoutSetBranchId, long layoutBranchId, long plid);
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public LayoutRevision fetchLayoutRevision(long layoutRevisionId);

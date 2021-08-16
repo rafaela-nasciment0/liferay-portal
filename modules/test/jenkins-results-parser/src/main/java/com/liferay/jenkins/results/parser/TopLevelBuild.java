@@ -207,6 +207,12 @@ public abstract class TopLevelBuild extends BaseBuild {
 	public JSONObject getBuildResultsJSONObject(
 		String[] buildResults, String[] testStatuses, String[] dataTypes) {
 
+		if (dataTypes == null) {
+			dataTypes = new String[] {"name", "status"};
+		}
+
+		List<String> dataTypesList = Arrays.asList(dataTypes);
+
 		JSONObject buildResultsJSONObject = new JSONObject();
 
 		JSONArray downstreamBuildJSONArray = new JSONArray();
@@ -229,8 +235,28 @@ public abstract class TopLevelBuild extends BaseBuild {
 
 		buildResultsJSONObject.put("batchResults", downstreamBuildJSONArray);
 		buildResultsJSONObject.put("buildNumber", getBuildNumber());
+
+		if (dataTypesList.contains("duration")) {
+			buildResultsJSONObject.put("duration", getDuration());
+		}
+
 		buildResultsJSONObject.put("jobURL", getJobURL());
+		buildResultsJSONObject.put("result", getResult());
 		buildResultsJSONObject.put("startTime", getStartTime());
+
+		if (dataTypesList.contains("stopWatchRecords")) {
+			StopWatchRecordsGroup stopWatchRecordsGroup =
+				getStopWatchRecordsGroup();
+
+			JSONArray stopWatchRecordsGroupJSONArray =
+				stopWatchRecordsGroup.getJSONArray();
+
+			if (stopWatchRecordsGroupJSONArray.length() > 0) {
+				buildResultsJSONObject.put(
+					"stopWatchRecords", stopWatchRecordsGroupJSONArray);
+			}
+		}
+
 		buildResultsJSONObject.put("upstreamBranchSHA", getUpstreamBranchSHA());
 
 		return buildResultsJSONObject;
@@ -491,6 +517,10 @@ public abstract class TopLevelBuild extends BaseBuild {
 		metricLabels.put("top_level_job_name", getJobName());
 
 		return metricLabels;
+	}
+
+	public List<String> getProjectNames() {
+		return Collections.emptyList();
 	}
 
 	@Override
@@ -1076,12 +1106,6 @@ public abstract class TopLevelBuild extends BaseBuild {
 	}
 
 	protected Element getJenkinsReportBodyElement() {
-		String buildURL = getBuildURL();
-
-		Element headingElement = Dom4JUtil.getNewElement(
-			"h1", null, "Jenkins report for ",
-			Dom4JUtil.getNewAnchorElement(buildURL, buildURL));
-
 		Element subheadingElement = null;
 
 		JSONObject jobJSONObject = getBuildJSONObject();
@@ -1100,6 +1124,12 @@ public abstract class TopLevelBuild extends BaseBuild {
 					documentException);
 			}
 		}
+
+		String buildURL = getBuildURL();
+
+		Element headingElement = Dom4JUtil.getNewElement(
+			"h1", null, "Jenkins report for ",
+			Dom4JUtil.getNewAnchorElement(buildURL, buildURL));
 
 		return Dom4JUtil.getNewElement(
 			"body", null, headingElement, subheadingElement,

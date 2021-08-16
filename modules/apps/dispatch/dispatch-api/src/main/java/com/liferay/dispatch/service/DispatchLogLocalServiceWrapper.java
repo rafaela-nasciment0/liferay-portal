@@ -144,6 +144,13 @@ public class DispatchLogLocalServiceWrapper
 	}
 
 	@Override
+	public int dslQueryCount(
+		com.liferay.petra.sql.dsl.query.DSLQuery dslQuery) {
+
+		return _dispatchLogLocalService.dslQueryCount(dslQuery);
+	}
+
+	@Override
 	public com.liferay.portal.kernel.dao.orm.DynamicQuery dynamicQuery() {
 		return _dispatchLogLocalService.dynamicQuery();
 	}
@@ -303,6 +310,17 @@ public class DispatchLogLocalServiceWrapper
 
 		return _dispatchLogLocalService.getDispatchLogs(
 			dispatchTriggerId, start, end);
+	}
+
+	@Override
+	public java.util.List<com.liferay.dispatch.model.DispatchLog>
+		getDispatchLogs(
+			long dispatchTriggerId, int start, int end,
+			com.liferay.portal.kernel.util.OrderByComparator
+				<com.liferay.dispatch.model.DispatchLog> orderByComparator) {
+
+		return _dispatchLogLocalService.getDispatchLogs(
+			dispatchTriggerId, start, end, orderByComparator);
 	}
 
 	/**

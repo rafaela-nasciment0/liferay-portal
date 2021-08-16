@@ -37,7 +37,6 @@ import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.service.UserLocalService;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
-import com.liferay.portal.kernel.test.rule.DataGuard;
 import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
 import com.liferay.portal.kernel.test.rule.Sync;
 import com.liferay.portal.kernel.test.util.CompanyTestUtil;
@@ -56,6 +55,7 @@ import org.frutilla.FrutillaRule;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
@@ -64,7 +64,6 @@ import org.junit.runner.RunWith;
 /**
  * @author Luca Pellizzon
  */
-@DataGuard(scope = DataGuard.Scope.METHOD)
 @RunWith(Arquillian.class)
 @Sync
 public class OrderStockManagementTest {
@@ -76,16 +75,17 @@ public class OrderStockManagementTest {
 			new LiferayIntegrationTestRule(),
 			PermissionCheckerMethodTestRule.INSTANCE);
 
-	@Before
-	public void setUp() throws Exception {
+	@BeforeClass
+	public static void setUpClass() throws Exception {
 		_company = CompanyTestUtil.addCompany();
 
 		_user = UserTestUtil.addUser(_company);
+	}
 
+	@Before
+	public void setUp() throws Exception {
 		_group = GroupTestUtil.addGroup(
 			_company.getCompanyId(), _user.getUserId(), 0);
-
-		_commerceOrders = new ArrayList<>();
 
 		_commerceCurrency = CommerceCurrencyTestUtil.addCommerceCurrency(
 			_user.getCompanyId());
@@ -379,6 +379,9 @@ public class OrderStockManagementTest {
 	@Rule
 	public FrutillaRule frutillaRule = new FrutillaRule();
 
+	private static Company _company;
+	private static User _user;
+
 	private CommerceChannel _commerceChannel;
 
 	@Inject
@@ -396,16 +399,10 @@ public class OrderStockManagementTest {
 	@Inject
 	private CommerceOrderLocalService _commerceOrderLocalService;
 
-	private List<CommerceOrder> _commerceOrders;
-
-	@DeleteAfterTestRun
-	private Company _company;
+	private final List<CommerceOrder> _commerceOrders = new ArrayList<>();
 
 	@DeleteAfterTestRun
 	private Group _group;
-
-	@DeleteAfterTestRun
-	private User _user;
 
 	@Inject
 	private UserLocalService _userLocalService;

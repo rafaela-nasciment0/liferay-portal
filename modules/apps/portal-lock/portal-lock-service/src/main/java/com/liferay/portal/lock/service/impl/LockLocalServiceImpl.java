@@ -219,15 +219,15 @@ public class LockLocalServiceImpl extends LockLocalServiceBaseImpl {
 			return lock;
 		}
 
-		Date now = new Date();
+		Date date = new Date();
 
-		lock.setCreateDate(now);
+		lock.setCreateDate(date);
 
 		if (expirationTime == 0) {
 			lock.setExpirationDate(null);
 		}
 		else {
-			lock.setExpirationDate(new Date(now.getTime() + expirationTime));
+			lock.setExpirationDate(new Date(date.getTime() + expirationTime));
 		}
 
 		lock = lockPersistence.update(lock);
@@ -320,8 +320,6 @@ public class LockLocalServiceImpl extends LockLocalServiceBaseImpl {
 	public Lock refresh(String uuid, long companyId, long expirationTime)
 		throws PortalException {
 
-		Date now = new Date();
-
 		List<Lock> locks = lockPersistence.findByUuid_C(uuid, companyId);
 
 		if (locks.isEmpty()) {
@@ -347,14 +345,16 @@ public class LockLocalServiceImpl extends LockLocalServiceBaseImpl {
 		}
 
 		try {
-			lock.setCreateDate(now);
+			Date date = new Date();
+
+			lock.setCreateDate(date);
 
 			if (expirationTime == 0) {
 				lock.setExpirationDate(null);
 			}
 			else {
 				lock.setExpirationDate(
-					new Date(now.getTime() + expirationTime));
+					new Date(date.getTime() + expirationTime));
 			}
 
 			return lockPersistence.update(lock);

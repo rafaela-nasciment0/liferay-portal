@@ -35,6 +35,7 @@ import {normalizeEvent} from './utils/events';
 import hash from './utils/hash';
 import {getItem, setItem} from './utils/storage';
 import {upgradeStorage} from './utils/storage_version';
+import {isValidEvent} from './utils/validators';
 
 // Constants
 
@@ -178,7 +179,7 @@ class Analytics {
 	static dispose() {
 		const self = ENV.Analytics;
 
-		if (self) {
+		if (self && !self._isTrackingDisabled()) {
 			self.disposeInternal();
 		}
 	}
@@ -191,6 +192,10 @@ class Analytics {
 	 * Clear event queue and set stored context to the current context.
 	 */
 	reset() {
+		if (this._isTrackingDisabled()) {
+			return;
+		}
+
 		this._eventQueue.reset();
 
 		this.resetContext();
@@ -246,11 +251,15 @@ class Analytics {
 	 * @param {Object} options Complementary information about the request
 	 */
 	track(eventId, eventProps, options = {}) {
-		if (this._isTrackingDisabled() || instance._disposed) {
+		if (
+			this._isTrackingDisabled() ||
+			instance._disposed ||
+			!isValidEvent({eventId, eventProps})
+		) {
 			return;
 		}
 
-		//eslint-disable-next-line
+		// eslint-disable-next-line
 		const mergedOptions = Object.assign({}, TRACK_DEFAULT_OPTIONS, options);
 
 		const currentContextHash = this._getCurrentContextHash();
@@ -298,7 +307,9 @@ class Analytics {
 			);
 		}
 
-		const hashedIdentity = {emailAddressHashed: hash(identity.email)};
+		const hashedIdentity = {
+			emailAddressHashed: hash(identity.email.toLowerCase()),
+		};
 
 		this.config.identity = hashedIdentity;
 
@@ -435,15 +446,11 @@ class Analytics {
 	}
 
 	_isTrackingDisabled() {
-		if (
+		return (
 			ENV.ac_client_disable_tracking ||
 			navigator.doNotTrack == '1' ||
 			navigator.doNotTrack == 'yes'
-		) {
-			return true;
-		}
-
-		return false;
+		);
 	}
 
 	/**
@@ -453,8 +460,7 @@ class Analytics {
 	 * @returns {Promise} A promise returned by the fetch request.
 	 */
 	_sendIdentity(identity, userId) {
-		const {channelId, dataSourceId} = this.config;
-		const {emailAddressHashed} = identity;
+		const {dataSourceId} = this.config;
 
 		const newIdentityHash = this._getIdentityHash(
 			dataSourceId,
@@ -466,6 +472,9 @@ class Analytics {
 		let identityHash = Promise.resolve(storedIdentityHash);
 
 		if (newIdentityHash !== storedIdentityHash) {
+			const {channelId} = this._getContext();
+			const {emailAddressHashed} = identity;
+
 			setItem(STORAGE_KEY_IDENTITY, newIdentityHash);
 
 			instance._identityQueue.addItem({

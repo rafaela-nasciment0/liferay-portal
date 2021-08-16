@@ -249,18 +249,14 @@ public class OAuth2ApplicationScopeAliasesLocalServiceImpl
 	}
 
 	protected static class OAuth2ScopeBuilderImpl
-		implements OAuth2ScopeBuilder,
-				   OAuth2ScopeBuilder.ApplicationScopeAssigner,
-				   OAuth2ScopeBuilder.ApplicationScope {
+		implements OAuth2ScopeBuilder, OAuth2ScopeBuilder.ApplicationScope,
+				   OAuth2ScopeBuilder.ApplicationScopeAssigner {
 
 		public OAuth2ScopeBuilderImpl(
 			Map<Map.Entry<ScopeNamespace, String>, List<String>>
 				simpleEntryScopeAliases) {
 
 			_simpleEntryScopeAliases = simpleEntryScopeAliases;
-
-			_scopes = new ArrayList<>();
-			_scopeAliases = new ArrayList<>();
 		}
 
 		public ApplicationScope assignScope(Collection<String> scope) {
@@ -309,9 +305,9 @@ public class OAuth2ApplicationScopeAliasesLocalServiceImpl
 			_scopeAliases = _scopes;
 		}
 
-		private Collection<String> _scopeAliases;
+		private Collection<String> _scopeAliases = new ArrayList<>();
 		private ScopeNamespace _scopeNamespace;
-		private final Collection<String> _scopes;
+		private final Collection<String> _scopes = new ArrayList<>();
 		private final Map<Map.Entry<ScopeNamespace, String>, List<String>>
 			_simpleEntryScopeAliases;
 

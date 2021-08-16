@@ -144,6 +144,10 @@ public class DispatchTriggerLocalServiceUtil {
 		return getService().dslQuery(dslQuery);
 	}
 
+	public static int dslQueryCount(DSLQuery dslQuery) {
+		return getService().dslQueryCount(dslQuery);
+	}
+
 	public static DynamicQuery dynamicQuery() {
 		return getService().dynamicQuery();
 	}
@@ -229,6 +233,10 @@ public class DispatchTriggerLocalServiceUtil {
 		long companyId, String name) {
 
 		return getService().fetchDispatchTrigger(companyId, name);
+	}
+
+	public static java.util.Date fetchNextFireDate(long dispatchTriggerId) {
+		return getService().fetchNextFireDate(dispatchTriggerId);
 	}
 
 	public static java.util.Date fetchPreviousFireDate(long dispatchTriggerId) {

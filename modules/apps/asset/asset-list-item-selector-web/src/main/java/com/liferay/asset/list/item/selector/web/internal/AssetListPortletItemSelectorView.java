@@ -37,7 +37,6 @@ import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.language.Language;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.resource.bundle.ResourceBundleLoader;
 import com.liferay.portal.kernel.security.permission.ResourceActionsUtil;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.GetterUtil;
@@ -46,7 +45,7 @@ import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.Portal;
-import com.liferay.portal.kernel.util.PortalUtil;
+import com.liferay.portal.kernel.util.ResourceBundleUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
 
@@ -96,8 +95,8 @@ public class AssetListPortletItemSelectorView
 
 	@Override
 	public String getTitle(Locale locale) {
-		ResourceBundle resourceBundle =
-			_resourceBundleLoader.loadResourceBundle(locale);
+		ResourceBundle resourceBundle = ResourceBundleUtil.getBundle(
+			locale, "com.liferay.asset.list.web");
 
 		return _language.get(resourceBundle, "collections");
 	}
@@ -136,9 +135,6 @@ public class AssetListPortletItemSelectorView
 
 	@Reference
 	private Portal _portal;
-
-	@Reference(target = "(bundle.symbolic.name=com.liferay.asset.list.web)")
-	private ResourceBundleLoader _resourceBundleLoader;
 
 	@Reference(
 		target = "(osgi.web.symbolicname=com.liferay.asset.list.item.selector.web)"
@@ -181,7 +177,8 @@ public class AssetListPortletItemSelectorView
 				public String getPayload() {
 					return JSONUtil.put(
 						"classNameId",
-						_portal.getClassNameId(AssetListEntry.class)
+						String.valueOf(
+							_portal.getClassNameId(AssetListEntry.class))
 					).put(
 						"classPK", assetListEntry.getAssetListEntryId()
 					).put(
@@ -299,9 +296,8 @@ public class AssetListPortletItemSelectorView
 				(PortletRequest)_httpServletRequest.getAttribute(
 					JavaConstants.JAVAX_PORTLET_REQUEST);
 
-			ResourceBundle resourceBundle =
-				_resourceBundleLoader.loadResourceBundle(
-					themeDisplay.getLocale());
+			ResourceBundle resourceBundle = ResourceBundleUtil.getBundle(
+				themeDisplay.getLocale(), "com.liferay.asset.list.web");
 
 			SearchContainer<AssetListEntry> searchContainer =
 				new SearchContainer<>(
@@ -335,31 +331,26 @@ public class AssetListPortletItemSelectorView
 				if (Validator.isNotNull(keywords)) {
 					assetListEntries =
 						_assetListEntryService.getAssetListEntries(
-							PortalUtil.getCurrentAndAncestorSiteGroupIds(
-								themeDisplay.getScopeGroupId()),
-							keywords, searchContainer.getStart(),
-							searchContainer.getEnd(),
-							searchContainer.getOrderByComparator());
-
-					assetListEntriesCount =
-						_assetListEntryService.getAssetListEntriesCount(
-							PortalUtil.getCurrentAndAncestorSiteGroupIds(
-								themeDisplay.getScopeGroupId()),
-							keywords);
-				}
-				else {
-					assetListEntries =
-						_assetListEntryService.getAssetListEntries(
-							PortalUtil.getCurrentAndAncestorSiteGroupIds(
-								themeDisplay.getScopeGroupId()),
+							themeDisplay.getScopeGroupId(), keywords,
 							searchContainer.getStart(),
 							searchContainer.getEnd(),
 							searchContainer.getOrderByComparator());
 
 					assetListEntriesCount =
 						_assetListEntryService.getAssetListEntriesCount(
-							PortalUtil.getCurrentAndAncestorSiteGroupIds(
-								themeDisplay.getScopeGroupId()));
+							themeDisplay.getScopeGroupId(), keywords);
+				}
+				else {
+					assetListEntries =
+						_assetListEntryService.getAssetListEntries(
+							themeDisplay.getScopeGroupId(),
+							searchContainer.getStart(),
+							searchContainer.getEnd(),
+							searchContainer.getOrderByComparator());
+
+					assetListEntriesCount =
+						_assetListEntryService.getAssetListEntriesCount(
+							themeDisplay.getScopeGroupId());
 				}
 			}
 			else if (Validator.isNull(
@@ -368,8 +359,7 @@ public class AssetListPortletItemSelectorView
 				if (Validator.isNotNull(keywords)) {
 					assetListEntries =
 						_assetListEntryService.getAssetListEntries(
-							PortalUtil.getCurrentAndAncestorSiteGroupIds(
-								themeDisplay.getScopeGroupId()),
+							new long[] {themeDisplay.getScopeGroupId()},
 							keywords, itemTypes.toArray(new String[0]),
 							searchContainer.getStart(),
 							searchContainer.getEnd(),
@@ -377,15 +367,13 @@ public class AssetListPortletItemSelectorView
 
 					assetListEntriesCount =
 						_assetListEntryService.getAssetListEntriesCount(
-							PortalUtil.getCurrentAndAncestorSiteGroupIds(
-								themeDisplay.getScopeGroupId()),
+							new long[] {themeDisplay.getScopeGroupId()},
 							keywords, itemTypes.toArray(new String[0]));
 				}
 				else {
 					assetListEntries =
 						_assetListEntryService.getAssetListEntries(
-							PortalUtil.getCurrentAndAncestorSiteGroupIds(
-								themeDisplay.getScopeGroupId()),
+							new long[] {themeDisplay.getScopeGroupId()},
 							itemTypes.toArray(new String[0]),
 							searchContainer.getStart(),
 							searchContainer.getEnd(),
@@ -393,8 +381,7 @@ public class AssetListPortletItemSelectorView
 
 					assetListEntriesCount =
 						_assetListEntryService.getAssetListEntriesCount(
-							PortalUtil.getCurrentAndAncestorSiteGroupIds(
-								themeDisplay.getScopeGroupId()),
+							new long[] {themeDisplay.getScopeGroupId()},
 							itemTypes.toArray(new String[0]));
 				}
 			}
@@ -402,8 +389,7 @@ public class AssetListPortletItemSelectorView
 				if (Validator.isNotNull(keywords)) {
 					assetListEntries =
 						_assetListEntryService.getAssetListEntries(
-							PortalUtil.getCurrentAndAncestorSiteGroupIds(
-								themeDisplay.getScopeGroupId()),
+							new long[] {themeDisplay.getScopeGroupId()},
 							keywords,
 							_infoListItemSelectorCriterion.getItemSubtype(),
 							_infoListItemSelectorCriterion.getItemType(),
@@ -413,8 +399,7 @@ public class AssetListPortletItemSelectorView
 
 					assetListEntriesCount =
 						_assetListEntryService.getAssetListEntriesCount(
-							PortalUtil.getCurrentAndAncestorSiteGroupIds(
-								themeDisplay.getScopeGroupId()),
+							new long[] {themeDisplay.getScopeGroupId()},
 							keywords,
 							_infoListItemSelectorCriterion.getItemSubtype(),
 							_infoListItemSelectorCriterion.getItemType());
@@ -422,8 +407,7 @@ public class AssetListPortletItemSelectorView
 				else {
 					assetListEntries =
 						_assetListEntryService.getAssetListEntries(
-							PortalUtil.getCurrentAndAncestorSiteGroupIds(
-								themeDisplay.getScopeGroupId()),
+							new long[] {themeDisplay.getScopeGroupId()},
 							_infoListItemSelectorCriterion.getItemSubtype(),
 							_infoListItemSelectorCriterion.getItemType(),
 							searchContainer.getStart(),
@@ -432,8 +416,7 @@ public class AssetListPortletItemSelectorView
 
 					assetListEntriesCount =
 						_assetListEntryService.getAssetListEntriesCount(
-							PortalUtil.getCurrentAndAncestorSiteGroupIds(
-								themeDisplay.getScopeGroupId()),
+							new long[] {themeDisplay.getScopeGroupId()},
 							_infoListItemSelectorCriterion.getItemSubtype(),
 							_infoListItemSelectorCriterion.getItemType());
 				}

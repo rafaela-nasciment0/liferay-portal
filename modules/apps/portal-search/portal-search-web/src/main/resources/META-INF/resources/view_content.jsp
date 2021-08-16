@@ -49,6 +49,8 @@ searchResultContentDisplayBuilder.setType(ParamUtil.getString(request, "type"));
 SearchResultContentDisplayContext searchResultContentDisplayContext = searchResultContentDisplayBuilder.build();
 %>
 
+<liferay-ui:success key='<%= portletDisplay.getId() + "requestProcessed" %>' message="your-request-completed-successfully" />
+
 <c:if test="<%= searchResultContentDisplayContext.isVisible() %>">
 	<div class="mb-2">
 		<h4 class="component-title">
@@ -76,5 +78,6 @@ SearchResultContentDisplayContext searchResultContentDisplayContext = searchResu
 		assetEntry="<%= searchResultContentDisplayContext.getAssetEntry() %>"
 		assetRenderer="<%= searchResultContentDisplayContext.getAssetRenderer() %>"
 		assetRendererFactory="<%= searchResultContentDisplayContext.getAssetRendererFactory() %>"
+		showExtraInfo="<%= searchResultContentDisplayContext.isShowExtraInfo() %>"
 	/>
 </c:if>

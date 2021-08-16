@@ -25,6 +25,7 @@ import com.liferay.jenkins.results.parser.MultiPattern;
 import com.liferay.jenkins.results.parser.PullRequest;
 import com.liferay.jenkins.results.parser.RemoteGitBranch;
 
+import java.io.File;
 import java.io.IOException;
 
 import java.util.ArrayList;
@@ -51,6 +52,19 @@ import org.json.JSONObject;
  * @author Brian Wing Shun Chan
  */
 public class GitHubWebhookPayloadProcessor {
+
+	public static void main(String[] args) {
+		try {
+			GitHubWebhookPayloadProcessor gitHubWebhookPayloadProcessor =
+				new GitHubWebhookPayloadProcessor(
+					JenkinsResultsParserUtil.read(new File(args[0])));
+
+			gitHubWebhookPayloadProcessor.process();
+		}
+		catch (IOException ioException) {
+			throw new RuntimeException(ioException);
+		}
+	}
 
 	public GitHubWebhookPayloadProcessor(String payloadJSONSource) {
 		JenkinsResultsParserUtil.setBuildProperties(
@@ -103,6 +117,10 @@ public class GitHubWebhookPayloadProcessor {
 		PullRequest pullRequest = pullRequestTesterParameters.getPullRequest();
 
 		String repositoryName = pullRequest.getGitRepositoryName();
+
+		if (repositoryName.equals("liferay-fix-pack-builder-ee")) {
+			return "test-fixpack-builder-pullrequest";
+		}
 
 		if (repositoryName.equals("liferay-jenkins-ee")) {
 			return "test-jenkins-acceptance-pullrequest";
@@ -716,11 +734,9 @@ public class GitHubWebhookPayloadProcessor {
 	}
 
 	protected boolean isLiferayUser(String gitHubUsername) {
-		if (gitHubUsername.equals("liferay")) {
-			return true;
-		}
+		if (gitHubUsername.equals("liferay") ||
+			_validLiferayUsers.contains(gitHubUsername)) {
 
-		if (_validLiferayUsers.contains(gitHubUsername)) {
 			return true;
 		}
 
@@ -2416,8 +2432,9 @@ public class GitHubWebhookPayloadProcessor {
 		Collections.emptyList();
 	private static final MultiPattern _whiteListedRepositoryMultiPattern =
 		new MultiPattern(
+			"com-liferay-.*", "liferay-fix-pack-builder-ee",
 			"liferay-jenkins-ee", "liferay-plugins(-ee)?",
-			"liferay-portal(-ee)?", "com-liferay-.*");
+			"liferay-portal(-ee)?");
 
 	private boolean _ciForwardEligible;
 	private final Properties _jenkinsBuildProperties;

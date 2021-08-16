@@ -141,7 +141,7 @@ definition {
 		}
 
 		task ("Get plids of widget pages before conversion") {
-			var plidsBeforeConversion = "";
+			var list = ListUtil.newList();
 
 			for (var i : list "1,2,3,4,5,6,7,8,9,10") {
 				Navigator.gotoSitePage(
@@ -151,18 +151,14 @@ definition {
 				var plidBeforeConversion = Page.getPlidFromHtmlSource();
 
 				if ("${i}" == "1") {
-					var plidsBeforeConversion = StringUtil.add("${plidsBeforeConversion}", "${plidBeforeConversion}");
+					ListUtil.add("${list}","${plidBeforeConversion}");
 				}
 				else {
-					var plidsBeforeConversion = StringUtil.add("${plidsBeforeConversion}", " ${plidBeforeConversion}");
+					ListUtil.add("${list}"," ${plidBeforeConversion}");
 				}
 			}
 
-			var length = StringUtil.length("${plidsBeforeConversion}");
-
-			var endIndex = ${length} - 1;
-
-			var plidsBeforeConversion = StringUtil.substring("${plidsBeforeConversion}", "0","${endIndex}");
+			var plidsBeforeConversion = ListUtil.toString("${list}");
 
 			echo("${plidsBeforeConversion}");
 		}
@@ -198,7 +194,7 @@ definition {
 		}
 
 		task ("Get plids of converted pages") {
-			var plidsAfterConversion = "";
+			var list = ListUtil.newList();
 
 			for (var i : list "1,2,3,4,5,6,7,8,9,10") {
 				ContentPagesNavigator.openViewContentPage(
@@ -210,18 +206,14 @@ definition {
 				var plidAfterConversion = Page.getPlidFromHtmlSource();
 
 				if ("${i}" == "1") {
-					var plidsAfterConversion = StringUtil.add("${plidsAfterConversion}", "${plidAfterConversion}");
+					ListUtil.add("${list}","${plidAfterConversion}");
 				}
 				else {
-					var plidsAfterConversion = StringUtil.add("${plidsAfterConversion}", " ${plidAfterConversion}");
+					ListUtil.add("${list}"," ${plidAfterConversion}");
 				}
 			}
 
-			var length = StringUtil.length("${plidsAfterConversion}");
-
-			var endIndex = ${length} - 1;
-
-			var plidsAfterConversion = StringUtil.substring("${plidsAfterConversion}", "0","${endIndex}");
+			var plidsAfterConversion = ListUtil.toString("${list}");
 
 			echo("${plidsAfterConversion}");
 		}
@@ -644,7 +636,7 @@ definition {
 
 		WaitForElementNotPresent(locator1 = "IFrame#MODAL_BODY");
 
-		DragAndDrop.dragAndDropPortletToObject(
+		DragAndDrop.dragAndDropPortletToPortlet(
 			key_portletTitleName = "Asset Publisher",
 			locator1 = "Home#PAGE_COLUMN_PORTLET_COLUMN_1_PORTLET_HEADER",
 			locator2 = "Home#PORTLET_COLUMN_1",
@@ -700,7 +692,7 @@ definition {
 			panel = "Control Panel",
 			portlet = "App Manager");
 
-		AppManager.uploadAppCP(
+		AppManager.uploadApp(
 			appName = "custom-layout-layouttpl",
 			warFileName = "custom-layout-layouttpl.war");
 
@@ -795,7 +787,7 @@ definition {
 			panel = "Control Panel",
 			portlet = "App Manager");
 
-		AppManager.uploadAppCP(
+		AppManager.uploadApp(
 			appName = "custom-layout-layouttpl",
 			warFileName = "custom-layout-layouttpl.war");
 
@@ -901,7 +893,7 @@ definition {
 			panel = "Control Panel",
 			portlet = "App Manager");
 
-		AppManager.uploadAppCP(
+		AppManager.uploadApp(
 			appName = "custom-layout-layouttpl",
 			warFileName = "custom-layout-layouttpl.war");
 
@@ -956,7 +948,7 @@ definition {
 
 		WaitForElementNotPresent(locator1 = "IFrame#MODAL_BODY");
 
-		DragAndDrop.dragAndDropPortletToObject(
+		DragAndDrop.dragAndDropPortletToPortlet(
 			key_portletTitleName = "Asset Publisher",
 			locator1 = "Home#PAGE_COLUMN_PORTLET_COLUMN_2_PORTLET_HEADER",
 			locator2 = "Home#PORTLET_COLUMN_1",

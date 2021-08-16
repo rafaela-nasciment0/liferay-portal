@@ -147,7 +147,7 @@ public class LayoutClassedModelUsagesDisplayContext {
 				return StringPool.BLANK;
 			}
 
-			if (!_isDraft(layout)) {
+			if (!layout.isDraftLayout()) {
 				return layout.getName(_themeDisplay.getLocale());
 			}
 
@@ -166,7 +166,7 @@ public class LayoutClassedModelUsagesDisplayContext {
 		Layout layout = LayoutLocalServiceUtil.fetchLayout(
 			layoutClassedModelUsage.getPlid());
 
-		if ((layout.getClassNameId() > 0) && (layout.getClassPK() > 0)) {
+		if (layout.isDraftLayout()) {
 			plid = layout.getClassPK();
 		}
 
@@ -178,7 +178,7 @@ public class LayoutClassedModelUsagesDisplayContext {
 			return StringPool.BLANK;
 		}
 
-		if (!_isDraft(layout)) {
+		if (!layout.isDraftLayout()) {
 			return layoutPageTemplateEntry.getName();
 		}
 
@@ -450,14 +450,10 @@ public class LayoutClassedModelUsagesDisplayContext {
 			return true;
 		}
 
-		if (layoutClassedModelUsage.getType() ==
-				LayoutClassedModelUsageConstants.TYPE_DISPLAY_PAGE_TEMPLATE) {
-
-			return false;
-		}
-
-		if (layoutClassedModelUsage.getType() !=
-				LayoutClassedModelUsageConstants.TYPE_PAGE_TEMPLATE) {
+		if ((layoutClassedModelUsage.getType() ==
+				LayoutClassedModelUsageConstants.TYPE_DISPLAY_PAGE_TEMPLATE) ||
+			(layoutClassedModelUsage.getType() !=
+				LayoutClassedModelUsageConstants.TYPE_PAGE_TEMPLATE)) {
 
 			return false;
 		}
@@ -466,7 +462,7 @@ public class LayoutClassedModelUsagesDisplayContext {
 
 		Layout layout = LayoutLocalServiceUtil.fetchLayout(plid);
 
-		if ((layout.getClassNameId() > 0) && (layout.getClassPK() > 0)) {
+		if (layout.isDraftLayout()) {
 			plid = layout.getClassPK();
 		}
 
@@ -474,12 +470,9 @@ public class LayoutClassedModelUsagesDisplayContext {
 			LayoutPageTemplateEntryLocalServiceUtil.
 				fetchLayoutPageTemplateEntryByPlid(plid);
 
-		if (layoutPageTemplateEntry == null) {
-			return false;
-		}
-
-		if (layoutPageTemplateEntry.getType() ==
-				LayoutPageTemplateEntryTypeConstants.TYPE_WIDGET_PAGE) {
+		if ((layoutPageTemplateEntry == null) ||
+			(layoutPageTemplateEntry.getType() ==
+				LayoutPageTemplateEntryTypeConstants.TYPE_WIDGET_PAGE)) {
 
 			return false;
 		}
@@ -580,16 +573,6 @@ public class LayoutClassedModelUsagesDisplayContext {
 		}
 
 		return 0;
-	}
-
-	private boolean _isDraft(Layout layout) {
-		if (layout.getClassNameId() != PortalUtil.getClassNameId(
-				Layout.class.getName())) {
-
-			return false;
-		}
-
-		return true;
 	}
 
 	private final String _className;

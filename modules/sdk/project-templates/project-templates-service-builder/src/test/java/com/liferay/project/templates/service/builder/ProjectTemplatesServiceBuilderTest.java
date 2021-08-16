@@ -75,7 +75,7 @@ public class ProjectTemplatesServiceBuilderTest
 		throws Exception {
 
 		File gradleProjectDir = _buildTemplateWithGradle(
-			"service-builder", "foo-bar", "--liferay-version", "7.0.6");
+			"service-builder", "foo-bar", "--liferay-version", "7.0.6-2");
 
 		testContains(
 			gradleProjectDir, "foo-bar-service/service.xml",
@@ -87,7 +87,7 @@ public class ProjectTemplatesServiceBuilderTest
 		throws Exception {
 
 		File gradleProjectDir = _buildTemplateWithGradle(
-			"service-builder", "foo-bar", "--liferay-version", "7.1.3");
+			"service-builder", "foo-bar", "--liferay-version", "7.1.3-1");
 
 		testContains(
 			gradleProjectDir, "foo-bar-service/service.xml",
@@ -99,7 +99,7 @@ public class ProjectTemplatesServiceBuilderTest
 		throws Exception {
 
 		File gradleProjectDir = _buildTemplateWithGradle(
-			"service-builder", "foo-bar", "--liferay-version", "7.2.1");
+			"service-builder", "foo-bar", "--liferay-version", "7.2.1-1");
 
 		testContains(
 			gradleProjectDir, "foo-bar-service/service.xml",
@@ -116,6 +116,18 @@ public class ProjectTemplatesServiceBuilderTest
 		testContains(
 			gradleProjectDir, "foo-bar-service/service.xml",
 			"liferay-service-builder_7_3_0.dtd");
+	}
+
+	@Test
+	public void testBuildTemplateContentDTDVersionServiceBuilder74()
+		throws Exception {
+
+		File gradleProjectDir = _buildTemplateWithGradle(
+			"service-builder", "foo-bar", "--liferay-version", "7.4.1-1");
+
+		testContains(
+			gradleProjectDir, "foo-bar-service/service.xml",
+			"liferay-service-builder_7_4_0.dtd");
 	}
 
 	@Test
@@ -229,7 +241,8 @@ public class ProjectTemplatesServiceBuilderTest
 			mavenExecutor);
 
 		writeGradlePropertiesInWorkspace(
-			gradleWorkspaceDir, "liferay.workspace.product=portal-7.3-ga6");
+			gradleWorkspaceDir,
+			"liferay.workspace.target.platform.version=7.4.1-1");
 
 		File modulesDir = new File(gradleWorkspaceDir, "modules");
 
@@ -305,7 +318,7 @@ public class ProjectTemplatesServiceBuilderTest
 	public void testBuildTemplateServiceBuilderWorkspaceUADUnsupported()
 		throws Exception {
 
-		String liferayVersion = "7.0.6";
+		String liferayVersion = "7.0.6-2";
 		String name = "sample";
 
 		File gradleWorkspaceDir = buildWorkspace(
@@ -320,6 +333,7 @@ public class ProjectTemplatesServiceBuilderTest
 	@Test
 	public void testCompareServiceBuilderPluginVersions() throws Exception {
 		Assume.assumeTrue(isBuildProjects());
+
 		String liferayVersion = getDefaultLiferayVersion();
 		String name = "sample";
 		String packageName = "com.test.sample";

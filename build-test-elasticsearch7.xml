@@ -18,7 +18,7 @@
 			</then>
 		</elseif>
 		<else>
-			<property name="elasticsearch.version" value="7.11.0" />
+			<property name="elasticsearch.version" value="7.12.0" />
 		</else>
 	</if>
 
@@ -247,7 +247,7 @@ elasticsearch.username: "elastic"</echo>
 		<attribute name="connection.name" />
 
 		<sequential>
-			<echo file="${liferay.home}/osgi/configs/com.liferay.portal.search.elasticsearch7.configuration.ElasticsearchConnectionConfiguration-@{connection.name}.config">active=&quot;true&quot;
+			<echo file="${liferay.home}/osgi/configs/com.liferay.portal.search.elasticsearch7.configuration.ElasticsearchConnectionConfiguration~@{connection.name}.config">active=&quot;true&quot;
 connectionId=&quot;@{connection.name}&quot;
 networkHostAddresses=[&quot;http://localhost:9202&quot;]</echo>
 		</sequential>
@@ -270,7 +270,7 @@ networkHostAddresses=[&quot;http://localhost:9202&quot;]</echo>
 kibanaURL="https://localhost:5601"
 proxyServletLogEnable="true"</echo>
 
-			<echo file="${liferay.home}/osgi/configs/com.liferay.portal.search.elasticsearch7.configuration.ElasticsearchConnectionConfiguration-xpack.config">active="true"
+			<echo file="${liferay.home}/osgi/configs/com.liferay.portal.search.elasticsearch7.configuration.ElasticsearchConnectionConfiguration~xpack.config">active="true"
 authenticationEnabled="true"
 connectionId="xpack"
 httpSSLEnabled="true"
@@ -300,7 +300,7 @@ username="elastic"</echo>
 kibanaURL="https://localhost:5601"
 proxyServletLogEnable="true"</echo>
 
-			<echo file="${liferay.home}/osgi/configs/com.liferay.portal.search.elasticsearch7.configuration.ElasticsearchConnectionConfiguration-pki.config">active="true"
+			<echo file="${liferay.home}/osgi/configs/com.liferay.portal.search.elasticsearch7.configuration.ElasticsearchConnectionConfiguration~pki.config">active="true"
 authenticationEnabled="false"
 connectionId="pki"
 httpSSLEnabled="true"
@@ -1416,11 +1416,22 @@ ${line.separator}CATALINA_OPTS="${CATALINA_OPTS} -Djavax.net.ssl.trustStore=${el
 	</target>
 
 	<target name="stop-kibana">
-		<exec dir="${elastic.kibana.dir}/bin" executable="/bin/bash" osfamily="unix">
-			<arg value="-c" />
-			<arg value="pkill -F pid-kibana" />
-		</exec>
+		<if>
+			<available file="${elastic.kibana.dir}/bin" type="dir" />
+			<then>
+				<exec dir="${elastic.kibana.dir}/bin" executable="/bin/bash" osfamily="unix">
+					<arg value="-c" />
+					<arg value="pkill -F pid-kibana" />
+				</exec>
 
-		<print-file file.name="${elastic.kibana.dir}/bin/kibana.log" />
+				<print-file file.name="${elastic.kibana.dir}/bin/kibana.log" />
+			</then>
+			<else>
+				<exec executable="/bin/bash" osfamily="unix">
+					<arg value="-c" />
+					<arg value="fuser -k 5601/tcp" />
+				</exec>
+			</else>
+		</if>
 	</target>
 </project>

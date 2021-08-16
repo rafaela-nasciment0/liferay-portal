@@ -180,6 +180,13 @@ public class CommerceCatalogLocalServiceWrapper
 	}
 
 	@Override
+	public int dslQueryCount(
+		com.liferay.petra.sql.dsl.query.DSLQuery dslQuery) {
+
+		return _commerceCatalogLocalService.dslQueryCount(dslQuery);
+	}
+
+	@Override
 	public com.liferay.portal.kernel.dao.orm.DynamicQuery dynamicQuery() {
 		return _commerceCatalogLocalService.dynamicQuery();
 	}
@@ -323,6 +330,17 @@ public class CommerceCatalogLocalServiceWrapper
 
 		return _commerceCatalogLocalService.fetchCommerceCatalogByReferenceCode(
 			companyId, externalReferenceCode);
+	}
+
+	@Override
+	public com.liferay.commerce.product.model.CommerceCatalog
+			forceDeleteCommerceCatalog(
+				com.liferay.commerce.product.model.CommerceCatalog
+					commerceCatalog)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return _commerceCatalogLocalService.forceDeleteCommerceCatalog(
+			commerceCatalog);
 	}
 
 	@Override

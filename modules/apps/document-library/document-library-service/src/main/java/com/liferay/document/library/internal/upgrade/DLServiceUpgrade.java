@@ -24,15 +24,15 @@ import com.liferay.document.library.internal.upgrade.v1_1_2.DLFileEntryTypeUpgra
 import com.liferay.document.library.internal.upgrade.v2_0_0.UpgradeCompanyId;
 import com.liferay.document.library.internal.upgrade.v3_2_1.DDMStructureLinkUpgradeProcess;
 import com.liferay.document.library.kernel.model.DLFileEntry;
-import com.liferay.document.library.kernel.store.Store;
 import com.liferay.portal.configuration.upgrade.PrefsPropsToConfigurationUpgradeHelper;
 import com.liferay.portal.kernel.service.ClassNameLocalService;
 import com.liferay.portal.kernel.service.ResourceLocalService;
+import com.liferay.portal.kernel.upgrade.CTModelUpgradeProcess;
 import com.liferay.portal.kernel.upgrade.DummyUpgradeStep;
-import com.liferay.portal.kernel.upgrade.UpgradeCTModel;
-import com.liferay.portal.kernel.upgrade.UpgradeMVCCVersion;
-import com.liferay.portal.kernel.upgrade.UpgradeViewCount;
+import com.liferay.portal.kernel.upgrade.MVCCVersionUpgradeProcess;
+import com.liferay.portal.kernel.upgrade.ViewCountUpgradeProcess;
 import com.liferay.portal.upgrade.registry.UpgradeStepRegistrator;
+import com.liferay.portlet.documentlibrary.store.StoreFactory;
 import com.liferay.subscription.service.SubscriptionLocalService;
 import com.liferay.view.count.service.ViewCountEntryLocalService;
 
@@ -48,7 +48,8 @@ public class DLServiceUpgrade implements UpgradeStepRegistrator {
 	@Override
 	public void register(Registry registry) {
 		registry.register(
-			"0.0.1", "1.0.0", new DocumentLibraryUpgradeProcess(_store));
+			"0.0.1", "1.0.0",
+			new DocumentLibraryUpgradeProcess(_storeFactory.getStore()));
 
 		registry.register("1.0.0", "1.0.1", new DLFileShortcutUpgradeProcess());
 
@@ -71,7 +72,7 @@ public class DLServiceUpgrade implements UpgradeStepRegistrator {
 
 		registry.register(
 			"2.0.0", "3.0.0",
-			new UpgradeViewCount(
+			new ViewCountUpgradeProcess(
 				"DLFileEntry", DLFileEntry.class, "fileEntryId", "readCount"));
 
 		registry.register(
@@ -83,7 +84,7 @@ public class DLServiceUpgrade implements UpgradeStepRegistrator {
 
 		registry.register(
 			"3.0.1", "3.1.0",
-			new UpgradeMVCCVersion() {
+			new MVCCVersionUpgradeProcess() {
 
 				@Override
 				protected String[] getModuleTableNames() {
@@ -91,7 +92,7 @@ public class DLServiceUpgrade implements UpgradeStepRegistrator {
 				}
 
 			},
-			new UpgradeCTModel("DLFileVersionPreview"));
+			new CTModelUpgradeProcess("DLFileVersionPreview"));
 
 		registry.register("3.1.0", "3.1.1", new DummyUpgradeStep());
 
@@ -106,6 +107,8 @@ public class DLServiceUpgrade implements UpgradeStepRegistrator {
 			"3.2.0", "3.2.1", new DDMStructureLinkUpgradeProcess(),
 			new com.liferay.document.library.internal.upgrade.v3_2_1.
 				UpgradeDLFileEntryType());
+
+		registry.register("3.2.1", "3.2.2", new DummyUpgradeStep());
 	}
 
 	@Reference
@@ -118,8 +121,8 @@ public class DLServiceUpgrade implements UpgradeStepRegistrator {
 	@Reference
 	private ResourceLocalService _resourceLocalService;
 
-	@Reference(target = "(dl.store.upgrade=true)")
-	private Store _store;
+	@Reference(target = "(dl.store.impl.enabled=true)")
+	private StoreFactory _storeFactory;
 
 	@Reference
 	private SubscriptionLocalService _subscriptionLocalService;

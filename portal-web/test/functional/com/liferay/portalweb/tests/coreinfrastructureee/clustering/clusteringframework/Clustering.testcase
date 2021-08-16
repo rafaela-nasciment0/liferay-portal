@@ -3,6 +3,7 @@ definition {
 
 	property app.server.bundles.size = "1";
 	property cluster.enabled = "true";
+	property minimum.slave.ram = "32";
 	property portal.release = "true";
 	property portal.upstream = "true";
 	property remote.elasticsearch.enabled = "true";
@@ -154,6 +155,75 @@ definition {
 			searchAssetType = "Blogs Entry");
 	}
 
+	@priority = "4"
+	test CanInvokeMethods {
+		property test.name.skip.portal.instance = "Clustering#CanInvokeMethods";
+
+		Clustering.runGroovyScript(
+			nodePort = "8080",
+			scriptFile = "groovy-script-invoke-method.groovy");
+
+		AssertTextEquals(
+			locator1 = "ServerAdministrationScript#OUTPUT_FIELD",
+			value1 = "Result of invoke-method-portal is :9080");
+
+		Clustering.runGroovyScript(
+			nodePort = "9080",
+			scriptFile = "groovy-script-invoke-method.groovy");
+
+		AssertTextEquals(
+			locator1 = "ServerAdministrationScript#OUTPUT_FIELD",
+			value1 = "Result of invoke-method-portal is :8080");
+
+		for (var serverPort : list "8080,9080") {
+			Clustering.runGroovyScript(
+				nodePort = "${serverPort}",
+				scriptFile = "groovy-script-invoke-method-on-master.groovy");
+
+			AssertTextEquals(
+				locator1 = "ServerAdministrationScript#OUTPUT_FIELD",
+				value1 = "Result of invoke-method-portal-on-master is :8080");
+		}
+
+		for (var serverPort : list "8080,9080") {
+			Clustering.deployJarOnSpecificServer(
+				liferayDependencyJars = "com.liferay.cluster.test.module.jar",
+				nodePort = "${serverPort}");
+		}
+
+		for (var method : list "invoke-method-module,invoke-method-portal") {
+			AntCommand(
+				locator1 = "build-test.xml",
+				value1 = "cluster-invoke-method -Dcluster.invoke.method=${method}");
+
+			Pause(locator1 = "10000");
+
+			Clustering.viewTextPresentOnSpecificNode(
+				expectedText = "Result of ${method} is :9080",
+				nodePort = "8080");
+
+			Clustering.viewTextPresentOnSpecificNode(
+				expectedText = "Result of ${method} is :8080",
+				nodePort = "9080");
+		}
+
+		for (var method : list "invoke-method-module-on-master,invoke-method-portal-on-master") {
+			AntCommand(
+				locator1 = "build-test.xml",
+				value1 = "cluster-invoke-method -Dcluster.invoke.method=${method}");
+
+			Pause(locator1 = "10000");
+
+			Clustering.viewTextPresentOnSpecificNode(
+				expectedText = "Result of ${method} is :8080",
+				nodePort = "8080");
+
+			Clustering.viewTextPresentOnSpecificNode(
+				expectedText = "Result of ${method} is :8080",
+				nodePort = "9080");
+		}
+	}
+
 	@priority = "5"
 	test ShutdownAndStartupNodes {
 		property portal.upstream = "quarantine";
@@ -215,6 +285,101 @@ definition {
 			userEmailAddress = "test@liferay.com");
 
 		Page.assertNodePortPG(nodePort = "9080");
+	}
+
+	@priority = "4"
+	test SlaveNodeCanBecomeMasterNode {
+		property test.name.skip.portal.instance = "Clustering#SlaveNodeCanBecomeMasterNode";
+
+		Clustering.runGroovyScript(
+			nodePort = "8080",
+			scriptFile = "groovy-script-master-slave.groovy");
+
+		AssertTextEquals(
+			locator1 = "ServerAdministrationScript#OUTPUT_FIELD",
+			value1 = "This node is master node");
+
+		Clustering.runGroovyScript(
+			nodePort = "9080",
+			scriptFile = "groovy-script-master-slave.groovy");
+
+		AssertTextEquals(
+			locator1 = "ServerAdministrationScript#OUTPUT_FIELD",
+			value1 = "This node is slave node");
+
+		Clustering.shutdownSpecificServer(nodePort = "8080");
+
+		Clustering.runGroovyScript(
+			nodePort = "9080",
+			scriptFile = "groovy-script-master-slave.groovy");
+
+		AssertTextEquals(
+			locator1 = "ServerAdministrationScript#OUTPUT_FIELD",
+			value1 = "This node is master node");
+
+		Clustering.startSpecificServer(
+			deleteLiferayHome = "true",
+			keepCachedAppServerData = "true",
+			nodePort = "8080");
+
+		User.logoutPG(
+			password = "test",
+			userEmailAddress = "test@liferay.com");
+
+		User.loginPG(
+			nodePort = "8080",
+			password = "test",
+			userEmailAddress = "test@liferay.com");
+
+		Clustering.runGroovyScript(
+			nodePort = "8080",
+			scriptFile = "groovy-script-master-slave.groovy");
+
+		AssertTextEquals(
+			locator1 = "ServerAdministrationScript#OUTPUT_FIELD",
+			value1 = "This node is slave node");
+	}
+
+	@priority = "4"
+	test TCPControlChannelProperties {
+		property custom.properties = "cluster.link.channel.properties.control=tcp.xml";
+		property test.name.skip.portal.instance = "Clustering#TCPControlChannelProperties";
+
+		for (var serverPort : list "8080,9080") {
+			Clustering.viewTextPresentOnSpecificNode(
+				expectedText = "Create a new JGroups channel",
+				nodePort = "${serverPort}");
+
+			Clustering.viewTextPresentOnSpecificNode(
+				expectedText = "properties: TCP",
+				nodePort = "${serverPort}");
+		}
+
+		User.loginPG(
+			nodePort = "9080",
+			password = "test",
+			userEmailAddress = "test@liferay.com");
+	}
+
+	@priority = "4"
+	test UDPControlChannelProperties {
+		property custom.properties = "cluster.link.channel.properties.control=udp.xml${line.separator}cluster.link.channel.properties.transport.0=udp.xml";
+		property test.name.skip.portal.instance = "Clustering#UDPControlChannelProperties";
+
+		for (var serverPort : list "8080,9080") {
+			Clustering.viewTextPresentOnSpecificNode(
+				expectedText = "Create a new JGroups channel",
+				nodePort = "${serverPort}");
+
+			Clustering.viewTextPresentOnSpecificNode(
+				expectedText = "properties: UDP",
+				nodePort = "${serverPort}");
+		}
+
+		User.loginPG(
+			nodePort = "9080",
+			password = "test",
+			userEmailAddress = "test@liferay.com");
 	}
 
 	@priority = "4"

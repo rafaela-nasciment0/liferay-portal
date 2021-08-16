@@ -60,19 +60,19 @@ public class SelectGlobalTemplatesVerticalCard implements VerticalCard {
 					_renderResponse
 				).setMVCRenderCommandName(
 					"/layout_admin/add_layout"
-				).setParameter(
-					"backURL", ParamUtil.getString(_renderRequest, "redirect")
-				).setParameter(
-					"selPlid", ParamUtil.getLong(_renderRequest, "selPlid")
-				).setParameter(
-					"privateLayout",
-					ParamUtil.getBoolean(_renderRequest, "privateLayout")
+				).setBackURL(
+					ParamUtil.getString(_renderRequest, "redirect")
 				).setParameter(
 					"layoutPageTemplateEntryId",
 					_layoutPageTemplateEntry.getLayoutPageTemplateEntryId()
 				).setParameter(
 					"layoutPrototypeId",
 					_layoutPageTemplateEntry.getLayoutPrototypeId()
+				).setParameter(
+					"privateLayout",
+					ParamUtil.getBoolean(_renderRequest, "privateLayout")
+				).setParameter(
+					"selPlid", ParamUtil.getLong(_renderRequest, "selPlid")
 				).setWindowState(
 					LiferayWindowState.POP_UP
 				).buildString());

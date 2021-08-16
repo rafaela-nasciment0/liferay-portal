@@ -10,12 +10,7 @@ definition {
 
 		User.firstLoginPG();
 
-		ApplicationsMenu.gotoPortlet(
-			category = "Publications",
-			panel = "Applications",
-			portlet = "Settings");
-
-		Publications.enablePublications();
+		JSONPublications.enablePublications();
 	}
 
 	tearDown {
@@ -48,7 +43,9 @@ definition {
 			groupName = "Site Name",
 			title = "WC WebContent Title");
 
-		Publications.createNewPublication(publicationsName = "Publication Name");
+		JSONPublications.addPublication(publicationName = "Publication Name");
+
+		JSONPublications.selectPublication(publicationName = "Publication Name");
 
 		ContentPagesNavigator.openEditContentPage(
 			pageName = "Content Page Name",
@@ -62,7 +59,9 @@ definition {
 
 		PageEditor.clickPublish();
 
-		Publications.createNewPublication(publicationsName = "Publication Name 2");
+		JSONPublications.addPublication(publicationName = "Publication Name 2");
+
+		JSONPublications.selectPublication(publicationName = "Publication Name 2");
 
 		ContentPagesNavigator.openEditContentPage(
 			pageName = "Content Page Name",
@@ -78,23 +77,25 @@ definition {
 
 		PageEditor.clickPublish();
 
-		Publications.gotoReviewPublications();
+		Publications.gotoReviewChanges();
 
-		PublicationsChanges.viewPublicationsViaChangesStyle(
-			publicationsCategory = "Widget",
-			publicationsSite = "Site Name",
-			publicationsTitle = "Asset Publisher",
-			publicationsType = "Added",
-			publicationsUser = "Test Test",
+		PublicationsChanges.viewChangesViaChangesStyle(
+			changeCategory = "Widget",
+			changeSite = "Site Name",
+			changeTitle = "Asset Publisher",
+			changeType = "Added",
+			changeUser = "Test Test",
 			showAllItems = "true");
 
-		Publications.gotoPublish(publicationsName = "Publication Name 2");
+		JSONPublications.publishPublication(publicationName = "Publication Name 2");
 
-		Publications.publishPublication(publicationsName = "Publication Name 2");
+		Publications.viewPublicationPublished(publicationName = "Publication Name 2");
 
-		Publications.selectPublication(publicationsName = "Publication Name");
+		JSONPublications.selectPublication(publicationName = "Publication Name");
 
-		Publications.gotoReviewPublications();
+		Publications.gotoReviewChanges(
+			gotoManagePublications = "true",
+			publicationName = "Publication Name");
 
 		Publications.workOnProduction();
 
@@ -119,6 +120,8 @@ definition {
 
 	@priority = "4"
 	test DiscardConflictingChangesOnContentPage {
+		property test.assert.warning.exceptions = "true";
+
 		JSONGroup.addGroup(groupName = "Site Name");
 
 		JSONLayout.addPublicLayout(
@@ -131,7 +134,9 @@ definition {
 			groupName = "Site Name",
 			title = "WC WebContent Title");
 
-		Publications.createNewPublication(publicationsName = "Publication Name 1");
+		JSONPublications.addPublication(publicationName = "Publication Name 1");
+
+		JSONPublications.selectPublication(publicationName = "Publication Name 1");
 
 		ContentPagesNavigator.openEditContentPage(
 			pageName = "Content Page Name",
@@ -151,7 +156,9 @@ definition {
 
 		PageEditor.clickPublish();
 
-		Publications.createNewPublication(publicationsName = "Publication Name 2");
+		JSONPublications.addPublication(publicationName = "Publication Name 2");
+
+		JSONPublications.selectPublication(publicationName = "Publication Name 2");
 
 		ContentPagesNavigator.openEditContentPage(
 			pageName = "Content Page Name",
@@ -179,25 +186,27 @@ definition {
 
 		PageEditor.clickPublish();
 
-		Publications.gotoPublish(publicationsName = "Publication Name 2");
+		JSONPublications.publishPublication(publicationName = "Publication Name 2");
 
-		Publications.publishPublication(publicationsName = "Publication Name 2");
+		Navigator.openURL();
 
-		Publications.selectPublication(publicationsName = "Publication Name 1");
+		Publications.viewPublicationPublished(publicationName = "Publication Name 2");
 
-		Publications.gotoPublish(publicationsName = "Publication Name 1");
+		Publications.gotoPublish(
+			gotoManagePublications = "true",
+			publicationName = "Publication Name 1");
 
-		Publications.discardPublications(
-			conflictingPublications = "true",
-			entryTitle = "com.liferay.layout.page.template.model.LayoutPageTemplateStructure",
-			publicationsCategory = "com.liferay.layout.page.template.model.LayoutPageTemplateStructure",
-			publicationsTitle = "com.liferay.layout.page.template.model.LayoutPageTemplateStructure");
+		Publications.discardChanges(
+			changeCategory = "com.liferay.layout.page.template.model.LayoutPageTemplateStructure",
+			changeTitle = "com.liferay.layout.page.template.model.LayoutPageTemplateStructure",
+			conflictingChanges = "true",
+			entryTitle = "com.liferay.layout.page.template.model.LayoutPageTemplateStructure");
 
-		Publications.discardPublications(
-			conflictingPublications = "true",
-			entryTitle = "com.liferay.portal.kernel.model.PortletPreferenceValue",
-			publicationsCategory = "com.liferay.portal.kernel.model.PortletPreferenceValue",
-			publicationsTitle = "com.liferay.portal.kernel.model.PortletPreferenceValue");
+		Publications.discardChanges(
+			changeCategory = "com.liferay.portal.kernel.model.PortletPreferenceValue",
+			changeTitle = "com.liferay.portal.kernel.model.PortletPreferenceValue",
+			conflictingChanges = "true",
+			entryTitle = "com.liferay.portal.kernel.model.PortletPreferenceValue");
 
 		// Workaround LPS-124618
 
@@ -207,15 +216,13 @@ definition {
 
 	@priority = "4"
 	test PublishDeletedPageWithTag {
-		Navigator.openURL();
+		JSONLayout.addPublicLayout(
+			groupName = "Guest",
+			layoutName = "Test Page");
 
-		ProductMenu.gotoPortlet(
-			category = "Site Builder",
-			portlet = "Pages");
+		JSONPublications.addPublication(publicationName = "Publication Name");
 
-		SitePages.addPublicPage(pageName = "Test Page");
-
-		Publications.createNewPublication(publicationsName = "Publication Name");
+		JSONPublications.selectPublication(publicationName = "Publication Name");
 
 		SitePages.openPagesAdmin(siteURLKey = "guest");
 
@@ -227,6 +234,17 @@ definition {
 
 		PortletEntry.save();
 
+		Publications.gotoReviewChanges();
+
+		PublicationsChanges.viewChangesViaChangesStyle(
+			changeCategory = "Tag",
+			changeSite = "Guest",
+			changeTitle = "tag name",
+			changeType = "Added",
+			changeUser = "Test Test");
+
+		Navigator.openURL();
+
 		ProductMenu.gotoPortlet(
 			category = "Site Builder",
 			portlet = "Pages");
@@ -237,23 +255,23 @@ definition {
 
 		Page.viewNoPG(pageName = "Test Page");
 
-		Publications.gotoReviewPublications();
+		Publications.gotoReviewChanges();
 
-		PublicationsChanges.viewPublicationsViaChangesStyle(
-			publicationsCategory = "Page",
-			publicationsSite = "Guest",
-			publicationsTitle = "Test Page",
-			publicationsType = "Deleted",
-			publicationsUser = "Test Test");
+		PublicationsChanges.viewChangesViaChangesStyle(
+			changeCategory = "Page",
+			changeSite = "Guest",
+			changeTitle = "Test Page",
+			changeType = "Deleted",
+			changeUser = "Test Test");
 
-		PublicationsChanges.viewPublicationsViaContextStyle(
-			publicationsCategory = "Page",
-			publicationsDescription = "Test Test deleted a Page in Guest",
-			publicationsTitle = "Test Page");
+		PublicationsChanges.viewChangesViaContextStyle(
+			changeCategory = "Page",
+			changeDescription = "Test Test deleted a Page in Guest",
+			changeTitle = "Test Page");
 
-		Publications.gotoPublish(publicationsName = "Publication Name");
+		JSONPublications.publishPublication(publicationName = "Publication Name");
 
-		Publications.publishPublication(publicationsName = "Publication Name");
+		Publications.viewPublicationPublished(publicationName = "Publication Name");
 
 		Navigator.openURL();
 
@@ -262,7 +280,11 @@ definition {
 
 	@priority = "4"
 	test PublishPrivateContentPageWithFragment {
-		Publications.createNewPublication(publicationsName = "Publication Name");
+		property test.assert.warning.exceptions = "true";
+
+		JSONPublications.addPublication(publicationName = "Publication Name");
+
+		JSONPublications.selectPublication(publicationName = "Publication Name");
 
 		JSONFragment.addFragmentCollection(
 			groupName = "Guest",
@@ -284,19 +306,12 @@ definition {
 
 		PortletEntry.publish();
 
+		JSONWebcontent.addWebContent(
+			content = "WC WebContent Content",
+			groupName = "Guest",
+			title = "WC WebContent Title");
+
 		Navigator.openURL();
-
-		ProductMenu.gotoPortlet(
-			category = "Content &amp; Data",
-			portlet = "Web Content");
-
-		WebContentNavigator.gotoAddCP();
-
-		WebContent.addCP(
-			webContentContent = "WC WebContent Content",
-			webContentTitle = "WC WebContent Title");
-
-		PortletEntry.publish();
 
 		ProductMenu.gotoPortlet(
 			category = "Site Builder",
@@ -316,9 +331,9 @@ definition {
 			webContentContent = "WC WebContent Content",
 			webContentTitle = "WC WebContent Title");
 
-		Publications.gotoPublish(publicationsName = "Publication Name");
+		JSONPublications.publishPublication(publicationName = "Publication Name");
 
-		Publications.publishPublication(publicationsName = "Publication Name");
+		Publications.viewPublicationPublished(publicationName = "Publication Name");
 
 		Navigator.gotoPrivateSitePage(
 			pageName = "Test Page",
@@ -331,15 +346,13 @@ definition {
 
 	@priority = "5"
 	test ViewPageFriendlyURLAfterRevertingPublication {
-		Navigator.openURL();
+		JSONLayout.addPublicLayout(
+			groupName = "Guest",
+			layoutName = "Test Page");
 
-		ProductMenu.gotoPortlet(
-			category = "Site Builder",
-			portlet = "Pages");
+		JSONPublications.addPublication(publicationName = "Publication Name");
 
-		SitePages.addPublicPage(pageName = "Test Page");
-
-		Publications.createNewPublication(publicationsName = "Publication Name");
+		JSONPublications.selectPublication(publicationName = "Publication Name");
 
 		SitePages.openPagesAdmin(siteURLKey = "guest");
 
@@ -359,11 +372,9 @@ definition {
 			key_friendlyURL = "/test-page",
 			locator1 = "SitePages#FRIENDLY_URL");
 
-		Publications.selectPublication(publicationsName = "Publication Name");
+		JSONPublications.publishPublication(publicationName = "Publication Name");
 
-		Publications.gotoPublish(publicationsName = "Publication Name");
-
-		Publications.publishPublication(publicationsName = "Publication Name");
+		Publications.viewPublicationPublished(publicationName = "Publication Name");
 
 		SitePages.openPagesAdmin(siteURLKey = "guest");
 
@@ -382,7 +393,7 @@ definition {
 
 		Navigator.gotoNavTab(navTab = "History");
 
-		Publications.revertPublication(publicationsName = "Publication Name");
+		Publications.revertPublication(publicationName = "Publication Name");
 
 		SitePages.openPagesAdmin(siteURLKey = "guest");
 

@@ -64,11 +64,12 @@ String successMessageKey = KaleoDesignerPortletKeys.KALEO_DESIGNER + "requestPro
 
 		portletDisplay.setShowBackIcon(true);
 
-		PortletURL backPortletURL = PortalUtil.getControlPanelPortletURL(renderRequest, KaleoDesignerPortletKeys.CONTROL_PANEL_WORKFLOW, PortletRequest.RENDER_PHASE);
-
-		backPortletURL.setParameter("mvcPath", "/view.jsp");
-
-		portletDisplay.setURLBack(backPortletURL.toString());
+		portletDisplay.setURLBack(
+			PortletURLBuilder.create(
+				PortalUtil.getControlPanelPortletURL(renderRequest, KaleoDesignerPortletKeys.CONTROL_PANEL_WORKFLOW, PortletRequest.RENDER_PHASE)
+			).setMVCPath(
+				"/view.jsp"
+			).buildString());
 
 		renderResponse.setTitle((kaleoDefinitionVersion == null) ? LanguageUtil.get(request, "new-workflow") : kaleoDefinitionVersion.getTitle(locale));
 
@@ -349,8 +350,6 @@ String successMessageKey = KaleoDesignerPortletKeys.KALEO_DESIGNER + "requestPro
 									window['<portlet:namespace />publishKaleoDefinitionVersion'] = function () {
 										<portlet:namespace />updateContent();
 
-										<portlet:namespace />updateTitle();
-
 										<portlet:namespace />updateAction(
 											'<portlet:actionURL name="/kaleo_designer/publish_kaleo_definition_version" />'
 										);
@@ -360,8 +359,6 @@ String successMessageKey = KaleoDesignerPortletKeys.KALEO_DESIGNER + "requestPro
 
 									window['<portlet:namespace />saveKaleoDefinitionVersion'] = function () {
 										<portlet:namespace />updateContent();
-
-										<portlet:namespace />updateTitle();
 
 										<portlet:namespace />updateAction(
 											'<portlet:actionURL name="/kaleo_designer/save_kaleo_definition_version" />'
@@ -389,18 +386,6 @@ String successMessageKey = KaleoDesignerPortletKeys.KALEO_DESIGNER + "requestPro
 										}
 									};
 
-									window['<portlet:namespace />updateTitle'] = function () {
-										var titleComponent = Liferay.component('<portlet:namespace />title');
-
-										var titlePlaceholderInput = titleComponent.get('inputPlaceholder');
-
-										if (!titlePlaceholderInput.val()) {
-											titlePlaceholderInput.val(
-												'<liferay-ui:message key="untitled-workflow" />'
-											);
-										}
-									};
-
 									window['<portlet:namespace />closeKaleoDialog'] = function () {
 										var dialog = Liferay.Util.getWindow();
 
@@ -424,6 +409,7 @@ String successMessageKey = KaleoDesignerPortletKeys.KALEO_DESIGNER + "requestPro
 
 								<aui:script use="liferay-kaleo-designer-dialogs,liferay-kaleo-designer-utils,liferay-portlet-kaleo-designer">
 									var MAP_ROLE_TYPES = {
+										account: 6,
 										depot: 5,
 										organization: 3,
 										regular: 1,
@@ -457,12 +443,8 @@ String successMessageKey = KaleoDesignerPortletKeys.KALEO_DESIGNER + "requestPro
 
 											boundingBox: '#<portlet:namespace />propertyBuilder',
 											data: {
-
-												<%
-												long kaleoProcessId = ParamUtil.getLong(request, "kaleoProcessId");
-												%>
-
-												kaleoProcessId: '<%= kaleoProcessId %>',
+												kaleoProcessId:
+													'<%= ParamUtil.getLong(request, "kaleoProcessId") %>',
 											},
 
 											<c:if test="<%= Validator.isNotNull(content) %>">

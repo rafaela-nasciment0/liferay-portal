@@ -149,6 +149,7 @@ definition {
 			portlet = "Users and Organizations");
 
 		User.editPasswordCP(
+			currentPassword = "${currentPassword}",
 			newPassword = "${newPassword}",
 			syntaxCheckingEnabled = "${syntaxCheckingEnabled}",
 			userEmailAddress = "${userEmailAddress}",
@@ -162,7 +163,7 @@ definition {
 			organizationName = "${orgName}",
 			userEmailAddress = "${userEmailAddress}");
 
-		JSONLayout.addPublicLayoutByGroupName(
+		JSONLayout.addPublicLayout(
 			groupName = "${orgName}",
 			layoutName = "${pageName}");
 
@@ -191,6 +192,7 @@ definition {
 			portlet = "Users and Organizations");
 
 		User.editPasswordCP(
+			currentPassword = "${currentPassword}",
 			newPassword = "${newPassword}",
 			syntaxCheckingEnabled = "${syntaxCheckingEnabled}",
 			userEmailAddress = "${userEmailAddress}",
@@ -204,7 +206,7 @@ definition {
 			organizationName = "${orgName}",
 			userEmailAddress = "${userEmailAddress}");
 
-		JSONLayout.addPublicLayoutByGroupName(
+		JSONLayout.addPublicLayout(
 			groupName = "${orgName}",
 			layoutName = "${pageName}");
 
@@ -232,11 +234,6 @@ definition {
 	}
 
 	macro setUpRegRoleLoginUserCP {
-		PortalSettings.gotoConfiguration(
-			configurationCategory = "Users",
-			configurationName = "Default User Associations",
-			configurationScope = "Virtual Instance Scope");
-
 		PortalSettings.editConfigurationUsersDefaultUserAssociationsRolesCP(roleTitle = "");
 
 		JSONUser.addUser(
@@ -273,6 +270,8 @@ definition {
 	}
 
 	macro setUpRegRolePG {
+		JSONUserAPI._disablePasswordChangeRequired();
+
 		JSONLayout.addPublicLayout(
 			groupName = "Guest",
 			layoutName = "${pageName}");
@@ -296,6 +295,7 @@ definition {
 			portlet = "Users and Organizations");
 
 		User.editPasswordCP(
+			currentPassword = "${currentPassword}",
 			newPassword = "${newPassword}",
 			syntaxCheckingEnabled = "${syntaxCheckingEnabled}",
 			userEmailAddress = "${userEmailAddress}",
@@ -362,6 +362,7 @@ definition {
 			portlet = "Users and Organizations");
 
 		User.editPasswordCP(
+			currentPassword = "${currentPassword}",
 			newPassword = "${newPassword}",
 			syntaxCheckingEnabled = "${syntaxCheckingEnabled}",
 			userEmailAddress = "${userEmailAddress}",
@@ -471,6 +472,7 @@ definition {
 			portlet = "Users and Organizations");
 
 		User.editPasswordCP(
+			currentPassword = "${currentPassword}",
 			newPassword = "${newPassword}",
 			syntaxCheckingEnabled = "${syntaxCheckingEnabled}",
 			userEmailAddress = "${userEmailAddress}",

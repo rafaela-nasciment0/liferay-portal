@@ -46,7 +46,9 @@ import javax.xml.bind.annotation.XmlRootElement;
  * @generated
  */
 @Generated("")
-@GraphQLName("FragmentLink")
+@GraphQLName(
+	description = "Represents a fragment link.", value = "FragmentLink"
+)
 @JsonFilter("Liferay.Vulcan")
 @XmlRootElement(name = "FragmentLink")
 public class FragmentLink implements Serializable {
@@ -122,7 +124,7 @@ public class FragmentLink implements Serializable {
 	@JsonProperty(access = JsonProperty.Access.READ_WRITE)
 	protected Target target;
 
-	@Schema
+	@Schema(description = "The fragment link's value.")
 	@Valid
 	public FragmentLinkValue getValue() {
 		return value;
@@ -147,11 +149,11 @@ public class FragmentLink implements Serializable {
 		}
 	}
 
-	@GraphQLField
+	@GraphQLField(description = "The fragment link's value.")
 	@JsonProperty(access = JsonProperty.Access.READ_WRITE)
 	protected FragmentLinkValue value;
 
-	@Schema
+	@Schema(description = "The localized fragment link's values.")
 	@Valid
 	public Map<String, FragmentLinkValue> getValue_i18n() {
 		return value_i18n;
@@ -177,7 +179,7 @@ public class FragmentLink implements Serializable {
 		}
 	}
 
-	@GraphQLField
+	@GraphQLField(description = "The localized fragment link's values.")
 	@JsonProperty(access = JsonProperty.Access.READ_WRITE)
 	protected Map<String, FragmentLinkValue> value_i18n;
 
@@ -271,13 +273,17 @@ public class FragmentLink implements Serializable {
 
 		@JsonCreator
 		public static Target create(String value) {
+			if ((value == null) || value.equals("")) {
+				return null;
+			}
+
 			for (Target target : values()) {
 				if (Objects.equals(target.getValue(), value)) {
 					return target;
 				}
 			}
 
-			return null;
+			throw new IllegalArgumentException("Invalid enum value: " + value);
 		}
 
 		@JsonValue

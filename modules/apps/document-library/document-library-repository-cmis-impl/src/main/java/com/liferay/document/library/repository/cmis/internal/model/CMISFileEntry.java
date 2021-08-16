@@ -71,7 +71,7 @@ import org.apache.chemistry.opencmis.commons.exceptions.CmisObjectNotFoundExcept
 /**
  * @author Alexander Chow
  */
-public class CMISFileEntry extends CMISModel implements FileEntry {
+public class CMISFileEntry extends BaseCMISModel implements FileEntry {
 
 	public CMISFileEntry(
 		CMISRepository cmisRepository, String uuid, long fileEntryId,
@@ -201,6 +201,11 @@ public class CMISFileEntry extends CMISModel implements FileEntry {
 		GregorianCalendar creationDate = _document.getCreationDate();
 
 		return creationDate.getTime();
+	}
+
+	@Override
+	public Date getExpirationDate() {
+		return null;
 	}
 
 	@Override
@@ -490,6 +495,11 @@ public class CMISFileEntry extends CMISModel implements FileEntry {
 	@Override
 	public long getRepositoryId() {
 		return _cmisRepository.getRepositoryId();
+	}
+
+	@Override
+	public Date getReviewDate() {
+		return null;
 	}
 
 	@Override

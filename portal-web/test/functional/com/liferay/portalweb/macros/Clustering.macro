@@ -27,9 +27,9 @@ definition {
 		Navigator.openSpecificURL(url = "http://localhost:${nodePort}");
 
 		if (IsElementPresent(locator1 = "UserBar#USER_SIGN_IN")) {
-			User.loginPG(
-				nodePort = "${nodePort}",
+			User.firstLoginUI(
 				password = "test",
+				specificURL = "http://localhost:${nodePort}",
 				userEmailAddress = "test@liferay.com");
 		}
 
@@ -122,9 +122,9 @@ definition {
 		Navigator.openSpecificURL(url = "http://localhost:${nodePort}");
 
 		if (IsElementPresent(locator1 = "UserBar#USER_SIGN_IN")) {
-			User.loginPG(
-				nodePort = "${nodePort}",
+			User.firstLoginUI(
 				password = "test",
+				specificURL = "http://localhost:${nodePort}",
 				userEmailAddress = "test@liferay.com");
 		}
 
@@ -229,6 +229,15 @@ definition {
 				fail("Failed to find expected text: ${expectedText} on cluser node at ${nodePort}");
 			}
 		}
+	}
+
+	@description = "This will wait 5 minutes for node at port ${nodePort} to shutdown"
+	macro waitForNodeShutdown {
+		AntCommand(
+			locator1 = "build-test.xml",
+			value1 = "wait-for-server-shutdown -Dapp.server.port.number=${nodePort}");
+
+		Pause(locator1 = "30000");
 	}
 
 }

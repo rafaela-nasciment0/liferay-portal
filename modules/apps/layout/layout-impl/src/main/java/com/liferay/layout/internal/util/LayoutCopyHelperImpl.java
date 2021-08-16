@@ -97,15 +97,12 @@ public class LayoutCopyHelperImpl implements LayoutCopyHelper {
 			sourceLayout, targetLayout);
 
 		boolean copyLayout = CopyLayoutThreadLocal.isCopyLayout();
-		boolean stagingAdvicesThreadLocalEnabled =
-			StagingAdvicesThreadLocal.isEnabled();
 
 		ServiceContext currentServiceContext =
 			ServiceContextThreadLocal.getServiceContext();
 
 		try {
 			CopyLayoutThreadLocal.setCopyLayout(true);
-			StagingAdvicesThreadLocal.setEnabled(false);
 
 			return TransactionInvokerUtil.invoke(_transactionConfig, callable);
 		}
@@ -114,8 +111,6 @@ public class LayoutCopyHelperImpl implements LayoutCopyHelper {
 		}
 		finally {
 			CopyLayoutThreadLocal.setCopyLayout(copyLayout);
-			StagingAdvicesThreadLocal.setEnabled(
-				stagingAdvicesThreadLocalEnabled);
 
 			ServiceContextThreadLocal.pushServiceContext(currentServiceContext);
 		}
@@ -125,7 +120,7 @@ public class LayoutCopyHelperImpl implements LayoutCopyHelper {
 			Layout sourceLayout, Layout targetLayout)
 		throws Exception {
 
-		if (_isDraft(sourceLayout)) {
+		if (sourceLayout.isDraftLayout()) {
 			return;
 		}
 
@@ -137,7 +132,7 @@ public class LayoutCopyHelperImpl implements LayoutCopyHelper {
 
 		Layout layout = targetLayout;
 
-		if (_isDraft(targetLayout)) {
+		if (targetLayout.isDraftLayout()) {
 			layout = _layoutLocalService.getLayout(targetLayout.getClassPK());
 		}
 
@@ -348,80 +343,98 @@ public class LayoutCopyHelperImpl implements LayoutCopyHelper {
 			Layout sourceLayout, Layout targetLayout)
 		throws Exception {
 
-		List<PortletPreferences> portletPreferencesList =
-			_portletPreferencesLocalService.getPortletPreferences(
-				PortletKeys.PREFS_OWNER_ID_DEFAULT,
-				PortletKeys.PREFS_OWNER_TYPE_LAYOUT, sourceLayout.getPlid());
+		boolean stagingAdvicesThreadLocalEnabled =
+			StagingAdvicesThreadLocal.isEnabled();
 
-		List<PortletPreferences> targetPortletPreferencesList =
-			_portletPreferencesLocalService.getPortletPreferences(
-				PortletKeys.PREFS_OWNER_ID_DEFAULT,
-				PortletKeys.PREFS_OWNER_TYPE_LAYOUT, targetLayout.getPlid());
+		try {
+			StagingAdvicesThreadLocal.setEnabled(false);
 
-		Stream<PortletPreferences> targetPortletPreferencesStream =
-			targetPortletPreferencesList.stream();
-
-		List<String> targetPortletIds = targetPortletPreferencesStream.map(
-			PortletPreferences::getPortletId
-		).collect(
-			Collectors.toList()
-		);
-
-		for (PortletPreferences portletPreferences : portletPreferencesList) {
-			Portlet portlet = _portletLocalService.getPortletById(
-				portletPreferences.getPortletId());
-
-			if ((portlet == null) || portlet.isUndeployedPortlet()) {
-				continue;
-			}
-
-			targetPortletIds.remove(portletPreferences.getPortletId());
-
-			javax.portlet.PortletPreferences jxPortletPreferences =
-				_portletPreferenceValueLocalService.getPreferences(
-					portletPreferences);
-
-			PortletPreferences targetPortletPreferences =
-				_portletPreferencesLocalService.fetchPortletPreferences(
+			List<PortletPreferences> portletPreferencesList =
+				_portletPreferencesLocalService.getPortletPreferences(
 					PortletKeys.PREFS_OWNER_ID_DEFAULT,
-					PortletKeys.PREFS_OWNER_TYPE_LAYOUT, targetLayout.getPlid(),
+					PortletKeys.PREFS_OWNER_TYPE_LAYOUT,
+					sourceLayout.getPlid());
+
+			List<PortletPreferences> targetPortletPreferencesList =
+				_portletPreferencesLocalService.getPortletPreferences(
+					PortletKeys.PREFS_OWNER_ID_DEFAULT,
+					PortletKeys.PREFS_OWNER_TYPE_LAYOUT,
+					targetLayout.getPlid());
+
+			Stream<PortletPreferences> targetPortletPreferencesStream =
+				targetPortletPreferencesList.stream();
+
+			List<String> targetPortletIds = targetPortletPreferencesStream.map(
+				PortletPreferences::getPortletId
+			).collect(
+				Collectors.toList()
+			);
+
+			for (PortletPreferences portletPreferences :
+					portletPreferencesList) {
+
+				Portlet portlet = _portletLocalService.getPortletById(
 					portletPreferences.getPortletId());
 
-			if (targetPortletPreferences != null) {
-				_portletPreferencesLocalService.updatePreferences(
-					targetPortletPreferences.getOwnerId(),
-					targetPortletPreferences.getOwnerType(),
-					targetPortletPreferences.getPlid(),
-					targetPortletPreferences.getPortletId(),
-					jxPortletPreferences);
-			}
-			else {
-				_portletPreferencesLocalService.addPortletPreferences(
-					targetLayout.getCompanyId(),
-					PortletKeys.PREFS_OWNER_ID_DEFAULT,
-					PortletKeys.PREFS_OWNER_TYPE_LAYOUT, targetLayout.getPlid(),
-					portletPreferences.getPortletId(),
-					_portletLocalService.getPortletById(
-						portletPreferences.getPortletId()),
-					PortletPreferencesFactoryUtil.toXML(jxPortletPreferences));
-			}
-		}
+				if ((portlet == null) || portlet.isUndeployedPortlet()) {
+					continue;
+				}
 
-		for (String portletId : targetPortletIds) {
-			try {
-				_portletPreferencesLocalService.deletePortletPreferences(
-					PortletKeys.PREFS_OWNER_ID_DEFAULT,
-					PortletKeys.PREFS_OWNER_TYPE_LAYOUT, targetLayout.getPlid(),
-					portletId);
-			}
-			catch (Exception exception) {
-				if (_log.isDebugEnabled()) {
-					_log.debug(
-						"Unable to delete portlet preferences for portlet " +
-							portletId,
-						exception);
+				targetPortletIds.remove(portletPreferences.getPortletId());
+
+				javax.portlet.PortletPreferences jxPortletPreferences =
+					_portletPreferenceValueLocalService.getPreferences(
+						portletPreferences);
+
+				PortletPreferences targetPortletPreferences =
+					_portletPreferencesLocalService.fetchPortletPreferences(
+						PortletKeys.PREFS_OWNER_ID_DEFAULT,
+						PortletKeys.PREFS_OWNER_TYPE_LAYOUT,
+						targetLayout.getPlid(),
+						portletPreferences.getPortletId());
+
+				if (targetPortletPreferences != null) {
+					_portletPreferencesLocalService.updatePreferences(
+						targetPortletPreferences.getOwnerId(),
+						targetPortletPreferences.getOwnerType(),
+						targetPortletPreferences.getPlid(),
+						targetPortletPreferences.getPortletId(),
+						jxPortletPreferences);
+				}
+				else {
+					_portletPreferencesLocalService.addPortletPreferences(
+						targetLayout.getCompanyId(),
+						PortletKeys.PREFS_OWNER_ID_DEFAULT,
+						PortletKeys.PREFS_OWNER_TYPE_LAYOUT,
+						targetLayout.getPlid(),
+						portletPreferences.getPortletId(),
+						_portletLocalService.getPortletById(
+							portletPreferences.getPortletId()),
+						PortletPreferencesFactoryUtil.toXML(
+							jxPortletPreferences));
 				}
 			}
+
+			for (String portletId : targetPortletIds) {
+				try {
+					_portletPreferencesLocalService.deletePortletPreferences(
+						PortletKeys.PREFS_OWNER_ID_DEFAULT,
+						PortletKeys.PREFS_OWNER_TYPE_LAYOUT,
+						targetLayout.getPlid(), portletId);
+				}
+				catch (Exception exception) {
+					if (_log.isDebugEnabled()) {
+						_log.debug(
+							"Unable to delete portlet preferences for " +
+								"portlet " + portletId,
+							exception);
+					}
+				}
+			}
+		}
+		finally {
+			StagingAdvicesThreadLocal.setEnabled(
+				stagingAdvicesThreadLocalEnabled);
 		}
 	}
 
@@ -483,7 +496,7 @@ public class LayoutCopyHelperImpl implements LayoutCopyHelper {
 				sourceLayout.getPlid());
 
 		for (SegmentsExperience segmentsExperience : segmentsExperiences) {
-			if (_isDraft(sourceLayout) &&
+			if (sourceLayout.isDraftLayout() &&
 				(sourceLayout.getClassPK() == targetLayout.getPlid())) {
 
 				segmentsExperienceIds.put(
@@ -495,7 +508,7 @@ public class LayoutCopyHelperImpl implements LayoutCopyHelper {
 
 			long plid = targetLayout.getPlid();
 
-			if (_isDraft(targetLayout)) {
+			if (targetLayout.isDraftLayout()) {
 				plid = targetLayout.getClassPK();
 			}
 
@@ -568,20 +581,6 @@ public class LayoutCopyHelperImpl implements LayoutCopyHelper {
 		}
 
 		return false;
-	}
-
-	private boolean _isDraft(Layout layout) {
-		if (layout.getClassPK() <= 0) {
-			return false;
-		}
-
-		if (layout.getClassNameId() != _portal.getClassNameId(
-				Layout.class.getName())) {
-
-			return false;
-		}
-
-		return true;
 	}
 
 	private JSONObject _processDataJSONObject(
@@ -759,10 +758,7 @@ public class LayoutCopyHelperImpl implements LayoutCopyHelper {
 
 			unicodeProperties.load(_sourceLayout.getTypeSettings());
 
-			if ((_sourceLayout.getClassNameId() == _portal.getClassNameId(
-					Layout.class)) &&
-				(_targetLayout.getPlid() == _sourceLayout.getClassPK())) {
-
+			if (_sourceLayout.isDraftLayout()) {
 				unicodeProperties.put("published", Boolean.TRUE.toString());
 
 				_layoutLocalService.updateLayout(

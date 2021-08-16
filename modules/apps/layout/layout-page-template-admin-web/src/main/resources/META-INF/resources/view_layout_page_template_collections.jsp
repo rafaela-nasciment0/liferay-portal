@@ -109,18 +109,18 @@ List<LayoutPageTemplateCollection> layoutPageTemplateCollections = layoutPageTem
 									%>
 
 										<li class="nav-item">
-
-											<%
-											PortletURL layoutPageTemplateCollectionURL = PortletURLBuilder.createRenderURL(
-												renderResponse
-											).setParameter(
-												"layoutPageTemplateCollectionId", String.valueOf(layoutPageTemplateCollection.getLayoutPageTemplateCollectionId())
-											).setParameter(
-												"tabs1", "page-templates"
-											).build();
-											%>
-
-											<a class="nav-link text-truncate <%= (layoutPageTemplateCollection.getLayoutPageTemplateCollectionId() == layoutPageTemplateDisplayContext.getLayoutPageTemplateCollectionId()) ? "active" : StringPool.BLANK %>" href="<%= layoutPageTemplateCollectionURL.toString() %>">
+											<a
+												class="nav-link text-truncate <%= (layoutPageTemplateCollection.getLayoutPageTemplateCollectionId() == layoutPageTemplateDisplayContext.getLayoutPageTemplateCollectionId()) ? "active" : StringPool.BLANK %>"
+												href="<%=
+													PortletURLBuilder.createRenderURL(
+														renderResponse
+													).setTabs1(
+														"page-templates"
+													).setParameter(
+														"layoutPageTemplateCollectionId", layoutPageTemplateCollection.getLayoutPageTemplateCollectionId()
+													).buildString()
+												%>"
+											>
 												<%= HtmlUtil.escape(layoutPageTemplateCollection.getName()) %>
 											</a>
 										</li>
@@ -177,7 +177,15 @@ List<LayoutPageTemplateCollection> layoutPageTemplateCollections = layoutPageTem
 								cssClass="inline-item-after"
 								verticalAlign="end"
 							>
-								<liferay-util:include page="/layout_page_template_collection_action.jsp" servletContext="<%= application %>" />
+
+								<%
+								LayoutPageTemplateCollectionActionDropdownItem layoutPageTemplateCollectionActionDropdownItem = new LayoutPageTemplateCollectionActionDropdownItem(request, renderResponse);
+								%>
+
+								<clay:dropdown-actions
+									dropdownItems="<%= layoutPageTemplateCollectionActionDropdownItem.getActionDropdownItems(layoutPageTemplateCollection) %>"
+									propsTransformer="js/propsTransformers/LayoutPageTemplateCollectionPropsTransformer"
+								/>
 							</clay:content-col>
 						</clay:content-row>
 					</h2>

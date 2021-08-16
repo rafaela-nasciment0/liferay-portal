@@ -11,9 +11,17 @@ definition {
 
 		ItemSelector.gotoItemSelectorViaAlloyEditor();
 
-		ItemSelector.uploadFile(
-			navTab = "${navTab}",
-			uploadFileName = "${uploadFileName}");
+		if (isSet(depotName)) {
+			ItemSelector.selectRepositoryImage(
+				depotName = "${depotName}",
+				imageFileName = "${imageFileName}",
+				navTab = "${navTab}");
+		}
+		else {
+			ItemSelector.uploadFile(
+				navTab = "${navTab}",
+				uploadFileName = "${uploadFileName}");
+		}
 	}
 
 	macro addCustomAbstract {
@@ -113,7 +121,9 @@ definition {
 
 		var key_assetTitle = "${assetTitle}";
 
-		SelectFrame(locator1 = "AssetRelatedAssets#SELECT_ASSET_IFRAME");
+		SelectFrame(value1 = "relative=top");
+
+		SelectFrame(locator1 = "IFrame#MODAL_BODY");
 
 		if (isSet(depotName)) {
 			AssertClick(
@@ -139,6 +149,8 @@ definition {
 	}
 
 	macro addSmallImage {
+		Panel.expandPanel(panel = "Configuration");
+
 		if (isSet(browseImage)) {
 			Click(locator1 = "BlogsEntry#SMALL_IMAGE_BROWSE_IMAGE");
 		}
@@ -190,15 +202,6 @@ definition {
 			entryContent = "${entryContent}",
 			entryTitle = "${entryTitle}");
 
-		var key_entryContent = "${entryContent}";
-		var key_entryTitle = "${entryTitle}";
-
-		BlogsEntry.viewPG(
-			entryContent = "${entryContent}",
-			entryTitle = "${entryTitle}");
-
-		Pause(locator1 = "3000");
-
 		Copy(locator1 = "BlogsEntry#COMMENTS_TRACKBACK_URL");
 
 		if ("${virtualHosts}" == "true") {
@@ -242,9 +245,7 @@ definition {
 	}
 
 	macro autoSaveDraft {
-		Pause(locator1 = "30000");
-
-		AssertElementPresent(locator1 = "Message#DRAFT_AUTO_SAVE");
+		WaitForElementPresent(locator1 = "Message#DRAFT_AUTO_SAVE");
 	}
 
 	macro editContent {
@@ -254,6 +255,18 @@ definition {
 			value1 = "${entryContent}");
 
 		AlloyEditor.addContent(content = "${entryContentEdit}");
+
+		if (isSet(embedVideo)) {
+			AlloyEditor.clickContentField();
+
+			Click(locator1 = "AlloyEditor#CONTENT_ADD_BUTTON");
+
+			Click(locator1 = "AlloyEditor#CONTENT_ADD_MENUBAR_VIDEO");
+
+			ItemSelector.addVideoFromURL(
+				navTab = "URL",
+				videoSourceURL = "${embedVideo}");
+		}
 	}
 
 	macro editContentViaCardViewPG {
@@ -268,6 +281,32 @@ definition {
 		BlogsEntry.editContent(
 			entryContent = "${entryContent}",
 			entryContentEdit = "${entryContentEdit}");
+	}
+
+	macro editCoverImage {
+		BlogsNavigator.gotoBrowseImage();
+
+		if (isSet(uploadedBlogImage)) {
+			ItemSelector.selectBlogImage(
+				imageFileName = "${uploadedBlogImage}",
+				navTab = "${navTab}");
+		}
+		else if (isSet(uploadedDMImage)) {
+			ItemSelector.selectDMImage(
+				imageFileName = "${uploadedDMImage}",
+				navTab = "${navTab}");
+		}
+		else {
+			ItemSelector.uploadFile(
+				navTab = "${navTab}",
+				uploadFileName = "${uploadFileName}");
+		}
+
+		SelectFrameTop(value1 = "relative=top");
+
+		AssertVisible(
+			key_coverImageName = "${coverImageName}",
+			locator1 = "BlogsEntry#ENTRY_COVER_IMAGE_UNPUBLISHED");
 	}
 
 	macro editDisplayDate {
@@ -313,6 +352,7 @@ definition {
 		}
 
 		BlogsEntry.editContent(
+			embedVideo = "${embedVideo}",
 			entryContent = "${entryContent}",
 			entryContentEdit = "${entryContentEdit}");
 	}
@@ -511,16 +551,27 @@ definition {
 		Alert.viewSuccessMessage();
 	}
 
-	macro removeSmallImage {
+	macro removeCoverImage {
 		Click(locator1 = "Button#REMOVE_IMAGE");
+
+		AssertElementNotPresent(
+			key_coverImageName = "${coverImageName}",
+			locator1 = "BlogsEntry#ENTRY_COVER_IMAGE_UNPUBLISHED");
+	}
+
+	macro removeSmallImage {
+		Panel.expandPanel(panel = "Configuration");
+
+		if (isSet(images)) {
+			Click(locator1 = "Button#REMOVE_IMAGE_LAST");
+		}
+		else {
+			Click(locator1 = "Button#REMOVE_IMAGE");
+		}
 
 		AssertElementNotPresent(
 			key_smallImage = "${uploadFileName}",
 			locator1 = "BlogsEntry#SMALL_IMAGE");
-
-		AssertTextEquals(
-			locator1 = "Button#SELECT",
-			value1 = "Select File");
 	}
 
 	macro removeViewPermissionsPG {
@@ -547,14 +598,14 @@ definition {
 	}
 
 	macro saveAsDraft {
-		AssertClick(
-			locator1 = "Button#SAVE_AS_DRAFT",
-			value1 = "Save as Draft");
+		Click(locator1 = "Button#SAVE_AS_DRAFT");
 
 		Alert.viewSuccessMessage();
 	}
 
 	macro scheduleBlogEntry {
+		Panel.expandPanel(panel = "Configuration");
+
 		var displayDateDay = selenium.getElementValue("TextInput#DISPLAY_DATE_DAY");
 		var displayDateMonth = selenium.getElementValue("TextInput#DISPLAY_DATE_MONTH");
 		var displayDateMonth = ${displayDateMonth} + 1;
@@ -573,7 +624,7 @@ definition {
 		}
 
 		var displayDateMinute = selenium.getElementValue("TextInput#DISPLAY_DATE_MINUTE");
-		var displayDateMinuteFuture = ${displayDateMinute} + 3;
+		var displayDateMinuteFuture = ${displayDateMinute} + 2;
 		var displayDateMinuteFutureLength = StringUtil.length("${displayDateMinuteFuture}");
 
 		if ("${displayDateMinuteFutureLength}" == "1") {
@@ -606,7 +657,13 @@ definition {
 
 		WaitForLiferayEvent.initializeLiferayEventLog();
 
-		Blogs.viewEntryTitle(entryTitle = "${entryTitle}");
+		Blogs.viewEntryTitle(
+			entryTitle = "${entryTitle}",
+			position = "${position}");
+
+		if (isSet(relevance)) {
+			ManagementBar.viewFilterAndOrderSelectedItem(menuItem = "Relevance");
+		}
 	}
 
 	macro searchNoCP {
@@ -662,13 +719,7 @@ definition {
 			VerifyElementPresent(locator1 = "Message#SUCCESS");
 		}
 
-		Navigator.openURL();
-
-		ProductMenu.gotoPortlet(
-			category = "Recycle Bin",
-			portlet = "Recycle Bin");
-
-		RecycleBin.emptyCP();
+		JSONRecycleBin.emptyRecycleBin();
 	}
 
 	macro viewAbstractDisplay {
@@ -714,6 +765,10 @@ definition {
 		var tagName = StringUtil.lowerCase("${tagName}");
 
 		var key_tagName = "${tagName}";
+
+		if (IsElementNotPresent(locator1 = "BlogsEntry#TAG")) {
+			Refresh();
+		}
 
 		AssertTextEquals(
 			locator1 = "BlogsEntry#TAG",
@@ -847,17 +902,17 @@ definition {
 	}
 
 	macro viewEntryPG {
-		var key_entryContent = "${entryContent}";
-		var key_entrySubtitle = "${entrySubtitle}";
 		var key_entryTitle = "${entryTitle}";
 
-		Pause(locator1 = "3000");
+		AssertElementPresent(locator1 = "BlogsEntry#TITLE");
 
 		AssertTextEquals(
 			locator1 = "BlogsEntry#TITLE",
 			value1 = "${entryTitle}");
 
 		if (isSet(entrySubtitle)) {
+			var key_entrySubtitle = "${entrySubtitle}";
+
 			AssertTextEquals(
 				locator1 = "BlogsEntry#SUBTITLE",
 				value1 = "${entrySubtitle}");
@@ -891,6 +946,8 @@ definition {
 		}
 
 		if (isSet(entryContent)) {
+			var key_entryContent = "${entryContent}";
+
 			AssertTextEquals(
 				locator1 = "BlogsEntry#CONTENT",
 				value1 = "${entryContent}");
@@ -1310,8 +1367,6 @@ definition {
 		AssertClick(
 			locator1 = "BlogsEntry#TITLE_LINK",
 			value1 = "${entryTitle}");
-
-		Pause(locator1 = "3000");
 
 		AssertTextEquals(
 			locator1 = "BlogsEntry#TITLE",

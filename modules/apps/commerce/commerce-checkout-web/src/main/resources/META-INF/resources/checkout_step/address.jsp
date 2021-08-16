@@ -22,14 +22,13 @@ CommerceContext commerceContext = (CommerceContext)request.getAttribute(Commerce
 BaseAddressCheckoutStepDisplayContext baseAddressCheckoutStepDisplayContext = (BaseAddressCheckoutStepDisplayContext)request.getAttribute(CommerceCheckoutWebKeys.COMMERCE_CHECKOUT_STEP_DISPLAY_CONTEXT);
 
 List<CommerceAddress> commerceAddresses = baseAddressCheckoutStepDisplayContext.getCommerceAddresses();
-long defaultCommerceAddressId = baseAddressCheckoutStepDisplayContext.getDefaultCommerceAddressId();
 
 String paramName = baseAddressCheckoutStepDisplayContext.getParamName();
 
 long commerceAddressId = BeanParamUtil.getLong(baseAddressCheckoutStepDisplayContext.getCommerceOrder(), request, paramName);
 
 if (commerceAddressId == 0) {
-	commerceAddressId = defaultCommerceAddressId;
+	commerceAddressId = baseAddressCheckoutStepDisplayContext.getDefaultCommerceAddressId();
 }
 
 String selectLabel = "choose-" + baseAddressCheckoutStepDisplayContext.getTitle();
@@ -41,9 +40,6 @@ if (commerceOrder.isGuestOrder()) {
 }
 
 CommerceAddress currentCommerceAddress = baseAddressCheckoutStepDisplayContext.getCommerceAddress(commerceAddressId);
-
-long countryId = BeanParamUtil.getLong(currentCommerceAddress, request, "countryId", 0);
-long regionId = BeanParamUtil.getLong(currentCommerceAddress, request, "regionId", 0);
 %>
 
 <div class="form-group-autofit">
@@ -104,15 +100,26 @@ long regionId = BeanParamUtil.getLong(currentCommerceAddress, request, "regionId
 		</aui:select>
 	</div>
 
-	<div class="add-street-link form-group-autofit">
-		<aui:a disabled="<%= commerceAddressId > 0 %>" href="javascript:;" label="+-add-address-line" onClick='<%= liferayPortletResponse.getNamespace() + "addStreetAddress();" %>' />
-	</div>
+	<c:choose>
+		<c:when test="<%= (commerceAddressId > 0) && (!Validator.isBlank(currentCommerceAddress.getStreet2()) || !Validator.isBlank(currentCommerceAddress.getStreet3())) %>">
+			<div class="form-group-autofit">
+				<aui:input disabled="<%= commerceAddressId > 0 %>" label="" name="street2" placeholder="address-2" wrapperCssClass="form-group-item" />
 
-	<div class="add-street-fields form-group-autofit hide">
-		<aui:input disabled="<%= commerceAddressId > 0 %>" label="" name="street2" placeholder="address-2" wrapperCssClass="form-group-item" />
+				<aui:input disabled="<%= commerceAddressId > 0 %>" label="" name="street3" placeholder="address-3" wrapperCssClass="form-group-item" />
+			</div>
+		</c:when>
+		<c:otherwise>
+			<div class="add-street-link form-group-autofit">
+				<aui:a disabled="<%= commerceAddressId > 0 %>" href="javascript:;" label="+-add-address-line" onClick='<%= liferayPortletResponse.getNamespace() + "addStreetAddress();" %>' />
+			</div>
 
-		<aui:input disabled="<%= commerceAddressId > 0 %>" label="" name="street3" placeholder="address-3" wrapperCssClass="form-group-item" />
-	</div>
+			<div class="add-street-fields form-group-autofit hide">
+				<aui:input disabled="<%= commerceAddressId > 0 %>" label="" name="street2" placeholder="address-2" wrapperCssClass="form-group-item" />
+
+				<aui:input disabled="<%= commerceAddressId > 0 %>" label="" name="street3" placeholder="address-3" wrapperCssClass="form-group-item" />
+			</div>
+		</c:otherwise>
+	</c:choose>
 
 	<div class="form-group-autofit">
 		<aui:input disabled="<%= commerceAddressId > 0 %>" label="" name="zip" placeholder="zip" wrapperCssClass="form-group-item" />
@@ -402,7 +409,8 @@ long regionId = BeanParamUtil.getLong(currentCommerceAddress, request, "regionId
 				selectId: 'countryId',
 				selectNullable: <%= false %>,
 				selectSort: '<%= true %>',
-				selectVal: '<%= countryId %>',
+				selectVal:
+					'<%= BeanParamUtil.getLong(currentCommerceAddress, request, "countryId", 0) %>',
 			},
 			{
 				select: '<portlet:namespace />regionId',
@@ -437,7 +445,8 @@ long regionId = BeanParamUtil.getLong(currentCommerceAddress, request, "regionId
 				selectDesc: 'name',
 				selectId: 'regionId',
 				selectNullable: <%= false %>,
-				selectVal: '<%= regionId %>',
+				selectVal:
+					'<%= BeanParamUtil.getLong(currentCommerceAddress, request, "regionId", 0) %>',
 			},
 		])
 	);

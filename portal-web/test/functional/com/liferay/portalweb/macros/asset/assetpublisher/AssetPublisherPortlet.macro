@@ -76,6 +76,22 @@ definition {
 			SiteSelector.selectSite(site = "${otherSite}");
 		}
 
+		if (isSet(depotName)) {
+			Click(locator1 = "Configuration#SCOPE_SELECT");
+
+			MenuItem.click(menuItem = "Other Site or Asset Library...");
+
+			SelectFrame(value1 = "relative=top");
+
+			SelectFrame(locator1 = "IFrame#SELECT_SITES");
+
+			Navigator.gotoNavTab(navTab = "Asset Libraries");
+
+			Click(
+				key_card = "${depotName}",
+				locator1 = "Card#CARD_TITLE");
+		}
+
 		if (isSet(defaultSite)) {
 			Click(locator1 = "Configuration#SCOPE_SELECT");
 
@@ -201,6 +217,10 @@ definition {
 	}
 
 	macro configureCategoriesFilterPG {
+		if (!(isSet(portletName))) {
+			var portletName = "Asset Publisher";
+		}
+
 		AssetPublisherPortlet.gotoConfigurationPG(portletName = "${portletName}");
 
 		Navigator.gotoNavTab(navTab = "Asset Selection");
@@ -221,7 +241,28 @@ definition {
 
 		Click(locator1 = "Button#SELECT_CATEGORIES");
 
-		AssetCategorization.selectCategory(categoryName = "${categoryName}");
+		AssetCategorization.gotoSelectCategory();
+
+		AssertVisible(locator1 = "Treeview#NODE_COLLAPSE_BUTTON");
+
+		Portlet.selectTreeNode(nodeName = "${categoryName}");
+
+		SelectFrameTop();
+
+		SelectFrame(
+			key_title = "${portletName}",
+			locator1 = "IFrame#MODAL_ANY");
+
+		if (IsElementPresent(key_text = "Add", locator1 = "Modal#MODAL_FOOTER_BUTTON")) {
+			Click(
+				key_text = "Add",
+				locator1 = "Modal#MODAL_FOOTER_BUTTON");
+		}
+		else if (IsElementPresent(key_text = "Done", locator1 = "Modal#MODAL_FOOTER_BUTTON")) {
+			Click(
+				key_text = "Done",
+				locator1 = "Modal#MODAL_FOOTER_BUTTON");
+		}
 
 		AssertTextEquals(
 			key_categoryName = "${categoryName}",
@@ -230,7 +271,7 @@ definition {
 
 		PortletEntry.save();
 
-		IFrame.selectTopFrame();
+		SelectFrameTop();
 	}
 
 	macro configureCollectionProviderPG {
@@ -440,7 +481,7 @@ definition {
 			}
 		}
 
-		if (isSet(assetTitle)) {
+		if (isSet(assetTitle) || isSet(searchTerm)) {
 			Panel.expandPanel(panel = "Asset Entries");
 
 			if (isSet(depotName)) {
@@ -448,6 +489,7 @@ definition {
 					key_depotName = "${depotName}",
 					locator1 = "APConfiguration#ASSET_SELECTION_MANUAL_ASSET_ENTRIES_SELECT_IN_DEPOT");
 			}
+
 			else {
 				Click(locator1 = "APConfiguration#ASSET_SELECTION_MANUAL_ASSET_ENTRIES_SELECT_BUTTON");
 			}
@@ -462,26 +504,46 @@ definition {
 
 			SelectFrame.selectFrameNoLoading(locator1 = "IFrame#MODAL_BODY");
 
-			var key_assetTitle = "${assetTitle}";
+			if (isSet(assetTitle)) {
+				var key_assetTitle = "${assetTitle}";
 
-			if (isSet(viewNoRelatedAsset)) {
-				AssertElementNotPresent(
-					key_rowEntry = "${assetTitle}",
-					locator1 = "ContentRow#ENTRY_CONTENT_ENTRY_CHECKBOX");
+				if (isSet(viewNoRelatedAsset)) {
+					AssertElementNotPresent(
+						key_rowEntry = "${assetTitle}",
+						locator1 = "ContentRow#ENTRY_CONTENT_ENTRY_CHECKBOX");
+				}
+
+				else {
+					WaitForElementPresent(
+						key_rowEntry = "${assetTitle}",
+						locator1 = "ContentRow#ENTRY_CONTENT_ENTRY_CHECKBOX");
+
+					Click(
+						key_rowEntry = "${assetTitle}",
+						locator1 = "ContentRow#ENTRY_CONTENT_ENTRY_CHECKBOX");
+				}
 			}
-			else {
-				Click(
-					key_rowEntry = "${assetTitle}",
-					locator1 = "ContentRow#ENTRY_CONTENT_ENTRY_CHECKBOX");
 
-				SelectFrameTop();
+			if (isSet(searchTerm)) {
+				Search.searchPG(
+					modal = "true",
+					portletName = "",
+					searchTerm = "${searchTerm}");
 
-				SelectFrame(locator1 = "IFrame#CONFIGURATION");
+				AssertTextEquals(
+					locator1 = "Search#SEARCH_INFO",
+					value1 = "${searchInfo}");
 
-				Button.clickAdd();
-
-				Alert.viewSuccessMessage();
+				PortletEntry.selectAll();
 			}
+
+			SelectFrameTop();
+
+			SelectFrame(locator1 = "IFrame#CONFIGURATION");
+
+			Button.clickAdd();
+
+			Alert.viewSuccessMessage();
 		}
 
 		SelectFrameTop();
@@ -725,7 +787,11 @@ definition {
 	}
 
 	macro editConfigureCategoriesFilterPG {
-		AssetPublisherPortlet.gotoConfigurationPG();
+		if (!(isSet(portletName))) {
+			var portletName = "Asset Publisher";
+		}
+
+		AssetPublisherPortlet.gotoConfigurationPG(portletName = "${portletName}");
 
 		Navigator.gotoNavTab(navTab = "Asset Selection");
 
@@ -745,7 +811,11 @@ definition {
 			Portlet.selectTreeNode(nodeName = "${categoryName}");
 		}
 
-		SelectFrame(value1 = "relative=top");
+		SelectFrameTop();
+
+		SelectFrame(
+			key_title = "${portletName}",
+			locator1 = "IFrame#MODAL_ANY");
 
 		if (IsElementPresent(locator1 = "//button[contains(.,'Add')]")) {
 			AssertClick(
@@ -758,9 +828,9 @@ definition {
 				value1 = "Done");
 		}
 
-		SelectFrame(locator1 = "IFrame#MODAL_BODY");
-
 		PortletEntry.save();
+
+		SelectFrameTop();
 	}
 
 	macro enableRSSSubscription {
@@ -900,9 +970,13 @@ definition {
 
 		Panel.expandPanel(panel = "Select Collection");
 
+		Alert.closeMessage(messageType = "SUCCESS");
+
 		Button.clickSelect();
 
-		SelectFrame.selectFrameNoLoading(locator1 = "IFrame#ASSET_LIST_DIALOG");
+		WaitForElementPresent(locator1 = "IFrame#ASSET_LIST_DIALOG");
+
+		SelectFrame.selectFrameNoLoading(locator1 = "IFrame#MODAL_BODY");
 
 		if (isSet(depotName)) {
 			AssertClick(
@@ -1009,6 +1083,13 @@ definition {
 	macro viewAssetPG {
 		var key_assetTitle = "${assetTitle}";
 
+		if (isSet(filteredByCategory)) {
+			AssertTextEquals.assertPartialText(
+				key_categoryName = "${categoryName}",
+				locator1 = "AP#CATEGORIES_FILTER_CATEGORY",
+				value1 = "${categoryName}");
+		}
+
 		AssertTextEquals(
 			locator1 = "AP#ASSET_ABSTRACT_TITLE",
 			value1 = "${assetTitle}");
@@ -1049,6 +1130,25 @@ definition {
 			key_viewCount = "${viewCount}",
 			locator1 = "APAsset#ASSET_VIEW_COUNT",
 			value1 = "${viewCount}");
+	}
+
+	macro viewConfigureAPDisplayTemplateFullContentBookmarksPG {
+		var key_assetTitle = "${assetTitle}";
+		var key_bookmarkName = "${bookmarkName}";
+
+		AssertElementNotPresent(locator1 = "Link#READ_MORE");
+
+		AssertVisible(
+			locator1 = "Link#VIEW_IN_CONTEXT",
+			value1 = "View in Context »");
+
+		AssertVisible(
+			key_text = "${url}",
+			locator1 = "Link#ANY");
+
+		AssertVisible(
+			locator1 = "AP#ASSET_ABSTRACT_DESCRIPTION",
+			value1 = "${bookmarkDescription}");
 	}
 
 	macro viewConfigureAPDisplayTemplateTableBookmarksPG {
@@ -1227,12 +1327,6 @@ definition {
 		AssertElementPresent(locator1 = "Button#SUBSCRIBE");
 
 		AssertElementPresent(locator1 = "Icon#CUSTOM_EDIT");
-
-		Click(
-			locator1 = "AP#ASSET_RICH_SUMMARY_TITLE",
-			value1 = "${assetTitle}");
-
-		SocialBookmarks.viewDefaultSharableBookmarks();
 	}
 
 	macro viewDefaultWithAllDisplaySettingsCheckboxesPG {

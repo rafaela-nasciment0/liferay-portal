@@ -1,16 +1,18 @@
 {
 	"dependencies": {
-		"@clayui/button": "3.6.0",
-		"@clayui/form": "3.14.4",
-		"@clayui/layout": "3.3.0",
-		"@clayui/modal": "3.8.5",
-		"@clayui/table": "3.1.0",
+		"@clayui/button": "3.32.0",
+		"@clayui/form": "3.32.0",
+		"@clayui/icon": "3.32.0",
+		"@clayui/layout": "3.32.0",
+		"@clayui/modal": "3.32.0",
+		"@clayui/popover": "3.32.0",
+		"@clayui/table": "3.32.0",
 		"axios": "0.21.1",
-		"classnames": "2.2.6",
-		"clay-icon": "2.22.2",
+		"classnames": "2.3.1",
+		"clay-icon": "2.22.4",
 		"frontend-editor-ckeditor-web": "*",
 		"frontend-js-web": "*",
-		"leaflet": "1.2.0",
+		"leaflet": "1.7.1",
 		"map-google-maps": "*",
 		"map-openstreetmap": "*",
 		"metal-component": "2.16.8",
@@ -42,5 +44,5 @@
 		"format": "liferay-npm-scripts fix",
 		"test": "liferay-npm-scripts test"
 	},
-	"version": "6.0.2"
+	"version": "6.0.41"
 }

@@ -187,7 +187,9 @@ public class UpgradeClient {
 		String jvmOptsCommands = _jvmOpts.concat(
 			" -Dexternal-properties=portal-upgrade.properties " +
 				"-Dserver.detector.server.id=" +
-					_appServer.getServerDetectorServerId());
+					_appServer.getServerDetectorServerId() +
+						" -Dliferay.shielded.container.lib.portal.dir=" +
+							_appServer.getPortalShieldedContainerLibDir());
 
 		System.out.println("JVM arguments: " + jvmOptsCommands);
 
@@ -349,14 +351,19 @@ public class UpgradeClient {
 		}
 
 		_appendClassPath(sb, new File(_jarDir, "lib"));
+
 		_appendClassPath(sb, _jarDir);
+
 		_appendClassPath(sb, _appServer.getGlobalLibDir());
-		_appendClassPath(sb, _appServer.getExtraLibDirs());
 
 		sb.append(_appServer.getPortalClassesDir());
 		sb.append(File.pathSeparator);
 
 		_appendClassPath(sb, _appServer.getPortalLibDir());
+
+		_appendClassPath(sb, _appServer.getPortalShieldedContainerLibDir());
+
+		_appendClassPath(sb, _appServer.getExtraLibDirs());
 
 		return sb.toString();
 	}

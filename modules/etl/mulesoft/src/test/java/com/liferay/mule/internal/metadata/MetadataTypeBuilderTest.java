@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-2021 Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -64,8 +64,7 @@ public class MetadataTypeBuilderTest {
 		ClassLoader classLoader = clazz.getClassLoader();
 
 		InputStream inputStream = classLoader.getResourceAsStream(
-			"com/liferay/mule/internal/metadata/oas-fragment-metadata-types." +
-				"json");
+			"com/liferay/mule/internal/metadata/openapi.json");
 
 		ObjectMapper objectMapper = new ObjectMapper();
 
@@ -185,6 +184,34 @@ public class MetadataTypeBuilderTest {
 	}
 
 	@Test
+	public void testBuildMetadataType_EntityArrayField() throws Exception {
+		MetadataType entityArrayMetadataType = getFieldMetadataType(
+			getEntityMetadataType("/entities/{id}", OASConstants.OPERATION_GET),
+			"entityArrayField");
+
+		Assert.assertTrue(entityArrayMetadataType instanceof ArrayType);
+
+		DefaultArrayType entityArrayType =
+			(DefaultArrayType)entityArrayMetadataType;
+
+		MetadataType entityMetadataType = entityArrayType.getType();
+
+		Assert.assertTrue(entityMetadataType instanceof ObjectType);
+
+		DefaultObjectType entityObjectType =
+			(DefaultObjectType)entityMetadataType;
+
+		Collection<ObjectFieldType> fields = entityObjectType.getFields();
+
+		Assert.assertEquals(fields.toString(), 1, fields.size());
+
+		Optional<ObjectFieldType> entityObjectFieldTypeOptional =
+			entityObjectType.getFieldByName("Entity");
+
+		Assert.assertTrue(entityObjectFieldTypeOptional.isPresent());
+	}
+
+	@Test
 	public void testBuildMetadataType_FloatField() throws Exception {
 		MetadataType fieldMetadataType = getFieldMetadataType(
 			getEntityMetadataType("/entities/{id}", OASConstants.OPERATION_GET),
@@ -212,12 +239,12 @@ public class MetadataTypeBuilderTest {
 	}
 
 	@Test
-	public void testBuildMetadataType_NestedArrayField() throws Exception {
-		MetadataType entityMetadataType = getEntityMetadataType(
-			"/entities/{id}", OASConstants.OPERATION_GET);
+	public void testBuildMetadataType_NestedEntityArrayField()
+		throws Exception {
 
 		MetadataType nestedEntityArrayMetadataType = getFieldMetadataType(
-			entityMetadataType, "nestedEntityArrayField");
+			getEntityMetadataType("/entities/{id}", OASConstants.OPERATION_GET),
+			"nestedEntityArrayField");
 
 		Assert.assertTrue(nestedEntityArrayMetadataType instanceof ArrayType);
 
@@ -235,11 +262,9 @@ public class MetadataTypeBuilderTest {
 
 	@Test
 	public void testBuildMetadataType_NestedEntityField() throws Exception {
-		MetadataType entityMetadataType = getEntityMetadataType(
-			"/entities/{id}", OASConstants.OPERATION_GET);
-
 		MetadataType nestedEntityMetadataType = getFieldMetadataType(
-			entityMetadataType, "nestedEntityField");
+			getEntityMetadataType("/entities/{id}", OASConstants.OPERATION_GET),
+			"nestedEntityField");
 
 		Assert.assertTrue(nestedEntityMetadataType instanceof ObjectType);
 
@@ -250,7 +275,7 @@ public class MetadataTypeBuilderTest {
 			nestedEntityDefaultObjectType.getFields();
 
 		Assert.assertEquals(
-			objectFieldTypes.toString(), 1, objectFieldTypes.size());
+			objectFieldTypes.toString(), 2, objectFieldTypes.size());
 
 		Iterator<ObjectFieldType> iterator = objectFieldTypes.iterator();
 
@@ -260,6 +285,15 @@ public class MetadataTypeBuilderTest {
 			"nestedEntityStringField", getObjectFieldName(objectFieldType));
 
 		Assert.assertTrue(objectFieldType.getValue() instanceof StringType);
+	}
+
+	@Test
+	public void testBuildMetadataType_ObjectField() throws Exception {
+		MetadataType fieldMetadataType = getFieldMetadataType(
+			getEntityMetadataType("/entities/{id}", OASConstants.OPERATION_GET),
+			"objectField");
+
+		Assert.assertTrue(fieldMetadataType instanceof ObjectType);
 	}
 
 	@Test
@@ -287,10 +321,10 @@ public class MetadataTypeBuilderTest {
 	}
 
 	@Test
-	public void testBuildMetadataType_ParentEntity() throws Exception {
+	public void testBuildMetadataType_ParentEntityField() throws Exception {
 		MetadataType fieldMetadataType = getFieldMetadataType(
 			getEntityMetadataType("/entities/{id}", OASConstants.OPERATION_GET),
-			"parentEntity");
+			"parentEntityField");
 
 		Assert.assertTrue(fieldMetadataType instanceof ObjectType);
 	}

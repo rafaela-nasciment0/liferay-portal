@@ -57,7 +57,6 @@ import java.util.stream.Stream;
 
 /**
  * @author Riccardo Alberti
- * @see CommercePricingClassLocalServiceBaseImpl
  */
 public class CommercePricingClassLocalServiceImpl
 	extends CommercePricingClassLocalServiceBaseImpl {
@@ -98,10 +97,10 @@ public class CommercePricingClassLocalServiceImpl
 		commercePricingClass.setDescriptionMap(descriptionMap);
 		commercePricingClass.setExpandoBridgeAttributes(serviceContext);
 
-		Date now = new Date();
+		Date date = new Date();
 
 		Calendar calendar = CalendarFactoryUtil.getCalendar(
-			now.getTime(), user.getTimeZone());
+			date.getTime(), user.getTimeZone());
 
 		commercePricingClass.setLastPublishDate(calendar.getTime());
 
@@ -114,6 +113,48 @@ public class CommercePricingClassLocalServiceImpl
 			commercePricingClass, serviceContext);
 
 		return commercePricingClass;
+	}
+
+	@Override
+	public CommercePricingClass addOrUpdateCommercePricingClass(
+			String externalReferenceCode, long commercePricingClassId,
+			long userId, Map<Locale, String> titleMap,
+			Map<Locale, String> descriptionMap, ServiceContext serviceContext)
+		throws PortalException {
+
+		if (commercePricingClassId > 0) {
+			try {
+				return commercePricingClassLocalService.
+					updateCommercePricingClass(
+						commercePricingClassId, userId, titleMap,
+						descriptionMap, serviceContext);
+			}
+			catch (NoSuchPricingClassException noSuchPricingClassException) {
+				if (_log.isDebugEnabled()) {
+					_log.debug(
+						"Unable to find pricing class with ID: " +
+							commercePricingClassId,
+						noSuchPricingClassException);
+				}
+			}
+		}
+
+		if (!Validator.isBlank(externalReferenceCode)) {
+			CommercePricingClass commercePricingClass =
+				commercePricingClassPersistence.fetchByC_ERC(
+					serviceContext.getCompanyId(), externalReferenceCode);
+
+			if (commercePricingClass != null) {
+				return commercePricingClassLocalService.
+					updateCommercePricingClass(
+						commercePricingClassId, userId, titleMap,
+						descriptionMap, serviceContext);
+			}
+		}
+
+		return commercePricingClassLocalService.addCommercePricingClass(
+			externalReferenceCode, userId, titleMap, descriptionMap,
+			serviceContext);
 	}
 
 	@Indexable(type = IndexableType.DELETE)
@@ -271,10 +312,10 @@ public class CommercePricingClassLocalServiceImpl
 		commercePricingClass.setTitleMap(titleMap);
 		commercePricingClass.setDescriptionMap(descriptionMap);
 
-		Date now = new Date();
+		Date date = new Date();
 
 		Calendar calendar = CalendarFactoryUtil.getCalendar(
-			now.getTime(), user.getTimeZone());
+			date.getTime(), user.getTimeZone());
 
 		commercePricingClass.setLastPublishDate(calendar.getTime());
 
@@ -299,54 +340,12 @@ public class CommercePricingClassLocalServiceImpl
 			commercePricingClass);
 	}
 
-	@Override
-	public CommercePricingClass upsertCommercePricingClass(
-			String externalReferenceCode, long commercePricingClassId,
-			long userId, Map<Locale, String> titleMap,
-			Map<Locale, String> descriptionMap, ServiceContext serviceContext)
-		throws PortalException {
-
-		if (commercePricingClassId > 0) {
-			try {
-				return commercePricingClassLocalService.
-					updateCommercePricingClass(
-						commercePricingClassId, userId, titleMap,
-						descriptionMap, serviceContext);
-			}
-			catch (NoSuchPricingClassException noSuchPricingClassException) {
-				if (_log.isDebugEnabled()) {
-					_log.debug(
-						"Unable to find pricing class with ID: " +
-							commercePricingClassId,
-						noSuchPricingClassException);
-				}
-			}
-		}
-
-		if (!Validator.isBlank(externalReferenceCode)) {
-			CommercePricingClass commercePricingClass =
-				commercePricingClassPersistence.fetchByC_ERC(
-					serviceContext.getCompanyId(), externalReferenceCode);
-
-			if (commercePricingClass != null) {
-				return commercePricingClassLocalService.
-					updateCommercePricingClass(
-						commercePricingClassId, userId, titleMap,
-						descriptionMap, serviceContext);
-			}
-		}
-
-		return commercePricingClassLocalService.addCommercePricingClass(
-			externalReferenceCode, userId, titleMap, descriptionMap,
-			serviceContext);
-	}
-
 	protected SearchContext buildSearchContext(
 		long companyId, String keywords, int start, int end, Sort sort) {
 
 		SearchContext searchContext = new SearchContext();
 
-		Map<String, Serializable> attributes =
+		searchContext.setAttributes(
 			HashMapBuilder.<String, Serializable>put(
 				Field.CONTENT, keywords
 			).put(
@@ -358,9 +357,7 @@ public class CommercePricingClassLocalServiceImpl
 				LinkedHashMapBuilder.<String, Object>put(
 					"keywords", keywords
 				).build()
-			).build();
-
-		searchContext.setAttributes(attributes);
+			).build());
 
 		searchContext.setCompanyId(companyId);
 		searchContext.setEnd(end);

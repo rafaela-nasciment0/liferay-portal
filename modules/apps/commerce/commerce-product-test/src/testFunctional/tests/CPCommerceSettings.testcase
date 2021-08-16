@@ -3,7 +3,7 @@ definition {
 
 	property portal.release = "true";
 	property portal.upstream = "true";
-	property testray.main.component.name = "Commerce";
+	property testray.main.component.name = "Product Info Management";
 
 	setUp {
 		TestCase.setUpPortalInstance();
@@ -26,7 +26,6 @@ definition {
 
 	test CreateNewAvailabilityEstimate {
 		property portal.acceptance = "true";
-		property test.name.skip.portal.instance = "CPCommerceSettings#CreateNewAvailabilityEstimate";
 
 		CommerceNavigator.gotoPortlet(
 			category = "Settings",
@@ -44,7 +43,6 @@ definition {
 	test CreateNewCountry {
 		property portal.acceptance = "false";
 		property portal.upstream = "false";
-		property test.name.skip.portal.instance = "CPCommerceSettings#CreateNewCountry";
 
 		CommerceNavigator.gotoPortlet(
 			category = "Settings",
@@ -73,11 +71,14 @@ definition {
 		Button.clickSave();
 
 		AssertElementPresent(locator1 = "Message#SUCCESS");
+
+		AssertElementPresent(
+			key_entry = "Test Region",
+			locator1 = "CommerceNavigation#ANY_ENTRY_NAME");
 	}
 
 	test CreateNewMeasurementUnits {
 		property portal.acceptance = "true";
-		property test.name.skip.portal.instance = "CPCommerceSettings#CreateNewMeasurementUnits";
 
 		CommerceNavigator.gotoPortlet(
 			category = "Settings",
@@ -105,7 +106,6 @@ definition {
 	test ViewInstanceCurrenciesAvailable {
 		property environment.acceptance = "true";
 		property portal.acceptance = "true";
-		property test.name.skip.portal.instance = "CommerceSmoke#ViewAvailableCurrencies";
 
 		CommerceNavigator.gotoPortlet(
 			category = "Store Management",

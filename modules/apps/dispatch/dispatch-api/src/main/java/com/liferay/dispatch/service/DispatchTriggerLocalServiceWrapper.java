@@ -146,6 +146,13 @@ public class DispatchTriggerLocalServiceWrapper
 	}
 
 	@Override
+	public int dslQueryCount(
+		com.liferay.petra.sql.dsl.query.DSLQuery dslQuery) {
+
+		return _dispatchTriggerLocalService.dslQueryCount(dslQuery);
+	}
+
+	@Override
 	public com.liferay.portal.kernel.dao.orm.DynamicQuery dynamicQuery() {
 		return _dispatchTriggerLocalService.dynamicQuery();
 	}
@@ -250,6 +257,12 @@ public class DispatchTriggerLocalServiceWrapper
 
 		return _dispatchTriggerLocalService.fetchDispatchTrigger(
 			companyId, name);
+	}
+
+	@Override
+	public java.util.Date fetchNextFireDate(long dispatchTriggerId) {
+		return _dispatchTriggerLocalService.fetchNextFireDate(
+			dispatchTriggerId);
 	}
 
 	@Override

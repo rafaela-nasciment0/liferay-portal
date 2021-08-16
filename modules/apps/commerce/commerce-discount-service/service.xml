@@ -261,15 +261,15 @@
 		<finder name="CommerceDiscountId" return-type="Collection">
 			<finder-column name="commerceDiscountId" />
 		</finder>
-		<finder name="A_D" return-type="Collection">
+		<finder name="CAI_CDI" return-type="Collection">
 			<finder-column name="commerceAccountId" />
 			<finder-column name="commerceDiscountId" />
 		</finder>
-		<finder name="O_D" return-type="Collection">
+		<finder name="COI_CDI" return-type="Collection">
 			<finder-column name="commerceOrderId" />
 			<finder-column name="commerceDiscountId" />
 		</finder>
-		<finder name="A_O_D" return-type="Collection">
+		<finder name="CAI_COI_CDI" return-type="Collection">
 			<finder-column name="commerceAccountId" />
 			<finder-column name="commerceOrderId" />
 			<finder-column name="commerceDiscountId" />

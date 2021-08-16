@@ -85,7 +85,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.portlet.PortletConfig;
-import javax.portlet.PortletURL;
 import javax.portlet.ResourceURL;
 
 import javax.servlet.ServletContext;
@@ -357,17 +356,15 @@ public class AddContentPanelDisplayContext {
 						curGroupId = group.getLiveGroupId();
 					}
 
-					PortletURL portletURL = PortletURLBuilder.create(
-						assetPublisherAddItemHolder.getPortletURL()
-					).setParameter(
-						"portletResource",
-						ProductNavigationControlMenuPortletKeys.
-							PRODUCT_NAVIGATION_CONTROL_MENU
-					).build();
-
 					return _assetHelper.getAddURLPopUp(
-						curGroupId, _themeDisplay.getPlid(), portletURL, false,
-						_themeDisplay.getLayout());
+						curGroupId, _themeDisplay.getPlid(),
+						PortletURLBuilder.create(
+							assetPublisherAddItemHolder.getPortletURL()
+						).setPortletResource(
+							ProductNavigationControlMenuPortletKeys.
+								PRODUCT_NAVIGATION_CONTROL_MENU
+						).buildPortletURL(),
+						false, _themeDisplay.getLayout());
 				}
 			).build()
 		).collect(
@@ -447,8 +444,8 @@ public class AddContentPanelDisplayContext {
 		int deltaDefault = GetterUtil.getInteger(
 			SessionClicks.get(
 				_httpServletRequest,
-				"com.liferay.product.navigation.control.menu.web_" +
-					"addPanelNumItems",
+				"com.liferay.product.navigation.control.menu." +
+					"web_addPanelNumItems",
 				"10"));
 
 		_delta = ParamUtil.getInteger(

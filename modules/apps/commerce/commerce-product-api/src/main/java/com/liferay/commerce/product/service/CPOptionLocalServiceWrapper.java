@@ -65,6 +65,22 @@ public class CPOptionLocalServiceWrapper
 			serviceContext);
 	}
 
+	@Override
+	public com.liferay.commerce.product.model.CPOption addOrUpdateCPOption(
+			String externalReferenceCode, long userId,
+			java.util.Map<java.util.Locale, String> nameMap,
+			java.util.Map<java.util.Locale, String> descriptionMap,
+			String ddmFormFieldTypeName, boolean facetable, boolean required,
+			boolean skuContributor, String key,
+			com.liferay.portal.kernel.service.ServiceContext serviceContext)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return _cpOptionLocalService.addOrUpdateCPOption(
+			externalReferenceCode, userId, nameMap, descriptionMap,
+			ddmFormFieldTypeName, facetable, required, skuContributor, key,
+			serviceContext);
+	}
+
 	/**
 	 * Creates a new cp option with the primary key. Does not add the cp option to the database.
 	 *
@@ -148,6 +164,13 @@ public class CPOptionLocalServiceWrapper
 	@Override
 	public <T> T dslQuery(com.liferay.petra.sql.dsl.query.DSLQuery dslQuery) {
 		return _cpOptionLocalService.dslQuery(dslQuery);
+	}
+
+	@Override
+	public int dslQueryCount(
+		com.liferay.petra.sql.dsl.query.DSLQuery dslQuery) {
+
+		return _cpOptionLocalService.dslQueryCount(dslQuery);
 	}
 
 	@Override
@@ -506,22 +529,6 @@ public class CPOptionLocalServiceWrapper
 
 		return _cpOptionLocalService.updateCPOptionExternalReferenceCode(
 			externalReferenceCode, cpOptionId);
-	}
-
-	@Override
-	public com.liferay.commerce.product.model.CPOption upsertCPOption(
-			String externalReferenceCode, long userId,
-			java.util.Map<java.util.Locale, String> nameMap,
-			java.util.Map<java.util.Locale, String> descriptionMap,
-			String ddmFormFieldTypeName, boolean facetable, boolean required,
-			boolean skuContributor, String key,
-			com.liferay.portal.kernel.service.ServiceContext serviceContext)
-		throws com.liferay.portal.kernel.exception.PortalException {
-
-		return _cpOptionLocalService.upsertCPOption(
-			externalReferenceCode, userId, nameMap, descriptionMap,
-			ddmFormFieldTypeName, facetable, required, skuContributor, key,
-			serviceContext);
 	}
 
 	@Override

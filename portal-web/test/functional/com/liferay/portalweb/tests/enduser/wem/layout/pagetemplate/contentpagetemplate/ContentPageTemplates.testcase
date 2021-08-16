@@ -16,9 +16,11 @@ definition {
 			JSONGroup.addGroup(groupName = "Test Site Name");
 		}
 
-		FragmentsAdminNavigator.openFragmentsAdmin(siteURLKey = "test-site-name");
+		task ("Import test fragments from dependencies folder") {
+			FragmentsAdminNavigator.openFragmentsAdmin(siteURLKey = "test-site-name");
 
-		FragmentsAdmin.importCollectionFromDependenciesFolder(collectionZipFile = "fragment-collection.zip");
+			FragmentsAdmin.importCollectionFromDependenciesFolder(collectionZipFile = "fragment-collection.zip");
+		}
 	}
 
 	tearDown {
@@ -134,6 +136,8 @@ definition {
 	@description = "This is a test for LPS-110144. Configure the Heading fragment in content page template."
 	@priority = "5"
 	test ConfigureBasicComponentHeading {
+		property portal.acceptance = "true";
+
 		task ("Add a content page template") {
 			JSONLayoutpagetemplate.addLayoutPageTemplateCollection(
 				groupName = "Test Site Name",
@@ -331,11 +335,10 @@ definition {
 				groupName = "Test Site Name",
 				name = "New Collection");
 
-			FragmentsAdminNavigator.openFragmentsAdmin(siteURLKey = "test-site-name");
-
-			FragmentsAdminNavigator.gotoCollection(collectionName = "New Collection");
-
-			FragmentsAdmin.addFragment(fragmentName = "Fragment Name");
+			JSONFragment.addSection(
+				collectionName = "New Collection",
+				groupName = "Test Site Name",
+				name = "Fragment Name");
 		}
 
 		task ("Assert the unpublished fragment does not appear in the sidebar when editing a content page template") {

@@ -48,8 +48,8 @@ public class JournalSelectDDMTemplateManagementToolbarDisplayContext
 	public String getClearResultsURL() {
 		return PortletURLBuilder.create(
 			getPortletURL()
-		).setParameter(
-			"keywords", StringPool.BLANK
+		).setKeywords(
+			StringPool.BLANK
 		).buildString();
 	}
 
@@ -60,11 +60,11 @@ public class JournalSelectDDMTemplateManagementToolbarDisplayContext
 		).setMVCPath(
 			"/select_ddm_template.jsp"
 		).setParameter(
-			"ddmTemplateId",
-			_journalSelectDDMTemplateDisplayContext.getDDMTemplateId()
-		).setParameter(
 			"ddmStructureId",
 			_journalSelectDDMTemplateDisplayContext.getDDMStructureId()
+		).setParameter(
+			"ddmTemplateId",
+			_journalSelectDDMTemplateDisplayContext.getDDMTemplateId()
 		).setParameter(
 			"eventName", _journalSelectDDMTemplateDisplayContext.getEventName()
 		).buildString();

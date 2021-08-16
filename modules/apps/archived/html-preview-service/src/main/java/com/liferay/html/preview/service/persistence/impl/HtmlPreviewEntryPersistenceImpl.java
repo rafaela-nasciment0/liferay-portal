@@ -592,25 +592,25 @@ public class HtmlPreviewEntryPersistenceImpl
 		ServiceContext serviceContext =
 			ServiceContextThreadLocal.getServiceContext();
 
-		Date now = new Date();
+		Date date = new Date();
 
 		if (isNew && (htmlPreviewEntry.getCreateDate() == null)) {
 			if (serviceContext == null) {
-				htmlPreviewEntry.setCreateDate(now);
+				htmlPreviewEntry.setCreateDate(date);
 			}
 			else {
 				htmlPreviewEntry.setCreateDate(
-					serviceContext.getCreateDate(now));
+					serviceContext.getCreateDate(date));
 			}
 		}
 
 		if (!htmlPreviewEntryModelImpl.hasSetModifiedDate()) {
 			if (serviceContext == null) {
-				htmlPreviewEntry.setModifiedDate(now);
+				htmlPreviewEntry.setModifiedDate(date);
 			}
 			else {
 				htmlPreviewEntry.setModifiedDate(
-					serviceContext.getModifiedDate(now));
+					serviceContext.getModifiedDate(date));
 			}
 		}
 
@@ -1071,7 +1071,7 @@ public class HtmlPreviewEntryPersistenceImpl
 			return HtmlPreviewEntryTable.INSTANCE.getTableName();
 		}
 
-		private Object[] _getValue(
+		private static Object[] _getValue(
 			HtmlPreviewEntryModelImpl htmlPreviewEntryModelImpl,
 			String[] columnNames, boolean original) {
 
@@ -1094,8 +1094,8 @@ public class HtmlPreviewEntryPersistenceImpl
 			return arguments;
 		}
 
-		private static Map<FinderPath, Long> _finderPathColumnBitmasksCache =
-			new ConcurrentHashMap<>();
+		private static final Map<FinderPath, Long>
+			_finderPathColumnBitmasksCache = new ConcurrentHashMap<>();
 
 	}
 

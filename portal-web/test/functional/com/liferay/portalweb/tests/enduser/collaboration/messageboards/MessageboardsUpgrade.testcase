@@ -10,7 +10,9 @@ definition {
 	setUp {
 		SignIn.signIn();
 
-		Smoke.viewWelcomePage();
+		var portalURL = PropsUtil.get("portal.url");
+
+		AssertLocation.assertPartialLocation(value1 = "${portalURL}/web/guest");
 
 		ApplicationsMenu.gotoPortlet(
 			category = "Configuration",
@@ -21,6 +23,7 @@ definition {
 	}
 
 	@priority = "5"
+	@refactorneeded
 	test ViewMessageBoardsArchive625 {
 		property data.archive.type = "data-archive-message-boards";
 		property database.types = "mariadb,mysql,postgresql";
@@ -29,6 +32,36 @@ definition {
 		Upgrade.addMessageBoards();
 
 		Upgrade.viewMessageBoards();
+	}
+
+	@priority = "5"
+	test ViewMessageBoardsArchive71105 {
+		property data.archive.type = "data-archive-collaboration";
+		property portal.version = "7.1.10.5";
+
+		Upgrade.viewAndAddMessageBoard();
+
+		Upgrade.editAndDeleteMessageBoard();
+	}
+
+	@priority = "5"
+	test ViewMessageBoardsArchive72104 {
+		property data.archive.type = "data-archive-collaboration";
+		property portal.version = "7.2.10.4";
+
+		Upgrade.viewAndAddMessageBoard();
+
+		Upgrade.editAndDeleteMessageBoard();
+	}
+
+	@priority = "5"
+	test ViewMessageBoardsArchive73101 {
+		property data.archive.type = "data-archive-collaboration";
+		property portal.version = "7.3.10.1";
+
+		Upgrade.viewAndAddMessageBoard();
+
+		Upgrade.editAndDeleteMessageBoard();
 	}
 
 	@priority = "5"
@@ -49,6 +82,16 @@ definition {
 		Upgrade.addMessageBoards();
 
 		Upgrade.viewMessageBoards();
+	}
+
+	@priority = "5"
+	test ViewMessageBoardsArchive701015 {
+		property data.archive.type = "data-archive-collaboration";
+		property portal.version = "7.0.10.15";
+
+		Upgrade.viewAndAddMessageBoard();
+
+		Upgrade.editAndDeleteMessageBoard();
 	}
 
 }

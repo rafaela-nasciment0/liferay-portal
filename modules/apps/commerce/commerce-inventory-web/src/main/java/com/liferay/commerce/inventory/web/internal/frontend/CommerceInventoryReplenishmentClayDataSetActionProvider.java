@@ -108,10 +108,10 @@ public class CommerceInventoryReplenishmentClayDataSetActionProvider
 				CPPortletKeys.COMMERCE_INVENTORY, PortletRequest.ACTION_PHASE)
 		).setActionName(
 			"/commerce_inventory/edit_commerce_inventory_replenishment_item"
+		).setCMD(
+			Constants.DELETE
 		).setRedirect(
 			redirect
-		).setParameter(
-			Constants.CMD, Constants.DELETE
 		).setParameter(
 			"commerceInventoryReplenishmentItemId",
 			commerceInventoryReplenishmentItemId
@@ -139,7 +139,7 @@ public class CommerceInventoryReplenishmentClayDataSetActionProvider
 		).setParameter(
 			"commerceInventoryReplenishmentItemId",
 			commerceInventoryReplenishmentItemId
-		).build();
+		).buildPortletURL();
 
 		try {
 			portletURL.setWindowState(LiferayWindowState.POP_UP);

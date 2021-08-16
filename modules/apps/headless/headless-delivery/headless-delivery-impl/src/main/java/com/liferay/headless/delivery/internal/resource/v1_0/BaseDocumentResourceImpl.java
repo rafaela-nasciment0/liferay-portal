@@ -20,14 +20,20 @@ import com.liferay.headless.delivery.resource.v1_0.DocumentResource;
 import com.liferay.petra.function.UnsafeFunction;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.model.GroupedModel;
+import com.liferay.portal.kernel.model.ResourceAction;
 import com.liferay.portal.kernel.search.Sort;
 import com.liferay.portal.kernel.search.filter.Filter;
+import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermission;
 import com.liferay.portal.kernel.service.GroupLocalService;
 import com.liferay.portal.kernel.service.ResourceActionLocalService;
 import com.liferay.portal.kernel.service.ResourcePermissionLocalService;
 import com.liferay.portal.kernel.service.RoleLocalService;
+import com.liferay.portal.kernel.util.GetterUtil;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.LocaleUtil;
+import com.liferay.portal.kernel.util.StringUtil;
+import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.odata.entity.EntityModel;
 import com.liferay.portal.vulcan.accept.language.AcceptLanguage;
 import com.liferay.portal.vulcan.batch.engine.VulcanBatchEngineTaskItemDelegate;
@@ -35,6 +41,8 @@ import com.liferay.portal.vulcan.batch.engine.resource.VulcanBatchEngineImportTa
 import com.liferay.portal.vulcan.multipart.MultipartBody;
 import com.liferay.portal.vulcan.pagination.Page;
 import com.liferay.portal.vulcan.pagination.Pagination;
+import com.liferay.portal.vulcan.permission.ModelPermissionsUtil;
+import com.liferay.portal.vulcan.permission.PermissionUtil;
 import com.liferay.portal.vulcan.resource.EntityModelResource;
 import com.liferay.portal.vulcan.util.ActionUtil;
 import com.liferay.portal.vulcan.util.TransformUtil;
@@ -108,12 +116,12 @@ public abstract class BaseDocumentResourceImpl
 	@Produces({"application/json", "application/xml"})
 	@Tags(value = {@Tag(name = "Document")})
 	public Page<Document> getAssetLibraryDocumentsPage(
-			@NotNull @Parameter(hidden = true) @PathParam("assetLibraryId")
-				Long assetLibraryId,
+			@NotNull @Parameter(hidden = true) @PathParam("assetLibraryId") Long
+				assetLibraryId,
 			@Parameter(hidden = true) @QueryParam("flatten") Boolean flatten,
 			@Parameter(hidden = true) @QueryParam("search") String search,
-			@Context
-				com.liferay.portal.vulcan.aggregation.Aggregation aggregation,
+			@Context com.liferay.portal.vulcan.aggregation.Aggregation
+				aggregation,
 			@Context Filter filter, @Context Pagination pagination,
 			@Context Sort[] sorts)
 		throws Exception {
@@ -136,8 +144,8 @@ public abstract class BaseDocumentResourceImpl
 	@Produces({"application/json", "application/xml"})
 	@Tags(value = {@Tag(name = "Document")})
 	public Document postAssetLibraryDocument(
-			@NotNull @Parameter(hidden = true) @PathParam("assetLibraryId")
-				Long assetLibraryId,
+			@NotNull @Parameter(hidden = true) @PathParam("assetLibraryId") Long
+				assetLibraryId,
 			MultipartBody multipartBody)
 		throws Exception {
 
@@ -162,11 +170,11 @@ public abstract class BaseDocumentResourceImpl
 	@Produces("application/json")
 	@Tags(value = {@Tag(name = "Document")})
 	public Response postAssetLibraryDocumentBatch(
-			@NotNull @Parameter(hidden = true) @PathParam("assetLibraryId")
-				Long assetLibraryId,
+			@NotNull @Parameter(hidden = true) @PathParam("assetLibraryId") Long
+				assetLibraryId,
 			MultipartBody multipartBody,
-			@Parameter(hidden = true) @QueryParam("callbackURL")
-				String callbackURL,
+			@Parameter(hidden = true) @QueryParam("callbackURL") String
+				callbackURL,
 			Object object)
 		throws Exception {
 
@@ -184,6 +192,102 @@ public abstract class BaseDocumentResourceImpl
 			vulcanBatchEngineImportTaskResource.postImportTask(
 				Document.class.getName(), callbackURL, null, object)
 		).build();
+	}
+
+	/**
+	 * Invoke this method with the command line:
+	 *
+	 * curl -X 'GET' 'http://localhost:8080/o/headless-delivery/v1.0/asset-libraries/{assetLibraryId}/documents/permissions'  -u 'test@liferay.com:test'
+	 */
+	@GET
+	@Override
+	@Parameters(
+		value = {
+			@Parameter(in = ParameterIn.PATH, name = "assetLibraryId"),
+			@Parameter(in = ParameterIn.QUERY, name = "roleNames")
+		}
+	)
+	@Path("/asset-libraries/{assetLibraryId}/documents/permissions")
+	@Produces({"application/json", "application/xml"})
+	@Tags(value = {@Tag(name = "Document")})
+	public Page<com.liferay.portal.vulcan.permission.Permission>
+			getAssetLibraryDocumentPermissionsPage(
+				@NotNull @Parameter(hidden = true) @PathParam("assetLibraryId")
+					Long assetLibraryId,
+				@Parameter(hidden = true) @QueryParam("roleNames") String
+					roleNames)
+		throws Exception {
+
+		String portletName = getPermissionCheckerPortletName(assetLibraryId);
+
+		PermissionUtil.checkPermission(
+			ActionKeys.PERMISSIONS, groupLocalService, portletName,
+			assetLibraryId, assetLibraryId);
+
+		return toPermissionPage(
+			HashMapBuilder.put(
+				"get",
+				addAction(
+					ActionKeys.PERMISSIONS,
+					"getAssetLibraryDocumentPermissionsPage", portletName,
+					assetLibraryId)
+			).put(
+				"replace",
+				addAction(
+					ActionKeys.PERMISSIONS, "putAssetLibraryDocumentPermission",
+					portletName, assetLibraryId)
+			).build(),
+			assetLibraryId, portletName, roleNames);
+	}
+
+	/**
+	 * Invoke this method with the command line:
+	 *
+	 * curl -X 'PUT' 'http://localhost:8080/o/headless-delivery/v1.0/asset-libraries/{assetLibraryId}/documents/permissions'  -u 'test@liferay.com:test'
+	 */
+	@Override
+	@Parameters(
+		value = {@Parameter(in = ParameterIn.PATH, name = "assetLibraryId")}
+	)
+	@Path("/asset-libraries/{assetLibraryId}/documents/permissions")
+	@Produces({"application/json", "application/xml"})
+	@PUT
+	@Tags(value = {@Tag(name = "Document")})
+	public Page<com.liferay.portal.vulcan.permission.Permission>
+			putAssetLibraryDocumentPermission(
+				@NotNull @Parameter(hidden = true) @PathParam("assetLibraryId")
+					Long assetLibraryId,
+				com.liferay.portal.vulcan.permission.Permission[] permissions)
+		throws Exception {
+
+		String portletName = getPermissionCheckerPortletName(assetLibraryId);
+
+		PermissionUtil.checkPermission(
+			ActionKeys.PERMISSIONS, groupLocalService, portletName,
+			assetLibraryId, assetLibraryId);
+
+		resourcePermissionLocalService.updateResourcePermissions(
+			contextCompany.getCompanyId(), assetLibraryId, portletName,
+			String.valueOf(assetLibraryId),
+			ModelPermissionsUtil.toModelPermissions(
+				contextCompany.getCompanyId(), permissions, assetLibraryId,
+				portletName, resourceActionLocalService,
+				resourcePermissionLocalService, roleLocalService));
+
+		return toPermissionPage(
+			HashMapBuilder.put(
+				"get",
+				addAction(
+					ActionKeys.PERMISSIONS,
+					"getAssetLibraryDocumentPermissionsPage", portletName,
+					assetLibraryId)
+			).put(
+				"replace",
+				addAction(
+					ActionKeys.PERMISSIONS, "putAssetLibraryDocumentPermission",
+					portletName, assetLibraryId)
+			).build(),
+			assetLibraryId, portletName, null);
 	}
 
 	/**
@@ -215,8 +319,8 @@ public abstract class BaseDocumentResourceImpl
 				Long documentFolderId,
 			@Parameter(hidden = true) @QueryParam("flatten") Boolean flatten,
 			@Parameter(hidden = true) @QueryParam("search") String search,
-			@Context
-				com.liferay.portal.vulcan.aggregation.Aggregation aggregation,
+			@Context com.liferay.portal.vulcan.aggregation.Aggregation
+				aggregation,
 			@Context Filter filter, @Context Pagination pagination,
 			@Context Sort[] sorts)
 		throws Exception {
@@ -271,8 +375,8 @@ public abstract class BaseDocumentResourceImpl
 			@NotNull @Parameter(hidden = true) @PathParam("documentFolderId")
 				Long documentFolderId,
 			MultipartBody multipartBody,
-			@Parameter(hidden = true) @QueryParam("callbackURL")
-				String callbackURL,
+			@Parameter(hidden = true) @QueryParam("callbackURL") String
+				callbackURL,
 			Object object)
 		throws Exception {
 
@@ -309,8 +413,8 @@ public abstract class BaseDocumentResourceImpl
 	@Produces({"application/json", "application/xml"})
 	@Tags(value = {@Tag(name = "Document")})
 	public void deleteDocument(
-			@NotNull @Parameter(hidden = true) @PathParam("documentId")
-				Long documentId)
+			@NotNull @Parameter(hidden = true) @PathParam("documentId") Long
+				documentId)
 		throws Exception {
 	}
 
@@ -329,8 +433,8 @@ public abstract class BaseDocumentResourceImpl
 	@Produces("application/json")
 	@Tags(value = {@Tag(name = "Document")})
 	public Response deleteDocumentBatch(
-			@Parameter(hidden = true) @QueryParam("callbackURL")
-				String callbackURL,
+			@Parameter(hidden = true) @QueryParam("callbackURL") String
+				callbackURL,
 			Object object)
 		throws Exception {
 
@@ -365,8 +469,8 @@ public abstract class BaseDocumentResourceImpl
 	@Produces({"application/json", "application/xml"})
 	@Tags(value = {@Tag(name = "Document")})
 	public Document getDocument(
-			@NotNull @Parameter(hidden = true) @PathParam("documentId")
-				Long documentId)
+			@NotNull @Parameter(hidden = true) @PathParam("documentId") Long
+				documentId)
 		throws Exception {
 
 		return new Document();
@@ -390,8 +494,8 @@ public abstract class BaseDocumentResourceImpl
 	@Produces({"application/json", "application/xml"})
 	@Tags(value = {@Tag(name = "Document")})
 	public Document patchDocument(
-			@NotNull @Parameter(hidden = true) @PathParam("documentId")
-				Long documentId,
+			@NotNull @Parameter(hidden = true) @PathParam("documentId") Long
+				documentId,
 			MultipartBody multipartBody)
 		throws Exception {
 
@@ -416,8 +520,8 @@ public abstract class BaseDocumentResourceImpl
 	@PUT
 	@Tags(value = {@Tag(name = "Document")})
 	public Document putDocument(
-			@NotNull @Parameter(hidden = true) @PathParam("documentId")
-				Long documentId,
+			@NotNull @Parameter(hidden = true) @PathParam("documentId") Long
+				documentId,
 			MultipartBody multipartBody)
 		throws Exception {
 
@@ -440,8 +544,8 @@ public abstract class BaseDocumentResourceImpl
 	@Tags(value = {@Tag(name = "Document")})
 	public Response putDocumentBatch(
 			MultipartBody multipartBody,
-			@Parameter(hidden = true) @QueryParam("callbackURL")
-				String callbackURL,
+			@Parameter(hidden = true) @QueryParam("callbackURL") String
+				callbackURL,
 			Object object)
 		throws Exception {
 
@@ -478,8 +582,8 @@ public abstract class BaseDocumentResourceImpl
 	@Produces({"application/json", "application/xml"})
 	@Tags(value = {@Tag(name = "Document")})
 	public void deleteDocumentMyRating(
-			@NotNull @Parameter(hidden = true) @PathParam("documentId")
-				Long documentId)
+			@NotNull @Parameter(hidden = true) @PathParam("documentId") Long
+				documentId)
 		throws Exception {
 	}
 
@@ -498,8 +602,8 @@ public abstract class BaseDocumentResourceImpl
 	@Produces({"application/json", "application/xml"})
 	@Tags(value = {@Tag(name = "Document")})
 	public Rating getDocumentMyRating(
-			@NotNull @Parameter(hidden = true) @PathParam("documentId")
-				Long documentId)
+			@NotNull @Parameter(hidden = true) @PathParam("documentId") Long
+				documentId)
 		throws Exception {
 
 		return new Rating();
@@ -523,8 +627,8 @@ public abstract class BaseDocumentResourceImpl
 	@Produces({"application/json", "application/xml"})
 	@Tags(value = {@Tag(name = "Document")})
 	public Rating postDocumentMyRating(
-			@NotNull @Parameter(hidden = true) @PathParam("documentId")
-				Long documentId,
+			@NotNull @Parameter(hidden = true) @PathParam("documentId") Long
+				documentId,
 			Rating rating)
 		throws Exception {
 
@@ -549,12 +653,109 @@ public abstract class BaseDocumentResourceImpl
 	@PUT
 	@Tags(value = {@Tag(name = "Document")})
 	public Rating putDocumentMyRating(
-			@NotNull @Parameter(hidden = true) @PathParam("documentId")
-				Long documentId,
+			@NotNull @Parameter(hidden = true) @PathParam("documentId") Long
+				documentId,
 			Rating rating)
 		throws Exception {
 
 		return new Rating();
+	}
+
+	/**
+	 * Invoke this method with the command line:
+	 *
+	 * curl -X 'GET' 'http://localhost:8080/o/headless-delivery/v1.0/documents/{documentId}/permissions'  -u 'test@liferay.com:test'
+	 */
+	@GET
+	@Override
+	@Parameters(
+		value = {
+			@Parameter(in = ParameterIn.PATH, name = "documentId"),
+			@Parameter(in = ParameterIn.QUERY, name = "roleNames")
+		}
+	)
+	@Path("/documents/{documentId}/permissions")
+	@Produces({"application/json", "application/xml"})
+	@Tags(value = {@Tag(name = "Document")})
+	public Page<com.liferay.portal.vulcan.permission.Permission>
+			getDocumentPermissionsPage(
+				@NotNull @Parameter(hidden = true) @PathParam("documentId") Long
+					documentId,
+				@Parameter(hidden = true) @QueryParam("roleNames") String
+					roleNames)
+		throws Exception {
+
+		String resourceName = getPermissionCheckerResourceName(documentId);
+		Long resourceId = getPermissionCheckerResourceId(documentId);
+
+		PermissionUtil.checkPermission(
+			ActionKeys.PERMISSIONS, groupLocalService, resourceName, resourceId,
+			getPermissionCheckerGroupId(documentId));
+
+		return toPermissionPage(
+			HashMapBuilder.put(
+				"get",
+				addAction(
+					ActionKeys.PERMISSIONS, "getDocumentPermissionsPage",
+					resourceName, resourceId)
+			).put(
+				"replace",
+				addAction(
+					ActionKeys.PERMISSIONS, "putDocumentPermission",
+					resourceName, resourceId)
+			).build(),
+			resourceId, resourceName, roleNames);
+	}
+
+	/**
+	 * Invoke this method with the command line:
+	 *
+	 * curl -X 'PUT' 'http://localhost:8080/o/headless-delivery/v1.0/documents/{documentId}/permissions'  -u 'test@liferay.com:test'
+	 */
+	@Override
+	@Parameters(
+		value = {@Parameter(in = ParameterIn.PATH, name = "documentId")}
+	)
+	@Path("/documents/{documentId}/permissions")
+	@Produces({"application/json", "application/xml"})
+	@PUT
+	@Tags(value = {@Tag(name = "Document")})
+	public Page<com.liferay.portal.vulcan.permission.Permission>
+			putDocumentPermission(
+				@NotNull @Parameter(hidden = true) @PathParam("documentId") Long
+					documentId,
+				com.liferay.portal.vulcan.permission.Permission[] permissions)
+		throws Exception {
+
+		String resourceName = getPermissionCheckerResourceName(documentId);
+		Long resourceId = getPermissionCheckerResourceId(documentId);
+
+		PermissionUtil.checkPermission(
+			ActionKeys.PERMISSIONS, groupLocalService, resourceName, resourceId,
+			getPermissionCheckerGroupId(documentId));
+
+		resourcePermissionLocalService.updateResourcePermissions(
+			contextCompany.getCompanyId(),
+			getPermissionCheckerGroupId(documentId), resourceName,
+			String.valueOf(resourceId),
+			ModelPermissionsUtil.toModelPermissions(
+				contextCompany.getCompanyId(), permissions, resourceId,
+				resourceName, resourceActionLocalService,
+				resourcePermissionLocalService, roleLocalService));
+
+		return toPermissionPage(
+			HashMapBuilder.put(
+				"get",
+				addAction(
+					ActionKeys.PERMISSIONS, "getDocumentPermissionsPage",
+					resourceName, resourceId)
+			).put(
+				"replace",
+				addAction(
+					ActionKeys.PERMISSIONS, "putDocumentPermission",
+					resourceName, resourceId)
+			).build(),
+			resourceId, resourceName, null);
 	}
 
 	/**
@@ -577,8 +778,8 @@ public abstract class BaseDocumentResourceImpl
 	@Produces("text/html")
 	@Tags(value = {@Tag(name = "Document")})
 	public String getDocumentRenderedContentByDisplayPageDisplayPageKey(
-			@NotNull @Parameter(hidden = true) @PathParam("documentId")
-				Long documentId,
+			@NotNull @Parameter(hidden = true) @PathParam("documentId") Long
+				documentId,
 			@NotNull @Parameter(hidden = true) @PathParam("displayPageKey")
 				String displayPageKey)
 		throws Exception {
@@ -614,8 +815,8 @@ public abstract class BaseDocumentResourceImpl
 			@NotNull @Parameter(hidden = true) @PathParam("siteId") Long siteId,
 			@Parameter(hidden = true) @QueryParam("flatten") Boolean flatten,
 			@Parameter(hidden = true) @QueryParam("search") String search,
-			@Context
-				com.liferay.portal.vulcan.aggregation.Aggregation aggregation,
+			@Context com.liferay.portal.vulcan.aggregation.Aggregation
+				aggregation,
 			@Context Filter filter, @Context Pagination pagination,
 			@Context Sort[] sorts)
 		throws Exception {
@@ -666,8 +867,8 @@ public abstract class BaseDocumentResourceImpl
 	public Response postSiteDocumentBatch(
 			@NotNull @Parameter(hidden = true) @PathParam("siteId") Long siteId,
 			MultipartBody multipartBody,
-			@Parameter(hidden = true) @QueryParam("callbackURL")
-				String callbackURL,
+			@Parameter(hidden = true) @QueryParam("callbackURL") String
+				callbackURL,
 			Object object)
 		throws Exception {
 
@@ -687,6 +888,191 @@ public abstract class BaseDocumentResourceImpl
 		).build();
 	}
 
+	/**
+	 * Invoke this method with the command line:
+	 *
+	 * curl -X 'DELETE' 'http://localhost:8080/o/headless-delivery/v1.0/sites/{siteId}/documents/by-external-reference-code/{externalReferenceCode}'  -u 'test@liferay.com:test'
+	 */
+	@DELETE
+	@Operation(
+		description = "Deletes the site's document by external reference code returns a 204 if the operation succeeds."
+	)
+	@Override
+	@Parameters(
+		value = {
+			@Parameter(in = ParameterIn.PATH, name = "siteId"),
+			@Parameter(in = ParameterIn.PATH, name = "externalReferenceCode")
+		}
+	)
+	@Path(
+		"/sites/{siteId}/documents/by-external-reference-code/{externalReferenceCode}"
+	)
+	@Produces({"application/json", "application/xml"})
+	@Tags(value = {@Tag(name = "Document")})
+	public void deleteSiteDocumentByExternalReferenceCode(
+			@NotNull @Parameter(hidden = true) @PathParam("siteId") Long siteId,
+			@NotNull @Parameter(hidden = true)
+			@PathParam("externalReferenceCode")
+			String externalReferenceCode)
+		throws Exception {
+	}
+
+	/**
+	 * Invoke this method with the command line:
+	 *
+	 * curl -X 'GET' 'http://localhost:8080/o/headless-delivery/v1.0/sites/{siteId}/documents/by-external-reference-code/{externalReferenceCode}'  -u 'test@liferay.com:test'
+	 */
+	@GET
+	@Operation(
+		description = "Retrieves the site's document by external reference code."
+	)
+	@Override
+	@Parameters(
+		value = {
+			@Parameter(in = ParameterIn.PATH, name = "siteId"),
+			@Parameter(in = ParameterIn.PATH, name = "externalReferenceCode")
+		}
+	)
+	@Path(
+		"/sites/{siteId}/documents/by-external-reference-code/{externalReferenceCode}"
+	)
+	@Produces({"application/json", "application/xml"})
+	@Tags(value = {@Tag(name = "Document")})
+	public Document getSiteDocumentByExternalReferenceCode(
+			@NotNull @Parameter(hidden = true) @PathParam("siteId") Long siteId,
+			@NotNull @Parameter(hidden = true)
+			@PathParam("externalReferenceCode")
+			String externalReferenceCode)
+		throws Exception {
+
+		return new Document();
+	}
+
+	/**
+	 * Invoke this method with the command line:
+	 *
+	 * curl -X 'PUT' 'http://localhost:8080/o/headless-delivery/v1.0/sites/{siteId}/documents/by-external-reference-code/{externalReferenceCode}'  -u 'test@liferay.com:test'
+	 */
+	@Consumes("multipart/form-data")
+	@Operation(
+		description = "Replaces the document by external reference code with the information sent in the request body, or replaces it if it not exists. Any missing fields are deleted, unless they are required. The request body must be `multipart/form-data` with two parts, the file'sbytes (`file`), and an optional JSON string (`document`) with the metadata."
+	)
+	@Override
+	@Parameters(
+		value = {
+			@Parameter(in = ParameterIn.PATH, name = "siteId"),
+			@Parameter(in = ParameterIn.PATH, name = "externalReferenceCode")
+		}
+	)
+	@Path(
+		"/sites/{siteId}/documents/by-external-reference-code/{externalReferenceCode}"
+	)
+	@Produces({"application/json", "application/xml"})
+	@PUT
+	@Tags(value = {@Tag(name = "Document")})
+	public Document putSiteDocumentByExternalReferenceCode(
+			@NotNull @Parameter(hidden = true) @PathParam("siteId") Long siteId,
+			@NotNull @Parameter(hidden = true)
+			@PathParam("externalReferenceCode")
+			String externalReferenceCode,
+			MultipartBody multipartBody)
+		throws Exception {
+
+		return new Document();
+	}
+
+	/**
+	 * Invoke this method with the command line:
+	 *
+	 * curl -X 'GET' 'http://localhost:8080/o/headless-delivery/v1.0/sites/{siteId}/documents/permissions'  -u 'test@liferay.com:test'
+	 */
+	@GET
+	@Override
+	@Parameters(
+		value = {
+			@Parameter(in = ParameterIn.PATH, name = "siteId"),
+			@Parameter(in = ParameterIn.QUERY, name = "roleNames")
+		}
+	)
+	@Path("/sites/{siteId}/documents/permissions")
+	@Produces({"application/json", "application/xml"})
+	@Tags(value = {@Tag(name = "Document")})
+	public Page<com.liferay.portal.vulcan.permission.Permission>
+			getSiteDocumentPermissionsPage(
+				@NotNull @Parameter(hidden = true) @PathParam("siteId") Long
+					siteId,
+				@Parameter(hidden = true) @QueryParam("roleNames") String
+					roleNames)
+		throws Exception {
+
+		String portletName = getPermissionCheckerPortletName(siteId);
+
+		PermissionUtil.checkPermission(
+			ActionKeys.PERMISSIONS, groupLocalService, portletName, siteId,
+			siteId);
+
+		return toPermissionPage(
+			HashMapBuilder.put(
+				"get",
+				addAction(
+					ActionKeys.PERMISSIONS, "getSiteDocumentPermissionsPage",
+					portletName, siteId)
+			).put(
+				"replace",
+				addAction(
+					ActionKeys.PERMISSIONS, "putSiteDocumentPermission",
+					portletName, siteId)
+			).build(),
+			siteId, portletName, roleNames);
+	}
+
+	/**
+	 * Invoke this method with the command line:
+	 *
+	 * curl -X 'PUT' 'http://localhost:8080/o/headless-delivery/v1.0/sites/{siteId}/documents/permissions'  -u 'test@liferay.com:test'
+	 */
+	@Override
+	@Parameters(value = {@Parameter(in = ParameterIn.PATH, name = "siteId")})
+	@Path("/sites/{siteId}/documents/permissions")
+	@Produces({"application/json", "application/xml"})
+	@PUT
+	@Tags(value = {@Tag(name = "Document")})
+	public Page<com.liferay.portal.vulcan.permission.Permission>
+			putSiteDocumentPermission(
+				@NotNull @Parameter(hidden = true) @PathParam("siteId") Long
+					siteId,
+				com.liferay.portal.vulcan.permission.Permission[] permissions)
+		throws Exception {
+
+		String portletName = getPermissionCheckerPortletName(siteId);
+
+		PermissionUtil.checkPermission(
+			ActionKeys.PERMISSIONS, groupLocalService, portletName, siteId,
+			siteId);
+
+		resourcePermissionLocalService.updateResourcePermissions(
+			contextCompany.getCompanyId(), siteId, portletName,
+			String.valueOf(siteId),
+			ModelPermissionsUtil.toModelPermissions(
+				contextCompany.getCompanyId(), permissions, siteId, portletName,
+				resourceActionLocalService, resourcePermissionLocalService,
+				roleLocalService));
+
+		return toPermissionPage(
+			HashMapBuilder.put(
+				"get",
+				addAction(
+					ActionKeys.PERMISSIONS, "getSiteDocumentPermissionsPage",
+					portletName, siteId)
+			).put(
+				"replace",
+				addAction(
+					ActionKeys.PERMISSIONS, "putSiteDocumentPermission",
+					portletName, siteId)
+			).build(),
+			siteId, portletName, null);
+	}
+
 	@Override
 	@SuppressWarnings("PMD.UnusedLocalVariable")
 	public void create(
@@ -696,7 +1082,7 @@ public abstract class BaseDocumentResourceImpl
 
 		for (Document document : documents) {
 			postSiteDocument(
-				Long.valueOf((String)parameters.get("siteId")), null);
+				Long.parseLong((String)parameters.get("siteId")), null);
 		}
 	}
 
@@ -733,8 +1119,9 @@ public abstract class BaseDocumentResourceImpl
 		throws Exception {
 
 		return getSiteDocumentsPage(
-			(Long)parameters.get("siteId"), (Boolean)parameters.get("flatten"),
-			search, null, filter, pagination, sorts);
+			Long.parseLong((String)parameters.get("siteId")),
+			Boolean.parseBoolean((String)parameters.get("flatten")), search,
+			null, filter, pagination, sorts);
 	}
 
 	@Override
@@ -768,9 +1155,70 @@ public abstract class BaseDocumentResourceImpl
 		for (Document document : documents) {
 			putDocument(
 				document.getId() != null ? document.getId() :
-					(Long)parameters.get("documentId"),
+					Long.parseLong((String)parameters.get("documentId")),
 				null);
 		}
+	}
+
+	protected String getPermissionCheckerActionsResourceName(Object id)
+		throws Exception {
+
+		return getPermissionCheckerResourceName(id);
+	}
+
+	protected Long getPermissionCheckerGroupId(Object id) throws Exception {
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	protected String getPermissionCheckerPortletName(Object id)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	protected Long getPermissionCheckerResourceId(Object id) throws Exception {
+		return GetterUtil.getLong(id);
+	}
+
+	protected String getPermissionCheckerResourceName(Object id)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	protected Page<com.liferay.portal.vulcan.permission.Permission>
+			toPermissionPage(
+				Map<String, Map<String, String>> actions, long id,
+				String resourceName, String roleNames)
+		throws Exception {
+
+		List<ResourceAction> resourceActions =
+			resourceActionLocalService.getResourceActions(resourceName);
+
+		if (Validator.isNotNull(roleNames)) {
+			return Page.of(
+				actions,
+				transform(
+					PermissionUtil.getRoles(
+						contextCompany, roleLocalService,
+						StringUtil.split(roleNames)),
+					role -> PermissionUtil.toPermission(
+						contextCompany.getCompanyId(), id, resourceActions,
+						resourceName, resourcePermissionLocalService, role)));
+		}
+
+		return Page.of(
+			actions,
+			transform(
+				PermissionUtil.getResourcePermissions(
+					contextCompany.getCompanyId(), id, resourceName,
+					resourcePermissionLocalService),
+				resourcePermission -> PermissionUtil.toPermission(
+					resourceActions, resourcePermission,
+					roleLocalService.getRole(resourcePermission.getRoleId()))));
 	}
 
 	public void setContextAcceptLanguage(AcceptLanguage contextAcceptLanguage) {

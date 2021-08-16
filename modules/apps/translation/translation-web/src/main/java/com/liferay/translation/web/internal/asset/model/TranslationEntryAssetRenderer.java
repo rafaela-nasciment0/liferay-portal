@@ -27,8 +27,8 @@ import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.resource.bundle.ResourceBundleLoader;
 import com.liferay.portal.kernel.util.PortalUtil;
+import com.liferay.portal.kernel.util.ResourceBundleUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.translation.info.field.TranslationInfoFieldChecker;
 import com.liferay.translation.model.TranslationEntry;
@@ -57,13 +57,11 @@ public class TranslationEntryAssetRenderer
 
 	public TranslationEntryAssetRenderer(
 		InfoItemServiceTracker infoItemServiceTracker,
-		ResourceBundleLoader resourceBundleLoader,
 		ServletContext servletContext, TranslationEntry translationEntry,
 		TranslationInfoFieldChecker translationInfoFieldChecker,
 		TranslationSnapshotProvider translationSnapshotProvider) {
 
 		_infoItemServiceTracker = infoItemServiceTracker;
-		_resourceBundleLoader = resourceBundleLoader;
 		_translationEntry = translationEntry;
 		_translationInfoFieldChecker = translationInfoFieldChecker;
 		_translationSnapshotProvider = translationSnapshotProvider;
@@ -117,16 +115,15 @@ public class TranslationEntryAssetRenderer
 				return LanguageUtil.get(locale, "translation");
 			}
 
-			AssetRenderer<?> assetRenderer =
-				assetRendererFactory.getAssetRenderer(
-					_translationEntry.getClassPK());
+			AssetRenderer<?> assetRenderer = _getAssetRenderer(
+				assetRendererFactory);
 
 			if (assetRenderer == null) {
 				return LanguageUtil.get(locale, "translation");
 			}
 
 			return LanguageUtil.format(
-				_resourceBundleLoader.loadResourceBundle(locale),
+				ResourceBundleUtil.getBundle(locale, getClass()),
 				"translation-of-x-to-x",
 				new Object[] {
 					assetRenderer.getTitle(locale),
@@ -193,11 +190,27 @@ public class TranslationEntryAssetRenderer
 		return super.include(httpServletRequest, httpServletResponse, template);
 	}
 
+	private AssetRenderer<?> _getAssetRenderer(
+			AssetRendererFactory<?> assetRendererFactory)
+		throws PortalException {
+
+		try {
+			return assetRendererFactory.getAssetRenderer(
+				_translationEntry.getClassPK());
+		}
+		catch (PortalException portalException) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(portalException, portalException);
+			}
+
+			return null;
+		}
+	}
+
 	private static final Log _log = LogFactoryUtil.getLog(
 		TranslationEntryAssetRenderer.class);
 
 	private final InfoItemServiceTracker _infoItemServiceTracker;
-	private final ResourceBundleLoader _resourceBundleLoader;
 	private final TranslationEntry _translationEntry;
 	private final TranslationInfoFieldChecker _translationInfoFieldChecker;
 	private final TranslationSnapshotProvider _translationSnapshotProvider;

@@ -104,8 +104,8 @@ public class AnnouncementsAdminViewManagementToolbarDisplayContext {
 	public String getClearResultsURL() {
 		return PortletURLBuilder.createRenderURL(
 			_liferayPortletResponse
-		).setParameter(
-			"navigation", _getNavigation()
+		).setNavigation(
+			_getNavigation()
 		).buildString();
 	}
 
@@ -114,19 +114,18 @@ public class AnnouncementsAdminViewManagementToolbarDisplayContext {
 			dropdownItem -> {
 				String navigation = _getNavigation();
 
-				PortletURL addEntryURL = PortletURLBuilder.createRenderURL(
-					_liferayPortletResponse
-				).setMVCRenderCommandName(
-					"/announcements/edit_entry"
-				).setRedirect(
-					PortalUtil.getCurrentURL(_httpServletRequest)
-				).setParameter(
-					"alert", navigation.equals("alerts")
-				).setParameter(
-					"distributionScope", _getDistributionScope()
-				).build();
-
-				dropdownItem.setHref(addEntryURL);
+				dropdownItem.setHref(
+					PortletURLBuilder.createRenderURL(
+						_liferayPortletResponse
+					).setMVCRenderCommandName(
+						"/announcements/edit_entry"
+					).setRedirect(
+						PortalUtil.getCurrentURL(_httpServletRequest)
+					).setParameter(
+						"alert", navigation.equals("alerts")
+					).setParameter(
+						"distributionScope", _getDistributionScope()
+					).buildPortletURL());
 
 				String label = null;
 

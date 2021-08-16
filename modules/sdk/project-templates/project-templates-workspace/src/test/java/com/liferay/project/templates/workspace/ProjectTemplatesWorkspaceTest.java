@@ -101,11 +101,10 @@ public class ProjectTemplatesWorkspaceTest
 	@Test
 	public void testBuildTemplateWorkspaceDXPProductKey() throws Exception {
 		File workspaceProjectDir = buildWorkspace(
-			temporaryFolder, "gradle", "foows", getDefaultLiferayVersion(),
-			mavenExecutor);
+			temporaryFolder, getDefaultLiferayVersion());
 
 		writeGradlePropertiesInWorkspace(
-			workspaceProjectDir, "liferay.workspace.product=dxp-7.3-ep5");
+			workspaceProjectDir, "liferay.workspace.product=dxp-7.3-ga1");
 
 		File modulesProjectDir = buildTemplateWithGradle(
 			new File(workspaceProjectDir, "modules"), "mvc-portlet",
@@ -432,7 +431,7 @@ public class ProjectTemplatesWorkspaceTest
 			mavenExecutor);
 
 		writeGradlePropertiesInWorkspace(
-			nativeSassWorkspaceDir, "liferay.workspace.product=portal-7.3-ga6");
+			nativeSassWorkspaceDir, "liferay.workspace.product=portal-7.3-ga7");
 
 		File nativeSassModulesDir = new File(nativeSassWorkspaceDir, "modules");
 
@@ -452,7 +451,7 @@ public class ProjectTemplatesWorkspaceTest
 			temporaryFolder, WorkspaceUtil.WORKSPACE, "rubySassWorkspace");
 
 		writeGradlePropertiesInWorkspace(
-			rubySassWorkspaceDir, "liferay.workspace.product=portal-7.3-ga6");
+			rubySassWorkspaceDir, "liferay.workspace.product=portal-7.3-ga7");
 
 		writeGradlePropertiesInWorkspace(
 			rubySassWorkspaceDir, "sass.compiler.class.name=ruby");

@@ -23,7 +23,6 @@ import com.liferay.document.library.kernel.exception.FileExtensionException;
 import com.liferay.document.library.kernel.exception.FileNameException;
 import com.liferay.document.library.kernel.exception.FileSizeException;
 import com.liferay.document.library.kernel.util.DLValidator;
-import com.liferay.exportimport.configuration.ExportImportServiceConfiguration;
 import com.liferay.exportimport.internal.util.StagingGroupServiceTunnelUtil;
 import com.liferay.exportimport.kernel.background.task.BackgroundTaskExecutorNames;
 import com.liferay.exportimport.kernel.configuration.ExportImportConfigurationParameterMapFactory;
@@ -160,6 +159,7 @@ import com.liferay.portal.util.PropsValues;
 import com.liferay.portlet.exportimport.service.http.StagingServiceHttp;
 import com.liferay.portlet.exportimport.staging.ProxiedLayoutsThreadLocal;
 import com.liferay.staging.StagingGroupHelper;
+import com.liferay.staging.configuration.StagingConfiguration;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -218,11 +218,7 @@ public class StagingImpl implements Staging {
 
 		Group group = _groupLocalService.fetchGroup(groupId);
 
-		if (group == null) {
-			return;
-		}
-
-		if (!_stagingGroupHelper.isStagingGroup(group)) {
+		if ((group == null) || !_stagingGroupHelper.isStagingGroup(group)) {
 			return;
 		}
 
@@ -3659,11 +3655,6 @@ public class StagingImpl implements Staging {
 			PortletRequest portletRequest, long targetGroupId, boolean remote)
 		throws SchedulerException {
 
-		ScheduleInformation scheduleInformation = new ScheduleInformation();
-
-		int recurrenceType = ParamUtil.getInteger(
-			portletRequest, "recurrenceType");
-
 		Calendar startCalendar = ExportImportDateUtil.getCalendar(
 			portletRequest, "schedulerStartDate", true);
 
@@ -3678,6 +3669,11 @@ public class StagingImpl implements Staging {
 
 			throw schedulerException;
 		}
+
+		ScheduleInformation scheduleInformation = new ScheduleInformation();
+
+		int recurrenceType = ParamUtil.getInteger(
+			portletRequest, "recurrenceType");
 
 		String cronText = SchedulerEngineHelperUtil.getCronText(
 			portletRequest, startCalendar, false, recurrenceType);
@@ -3774,12 +3770,12 @@ public class StagingImpl implements Staging {
 
 	protected boolean isStagingUseVirtualHostForRemoteSite() {
 		try {
-			ExportImportServiceConfiguration configuration =
+			StagingConfiguration stagingConfiguration =
 				_configurationProvider.getCompanyConfiguration(
-					ExportImportServiceConfiguration.class,
+					StagingConfiguration.class,
 					CompanyThreadLocal.getCompanyId());
 
-			return configuration.stagingUseVirtualHostForRemoteSite();
+			return stagingConfiguration.stagingUseVirtualHostForRemoteSite();
 		}
 		catch (Exception exception) {
 			_log.error(exception, exception);
@@ -3969,10 +3965,9 @@ public class StagingImpl implements Staging {
 			if (_log.isWarnEnabled()) {
 				_log.warn(
 					StringBundler.concat(
-						"Unable to set recent layout revision ID",
-						"with layout set branch ", layoutSetBranchId,
-						" and PLID ", plid, " and layout branch ",
-						layoutBranchId),
+						"Unable to set recent layout revision ID with layout ",
+						"set branch ", layoutSetBranchId, " and PLID ", plid,
+						" and layout branch ", layoutBranchId),
 					portalException);
 			}
 		}
@@ -4144,9 +4139,6 @@ public class StagingImpl implements Staging {
 	private WorkflowInstanceLinkLocalService _workflowInstanceLinkLocalService;
 
 	private class ScheduleInformation {
-
-		public ScheduleInformation() {
-		}
 
 		public String getCronText() {
 			return _cronText;

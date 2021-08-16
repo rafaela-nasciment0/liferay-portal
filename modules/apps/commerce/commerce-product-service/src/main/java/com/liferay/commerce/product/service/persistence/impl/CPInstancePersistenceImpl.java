@@ -6777,23 +6777,24 @@ public class CPInstancePersistenceImpl
 		ServiceContext serviceContext =
 			ServiceContextThreadLocal.getServiceContext();
 
-		Date now = new Date();
+		Date date = new Date();
 
 		if (isNew && (cpInstance.getCreateDate() == null)) {
 			if (serviceContext == null) {
-				cpInstance.setCreateDate(now);
+				cpInstance.setCreateDate(date);
 			}
 			else {
-				cpInstance.setCreateDate(serviceContext.getCreateDate(now));
+				cpInstance.setCreateDate(serviceContext.getCreateDate(date));
 			}
 		}
 
 		if (!cpInstanceModelImpl.hasSetModifiedDate()) {
 			if (serviceContext == null) {
-				cpInstance.setModifiedDate(now);
+				cpInstance.setModifiedDate(date);
 			}
 			else {
-				cpInstance.setModifiedDate(serviceContext.getModifiedDate(now));
+				cpInstance.setModifiedDate(
+					serviceContext.getModifiedDate(date));
 			}
 		}
 
@@ -7422,6 +7423,13 @@ public class CPInstancePersistenceImpl
 						cpInstanceModelImpl.getColumnBitmask(columnName);
 				}
 
+				if (finderPath.isBaseModelResult() &&
+					(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION ==
+						finderPath.getCacheName())) {
+
+					finderPathColumnBitmask |= _ORDER_BY_COLUMNS_BITMASK;
+				}
+
 				_finderPathColumnBitmasksCache.put(
 					finderPath, finderPathColumnBitmask);
 			}
@@ -7443,7 +7451,7 @@ public class CPInstancePersistenceImpl
 			return CPInstanceTable.INSTANCE.getTableName();
 		}
 
-		private Object[] _getValue(
+		private static Object[] _getValue(
 			CPInstanceModelImpl cpInstanceModelImpl, String[] columnNames,
 			boolean original) {
 
@@ -7465,8 +7473,21 @@ public class CPInstancePersistenceImpl
 			return arguments;
 		}
 
-		private static Map<FinderPath, Long> _finderPathColumnBitmasksCache =
-			new ConcurrentHashMap<>();
+		private static final Map<FinderPath, Long>
+			_finderPathColumnBitmasksCache = new ConcurrentHashMap<>();
+
+		private static final long _ORDER_BY_COLUMNS_BITMASK;
+
+		static {
+			long orderByColumnsBitmask = 0;
+
+			orderByColumnsBitmask |= CPInstanceModelImpl.getColumnBitmask(
+				"displayDate");
+			orderByColumnsBitmask |= CPInstanceModelImpl.getColumnBitmask(
+				"createDate");
+
+			_ORDER_BY_COLUMNS_BITMASK = orderByColumnsBitmask;
+		}
 
 	}
 

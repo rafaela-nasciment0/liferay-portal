@@ -23,31 +23,27 @@ import {getLayoutDataItemPropTypes} from '../../prop-types/index';
 import {switchSidebarPanel} from '../actions/index';
 import {LAYOUT_DATA_ITEM_TYPES} from '../config/constants/layoutDataItemTypes';
 import {config} from '../config/index';
-import selectCanUpdateItemConfiguration from '../selectors/selectCanUpdateItemConfiguration';
-import selectCanUpdatePageStructure from '../selectors/selectCanUpdatePageStructure';
-import selectSegmentsExperienceId from '../selectors/selectSegmentsExperienceId';
-import {useDispatch, useSelector} from '../store/index';
-import moveItem from '../thunks/moveItem';
-import {TARGET_POSITION} from '../utils/drag-and-drop/constants/targetPosition';
-import {
-	useDragItem,
-	useDropTarget,
-} from '../utils/drag-and-drop/useDragAndDrop';
-import getLayoutDataItemLabel from '../utils/getLayoutDataItemLabel';
 import {
 	useHoverItem,
 	useIsActive,
 	useIsHovered,
 	useSelectItem,
-} from './Controls';
+} from '../contexts/ControlsContext';
+import {useEditableProcessorUniqueId} from '../contexts/EditableProcessorContext';
+import {useDispatch, useSelector} from '../contexts/StoreContext';
+import selectCanUpdateItemConfiguration from '../selectors/selectCanUpdateItemConfiguration';
+import selectCanUpdatePageStructure from '../selectors/selectCanUpdatePageStructure';
+import selectSegmentsExperienceId from '../selectors/selectSegmentsExperienceId';
+import moveItem from '../thunks/moveItem';
+import {TARGET_POSITIONS} from '../utils/drag-and-drop/constants/targetPositions';
+import {
+	useDragItem,
+	useDropTarget,
+} from '../utils/drag-and-drop/useDragAndDrop';
+import getLayoutDataItemLabel from '../utils/getLayoutDataItemLabel';
 import ItemActions from './ItemActions';
-import {useEditableProcessorUniqueId} from './fragment-content/EditableProcessorContext';
 
 const TOPPER_BAR_HEIGHT = 24;
-
-const itemIsMappedCollection = (item) =>
-	item.type === LAYOUT_DATA_ITEM_TYPES.collection &&
-	'collection' in item.config;
 
 const TopperListItem = React.forwardRef(
 	({children, className, expand, ...props}, ref) => (
@@ -119,15 +115,11 @@ function TopperContent({
 
 	const selectItem = useSelectItem();
 
-	const {
-		canDropOverTarget,
-		isOverTarget,
-		sourceItem,
-		targetPosition,
-		targetRef,
-	} = useDropTarget(item);
+	const {isOverTarget, targetPosition, targetRef} = useDropTarget(item);
 
-	const name = getLayoutDataItemLabel(item, fragmentEntryLinks);
+	const name =
+		getLayoutDataItemLabel(item, fragmentEntryLinks) ||
+		Liferay.Language.get('element');
 
 	const {handlerRef, isDraggingSource} = useDragItem(
 		{
@@ -147,31 +139,22 @@ function TopperContent({
 
 	const commentsPanelId = config.sidebarPanels?.comments?.sidebarPanelId;
 
-	const notDroppableMessage =
-		isOverTarget && !canDropOverTarget
-			? Liferay.Util.sub(
-					Liferay.Language.get('a-x-cannot-be-dropped-inside-a-x'),
-					[
-						getLayoutDataItemLabel(sourceItem, fragmentEntryLinks),
-						getLayoutDataItemLabel(item, fragmentEntryLinks),
-					]
-			  )
-			: null;
-
 	return (
 		<div
 			className={classNames(className, 'page-editor__topper', {
 				active: isActive,
 				'drag-over-bottom':
-					isOverTarget && targetPosition === TARGET_POSITION.BOTTOM,
+					isOverTarget && targetPosition === TARGET_POSITIONS.BOTTOM,
+				'drag-over-left':
+					isOverTarget && targetPosition === TARGET_POSITIONS.LEFT,
 				'drag-over-middle':
-					isOverTarget && targetPosition === TARGET_POSITION.MIDDLE,
+					isOverTarget && targetPosition === TARGET_POSITIONS.MIDDLE,
+				'drag-over-right':
+					isOverTarget && targetPosition === TARGET_POSITIONS.RIGHT,
 				'drag-over-top':
-					isOverTarget && targetPosition === TARGET_POSITION.TOP,
+					isOverTarget && targetPosition === TARGET_POSITIONS.TOP,
 				dragged: isDraggingSource,
 				hovered: isHovered,
-				'not-droppable': !!notDroppableMessage,
-				'page-editor__topper--mapped': itemIsMappedCollection(item),
 			})}
 			onClick={(event) => {
 				event.stopPropagation();
@@ -205,11 +188,7 @@ function TopperContent({
 			ref={canBeDragged ? handlerRef : null}
 			style={style}
 		>
-			<TopperLabel
-				isActive={isActive}
-				item={item}
-				itemElement={itemElement}
-			>
+			<TopperLabel isActive={isActive} itemElement={itemElement}>
 				<ul className="tbar-nav">
 					{canBeDragged && (
 						<TopperListItem className="page-editor__topper__drag-handler">
@@ -221,10 +200,11 @@ function TopperContent({
 					)}
 
 					<TopperListItem
-						className="page-editor__topper__title"
+						className="d-inline-block page-editor__topper__title"
 						expand
+						title={name}
 					>
-						{name || Liferay.Language.get('element')}
+						{name}
 					</TopperListItem>
 					{item.type === LAYOUT_DATA_ITEM_TYPES.fragment && (
 						<TopperListItem>
@@ -257,16 +237,7 @@ function TopperContent({
 			</TopperLabel>
 
 			<div className="page-editor__topper__content" ref={targetRef}>
-				<TopperErrorBoundary>
-					{React.cloneElement(children, {
-						data: notDroppableMessage
-							? {
-									'data-not-droppable-message': notDroppableMessage,
-							  }
-							: null,
-						withinTopper: true,
-					})}
-				</TopperErrorBoundary>
+				<TopperErrorBoundary>{children}</TopperErrorBoundary>
 			</div>
 		</div>
 	);
@@ -310,7 +281,7 @@ class TopperErrorBoundary extends React.Component {
 	}
 }
 
-function TopperLabel({children, isActive, item, itemElement}) {
+function TopperLabel({children, isActive, itemElement}) {
 	const [isInset, setIsInset] = useState(false);
 	const [windowScrollPosition, setWindowScrollPosition] = useState(0);
 
@@ -348,12 +319,14 @@ function TopperLabel({children, isActive, item, itemElement}) {
 
 	return (
 		<div
-			className={classNames('page-editor__topper__bar', 'tbar', {
-				'page-editor__topper__bar--inset': isInset,
-				'page-editor__topper__bar--mapped': itemIsMappedCollection(
-					item
-				),
-			})}
+			className={classNames(
+				'cadmin',
+				'page-editor__topper__bar',
+				'tbar',
+				{
+					'page-editor__topper__bar--inset': isInset,
+				}
+			)}
 		>
 			{children}
 		</div>
@@ -362,6 +335,5 @@ function TopperLabel({children, isActive, item, itemElement}) {
 
 TopperLabel.propTypes = {
 	isActive: PropTypes.bool,
-	item: getLayoutDataItemPropTypes().isRequired,
 	itemElement: PropTypes.object,
 };

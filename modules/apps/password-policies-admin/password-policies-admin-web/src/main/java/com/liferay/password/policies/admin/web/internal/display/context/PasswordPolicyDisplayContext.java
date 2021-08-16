@@ -91,7 +91,7 @@ public class PasswordPolicyDisplayContext {
 			ParamUtil.getString(_httpServletRequest, "redirect")
 		).setParameter(
 			"passwordPolicyId", _passwordPolicyId
-		).build();
+		).buildPortletURL();
 
 		List<NavigationItem> navigationItems = NavigationItemListBuilder.add(
 			() -> (_passwordPolicyId == 0) || _hasPermission(ActionKeys.UPDATE),
@@ -103,8 +103,8 @@ public class PasswordPolicyDisplayContext {
 						PortletURLUtil.clone(portletURL, _renderResponse)
 					).setMVCPath(
 						"/edit_password_policy.jsp"
-					).setParameter(
-						"tabs1", "details"
+					).setTabs1(
+						"details"
 					).buildString());
 
 				navigationItem.setLabel(
@@ -120,8 +120,8 @@ public class PasswordPolicyDisplayContext {
 						PortletURLUtil.clone(portletURL, _renderResponse)
 					).setMVCPath(
 						"/edit_password_policy_assignments.jsp"
-					).setParameter(
-						"tabs1", "assignees"
+					).setTabs1(
+						"assignees"
 					).buildString());
 
 				navigationItem.setLabel(

@@ -80,8 +80,7 @@ public class DeleteCategoryPortletConfigurationIcon
 					PortletRequest.ACTION_PHASE)
 			).setActionName(
 				"/message_boards/edit_category"
-			).setParameter(
-				Constants.CMD,
+			).setCMD(
 				() -> {
 					ThemeDisplay themeDisplay =
 						(ThemeDisplay)portletRequest.getAttribute(
@@ -95,7 +94,7 @@ public class DeleteCategoryPortletConfigurationIcon
 
 					return cmd;
 				}
-			).build();
+			).buildPortletURL();
 
 			PortletURL parentCategoryURL = _portal.getControlPanelPortletURL(
 				portletRequest, MBPortletKeys.MESSAGE_BOARDS_ADMIN,

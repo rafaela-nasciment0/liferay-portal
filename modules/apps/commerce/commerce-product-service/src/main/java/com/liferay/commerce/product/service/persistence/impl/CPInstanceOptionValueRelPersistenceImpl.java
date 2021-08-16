@@ -3919,25 +3919,25 @@ public class CPInstanceOptionValueRelPersistenceImpl
 		ServiceContext serviceContext =
 			ServiceContextThreadLocal.getServiceContext();
 
-		Date now = new Date();
+		Date date = new Date();
 
 		if (isNew && (cpInstanceOptionValueRel.getCreateDate() == null)) {
 			if (serviceContext == null) {
-				cpInstanceOptionValueRel.setCreateDate(now);
+				cpInstanceOptionValueRel.setCreateDate(date);
 			}
 			else {
 				cpInstanceOptionValueRel.setCreateDate(
-					serviceContext.getCreateDate(now));
+					serviceContext.getCreateDate(date));
 			}
 		}
 
 		if (!cpInstanceOptionValueRelModelImpl.hasSetModifiedDate()) {
 			if (serviceContext == null) {
-				cpInstanceOptionValueRel.setModifiedDate(now);
+				cpInstanceOptionValueRel.setModifiedDate(date);
 			}
 			else {
 				cpInstanceOptionValueRel.setModifiedDate(
-					serviceContext.getModifiedDate(now));
+					serviceContext.getModifiedDate(date));
 			}
 		}
 
@@ -4520,7 +4520,7 @@ public class CPInstanceOptionValueRelPersistenceImpl
 			return CPInstanceOptionValueRelTable.INSTANCE.getTableName();
 		}
 
-		private Object[] _getValue(
+		private static Object[] _getValue(
 			CPInstanceOptionValueRelModelImpl cpInstanceOptionValueRelModelImpl,
 			String[] columnNames, boolean original) {
 
@@ -4544,8 +4544,8 @@ public class CPInstanceOptionValueRelPersistenceImpl
 			return arguments;
 		}
 
-		private static Map<FinderPath, Long> _finderPathColumnBitmasksCache =
-			new ConcurrentHashMap<>();
+		private static final Map<FinderPath, Long>
+			_finderPathColumnBitmasksCache = new ConcurrentHashMap<>();
 
 	}
 

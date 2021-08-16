@@ -12,7 +12,7 @@
  * details.
  */
 
-import {openSelectionModal} from 'frontend-js-web';
+import {addParams, openSelectionModal} from 'frontend-js-web';
 
 export default function propsTransformer({portletNamespace, ...otherProps}) {
 	const deleteSelectedUserGroups = () => {
@@ -56,25 +56,42 @@ export default function propsTransformer({portletNamespace, ...otherProps}) {
 		});
 	};
 
+	const selectRoles = (itemData) => {
+		openSelectionModal({
+			onSelect: (selectedItem) => {
+				location.href = addParams(
+					`${`${portletNamespace}roleId`}=${selectedItem.id}`,
+					itemData.viewRoleURL
+				);
+			},
+			selectEventName: `${portletNamespace}selectRole`,
+			title: Liferay.Language.get('select-role'),
+			url: itemData?.selectRolesURL,
+		});
+	};
+
 	const selectUserGroups = (itemData) => {
 		openSelectionModal({
 			buttonAddLabel: Liferay.Language.get('done'),
 			multiple: true,
-			onSelect(selectedItem) {
-				if (selectedItem) {
-					const form = document.getElementById(
+			onSelect(selectedItems) {
+				if (selectedItems.length) {
+					const addGroupUserGroupsFm = document.getElementById(
 						`${portletNamespace}addGroupUserGroupsFm`
 					);
 
-					if (!form) {
+					if (!addGroupUserGroupsFm) {
 						return;
 					}
 
-					selectedItem.forEach((item) => {
-						form.appendChild(item);
-					});
+					const input = document.createElement('input');
 
-					submitForm(form);
+					input.name = `${portletNamespace}rowIds`;
+					input.value = selectedItems.map((item) => item.value);
+
+					addGroupUserGroupsFm.appendChild(input);
+
+					submitForm(addGroupUserGroupsFm);
 				}
 			},
 			selectEventName: `${portletNamespace}selectUserGroups`,
@@ -107,6 +124,11 @@ export default function propsTransformer({portletNamespace, ...otherProps}) {
 
 			if (action === 'selectUserGroups') {
 				selectUserGroups(data);
+			}
+		},
+		onFilterDropdownItemClick(event, {item}) {
+			if (item?.data?.action === 'selectRoles') {
+				selectRoles(item?.data);
 			}
 		},
 	};

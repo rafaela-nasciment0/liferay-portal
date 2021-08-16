@@ -72,6 +72,7 @@ import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.StringUtil;
+import com.liferay.portal.kernel.util.TimeZoneUtil;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.portal.kernel.workflow.WorkflowHandlerRegistryUtil;
 
@@ -84,6 +85,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.ResourceBundle;
+import java.util.TimeZone;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -583,11 +585,6 @@ public class DDMFormInstanceRecordLocalServiceImpl
 			else if (formInstanceRecord.getStatus() ==
 						WorkflowConstants.STATUS_APPROVED) {
 
-				updateFormInstanceRecordVersion(
-					user, formInstanceRecordVersion,
-					WorkflowConstants.STATUS_APPROVED,
-					formInstanceRecordVersion.getVersion(), serviceContext);
-
 				formInstanceRecord.setVersion(
 					formInstanceRecordVersion.getVersion());
 
@@ -653,12 +650,14 @@ public class DDMFormInstanceRecordLocalServiceImpl
 				DDMStorageAdapterSaveRequest.Builder.newBuilder(
 					serviceContext.getUserId(),
 					serviceContext.getScopeGroupId(), ddmFormValues
+				).withClassName(
+					DDMStorageLink.class.getName()
+				).withDDMFormInstance(
+					ddmFormInstance
 				).withStructureId(
 					ddmFormInstance.getStructureId()
 				).withUuid(
 					serviceContext.getUuid()
-				).withClassName(
-					DDMStorageLink.class.getName()
 				).build());
 
 		long primaryKey = ddmStorageAdapterSaveResponse.getPrimaryKey();
@@ -722,7 +721,7 @@ public class DDMFormInstanceRecordLocalServiceImpl
 
 				if (_log.isWarnEnabled()) {
 					_log.warn(
-						"DDM form instance record index is stale and" +
+						"DDM form instance record index is stale and " +
 							"contains record " + formInstanceRecordId,
 						noSuchFormInstanceRecordException);
 				}
@@ -780,17 +779,10 @@ public class DDMFormInstanceRecordLocalServiceImpl
 			ServiceContext serviceContext)
 		throws PortalException {
 
-		if (Objects.equals(serviceContext.getCommand(), Constants.REVERT)) {
-			return false;
-		}
-
-		if (serviceContext.getWorkflowAction() ==
-				WorkflowConstants.ACTION_SAVE_DRAFT) {
-
-			return false;
-		}
-
-		if (Objects.equals(
+		if (Objects.equals(serviceContext.getCommand(), Constants.REVERT) ||
+			(serviceContext.getWorkflowAction() ==
+				WorkflowConstants.ACTION_SAVE_DRAFT) ||
+			Objects.equals(
 				lastDDMFormInstanceRecordVersion.getVersion(),
 				latestDDMFormInstanceRecordVersion.getVersion())) {
 
@@ -909,10 +901,12 @@ public class DDMFormInstanceRecordLocalServiceImpl
 			DDMStorageAdapterSaveRequest.Builder.newBuilder(
 				serviceContext.getUserId(), serviceContext.getScopeGroupId(),
 				ddmFormValues
-			).withStructureId(
-				ddmFormInstance.getStructureId()
+			).withDDMFormInstance(
+				ddmFormInstance
 			).withPrimaryKey(
 				ddmFormInstanceRecordVersion.getStorageId()
+			).withStructureId(
+				ddmFormInstance.getStructureId()
 			).build());
 	}
 
@@ -944,7 +938,13 @@ public class DDMFormInstanceRecordLocalServiceImpl
 			return;
 		}
 
-		_ddmFormValuesValidator.validate(ddmFormValues);
+		TimeZone timeZone = serviceContext.getTimeZone();
+
+		if (timeZone == null) {
+			timeZone = TimeZoneUtil.getDefault();
+		}
+
+		_ddmFormValuesValidator.validate(ddmFormValues, timeZone.getID());
 	}
 
 	protected void validate(long groupId, DDMFormInstance ddmFormInstance)

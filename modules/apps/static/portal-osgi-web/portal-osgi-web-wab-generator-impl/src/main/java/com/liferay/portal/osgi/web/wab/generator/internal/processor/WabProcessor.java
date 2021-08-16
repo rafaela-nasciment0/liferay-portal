@@ -501,7 +501,7 @@ public class WabProcessor {
 			Matcher matcher = _versionMavenPattern.matcher(_bundleVersion);
 
 			if (matcher.matches()) {
-				StringBuilder sb = new StringBuilder();
+				StringBundler sb = new StringBundler(7);
 
 				sb.append(matcher.group(1));
 				sb.append(".");
@@ -1237,7 +1237,7 @@ public class WabProcessor {
 		try (Builder analyzer = new Builder()) {
 			analyzer.setBase(_pluginDir);
 			analyzer.setJar(jar);
-			analyzer.setProperty("-jsp", "*.jsp,*.jspf");
+			analyzer.setProperty("-jsp", "*.jsp,*.jspf,*.jspx");
 			analyzer.setProperty("Web-ContextPath", getWebContextPath());
 
 			List<Object> disabledPlugins = new ArrayList<>();

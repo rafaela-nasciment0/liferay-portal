@@ -21,8 +21,11 @@ import {CONTAINER_DISPLAY_OPTIONS} from '../../../../../../app/config/constants/
 import {CONTAINER_WIDTH_TYPES} from '../../../../../../app/config/constants/containerWidthTypes';
 import {VIEWPORT_SIZES} from '../../../../../../app/config/constants/viewportSizes';
 import {config} from '../../../../../../app/config/index';
+import {
+	useDispatch,
+	useSelector,
+} from '../../../../../../app/contexts/StoreContext';
 import selectSegmentsExperienceId from '../../../../../../app/selectors/selectSegmentsExperienceId';
-import {useDispatch, useSelector} from '../../../../../../app/store/index';
 import updateItemConfig from '../../../../../../app/thunks/updateItemConfig';
 import {getResponsiveConfig} from '../../../../../../app/utils/getResponsiveConfig';
 import {getLayoutDataItemPropTypes} from '../../../../../../prop-types/index';
@@ -136,36 +139,34 @@ export const ContainerStylesPanel = ({item}) => {
 						{Liferay.Language.get('custom-styles')}
 					</h1>
 
-					{config.containerItemFlexEnabled && (
-						<SelectField
-							field={{
-								label: Liferay.Language.get('content-display'),
-								name: 'contentDisplay',
-								typeOptions: {
-									validValues: CONTENT_DISPLAY_OPTIONS,
-								},
-							}}
-							onValueSelect={(name, value) => {
-								const itemConfig =
-									value === CONTAINER_DISPLAY_OPTIONS.block
-										? {
-												align: '',
-												justify: '',
-												[name]: '',
-										  }
-										: {[name]: value};
+					<SelectField
+						field={{
+							label: Liferay.Language.get('content-display'),
+							name: 'contentDisplay',
+							typeOptions: {
+								validValues: CONTENT_DISPLAY_OPTIONS,
+							},
+						}}
+						onValueSelect={(name, value) => {
+							const itemConfig =
+								value === CONTAINER_DISPLAY_OPTIONS.block
+									? {
+											align: '',
+											justify: '',
+											[name]: '',
+									  }
+									: {[name]: value};
 
-								dispatch(
-									updateItemConfig({
-										itemConfig,
-										itemId: item.itemId,
-										segmentsExperienceId,
-									})
-								);
-							}}
-							value={item.config.contentDisplay}
-						/>
-					)}
+							dispatch(
+								updateItemConfig({
+									itemConfig,
+									itemId: item.itemId,
+									segmentsExperienceId,
+								})
+							);
+						}}
+						value={item.config.contentDisplay}
+					/>
 
 					{flexOptionsVisible && (
 						<div className="d-flex justify-content-between">

@@ -27,7 +27,7 @@ String defaultLanguageId = cpDefinitionsDisplayContext.getCatalogDefaultLanguage
 
 String productTypeName = BeanParamUtil.getString(cpDefinition, request, "productTypeName");
 
-String friendlyURLBase = themeDisplay.getPortalURL() + CPConstants.SEPARATOR_PRODUCT_URL;
+String friendlyURLBase = themeDisplay.getPortalURL() + cpDefinitionsDisplayContext.getProductURLSeparator();
 
 boolean neverExpire = ParamUtil.getBoolean(request, "neverExpire", true);
 
@@ -73,7 +73,7 @@ if ((cpDefinition != null) && (cpDefinition.getExpirationDate() != null)) {
 							for (CommerceCatalog curCommerceCatalog : commerceCatalogs) {
 							%>
 
-								<aui:option data-languageId="<%= curCommerceCatalog.getCatalogDefaultLanguageId() %>" label="<%= curCommerceCatalog.getName() %>" selected="<%= (cpDefinition == null) ? (commerceCatalogs.size() == 1) : cpDefinitionsDisplayContext.isSelectedCatalog(curCommerceCatalog) %>" value="<%= curCommerceCatalog.getGroupId() %>" />
+								<aui:option data-languageId="<%= curCommerceCatalog.getCatalogDefaultLanguageId() %>" label="<%= HtmlUtil.escape(curCommerceCatalog.getName()) %>" selected="<%= (cpDefinition == null) ? (commerceCatalogs.size() == 1) : cpDefinitionsDisplayContext.isSelectedCatalog(curCommerceCatalog) %>" value="<%= curCommerceCatalog.getGroupId() %>" />
 
 							<%
 							}
@@ -325,6 +325,7 @@ if ((cpDefinition != null) && (cpDefinition.getExpirationDate() != null)) {
 						namespace="<%= liferayPortletResponse.getNamespace() %>"
 						pageNumber="<%= 1 %>"
 						portletURL="<%= currentURLObj %>"
+						selectedItemsKey="cpdefinitionSpecificationOptionValueId"
 						showManagementBar="<%= false %>"
 					/>
 				</commerce-ui:panel>

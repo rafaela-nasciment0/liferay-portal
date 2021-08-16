@@ -27,11 +27,11 @@ String orderByType = ParamUtil.getString(request, "orderByType", "asc");
 
 PortletURL portletURL = PortletURLBuilder.createRenderURL(
 	renderResponse
+).setTabs1(
+	tabs1
 ).setParameter(
-	"tabs1", tabs1
-).setParameter(
-	"delta", String.valueOf(delta)
-).build();
+	"delta", delta
+).buildPortletURL();
 %>
 
 <liferay-frontend:management-bar>
@@ -57,16 +57,17 @@ PortletURL portletURL = PortletURLBuilder.createRenderURL(
 				portletURL="<%= PortletURLUtil.clone(portletURL, liferayPortletResponse) %>"
 			/>
 
-			<%
-			PortletURL searchURL = PortletURLBuilder.createRenderURL(
-				renderResponse
-			).setParameter(
-				"tabs1", tabs1
-			).build();
-			%>
-
 			<li>
-				<aui:form action="<%= searchURL.toString() %>" name="searchFm">
+				<aui:form
+					action="<%=
+						PortletURLBuilder.createRenderURL(
+							renderResponse
+						).setTabs1(
+							tabs1
+						).buildString()
+					%>"
+					name="searchFm"
+				>
 					<liferay-ui:input-search
 						markupView="lexicon"
 						placeholder='<%= LanguageUtil.get(request, "search") %>'

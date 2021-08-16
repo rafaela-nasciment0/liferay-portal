@@ -82,8 +82,8 @@ public class ViewRolesManagementToolbarDisplayContext {
 	public String getClearResultsURL() {
 		return PortletURLBuilder.create(
 			getPortletURL()
-		).setParameter(
-			"keywords", StringPool.BLANK
+		).setKeywords(
+			StringPool.BLANK
 		).buildString();
 	}
 
@@ -154,18 +154,23 @@ public class ViewRolesManagementToolbarDisplayContext {
 			_renderResponse
 		).setMVCPath(
 			"/view.jsp"
-		).setParameter(
-			"roleType", _currentRoleTypeContributor.getType()
+		).setKeywords(
+			() -> {
+				if (Validator.isNotNull(getKeywords())) {
+					return getKeywords();
+				}
+
+				return null;
+			}
 		).setParameter(
 			"displayStyle", _displayStyle
-		).build();
-
-		if (Validator.isNotNull(getKeywords())) {
-			portletURL.setParameter("keywords", getKeywords());
-		}
-
-		portletURL.setParameter("orderByCol", getOrderByCol());
-		portletURL.setParameter("orderByType", getOrderByType());
+		).setParameter(
+			"orderByCol", getOrderByCol()
+		).setParameter(
+			"orderByType", getOrderByType()
+		).setParameter(
+			"roleType", _currentRoleTypeContributor.getType()
+		).buildPortletURL();
 
 		if (_roleSearch != null) {
 			portletURL.setParameter(

@@ -18,22 +18,23 @@ import React, {useMemo, useRef, useState} from 'react';
 
 import {getLayoutDataItemPropTypes} from '../../../prop-types/index';
 import {VIEWPORT_SIZES} from '../../config/constants/viewportSizes';
-import selectCanUpdateItemConfiguration from '../../selectors/selectCanUpdateItemConfiguration';
-import selectCanUpdatePageStructure from '../../selectors/selectCanUpdatePageStructure';
-import selectSegmentsExperienceId from '../../selectors/selectSegmentsExperienceId';
-import {useDispatch, useSelector} from '../../store/index';
-import resizeColumns from '../../thunks/resizeColumns';
-import {NotDraggableArea} from '../../utils/drag-and-drop/useDragAndDrop';
-import {getResponsiveColumnSize} from '../../utils/getResponsiveColumnSize';
-import {getResponsiveConfig} from '../../utils/getResponsiveConfig';
-import {useIsActive} from '../Controls';
-import {useGlobalContext} from '../GlobalContext';
+import {useIsActive} from '../../contexts/ControlsContext';
+import {useGlobalContext} from '../../contexts/GlobalContext';
 import {
 	useResizeContext,
 	useSetResizeContext,
 	useSetUpdatedLayoutDataContext,
 	useUpdatedLayoutDataContext,
-} from '../ResizeContext';
+} from '../../contexts/ResizeContext';
+import {useDispatch, useSelector} from '../../contexts/StoreContext';
+import selectCanUpdateItemConfiguration from '../../selectors/selectCanUpdateItemConfiguration';
+import selectCanUpdatePageStructure from '../../selectors/selectCanUpdatePageStructure';
+import selectSegmentsExperienceId from '../../selectors/selectSegmentsExperienceId';
+import resizeColumns from '../../thunks/resizeColumns';
+import {NotDraggableArea} from '../../utils/drag-and-drop/useDragAndDrop';
+import {getResponsiveColumnSize} from '../../utils/getResponsiveColumnSize';
+import {getResponsiveConfig} from '../../utils/getResponsiveConfig';
+import isItemEmpty from '../../utils/isItemEmpty';
 import TopperEmpty from '../TopperEmpty';
 import Column from './Column';
 
@@ -414,6 +415,7 @@ const ColumnWithControls = React.forwardRef(({children, item}, ref) => {
 		<TopperEmpty item={item}>
 			<Column
 				className={classNames('page-editor__col', {
+					empty: isItemEmpty(item, layoutData, selectedViewportSize),
 					'page-editor__row-overlay-grid__border':
 						!firstColumnOfRow &&
 						resizing &&

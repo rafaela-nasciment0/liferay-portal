@@ -46,7 +46,6 @@ import com.liferay.portal.kernel.util.SetUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -86,8 +85,8 @@ public class ItemSelectorRepositoryEntryManagementToolbarDisplayContext {
 	public String getClearResultsURL() {
 		return PortletURLBuilder.create(
 			_getPortletURL()
-		).setParameter(
-			"keywords", StringPool.BLANK
+		).setKeywords(
+			StringPool.BLANK
 		).buildString();
 	}
 
@@ -110,14 +109,16 @@ public class ItemSelectorRepositoryEntryManagementToolbarDisplayContext {
 		Set<String> allowedCreationMenuUIItemKeys =
 			_getAllowedCreationMenuUIItemKeys();
 
+		if (SetUtil.isEmpty(allowedCreationMenuUIItemKeys)) {
+			return creationMenu;
+		}
+
 		for (Menu menu : menus) {
 			List<URLMenuItem> urlMenuItems =
 				(List<URLMenuItem>)(List<?>)menu.getMenuItems();
 
 			for (URLMenuItem urlMenuItem : urlMenuItems) {
-				if (Objects.equals(
-						urlMenuItem.getKey(), DLUIItemKeys.ADD_FOLDER) ||
-					allowedCreationMenuUIItemKeys.contains(
+				if (allowedCreationMenuUIItemKeys.contains(
 						urlMenuItem.getKey())) {
 
 					creationMenu.addDropdownItem(
@@ -137,19 +138,24 @@ public class ItemSelectorRepositoryEntryManagementToolbarDisplayContext {
 	}
 
 	public PortletURL getCurrentSortingURL() throws PortletException {
-		PortletURL currentSortingURL = PortletURLBuilder.create(
+		return PortletURLBuilder.create(
 			PortletURLUtil.clone(_getPortletURL(), _liferayPortletResponse)
+		).setParameter(
+			"orderByCol", _getOrderByCol()
 		).setParameter(
 			"orderByType", getOrderByType()
 		).setParameter(
-			"orderByCol", _getOrderByCol()
-		).build();
+			"scope",
+			() -> {
+				if (_repositoryEntryBrowserDisplayContext.
+						isSearchEverywhere()) {
 
-		if (_repositoryEntryBrowserDisplayContext.isSearchEverywhere()) {
-			currentSortingURL.setParameter("scope", "everywhere");
-		}
+					return "everywhere";
+				}
 
-		return currentSortingURL;
+				return null;
+			}
+		).buildPortletURL();
 	}
 
 	public List<DropdownItem> getFilterDropdownItems() {
@@ -235,11 +241,11 @@ public class ItemSelectorRepositoryEntryManagementToolbarDisplayContext {
 	public PortletURL getSearchURL() throws PortletException {
 		return PortletURLBuilder.create(
 			PortletURLUtil.clone(_currentURLObj, _liferayPortletResponse)
+		).setKeywords(
+			(String)null
 		).setParameter(
-			"keywords", (String)null
-		).setParameter(
-			"resetCur", Boolean.TRUE.toString()
-		).build();
+			"resetCur", true
+		).buildPortletURL();
 	}
 
 	public PortletURL getSortingURL() throws PortletException {
@@ -248,7 +254,7 @@ public class ItemSelectorRepositoryEntryManagementToolbarDisplayContext {
 		).setParameter(
 			"orderByType",
 			Objects.equals(getOrderByType(), "asc") ? "desc" : "asc"
-		).build();
+		).buildPortletURL();
 	}
 
 	public ViewTypeItemList getViewTypes() throws PortletException {
@@ -276,14 +282,28 @@ public class ItemSelectorRepositoryEntryManagementToolbarDisplayContext {
 		return false;
 	}
 
+	public boolean isShowCreationMenu() {
+		Set<String> allowedCreationMenuUIItemKeys =
+			_getAllowedCreationMenuUIItemKeys();
+
+		if ((allowedCreationMenuUIItemKeys == null) ||
+			!allowedCreationMenuUIItemKeys.isEmpty()) {
+
+			return true;
+		}
+
+		return false;
+	}
+
 	private Set<String> _getAllowedCreationMenuUIItemKeys() {
 		Set<String> allowedCreationMenuUIItemKeys =
 			(Set)_httpServletRequest.getAttribute(
 				"liferay-item-selector:repository-entry-browser:" +
 					"allowedCreationMenuUIItemKeys");
 
-		if (SetUtil.isEmpty(allowedCreationMenuUIItemKeys)) {
-			return Collections.emptySet();
+		if (allowedCreationMenuUIItemKeys == null) {
+			return SetUtil.fromArray(
+				new String[] {DLUIItemKeys.ADD_FOLDER, DLUIItemKeys.UPLOAD});
 		}
 
 		return allowedCreationMenuUIItemKeys;

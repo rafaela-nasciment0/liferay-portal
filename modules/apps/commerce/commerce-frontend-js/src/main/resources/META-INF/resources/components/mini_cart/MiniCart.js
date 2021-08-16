@@ -42,7 +42,7 @@ import {
 } from './util/constants';
 import {regenerateOrderDetailURL, summaryDataMapper} from './util/index';
 import {DEFAULT_LABELS} from './util/labels';
-import {DEFAULT_VIEWS, resolveCartViews} from './util/views';
+import {resolveCartViews} from './util/views';
 
 function MiniCart({
 	cartActionURLs,
@@ -64,15 +64,24 @@ function MiniCart({
 
 	const [isOpen, setIsOpen] = useState(!toggleable);
 	const [isUpdating, setIsUpdating] = useState(false);
-	const [cartState, updateCartState] = useState({id: orderId, itemsQuantity});
 	const [actionURLs, setActionURLs] = useState(cartActionURLs);
 	const [CartViews, setCartViews] = useState({});
+	const [cartState, updateCartState] = useState({
+		id: orderId,
+		summary: {itemsQuantity},
+	});
 
 	const closeCart = () => setIsOpen(false);
 	const openCart = () => setIsOpen(true);
-	const resetCartState = useCallback(() => updateCartState({}), [
-		updateCartState,
-	]);
+	const resetCartState = useCallback(
+		({accountId = 0}) =>
+			updateCartState({
+				accountId,
+				id: 0,
+				summary: {itemsQuantity: 0},
+			}),
+		[updateCartState]
+	);
 
 	const updateCartModel = useCallback(
 		({id: cartId}) => {
@@ -81,19 +90,15 @@ function MiniCart({
 					let latestActionURLs, latestCartState;
 
 					setActionURLs((currentURLs) => {
-						const {checkoutURL, orderDetailURL} = currentURLs;
 						const {orderUUID} = model;
 
-						latestActionURLs =
-							cartState.id !== cartId
-								? {
-										checkoutURL,
-										orderDetailURL: regenerateOrderDetailURL(
-											orderDetailURL,
-											orderUUID
-										),
-								  }
-								: currentURLs;
+						latestActionURLs = {
+							...currentURLs,
+							orderDetailURL: regenerateOrderDetailURL(
+								orderUUID,
+								currentURLs.siteDefaultURL
+							),
+						};
 
 						return latestActionURLs;
 					});
@@ -114,14 +119,11 @@ function MiniCart({
 				})
 				.catch(showErrorNotification);
 		},
-		[CartResource, cartState.id, onAddToCart]
+		[CartResource, onAddToCart]
 	);
 
 	useEffect(() => {
-		resolveCartViews({
-			...DEFAULT_VIEWS,
-			...cartViews,
-		}).then((views) => setCartViews(views));
+		resolveCartViews(cartViews).then((views) => setCartViews(views));
 	}, [cartViews]);
 
 	useEffect(() => {
@@ -141,7 +143,9 @@ function MiniCart({
 	useEffect(() => {
 		Liferay.on(CURRENT_ACCOUNT_UPDATED, resetCartState);
 
-		return () => Liferay.detach(CURRENT_ACCOUNT_UPDATED, resetCartState);
+		return () => {
+			Liferay.detach(CURRENT_ACCOUNT_UPDATED, resetCartState);
+		};
 	}, [resetCartState]);
 
 	return (
@@ -157,6 +161,7 @@ function MiniCart({
 				isOpen,
 				isUpdating,
 				labels: {...DEFAULT_LABELS, ...labels},
+				openCart,
 				setIsUpdating,
 				spritemap,
 				summaryDataMapper,
@@ -179,7 +184,7 @@ function MiniCart({
 								onClick={() => setIsOpen(false)}
 							/>
 
-							<CartViews.Opener openCart={openCart} />
+							<CartViews.Opener />
 						</>
 					)}
 
@@ -191,7 +196,7 @@ function MiniCart({
 }
 
 MiniCart.defaultProps = {
-	cartViews: DEFAULT_VIEWS,
+	cartViews: {},
 	displayDiscountLevels: false,
 	displayTotalItemsQuantity: false,
 	itemsQuantity: 0,
@@ -206,6 +211,7 @@ MiniCart.propTypes = {
 	cartActionURLs: PropTypes.shape({
 		checkoutURL: PropTypes.string,
 		orderDetailURL: PropTypes.string,
+		siteDefaultURL: PropTypes.string,
 	}).isRequired,
 	cartViews: PropTypes.shape({
 		[CART]: PropTypes.oneOfType([

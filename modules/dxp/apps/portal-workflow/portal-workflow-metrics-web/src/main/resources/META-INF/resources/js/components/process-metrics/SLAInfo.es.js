@@ -18,9 +18,9 @@ import {useFetch} from '../../shared/hooks/useFetch.es';
 import {sub} from '../../shared/util/lang.es';
 import {AppContext} from '../AppContext.es';
 
-const SLAInfo = ({processId}) => {
+function SLAInfo({processId}) {
 	const [alert, setAlert] = useState(null);
-	const {defaultDelta} = useContext(AppContext);
+	const {defaultDelta, setFetchDateModified} = useContext(AppContext);
 
 	const url = `/processes/${processId}/slas?page=1&pageSize=1`;
 
@@ -56,8 +56,11 @@ const SLAInfo = ({processId}) => {
 					link: `/sla/${processId}/new`,
 					linkText: Liferay.Language.get('add-a-new-sla'),
 				});
+
+				setFetchDateModified(false);
 			}
 			else {
+				setFetchDateModified(true);
 				getSLABlockedCount();
 			}
 		});
@@ -91,6 +94,6 @@ const SLAInfo = ({processId}) => {
 			)}
 		</>
 	);
-};
+}
 
 export default SLAInfo;

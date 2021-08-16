@@ -14,9 +14,10 @@
 
 import {ClayCheckbox} from '@clayui/form';
 import ClayIcon from '@clayui/icon';
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 
 import {FieldBase} from '../FieldBase/ReactFieldBase.es';
+import {useSyncValue} from '../hooks/useSyncValue.es';
 
 const Switcher = ({
 	checked: initialChecked,
@@ -27,10 +28,15 @@ const Switcher = ({
 	required,
 	showLabel,
 	showMaximumRepetitionsInfo,
-	spritemap,
 	systemSettingsURL,
+	visible,
 }) => {
-	const [checked, setChecked] = useState(initialChecked);
+	const [checked, setChecked] = useSyncValue(initialChecked, true);
+
+	useEffect(() => {
+		setChecked(initialChecked);
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [disabled, visible]);
 
 	return (
 		<>
@@ -56,11 +62,9 @@ const Switcher = ({
 							{showLabel && label}
 
 							{required && (
-								<ClayIcon
-									className="reference-mark"
-									spritemap={spritemap}
-									symbol="asterisk"
-								/>
+								<span className="ddm-label-required reference-mark">
+									<ClayIcon symbol="asterisk" />
+								</span>
 							)}
 						</span>
 					)}
@@ -97,7 +101,6 @@ const Checkbox = ({
 	onChange,
 	required,
 	showLabel,
-	spritemap,
 }) => {
 	const [checked, setChecked] = useState(initialChecked);
 
@@ -113,11 +116,9 @@ const Checkbox = ({
 			}}
 		>
 			{showLabel && required && (
-				<ClayIcon
-					className="reference-mark"
-					spritemap={spritemap}
-					symbol="asterisk"
-				/>
+				<span className="ddm-label-required reference-mark">
+					<ClayIcon symbol="asterisk" />
+				</span>
 			)}
 		</ClayCheckbox>
 	);
@@ -136,17 +137,16 @@ const Main = ({
 	spritemap,
 	systemSettingsURL,
 	value,
+	visible,
 	...otherProps
 }) => {
 	const Toggle = showAsSwitcher ? Switcher : Checkbox;
 
 	return (
 		<FieldBase
-			label={label}
 			name={name}
-			required={required}
 			showLabel={false}
-			spritemap={spritemap}
+			visible={visible}
 			{...otherProps}
 		>
 			<Toggle
@@ -160,6 +160,7 @@ const Main = ({
 				showMaximumRepetitionsInfo={showMaximumRepetitionsInfo}
 				spritemap={spritemap}
 				systemSettingsURL={systemSettingsURL}
+				visible={visible}
 			/>
 		</FieldBase>
 	);

@@ -165,6 +165,14 @@ public class AccountEntryUserRelLocalServiceUtil {
 		return getService().deleteAccountEntryUserRel(accountEntryUserRelId);
 	}
 
+	public static void deleteAccountEntryUserRelByEmailAddress(
+			long accountEntryId, String emailAddress)
+		throws PortalException {
+
+		getService().deleteAccountEntryUserRelByEmailAddress(
+			accountEntryId, emailAddress);
+	}
+
 	public static void deleteAccountEntryUserRels(
 			long accountEntryId, long[] accountUserIds)
 		throws PortalException {
@@ -196,6 +204,10 @@ public class AccountEntryUserRelLocalServiceUtil {
 
 	public static <T> T dslQuery(DSLQuery dslQuery) {
 		return getService().dslQuery(dslQuery);
+	}
+
+	public static int dslQueryCount(DSLQuery dslQuery) {
+		return getService().dslQueryCount(dslQuery);
 	}
 
 	public static DynamicQuery dynamicQuery() {

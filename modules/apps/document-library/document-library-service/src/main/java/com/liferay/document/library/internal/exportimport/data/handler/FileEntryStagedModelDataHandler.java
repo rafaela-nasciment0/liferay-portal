@@ -82,6 +82,7 @@ import com.liferay.portal.kernel.trash.TrashHandler;
 import com.liferay.portal.kernel.trash.TrashHandlerRegistryUtil;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
+import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.MapUtil;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.Validator;
@@ -480,13 +481,14 @@ public class FileEntryStagedModelDataHandler
 
 						FileEntry existingTitleFileEntry =
 							FileEntryUtil.fetchByR_F_T(
-								repositoryId, folderId, fileEntry.getTitle());
+								portletDataContext.getScopeGroupId(), folderId,
+								fileEntry.getTitle());
 
 						if (existingTitleFileEntry == null) {
 							existingTitleFileEntry =
 								FileEntryUtil.fetchByR_F_FN(
-									repositoryId, folderId,
-									fileEntry.getFileName());
+									portletDataContext.getScopeGroupId(),
+									folderId, fileEntry.getFileName());
 						}
 
 						if (existingTitleFileEntry != null) {
@@ -505,10 +507,12 @@ public class FileEntryStagedModelDataHandler
 							fileEntry.getTitle(), fileEntry.getExtension());
 
 					importedFileEntry = _dlAppLocalService.addFileEntry(
-						userId, repositoryId, folderId, fileEntry.getFileName(),
+						fileEntry.getExternalReferenceCode(), userId,
+						repositoryId, folderId, fileEntry.getFileName(),
 						fileEntry.getMimeType(), fileEntryTitle,
 						fileEntry.getDescription(), null, inputStream,
-						fileEntry.getSize(), serviceContext);
+						fileEntry.getSize(), fileEntry.getExpirationDate(),
+						fileEntry.getReviewDate(), serviceContext);
 
 					if (fileEntry.isInTrash()) {
 						importedFileEntry =
@@ -581,7 +585,9 @@ public class FileEntryStagedModelDataHandler
 									fileEntry.getMimeType(), fileEntryTitle,
 									fileEntry.getDescription(), null,
 									DLVersionNumberIncrease.MINOR, inputStream,
-									fileEntry.getSize(), serviceContext);
+									fileEntry.getSize(),
+									fileEntry.getExpirationDate(),
+									fileEntry.getReviewDate(), serviceContext);
 						}
 						else {
 							_dlAppLocalService.updateAsset(
@@ -645,10 +651,12 @@ public class FileEntryStagedModelDataHandler
 					fileEntry.getTitle(), fileEntry.getExtension());
 
 				importedFileEntry = _dlAppLocalService.addFileEntry(
-					userId, repositoryId, folderId, fileEntry.getFileName(),
-					fileEntry.getMimeType(), fileEntryTitle,
-					fileEntry.getDescription(), null, inputStream,
-					fileEntry.getSize(), serviceContext);
+					fileEntry.getExternalReferenceCode(), userId, repositoryId,
+					folderId, fileEntry.getFileName(), fileEntry.getMimeType(),
+					fileEntryTitle, fileEntry.getDescription(), null,
+					inputStream, fileEntry.getSize(),
+					fileEntry.getExpirationDate(), fileEntry.getReviewDate(),
+					serviceContext);
 			}
 
 			for (DLPluggableContentDataHandler<?>
@@ -983,7 +991,7 @@ public class FileEntryStagedModelDataHandler
 		AssetDisplayPageEntry assetDisplayPageEntry =
 			_assetDisplayPageEntryLocalService.fetchAssetDisplayPageEntry(
 				fileEntry.getGroupId(),
-				_portal.getClassNameId(DLFileEntry.class),
+				_portal.getClassNameId(FileEntry.class.getName()),
 				fileEntry.getFileEntryId());
 
 		if (assetDisplayPageEntry != null) {
@@ -1008,6 +1016,21 @@ public class FileEntryStagedModelDataHandler
 
 		articleNewPrimaryKeys.put(
 			fileEntry.getFileEntryId(), importedFileEntry.getFileEntryId());
+
+		if (ListUtil.isEmpty(assetDisplayPageEntryElements)) {
+			AssetDisplayPageEntry existingAssetDisplayPageEntry =
+				_assetDisplayPageEntryLocalService.fetchAssetDisplayPageEntry(
+					importedFileEntry.getGroupId(),
+					_portal.getClassNameId(FileEntry.class.getName()),
+					importedFileEntry.getFileEntryId());
+
+			if (existingAssetDisplayPageEntry != null) {
+				_assetDisplayPageEntryLocalService.deleteAssetDisplayPageEntry(
+					existingAssetDisplayPageEntry);
+			}
+
+			return;
+		}
 
 		for (Element assetDisplayPageEntryElement :
 				assetDisplayPageEntryElements) {

@@ -57,8 +57,8 @@ DLViewFileEntryTypesDisplayContext dlViewFileEntryTypesDisplayContext = new DLVi
 			).setRedirect(
 				currentURL
 			).setParameter(
-				"fileEntryTypeId", String.valueOf(fileEntryType.getFileEntryTypeId())
-			).build();
+				"fileEntryTypeId", fileEntryType.getFileEntryTypeId()
+			).buildPortletURL();
 			%>
 
 			<liferay-ui:search-container-column-text

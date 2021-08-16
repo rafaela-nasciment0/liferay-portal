@@ -16,6 +16,10 @@ definition {
 		Click(locator1 = "ACNavigation#COLLAPSE_SIDEBAR_ARROW");
 	}
 
+	macro exitSettings {
+		Click(locator1 = "ACSettings#EXIT_SETTINGS_BUTTON");
+	}
+
 	macro expandSidebar {
 		Click(locator1 = "ACNavigation#EXPAND_SIDEBAR_ARROW");
 	}
@@ -52,6 +56,24 @@ definition {
 
 	macro goToTests {
 		ACNavigation.goToSidebarOption(sidebarOption = "tests");
+	}
+
+	macro openItem {
+		var key_itemName = "${itemName}";
+
+		Click(locator1 = "ACNavigation#OPEN_ITEM");
+	}
+
+	macro switchTab {
+		var key_tabName = "${tabName}";
+
+		Click(locator1 = "ACNavigation#TAB_NAME");
+	}
+
+	macro viewActiveSwitchTab {
+		AssertTextEquals(
+			locator1 = "ACNavigation#ACTIVE_TAB_NAME",
+			value1 = "${tabName}");
 	}
 
 }

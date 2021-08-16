@@ -110,13 +110,13 @@ public class CommerceOrderItemClayDataSetActionProvider
 				CommercePortletKeys.COMMERCE_ORDER, PortletRequest.ACTION_PHASE)
 		).setActionName(
 			"/commerce_order/edit_commerce_order_item"
+		).setCMD(
+			Constants.DELETE
 		).setRedirect(
 			redirect
 		).setParameter(
-			Constants.CMD, Constants.DELETE
-		).setParameter(
 			"commerceOrderItemId", commerceOrderItemId
-		).build();
+		).buildPortletURL();
 	}
 
 	private String _getOrderItemEditURL(
@@ -131,7 +131,7 @@ public class CommerceOrderItemClayDataSetActionProvider
 			"/commerce_order/edit_commerce_order_item"
 		).setRedirect(
 			_portal.getCurrentURL(httpServletRequest)
-		).build();
+		).buildPortletURL();
 
 		long commerceOrderId = ParamUtil.getLong(
 			httpServletRequest, "commerceOrderId");

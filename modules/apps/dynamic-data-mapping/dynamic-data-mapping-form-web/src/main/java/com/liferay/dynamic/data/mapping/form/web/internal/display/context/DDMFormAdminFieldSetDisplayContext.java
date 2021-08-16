@@ -16,6 +16,7 @@ package com.liferay.dynamic.data.mapping.form.web.internal.display.context;
 
 import com.liferay.dynamic.data.mapping.constants.DDMStructureConstants;
 import com.liferay.dynamic.data.mapping.form.builder.context.DDMFormBuilderContextFactory;
+import com.liferay.dynamic.data.mapping.form.builder.context.DDMFormContextDeserializer;
 import com.liferay.dynamic.data.mapping.form.builder.settings.DDMFormBuilderSettingsRetriever;
 import com.liferay.dynamic.data.mapping.form.field.type.DDMFormFieldTypeServicesTracker;
 import com.liferay.dynamic.data.mapping.form.renderer.DDMFormRenderer;
@@ -39,6 +40,7 @@ import com.liferay.dynamic.data.mapping.service.DDMFormInstanceService;
 import com.liferay.dynamic.data.mapping.service.DDMFormInstanceVersionLocalService;
 import com.liferay.dynamic.data.mapping.service.DDMStructureLocalService;
 import com.liferay.dynamic.data.mapping.service.DDMStructureService;
+import com.liferay.dynamic.data.mapping.storage.DDMFormValues;
 import com.liferay.dynamic.data.mapping.storage.DDMStorageAdapterTracker;
 import com.liferay.dynamic.data.mapping.util.DDMFormLayoutFactory;
 import com.liferay.dynamic.data.mapping.util.DDMFormValuesMerger;
@@ -94,6 +96,7 @@ public class DDMFormAdminFieldSetDisplayContext
 			addDefaultSharedFormLayoutPortalInstanceLifecycleListener,
 		DDMFormBuilderContextFactory ddmFormBuilderContextFactory,
 		DDMFormBuilderSettingsRetriever ddmFormBuilderSettingsRetriever,
+		DDMFormContextDeserializer<DDMFormValues> ddmFormContextToDDMFormValues,
 		DDMFormFieldTypeServicesTracker ddmFormFieldTypeServicesTracker,
 		DDMFormFieldTypesSerializer ddmFormFieldTypesSerializer,
 		DDMFormInstanceLocalService ddmFormInstanceLocalService,
@@ -108,21 +111,24 @@ public class DDMFormAdminFieldSetDisplayContext
 		DDMFormWebConfiguration ddmFormWebConfiguration,
 		DDMStorageAdapterTracker ddmStorageAdapterTracker,
 		DDMStructureLocalService ddmStructureLocalService,
-		DDMStructureService ddmStructureService, JSONFactory jsonFactory,
-		NPMResolver npmResolver, Portal portal) {
+		DDMStructureService ddmStructureService,
+		boolean ffSearchLocationDDMFormFieldTypeEnabled,
+		JSONFactory jsonFactory, NPMResolver npmResolver, Portal portal) {
 
 		super(
 			renderRequest, renderResponse,
 			addDefaultSharedFormLayoutPortalInstanceLifecycleListener,
 			ddmFormBuilderContextFactory, ddmFormBuilderSettingsRetriever,
-			ddmFormFieldTypeServicesTracker, ddmFormFieldTypesSerializer,
-			ddmFormInstanceLocalService, ddmFormInstanceRecordLocalService,
+			ddmFormContextToDDMFormValues, ddmFormFieldTypeServicesTracker,
+			ddmFormFieldTypesSerializer, ddmFormInstanceLocalService,
+			ddmFormInstanceRecordLocalService,
 			ddmFormInstanceRecordWriterTracker, ddmFormInstanceService,
 			ddmFormInstanceVersionLocalService, ddmFormRenderer,
 			ddmFormTemplateContextFactory, ddmFormValuesFactory,
 			ddmFormValuesMerger, ddmFormWebConfiguration,
 			ddmStorageAdapterTracker, ddmStructureLocalService,
-			ddmStructureService, jsonFactory, npmResolver, portal);
+			ddmStructureService, ffSearchLocationDDMFormFieldTypeEnabled,
+			jsonFactory, npmResolver, portal);
 
 		_fieldSetPermissionCheckerHelper = new FieldSetPermissionCheckerHelper(
 			formAdminRequestHelper);
@@ -298,10 +304,10 @@ public class DDMFormAdminFieldSetDisplayContext
 		).setMVCPath(
 			"/admin/view.jsp"
 		).setParameter(
-			"groupId", getScopeGroupId()
-		).setParameter(
 			"currentTab", "element-set"
-		).build();
+		).setParameter(
+			"groupId", getScopeGroupId()
+		).buildPortletURL();
 
 		String delta = ParamUtil.getString(renderRequest, "delta");
 
@@ -342,7 +348,7 @@ public class DDMFormAdminFieldSetDisplayContext
 			getPortletURL()
 		).setParameter(
 			"displayStyle", getDisplayStyle()
-		).build();
+		).buildPortletURL();
 
 		FieldSetSearch fieldSetSearch = new FieldSetSearch(
 			renderRequest, portletURL);
@@ -379,9 +385,9 @@ public class DDMFormAdminFieldSetDisplayContext
 		).setMVCPath(
 			"/admin/view.jsp"
 		).setParameter(
-			"groupId", getScopeGroupId()
-		).setParameter(
 			"currentTab", "element-set"
+		).setParameter(
+			"groupId", getScopeGroupId()
 		).buildString();
 	}
 

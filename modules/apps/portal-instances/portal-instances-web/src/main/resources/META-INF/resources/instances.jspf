@@ -37,8 +37,8 @@
 		).setRedirect(
 			currentURL
 		).setParameter(
-			"companyId", String.valueOf(curCompany.getCompanyId())
-		).build();
+			"companyId", curCompany.getCompanyId()
+		).buildPortletURL();
 		%>
 
 		<liferay-ui:search-container-column-text

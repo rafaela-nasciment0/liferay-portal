@@ -52,8 +52,8 @@ public class JournalSelectArticleTranslationsManagementToolbarDisplayContext
 	public String getClearResultsURL() {
 		return PortletURLBuilder.create(
 			getPortletURL()
-		).setParameter(
-			"keywords", StringPool.BLANK
+		).setKeywords(
+			StringPool.BLANK
 		).buildString();
 	}
 
@@ -63,7 +63,7 @@ public class JournalSelectArticleTranslationsManagementToolbarDisplayContext
 			liferayPortletResponse
 		).setMVCPath(
 			"/select_article_translations.jsp"
-		).build();
+		).buildPortletURL();
 
 		try {
 			JournalArticle article = _journalDisplayContext.getArticle();

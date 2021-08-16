@@ -42,6 +42,7 @@ import com.liferay.commerce.product.model.CPOptionCategory;
 import com.liferay.commerce.product.model.CProduct;
 import com.liferay.commerce.product.service.CPAttachmentFileEntryLocalService;
 import com.liferay.commerce.product.service.CPDefinitionLocalService;
+import com.liferay.commerce.product.service.CPDefinitionOptionRelLocalService;
 import com.liferay.commerce.product.service.CPDefinitionOptionValueRelLocalService;
 import com.liferay.commerce.product.service.CPDefinitionSpecificationOptionValueLocalService;
 import com.liferay.commerce.product.service.CPInstanceOptionValueRelLocalService;
@@ -158,6 +159,20 @@ public class CPContentHelperImpl implements CPContentHelper {
 			long cpDefinitionId, ThemeDisplay themeDisplay)
 		throws PortalException {
 
+		long commerceAccountId = 0;
+
+		HttpServletRequest httpServletRequest = themeDisplay.getRequest();
+
+		CommerceContext commerceContext =
+			(CommerceContext)httpServletRequest.getAttribute(
+				CommerceWebKeys.COMMERCE_CONTEXT);
+
+		CommerceAccount commerceAccount = commerceContext.getCommerceAccount();
+
+		if (commerceAccount != null) {
+			commerceAccountId = commerceAccount.getCommerceAccountId();
+		}
+
 		List<CPMedia> cpMedias = new ArrayList<>();
 
 		List<CPAttachmentFileEntry> cpAttachmentFileEntries =
@@ -170,7 +185,9 @@ public class CPContentHelperImpl implements CPContentHelper {
 		for (CPAttachmentFileEntry cpAttachmentFileEntry :
 				cpAttachmentFileEntries) {
 
-			cpMedias.add(new CPMediaImpl(cpAttachmentFileEntry, themeDisplay));
+			cpMedias.add(
+				new CPMediaImpl(
+					commerceAccountId, cpAttachmentFileEntry, themeDisplay));
 		}
 
 		return cpMedias;
@@ -342,7 +359,7 @@ public class CPContentHelperImpl implements CPContentHelper {
 
 		CPMedia cpMedia = new CPMediaImpl(fileEntry, themeDisplay);
 
-		return cpMedia.getDownloadUrl();
+		return cpMedia.getDownloadURL();
 	}
 
 	@Override
@@ -359,6 +376,20 @@ public class CPContentHelperImpl implements CPContentHelper {
 			long cpDefinitionId, ThemeDisplay themeDisplay)
 		throws PortalException {
 
+		HttpServletRequest httpServletRequest = themeDisplay.getRequest();
+
+		CommerceContext commerceContext =
+			(CommerceContext)httpServletRequest.getAttribute(
+				CommerceWebKeys.COMMERCE_CONTEXT);
+
+		long commerceAccountId = 0;
+
+		CommerceAccount commerceAccount = commerceContext.getCommerceAccount();
+
+		if (commerceAccount != null) {
+			commerceAccountId = commerceAccount.getCommerceAccountId();
+		}
+
 		List<CPMedia> cpMedias = new ArrayList<>();
 
 		List<CPAttachmentFileEntry> cpAttachmentFileEntries =
@@ -371,7 +402,9 @@ public class CPContentHelperImpl implements CPContentHelper {
 		for (CPAttachmentFileEntry cpAttachmentFileEntry :
 				cpAttachmentFileEntries) {
 
-			cpMedias.add(new CPMediaImpl(cpAttachmentFileEntry, themeDisplay));
+			cpMedias.add(
+				new CPMediaImpl(
+					commerceAccountId, cpAttachmentFileEntry, themeDisplay));
 		}
 
 		if (cpMedias.isEmpty()) {
@@ -399,7 +432,7 @@ public class CPContentHelperImpl implements CPContentHelper {
 
 		CPMedia cpMedia = new CPMediaImpl(fileEntry, themeDisplay);
 
-		return cpMedia.getUrl();
+		return cpMedia.getURL();
 	}
 
 	@Override
@@ -481,6 +514,19 @@ public class CPContentHelperImpl implements CPContentHelper {
 	@Override
 	public boolean hasChildCPDefinitions(long cpDefinitionId) {
 		return _cpDefinitionLocalService.hasChildCPDefinitions(cpDefinitionId);
+	}
+
+	@Override
+	public boolean hasCPDefinitionOptionRels(long cpDefinitionId) {
+		int cpDefinitionOptionRelsCount =
+			_cpDefinitionOptionRelLocalService.getCPDefinitionOptionRelsCount(
+				cpDefinitionId);
+
+		if (cpDefinitionOptionRelsCount > 0) {
+			return true;
+		}
+
+		return false;
 	}
 
 	@Override
@@ -671,6 +717,10 @@ public class CPContentHelperImpl implements CPContentHelper {
 
 	@Reference
 	private CPDefinitionLocalService _cpDefinitionLocalService;
+
+	@Reference
+	private CPDefinitionOptionRelLocalService
+		_cpDefinitionOptionRelLocalService;
 
 	@Reference
 	private CPDefinitionOptionValueRelLocalService

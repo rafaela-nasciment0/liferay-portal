@@ -17,6 +17,7 @@ package com.liferay.portal.search.tuning.synonyms.web.test;
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
 import com.liferay.journal.model.JournalArticle;
 import com.liferay.journal.test.util.JournalTestUtil;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.configuration.test.util.ConfigurationTemporarySwapper;
 import com.liferay.portal.kernel.model.Company;
 import com.liferay.portal.kernel.model.Group;
@@ -36,6 +37,7 @@ import com.liferay.portal.kernel.test.util.ServiceContextTestUtil;
 import com.liferay.portal.kernel.test.util.UserTestUtil;
 import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.HashMapDictionary;
+import com.liferay.portal.kernel.util.HashMapDictionaryBuilder;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.StringUtil;
@@ -52,6 +54,7 @@ import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import java.io.IOException;
 import java.io.InputStream;
 
+import java.util.Dictionary;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -64,6 +67,9 @@ import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import org.osgi.service.cm.Configuration;
+import org.osgi.service.cm.ConfigurationAdmin;
 
 /**
  * @author Tibor Lipusz
@@ -81,34 +87,13 @@ public class SynonymSearchTest {
 		try (ConfigurationTemporarySwapper
 				elasticSearchConfigurationTemporarySwapper =
 					new ConfigurationTemporarySwapper(
-						"com.liferay.portal.search.elasticsearch7." +
-							"configuration.ElasticsearchConfiguration",
-						new HashMapDictionary<String, Object>() {
-							{
-								put(
-									"additionalIndexConfigurations",
-									loadAdditionalIndexConfigurations());
-								put(
-									"overrideTypeMappings",
-									loadOverrideTypeMappings());
-							}
-				});
+						_CONFIGURATION_PID_ELASTICSEARCH,
+						setUpElasticsearchProperties());
 
 			ConfigurationTemporarySwapper synonymConfigurationTemporarySwapper =
-			new ConfigurationTemporarySwapper(
-				"com.liferay.portal.search.tuning.synonyms.web.internal." +
-					"configuration.SynonymsConfiguration",
-				new HashMapDictionary<String, Object>() {
-					{
-						put(
-							"filterNames",
-							new String[] {
-								"liferay_filter_synonym_en",
-								"liferay_filter_synonym_es",
-								"custom-synonym-filter-fr"
-							});
-					}
-					})) {
+				new ConfigurationTemporarySwapper(
+					_CONFIGURATION_PID_SYNONYMS,
+					setUpSynonymsProperties())) {
 
 			_company = CompanyTestUtil.addCompany();
 
@@ -238,6 +223,36 @@ public class SynonymSearchTest {
 		}
 	}
 
+	protected static Dictionary<String, Object> setUpElasticsearchProperties()
+		throws Exception {
+
+		Configuration configuration = _configurationAdmin.getConfiguration(
+			_CONFIGURATION_PID_ELASTICSEARCH, StringPool.QUESTION);
+
+		Dictionary<String, Object> properties = configuration.getProperties();
+
+		if (properties == null) {
+			properties = new HashMapDictionary<>();
+		}
+
+		properties.put(
+			"additionalIndexConfigurations",
+			loadAdditionalIndexConfigurations());
+		properties.put("overrideTypeMappings", loadOverrideTypeMappings());
+
+		return properties;
+	}
+
+	protected static Dictionary<String, Object> setUpSynonymsProperties() {
+		return HashMapDictionaryBuilder.<String, Object>put(
+			"filterNames",
+			new String[] {
+				"liferay_filter_synonym_en", "liferay_filter_synonym_es",
+				"custom-synonym-filter-fr"
+			}
+		).build();
+	}
+
 	protected void doAssertSearch(
 		String keyword, String fieldName, Locale locale, int expectedCount) {
 
@@ -266,10 +281,21 @@ public class SynonymSearchTest {
 			expectedCount);
 	}
 
+	private static final String _CONFIGURATION_PID_ELASTICSEARCH =
+		"com.liferay.portal.search.elasticsearch7.configuration." +
+			"ElasticsearchConfiguration";
+
+	private static final String _CONFIGURATION_PID_SYNONYMS =
+		"com.liferay.portal.search.tuning.synonyms.web.internal." +
+			"configuration.SynonymsConfiguration";
+
 	private static Company _company;
 
 	@Inject
 	private static CompanyLocalService _companyLocalService;
+
+	@Inject
+	private static ConfigurationAdmin _configurationAdmin;
 
 	private static Group _group;
 

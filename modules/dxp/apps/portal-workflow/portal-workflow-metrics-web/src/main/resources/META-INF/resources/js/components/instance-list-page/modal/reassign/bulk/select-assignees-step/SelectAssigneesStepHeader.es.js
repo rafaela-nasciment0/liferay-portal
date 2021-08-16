@@ -18,7 +18,7 @@ import {Autocomplete} from '../../../../../../shared/components/autocomplete/Aut
 import PromisesResolver from '../../../../../../shared/components/promises-resolver/PromisesResolver.es';
 import {ModalContext} from '../../../ModalProvider.es';
 
-const Header = ({data}) => {
+export default function Header({data}) {
 	const {
 		bulkReassign,
 		selectTasks: {tasks},
@@ -73,6 +73,10 @@ const Header = ({data}) => {
 		[bulkReassign, tasks, setBulkReassign]
 	);
 
+	const handleSubmit = (event) => {
+		event.preventDefault();
+	};
+
 	return (
 		<PromisesResolver.Resolved>
 			<ClayManagementToolbar className="border-bottom mb-0 px-3">
@@ -88,7 +92,7 @@ const Header = ({data}) => {
 						/>
 					</ClayManagementToolbar.Item>
 				</ClayManagementToolbar.ItemList>
-				<ClayManagementToolbar.Search>
+				<ClayManagementToolbar.Search onSubmit={handleSubmit}>
 					<Autocomplete
 						defaultValue={selectedAssignee?.name || ''}
 						disabled={disableBulk || !useSameAssignee}
@@ -99,17 +103,11 @@ const Header = ({data}) => {
 						)}
 					>
 						<ClayInput.GroupInsetItem after tag="span">
-							<ClayIcon
-								className="m-2"
-								displayType="unstyled"
-								symbol="search"
-							/>
+							<ClayIcon className="m-2" symbol="search" />
 						</ClayInput.GroupInsetItem>
 					</Autocomplete>
 				</ClayManagementToolbar.Search>
 			</ClayManagementToolbar>
 		</PromisesResolver.Resolved>
 	);
-};
-
-export {Header};
+}

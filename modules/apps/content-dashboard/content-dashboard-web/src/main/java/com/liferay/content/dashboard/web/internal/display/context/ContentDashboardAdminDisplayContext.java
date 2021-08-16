@@ -18,18 +18,20 @@ import com.liferay.asset.categories.configuration.AssetCategoriesCompanyConfigur
 import com.liferay.asset.kernel.model.AssetCategory;
 import com.liferay.asset.kernel.model.AssetVocabulary;
 import com.liferay.content.dashboard.web.internal.item.ContentDashboardItem;
-import com.liferay.content.dashboard.web.internal.item.selector.criteria.content.dashboard.type.criterion.ContentDashboardItemTypeItemSelectorCriterion;
-import com.liferay.content.dashboard.web.internal.item.type.ContentDashboardItemType;
-import com.liferay.content.dashboard.web.internal.item.type.ContentDashboardItemTypeFactoryTracker;
-import com.liferay.content.dashboard.web.internal.item.type.ContentDashboardItemTypeUtil;
+import com.liferay.content.dashboard.web.internal.item.selector.criteria.content.dashboard.type.criterion.ContentDashboardItemSubtypeItemSelectorCriterion;
+import com.liferay.content.dashboard.web.internal.item.type.ContentDashboardItemSubtype;
+import com.liferay.content.dashboard.web.internal.item.type.ContentDashboardItemSubtypeFactoryTracker;
+import com.liferay.content.dashboard.web.internal.item.type.ContentDashboardItemSubtypeUtil;
 import com.liferay.content.dashboard.web.internal.model.AssetVocabularyMetric;
 import com.liferay.content.dashboard.web.internal.servlet.taglib.util.ContentDashboardDropdownItemsProvider;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItem;
+import com.liferay.info.item.InfoItemReference;
 import com.liferay.item.selector.ItemSelector;
 import com.liferay.item.selector.criteria.URLItemSelectorReturnType;
 import com.liferay.item.selector.criteria.UUIDItemSelectorReturnType;
 import com.liferay.item.selector.criteria.group.criterion.GroupItemSelectorCriterion;
 import com.liferay.petra.portlet.url.builder.PortletURLBuilder;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.dao.search.SearchContainer;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.module.configuration.ConfigurationProviderUtil;
@@ -46,7 +48,6 @@ import com.liferay.portal.kernel.util.HtmlUtil;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.ResourceBundleUtil;
-import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
@@ -66,7 +67,6 @@ import java.util.stream.Stream;
 
 import javax.portlet.ActionRequest;
 import javax.portlet.ActionURL;
-import javax.portlet.PortletURL;
 import javax.portlet.WindowStateException;
 
 /**
@@ -79,8 +79,8 @@ public class ContentDashboardAdminDisplayContext {
 		AssetVocabularyMetric assetVocabularyMetric,
 		ContentDashboardDropdownItemsProvider
 			contentDashboardDropdownItemsProvider,
-		ContentDashboardItemTypeFactoryTracker
-			contentDashboardItemTypeFactoryTracker,
+		ContentDashboardItemSubtypeFactoryTracker
+			contentDashboardItemSubtypeFactoryTracker,
 		ItemSelector itemSelector, String languageDirection,
 		LiferayPortletRequest liferayPortletRequest,
 		LiferayPortletResponse liferayPortletResponse, Portal portal,
@@ -91,8 +91,8 @@ public class ContentDashboardAdminDisplayContext {
 		_assetVocabularyMetric = assetVocabularyMetric;
 		_contentDashboardDropdownItemsProvider =
 			contentDashboardDropdownItemsProvider;
-		_contentDashboardItemTypeFactoryTracker =
-			contentDashboardItemTypeFactoryTracker;
+		_contentDashboardItemSubtypeFactoryTracker =
+			contentDashboardItemSubtypeFactoryTracker;
 		_itemSelector = itemSelector;
 		_languageDirection = languageDirection;
 		_liferayPortletRequest = liferayPortletRequest;
@@ -202,70 +202,72 @@ public class ContentDashboardAdminDisplayContext {
 		).buildString();
 	}
 
-	public String getContentDashboardItemTypeItemSelectorURL() {
+	public String getContentDashboardItemSubtypeItemSelectorURL() {
 		RequestBackedPortletURLFactory requestBackedPortletURLFactory =
 			RequestBackedPortletURLFactoryUtil.create(_liferayPortletRequest);
 
-		ContentDashboardItemTypeItemSelectorCriterion
-			contentDashboardItemTypeItemSelectorCriterion =
-				new ContentDashboardItemTypeItemSelectorCriterion();
+		ContentDashboardItemSubtypeItemSelectorCriterion
+			contentDashboardItemSubtypeItemSelectorCriterion =
+				new ContentDashboardItemSubtypeItemSelectorCriterion();
 
-		contentDashboardItemTypeItemSelectorCriterion.
+		contentDashboardItemSubtypeItemSelectorCriterion.
 			setDesiredItemSelectorReturnTypes(
 				Collections.singletonList(new UUIDItemSelectorReturnType()));
 
-		PortletURL portletURL = PortletURLBuilder.create(
+		return PortletURLBuilder.create(
 			_itemSelector.getItemSelectorURL(
 				requestBackedPortletURLFactory,
 				_liferayPortletResponse.getNamespace() +
-					"selectedContentDashboardItemTypeItem",
-				contentDashboardItemTypeItemSelectorCriterion)
+					"selectedContentDashboardItemSubtype",
+				contentDashboardItemSubtypeItemSelectorCriterion)
 		).setParameter(
-			"checkedContentDashboardItemTypes",
+			"checkedContentDashboardItemSubtypes",
 			() -> {
-				List<? extends ContentDashboardItemType>
-					contentDashboardItemTypes = getContentDashboardItemTypes();
+				List<? extends ContentDashboardItemSubtype>
+					contentDashboardItemSubtypes =
+						getContentDashboardItemSubtypes();
 
-				Stream<? extends ContentDashboardItemType> stream =
-					contentDashboardItemTypes.stream();
+				Stream<? extends ContentDashboardItemSubtype> stream =
+					contentDashboardItemSubtypes.stream();
 
 				return stream.map(
-					contentDashboardItemType ->
-						contentDashboardItemType.toJSONString(
-							_portal.getLocale(_liferayPortletRequest))
+					contentDashboardItemSubtype -> {
+						InfoItemReference infoItemReference =
+							contentDashboardItemSubtype.getInfoItemReference();
+
+						return String.valueOf(infoItemReference.getClassPK());
+					}
 				).toArray(
 					String[]::new
 				);
 			}
-		).build();
-
-		return String.valueOf(portletURL);
+		).buildString();
 	}
 
-	public List<? extends ContentDashboardItemType>
-		getContentDashboardItemTypes() {
+	public List<? extends ContentDashboardItemSubtype>
+		getContentDashboardItemSubtypes() {
 
-		if (_contentDashboardItemTypePayloads != null) {
-			return _contentDashboardItemTypePayloads;
+		if (_contentDashboardItemSubtypePayloads != null) {
+			return _contentDashboardItemSubtypePayloads;
 		}
 
-		String[] contentDashboardItemTypePayloads =
+		String[] contentDashboardItemSubtypePayloads =
 			ParamUtil.getParameterValues(
-				_liferayPortletRequest, "contentDashboardItemTypePayload",
+				_liferayPortletRequest, "contentDashboardItemSubtypePayload",
 				new String[0], false);
 
-		if (ArrayUtil.isEmpty(contentDashboardItemTypePayloads)) {
-			_contentDashboardItemTypePayloads = Collections.emptyList();
+		if (ArrayUtil.isEmpty(contentDashboardItemSubtypePayloads)) {
+			_contentDashboardItemSubtypePayloads = Collections.emptyList();
 		}
 		else {
 			return Stream.of(
-				contentDashboardItemTypePayloads
+				contentDashboardItemSubtypePayloads
 			).map(
-				contentDashboardItemTypePayload ->
-					ContentDashboardItemTypeUtil.
-						toContentDashboardItemTypeOptional(
-							_contentDashboardItemTypeFactoryTracker,
-							contentDashboardItemTypePayload)
+				contentDashboardItemSubtypePayload ->
+					ContentDashboardItemSubtypeUtil.
+						toContentDashboardItemSubtypeOptional(
+							_contentDashboardItemSubtypeFactoryTracker,
+							contentDashboardItemSubtypePayload)
 			).filter(
 				Optional::isPresent
 			).map(
@@ -275,7 +277,7 @@ public class ContentDashboardAdminDisplayContext {
 			);
 		}
 
-		return _contentDashboardItemTypePayloads;
+		return _contentDashboardItemSubtypePayloads;
 	}
 
 	public Map<String, Object> getData() {
@@ -454,9 +456,10 @@ public class ContentDashboardAdminDisplayContext {
 	private List<Long> _authorIds;
 	private final ContentDashboardDropdownItemsProvider
 		_contentDashboardDropdownItemsProvider;
-	private final ContentDashboardItemTypeFactoryTracker
-		_contentDashboardItemTypeFactoryTracker;
-	private List<ContentDashboardItemType> _contentDashboardItemTypePayloads;
+	private final ContentDashboardItemSubtypeFactoryTracker
+		_contentDashboardItemSubtypeFactoryTracker;
+	private List<ContentDashboardItemSubtype>
+		_contentDashboardItemSubtypePayloads;
 	private Map<String, Object> _data;
 	private final ItemSelector _itemSelector;
 	private final String _languageDirection;

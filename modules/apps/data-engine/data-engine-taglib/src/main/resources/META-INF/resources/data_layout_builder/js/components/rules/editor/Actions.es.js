@@ -18,7 +18,7 @@ import {useResource} from '@clayui/data-provider';
 import ClayIcon from '@clayui/icon';
 import ClayLayout from '@clayui/layout';
 import {Context as ModalContext} from '@clayui/modal';
-import {FieldStateless} from 'dynamic-data-mapping-form-renderer';
+import {FieldStateless} from 'data-engine-js-components-web';
 import {fetch} from 'frontend-js-web';
 import React, {useContext, useMemo} from 'react';
 
@@ -285,7 +285,7 @@ function Target({
 			case 'show':
 			case 'require':
 			case 'enable':
-				return fields;
+				return fields.filter(({hideField}) => !hideField);
 			case 'jump-to-page': {
 				const startIndex = conditions.reduce(
 					(prev, {operands: [left]}) => {

@@ -81,9 +81,9 @@ public class SchedulerResponseDisplayContext extends BaseDisplayContext {
 			dispatchRequestHelper.getLiferayPortletResponse()
 		).setMVCRenderCommandName(
 			"/dispatch/edit_scheduler_response"
-		).setParameter(
-			"tabs1", "scheduler-response"
-		).build();
+		).setTabs1(
+			"scheduler-response"
+		).buildPortletURL();
 
 		String redirect = ParamUtil.getString(
 			dispatchRequestHelper.getRequest(), "redirect");

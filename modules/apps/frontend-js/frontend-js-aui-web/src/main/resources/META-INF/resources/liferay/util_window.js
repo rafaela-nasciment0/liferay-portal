@@ -352,10 +352,15 @@ AUI.add(
 						try {
 							originalFn.call(this);
 						}
-						catch (err) {}
+						catch (error) {}
 					};
 
-					modal.get('boundingBox').addClass('dialog-iframe-modal');
+					var boundingBox = modal.get('boundingBox');
+
+					boundingBox.addClass('cadmin');
+					boundingBox.addClass('dialog-iframe-modal');
+					boundingBox.addClass('modal');
+					boundingBox.addClass('show');
 				}
 
 				if (!Lang.isValue(config.title)) {

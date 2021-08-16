@@ -148,6 +148,10 @@ public class BatchEngineImportTaskLocalServiceUtil {
 		return getService().dslQuery(dslQuery);
 	}
 
+	public static int dslQueryCount(DSLQuery dslQuery) {
+		return getService().dslQueryCount(dslQuery);
+	}
+
 	public static DynamicQuery dynamicQuery() {
 		return getService().dynamicQuery();
 	}
@@ -301,6 +305,20 @@ public class BatchEngineImportTaskLocalServiceUtil {
 	}
 
 	public static List<BatchEngineImportTask> getBatchEngineImportTasks(
+		long companyId, int start, int end) {
+
+		return getService().getBatchEngineImportTasks(companyId, start, end);
+	}
+
+	public static List<BatchEngineImportTask> getBatchEngineImportTasks(
+		long companyId, int start, int end,
+		OrderByComparator<BatchEngineImportTask> orderByComparator) {
+
+		return getService().getBatchEngineImportTasks(
+			companyId, start, end, orderByComparator);
+	}
+
+	public static List<BatchEngineImportTask> getBatchEngineImportTasks(
 		String executeStatus) {
 
 		return getService().getBatchEngineImportTasks(executeStatus);
@@ -313,6 +331,10 @@ public class BatchEngineImportTaskLocalServiceUtil {
 	 */
 	public static int getBatchEngineImportTasksCount() {
 		return getService().getBatchEngineImportTasksCount();
+	}
+
+	public static int getBatchEngineImportTasksCount(long companyId) {
+		return getService().getBatchEngineImportTasksCount(companyId);
 	}
 
 	public static

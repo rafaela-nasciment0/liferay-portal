@@ -50,10 +50,10 @@ if (folder != null) {
 				).setMVCRenderCommandName(
 					"/bookmarks/select_folder"
 				).setParameter(
-					"folderId", String.valueOf(folderId)
-				).setParameter(
 					"eventName", eventName
-				).build()
+				).setParameter(
+					"folderId", folderId
+				).buildPortletURL()
 			%>'
 			total="<%= BookmarksFolderServiceUtil.getFoldersCount(scopeGroupId, folderId) %>"
 		>
@@ -145,10 +145,3 @@ if (folder != null) {
 		</liferay-ui:search-container>
 	</aui:form>
 </clay:container-fluid>
-
-<aui:script>
-	Liferay.Util.selectEntityHandler(
-		'#<portlet:namespace />selectFolderFm',
-		'<%= HtmlUtil.escapeJS(eventName) %>'
-	);
-</aui:script>

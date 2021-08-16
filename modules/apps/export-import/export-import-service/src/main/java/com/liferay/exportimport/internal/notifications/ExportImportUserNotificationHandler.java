@@ -158,10 +158,10 @@ public class ExportImportUserNotificationHandler
 				PortletRequest.RENDER_PHASE)
 		).setMVCPath(
 			"/view_export_import.jsp"
+		).setBackURL(
+			serviceContext.getCurrentURL()
 		).setParameter(
 			"backgroundTaskId", backgroundTaskId
-		).setParameter(
-			"backURL", serviceContext.getCurrentURL()
 		).buildString();
 	}
 

@@ -71,7 +71,7 @@ definition {
 
 		ContentPages.clickPencil();
 
-		PageEditor.addWidget(portletName = "Hello World");
+		PageEditor.addWidget(portletName = "Asset Publisher");
 
 		PageEditor.clickPublish();
 
@@ -81,7 +81,7 @@ definition {
 			Refresh();
 		}
 
-		Portlet.viewPortletPresentPG(portletContent = "Welcome to Liferay");
+		Alert.viewInfoMessageSpecific(infoMessage = "There are no results.");
 	}
 
 	@priority = "4"
@@ -133,7 +133,7 @@ definition {
 
 		ContentPages.clickPencil();
 
-		PageEditor.addWidget(portletName = "Hello World");
+		PageEditor.addWidget(portletName = "Asset Publisher");
 
 		PageEditor.clickPublish();
 
@@ -151,7 +151,7 @@ definition {
 
 		Refresh();
 
-		Portlet.viewPortletPresentPG(portletContent = "Welcome to Liferay");
+		Alert.viewInfoMessageSpecific(infoMessage = "There are no results.");
 
 		SiteTemplatesNavigator.openSiteTemplatesAdmin();
 
@@ -165,8 +165,8 @@ definition {
 		ContentPages.clickPencil();
 
 		PageEditor.addWidget(
-			portletName = "Asset Publisher",
-			targetFragmentName = "Hello World");
+			portletName = "Blogs",
+			targetFragmentName = "Asset Publisher");
 
 		PageEditor.clickPublish();
 
@@ -175,7 +175,7 @@ definition {
 		Refresh();
 
 		AssertElementNotPresent(
-			key_portletName = "AssetPublisher",
+			key_portletName = "Blogs",
 			locator1 = "Portlet#SPECIFIC_FRAGMENTS_AND_WIDGETS");
 	}
 
@@ -228,6 +228,119 @@ definition {
 		AssertElementPresent(
 			key_menuItem = "Add Child Page of Test Page",
 			locator1 = "MenuItem#ANY_MENU_ITEM");
+	}
+
+	@description = "This is a use case for LPS-121139."
+	@priority = "4"
+	test AssertPartialSiteTemplatePropagation {
+		property database.types = "mysql";
+		property test.name.skip.portal.instance = "CPSitetemplates#AssertPartialSiteTemplatePropagation";
+
+		var siteName = TestCase.getSiteName(siteName = "${siteName}");
+
+		SiteTemplates.addCP(siteTemplateName = "Site Template Name");
+
+		SiteTemplates.addSitePageViaSiteTemplateCP(
+			pageName = "Widget Page Name",
+			siteTemplateName = "Site Template Name");
+
+		SiteTemplatesNavigator.gotoSiteTemplatesPage(
+			pageName = "Widget Page Name",
+			siteName = "${siteName}",
+			siteTemplateName = "Site Template Name");
+
+		Portlet.addPG(portletName = "Asset Publisher");
+
+		Close.closeAndSelectWindow(locator1 = "Site Templates - ${siteName}");
+
+		Site.openSitesAdmin();
+
+		Site.addCP(
+			siteName = "Site Name",
+			siteTemplateName = "Site Template Name",
+			siteType = "Site Template");
+
+		var homePageModificationDate1 = SiteTemplates.getPageModificationDate(
+			groupName = "Site Name",
+			pageNameFilter = "%Home%");
+
+		var widgetPageModificationDate1 = SiteTemplates.getPageModificationDate(
+			groupName = "Site Name",
+			pageNameFilter = "%Widget Page Name%");
+
+		SiteTemplatesNavigator.gotoSiteTemplatesPage(
+			pageName = "Widget Page Name",
+			siteName = "${siteName}",
+			siteTemplateName = "Site Template Name");
+
+		Portlet.addPG(portletName = "Web Content Display");
+
+		Navigator.openSiteURL(siteName = "Site Name");
+
+		Refresh();
+
+		Navigator.gotoSitePage(
+			pageName = "Widget Page Name",
+			siteName = "Site Name");
+
+		Refresh();
+
+		Alert.viewInfoMessageSpecific(infoMessage = "This application is not visible to users yet");
+
+		var homePageModificationDate2 = SiteTemplates.getPageModificationDate(
+			groupName = "Site Name",
+			pageNameFilter = "%Home%");
+
+		var widgetPageModificationDate2 = SiteTemplates.getPageModificationDate(
+			groupName = "Site Name",
+			pageNameFilter = "%Widget Page Name%");
+
+		if ("${widgetPageModificationDate2}" != "${widgetPageModificationDate1}") {
+			echo("The modification date of widget page is updated.");
+		}
+
+		if ("${homePageModificationDate2}" != "${homePageModificationDate1}") {
+			fail("The modification date of home page should not be updated.");
+		}
+
+		SiteTemplatesNavigator.gotoSiteTemplatesPage(
+			pageName = "Home",
+			siteName = "${siteName}",
+			siteTemplateName = "Site Template Name");
+
+		ContentPages.clickPencil();
+
+		PageEditor.addWidget(portletName = "Asset Publisher");
+
+		PageEditor.clickPublish();
+
+		Navigator.openSiteURL(siteName = "Site Name");
+
+		Refresh();
+
+		Alert.viewInfoMessageSpecific(infoMessage = "There are no results.");
+
+		Navigator.gotoSitePage(
+			pageName = "Widget Page Name",
+			siteName = "Site Name");
+
+		Refresh();
+
+		var homePageModificationDate3 = SiteTemplates.getPageModificationDate(
+			groupName = "Site Name",
+			pageNameFilter = "%Home%");
+
+		var widgetPageModificationDate3 = SiteTemplates.getPageModificationDate(
+			groupName = "Site Name",
+			pageNameFilter = "%Widget Page Name%");
+
+		if ("${widgetPageModificationDate3}" != "${widgetPageModificationDate2}") {
+			fail("The modification date of widget page should not be updated.");
+		}
+
+		if ("${homePageModificationDate3}" != "${homePageModificationDate1}") {
+			echo("The modification date of home page is updated.");
+		}
 	}
 
 	@description = "This is a use case for LPS-84497."
@@ -527,7 +640,7 @@ definition {
 			groupName = "Site Template Site Name",
 			userEmailAddress = "userea@liferay.com");
 
-		User.logoutUserPG();
+		User.logoutPG();
 
 		User.loginUserPG(userEmailAddress = "userea@liferay.com");
 
@@ -537,14 +650,14 @@ definition {
 
 		AssertElementNotPresent(locator1 = "Icon#EDIT_PENCIL");
 
-		User.logoutUserPG();
+		User.logoutPG();
 
 		User.loginUserPG();
 	}
 
 	@priority = "5"
 	test ResetPageChanges {
-		property portal.acceptance = "quarantine";
+		property portal.acceptance = "true";
 		property test.name.skip.portal.instance = "CPSitetemplates#ResetPageChanges";
 		property testray.component.names = "Training";
 
@@ -636,11 +749,13 @@ definition {
 			siteType = "Site Template",
 			uncheckPropagation = "true");
 
-		SitePages.openPagesAdmin(siteURLKey = "Site Name");
+		Site.openSiteSettingsAdmin(siteURLKey = "site-name");
 
-		ProductMenu.gotoPortlet(
-			category = "Configuration",
-			portlet = "Site Settings");
+		Click(
+			key_itemName = "Pages",
+			locator1 = "ListGroupItem#ITEM_TEXT");
+
+		Navigator.gotoNavTab(navTab = "Pages");
 
 		AssertAlertNotPresent();
 
@@ -653,7 +768,7 @@ definition {
 		AssertHTMLSourceTextPresent(value1 = "${escapedScript}");
 	}
 
-	@description = "This is a use case for LPS-124594."
+	@description = "This is a use case for LPS-124594 and LPS-129081."
 	@priority = "4"
 	test SwitchPropagationWithOneClickControl {
 		var siteName = TestCase.getSiteName(siteName = "${siteName}");
@@ -699,6 +814,43 @@ definition {
 		AssertElementPresent(
 			key_portletName = "AssetPublisher",
 			locator1 = "Portlet#SPECIFIC_FRAGMENTS_AND_WIDGETS");
+	}
+
+	@description = "This is a use case for LPS-133675."
+	@priority = "3"
+	test ViewJavaScriptPropagateviaSiteTemplate {
+		var javascript = '''alert("alert!");''';
+
+		SiteTemplates.addCP(siteTemplateName = "Site Template Name");
+
+		SiteTemplates.gotoSettingsCP(siteTemplateName = "Site Template Name");
+
+		SiteTemplates.AddSiteTemplateJavaScript(
+			javaScript = "${javascript}",
+			pageName = "Pages");
+
+		ProductMenu.gotoPortlet(
+			category = "Site Builder",
+			portlet = "Pages");
+
+		SitePages.gotoPageMenuItem(
+			menuItem = "View",
+			pageName = "Home");
+
+		AssertConfirm(value1 = "alert!");
+
+		ApplicationsMenu.gotoPortlet(
+			category = "Sites",
+			panel = "Control Panel",
+			portlet = "Sites");
+
+		Site.addSiteTemplateCP(
+			siteName = "Site Name",
+			siteTemplateName = "Site Template Name");
+
+		SiteTemplates.ViewSiteTemplateJavaScript(
+			javaScript = "${javascript}",
+			pageName = "Public Pages");
 	}
 
 }

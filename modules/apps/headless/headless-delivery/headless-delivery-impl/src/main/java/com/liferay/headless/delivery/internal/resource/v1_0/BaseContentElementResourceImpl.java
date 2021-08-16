@@ -97,11 +97,11 @@ public abstract class BaseContentElementResourceImpl
 	@Produces({"application/json", "application/xml"})
 	@Tags(value = {@Tag(name = "ContentElement")})
 	public Page<ContentElement> getAssetLibraryContentElementsPage(
-			@NotNull @Parameter(hidden = true) @PathParam("assetLibraryId")
-				Long assetLibraryId,
+			@NotNull @Parameter(hidden = true) @PathParam("assetLibraryId") Long
+				assetLibraryId,
 			@Parameter(hidden = true) @QueryParam("search") String search,
-			@Context
-				com.liferay.portal.vulcan.aggregation.Aggregation aggregation,
+			@Context com.liferay.portal.vulcan.aggregation.Aggregation
+				aggregation,
 			@Context Filter filter, @Context Pagination pagination,
 			@Context Sort[] sorts)
 		throws Exception {
@@ -132,8 +132,8 @@ public abstract class BaseContentElementResourceImpl
 	public Page<ContentElement> getSiteContentElementsPage(
 			@NotNull @Parameter(hidden = true) @PathParam("siteId") Long siteId,
 			@Parameter(hidden = true) @QueryParam("search") String search,
-			@Context
-				com.liferay.portal.vulcan.aggregation.Aggregation aggregation,
+			@Context com.liferay.portal.vulcan.aggregation.Aggregation
+				aggregation,
 			@Context Filter filter, @Context Pagination pagination,
 			@Context Sort[] sorts)
 		throws Exception {
@@ -178,8 +178,8 @@ public abstract class BaseContentElementResourceImpl
 		throws Exception {
 
 		return getSiteContentElementsPage(
-			(Long)parameters.get("siteId"), search, null, filter, pagination,
-			sorts);
+			Long.parseLong((String)parameters.get("siteId")), search, null,
+			filter, pagination, sorts);
 	}
 
 	@Override

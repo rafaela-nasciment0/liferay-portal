@@ -35,6 +35,7 @@ import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.search.Field;
 import com.liferay.portal.kernel.search.Sort;
 import com.liferay.portal.kernel.search.filter.Filter;
+import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.security.permission.ResourceActionsUtil;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.UserLocalService;
@@ -53,6 +54,7 @@ import com.liferay.portal.vulcan.util.ContentLanguageUtil;
 import com.liferay.portal.vulcan.util.GroupUtil;
 import com.liferay.portal.vulcan.util.LocalizedMapUtil;
 import com.liferay.portal.vulcan.util.SearchUtil;
+import com.liferay.portlet.asset.service.permission.AssetCategoriesPermission;
 import com.liferay.portlet.asset.util.AssetVocabularySettingsHelper;
 
 import java.util.Arrays;
@@ -118,17 +120,17 @@ public class TaxonomyVocabularyResourceImpl
 			HashMapBuilder.put(
 				"create",
 				addAction(
-					"ADD_VOCABULARY", "postSiteTaxonomyVocabulary",
-					"com.liferay.asset.categories", siteId)
+					ActionKeys.ADD_VOCABULARY, "postSiteTaxonomyVocabulary",
+					AssetCategoriesPermission.RESOURCE_NAME, siteId)
 			).put(
 				"get",
 				addAction(
-					"VIEW", "getSiteTaxonomyVocabulariesPage",
-					"com.liferay.asset.categories", siteId)
+					ActionKeys.VIEW, "getSiteTaxonomyVocabulariesPage",
+					AssetCategoriesPermission.RESOURCE_NAME, siteId)
 			).build(),
 			booleanQuery -> {
 			},
-			filter, AssetVocabulary.class, search, pagination,
+			filter, AssetVocabulary.class.getName(), search, pagination,
 			queryConfig -> queryConfig.setSelectedFieldNames(
 				Field.ASSET_VOCABULARY_ID),
 			searchContext -> {
@@ -270,6 +272,24 @@ public class TaxonomyVocabularyResourceImpl
 					taxonomyVocabulary.getAssetTypes(),
 					assetVocabulary.getGroupId()),
 				new ServiceContext()));
+	}
+
+	@Override
+	protected Long getPermissionCheckerGroupId(Object id) throws Exception {
+		AssetVocabulary assetVocabulary = _assetVocabularyService.getVocabulary(
+			(Long)id);
+
+		return assetVocabulary.getGroupId();
+	}
+
+	@Override
+	protected String getPermissionCheckerPortletName(Object id) {
+		return AssetCategoriesPermission.RESOURCE_NAME;
+	}
+
+	@Override
+	protected String getPermissionCheckerResourceName(Object id) {
+		return AssetVocabulary.class.getName();
 	}
 
 	private AssetType _getAssetType(
@@ -513,18 +533,23 @@ public class TaxonomyVocabularyResourceImpl
 				actions = HashMapBuilder.put(
 					"delete",
 					addAction(
-						"DELETE", assetVocabulary, "deleteTaxonomyVocabulary")
+						ActionKeys.DELETE, assetVocabulary,
+						"deleteTaxonomyVocabulary")
 				).put(
 					"get",
-					addAction("VIEW", assetVocabulary, "getTaxonomyVocabulary")
+					addAction(
+						ActionKeys.VIEW, assetVocabulary,
+						"getTaxonomyVocabulary")
 				).put(
 					"replace",
 					addAction(
-						"UPDATE", assetVocabulary, "putTaxonomyVocabulary")
+						ActionKeys.UPDATE, assetVocabulary,
+						"putTaxonomyVocabulary")
 				).put(
 					"update",
 					addAction(
-						"UPDATE", assetVocabulary, "patchTaxonomyVocabulary")
+						ActionKeys.UPDATE, assetVocabulary,
+						"patchTaxonomyVocabulary")
 				).build();
 				assetLibraryKey = GroupUtil.getAssetLibraryKey(group);
 				assetTypes = _getAssetTypes(

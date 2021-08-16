@@ -2,11 +2,13 @@
 <head>
 <title>WC</title>
 </head>
+
 <body>
-<table cellpadding="1" cellspacing="1" border="1">
+<table border="1" cellpadding="1" cellspacing="1">
 <thead>
 <tr><td rowspan="1" colspan="3">WC</td></tr>
 </thead>
+
 <tbody>
 <tr>
 	<td>ADD_TO_FAVORITES</td>
@@ -152,6 +154,11 @@
 	<td></td>
 </tr>
 <!--SIDEBAR -->
+<tr>
+	<td>PREVIEW_BUTTON</td>
+	<td>//fieldset[contains(@id,'${key_fieldsetName}')]//button[.//*[name()='svg'][contains(@class,'lexicon-icon-view')]]</td>
+	<td></td>
+</tr>
 <tr>
 	<td>SIDEBAR_BODY</td>
 	<td>//div[@class='sidebar-body']//div[contains(@id,'TabsSection')]</td>

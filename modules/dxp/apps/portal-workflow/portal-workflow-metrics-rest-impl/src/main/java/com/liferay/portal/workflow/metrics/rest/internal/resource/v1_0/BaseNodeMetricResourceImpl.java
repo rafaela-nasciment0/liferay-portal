@@ -90,6 +90,7 @@ public abstract class BaseNodeMetricResourceImpl
 			@Parameter(in = ParameterIn.QUERY, name = "dateEnd"),
 			@Parameter(in = ParameterIn.QUERY, name = "dateStart"),
 			@Parameter(in = ParameterIn.QUERY, name = "key"),
+			@Parameter(in = ParameterIn.QUERY, name = "processVersion"),
 			@Parameter(in = ParameterIn.QUERY, name = "page"),
 			@Parameter(in = ParameterIn.QUERY, name = "pageSize"),
 			@Parameter(in = ParameterIn.QUERY, name = "sort")
@@ -99,15 +100,17 @@ public abstract class BaseNodeMetricResourceImpl
 	@Produces({"application/json", "application/xml"})
 	@Tags(value = {@Tag(name = "NodeMetric")})
 	public Page<NodeMetric> getProcessNodeMetricsPage(
-			@NotNull @Parameter(hidden = true) @PathParam("processId")
-				Long processId,
-			@Parameter(hidden = true) @QueryParam("completed")
-				Boolean completed,
-			@Parameter(hidden = true) @QueryParam("dateEnd")
-				java.util.Date dateEnd,
-			@Parameter(hidden = true) @QueryParam("dateStart")
-				java.util.Date dateStart,
+			@NotNull @Parameter(hidden = true) @PathParam("processId") Long
+				processId,
+			@Parameter(hidden = true) @QueryParam("completed") Boolean
+				completed,
+			@Parameter(hidden = true) @QueryParam("dateEnd") java.util.Date
+				dateEnd,
+			@Parameter(hidden = true) @QueryParam("dateStart") java.util.Date
+				dateStart,
 			@Parameter(hidden = true) @QueryParam("key") String key,
+			@Parameter(hidden = true) @QueryParam("processVersion") String
+				processVersion,
 			@Context Pagination pagination, @Context Sort[] sorts)
 		throws Exception {
 

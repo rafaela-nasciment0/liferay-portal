@@ -23,7 +23,7 @@ PortletURL portletURL = PortletURLBuilder.createRenderURL(
 	renderResponse
 ).setMVCRenderCommandName(
 	"/wiki_admin/view"
-).build();
+).buildPortletURL();
 
 String displayStyle = ParamUtil.getString(request, "displayStyle");
 
@@ -160,11 +160,11 @@ WikiNodesManagementToolbarDisplayContext wikiNodesManagementToolbarDisplayContex
 							"/wiki/view_pages"
 						).setRedirect(
 							currentURL
+						).setNavigation(
+							"all-pages"
 						).setParameter(
-							"navigation", "all-pages"
-						).setParameter(
-							"nodeId", String.valueOf(node.getNodeId())
-						).build();
+							"nodeId", node.getNodeId()
+						).buildPortletURL();
 						%>
 
 						<c:choose>

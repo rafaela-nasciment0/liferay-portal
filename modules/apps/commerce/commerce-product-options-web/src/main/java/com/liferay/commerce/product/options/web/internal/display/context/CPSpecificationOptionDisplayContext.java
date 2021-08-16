@@ -98,9 +98,9 @@ public class CPSpecificationOptionDisplayContext
 	public PortletURL getPortletURL() throws PortalException {
 		return PortletURLBuilder.create(
 			super.getPortletURL()
-		).setParameter(
-			"navigation", getNavigation()
-		).build();
+		).setNavigation(
+			getNavigation()
+		).buildPortletURL();
 	}
 
 	@Override

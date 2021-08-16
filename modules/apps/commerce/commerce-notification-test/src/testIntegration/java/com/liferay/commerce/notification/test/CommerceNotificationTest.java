@@ -32,7 +32,6 @@ import com.liferay.commerce.product.service.CommerceChannelLocalService;
 import com.liferay.commerce.test.util.CommerceTestUtil;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
-import com.liferay.portal.kernel.exception.NoSuchUserException;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.Company;
 import com.liferay.portal.kernel.model.Group;
@@ -46,7 +45,6 @@ import com.liferay.portal.kernel.service.UserGroupLocalService;
 import com.liferay.portal.kernel.service.UserGroupRoleLocalService;
 import com.liferay.portal.kernel.service.UserLocalService;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
-import com.liferay.portal.kernel.test.rule.DataGuard;
 import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
 import com.liferay.portal.kernel.test.util.CompanyTestUtil;
 import com.liferay.portal.kernel.test.util.GroupTestUtil;
@@ -63,6 +61,7 @@ import java.util.List;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
@@ -71,7 +70,6 @@ import org.junit.runner.RunWith;
 /**
  * @author Luca Pellizzon
  */
-@DataGuard(scope = DataGuard.Scope.METHOD)
 @RunWith(Arquillian.class)
 public class CommerceNotificationTest {
 
@@ -82,12 +80,15 @@ public class CommerceNotificationTest {
 			new LiferayIntegrationTestRule(),
 			PermissionCheckerMethodTestRule.INSTANCE);
 
-	@Before
-	public void setUp() throws Exception {
+	@BeforeClass
+	public static void setUpClass() throws Exception {
 		_company = CompanyTestUtil.addCompany();
 
 		_user = UserTestUtil.addUser(_company);
+	}
 
+	@Before
+	public void setUp() throws Exception {
 		_group = GroupTestUtil.addGroup(
 			_company.getCompanyId(), _user.getUserId(), 0);
 
@@ -180,23 +181,6 @@ public class CommerceNotificationTest {
 				getCommerceNotificationQueueEntriesCount(_group.getGroupId());
 
 		Assert.assertEquals(1, commerceNotificationQueueEntriesCount);
-	}
-
-	@Test(expected = NoSuchUserException.class)
-	public void testNonexistingEmailAddressRecipient() throws Exception {
-		_commerceNotificationTemplate =
-			CommerceNotificationTestUtil.addNotificationTemplate(
-				"nonexisting@mail.com",
-				CommerceOrderConstants.ORDER_NOTIFICATION_PLACED,
-				_serviceContext);
-
-		_commerceOrder = CommerceTestUtil.addB2CCommerceOrder(
-			_user.getUserId(), _group.getGroupId(),
-			_commerceCurrency.getCommerceCurrencyId());
-
-		_commerceNotificationHelper.sendNotifications(
-			_group.getGroupId(), _user.getUserId(),
-			CommerceOrderConstants.ORDER_NOTIFICATION_PLACED, _commerceOrder);
 	}
 
 	@Test
@@ -411,6 +395,9 @@ public class CommerceNotificationTest {
 		return userGroup.getName();
 	}
 
+	private static Company _company;
+	private static User _user;
+
 	@DeleteAfterTestRun
 	private User _accountAdmin;
 
@@ -436,9 +423,6 @@ public class CommerceNotificationTest {
 	@DeleteAfterTestRun
 	private CommerceOrder _commerceOrder;
 
-	@DeleteAfterTestRun
-	private Company _company;
-
 	private boolean _createdAdminRole;
 	private boolean _createdOrderManagerRole;
 	private Group _group;
@@ -449,7 +433,6 @@ public class CommerceNotificationTest {
 	private RoleLocalService _roleLocalService;
 
 	private ServiceContext _serviceContext;
-	private User _user;
 
 	@Inject
 	private UserGroupLocalService _userGroupLocalService;

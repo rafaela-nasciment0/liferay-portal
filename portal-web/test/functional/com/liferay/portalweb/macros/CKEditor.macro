@@ -34,10 +34,12 @@ definition {
 			key_fieldLabel = "${fieldLabel}",
 			locator1 = "CKEditor#TOOLBAR_LINK_BUTTON");
 
-		Type(
-			key_text = "Display Text",
-			locator1 = "TextInput#ANY",
-			value1 = "${displayText}");
+		if (isSet(displayText)) {
+			Type(
+				key_text = "Display Text",
+				locator1 = "TextInput#ANY",
+				value1 = "${displayText}");
+		}
 
 		Type(
 			key_text = "URL",
@@ -45,6 +47,22 @@ definition {
 			value1 = "${entryExternalURL}");
 
 		Click(locator1 = "CKEditor#OK_BUTTON");
+	}
+
+	macro addEntryExternalURLToExistingText {
+		SelectFrame.selectFrameNoLoading(
+			key_fieldLabel = "${fieldLabel}",
+			locator1 = "CKEditor#FIELD_LABEL_IFRAME");
+
+		SelectFieldText(locator1 = "CKEditor#BODY");
+
+		SelectFrame(value1 = "relative=top");
+
+		CKEditor.addEntryExternalURL(
+			entryExternalURL = "${entryExternalURL}",
+			fieldLabel = "${fieldLabel}");
+
+		SelectFrame(value1 = "relative=top");
 	}
 
 	macro addSourceContent {

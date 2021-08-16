@@ -103,7 +103,7 @@ public class AssetLinksTag extends IncludeTag {
 	public void setPageContext(PageContext pageContext) {
 		super.setPageContext(pageContext);
 
-		servletContext = ServletContextUtil.getServletContext();
+		setServletContext(ServletContextUtil.getServletContext());
 	}
 
 	public void setPortletURL(PortletURL portletURL) {
@@ -184,17 +184,22 @@ public class AssetLinksTag extends IncludeTag {
 	}
 
 	private List<Tuple> _getAssetLinkEntries() throws Exception {
-		ThemeDisplay themeDisplay = (ThemeDisplay)request.getAttribute(
-			WebKeys.THEME_DISPLAY);
+		HttpServletRequest httpServletRequest = getRequest();
 
-		PortletRequest portletRequest = (PortletRequest)request.getAttribute(
-			JavaConstants.JAVAX_PORTLET_REQUEST);
+		ThemeDisplay themeDisplay =
+			(ThemeDisplay)httpServletRequest.getAttribute(
+				WebKeys.THEME_DISPLAY);
+
+		PortletRequest portletRequest =
+			(PortletRequest)httpServletRequest.getAttribute(
+				JavaConstants.JAVAX_PORTLET_REQUEST);
 
 		LiferayPortletRequest liferayPortletRequest =
 			PortalUtil.getLiferayPortletRequest(portletRequest);
 
-		PortletResponse portletResponse = (PortletResponse)request.getAttribute(
-			JavaConstants.JAVAX_PORTLET_RESPONSE);
+		PortletResponse portletResponse =
+			(PortletResponse)httpServletRequest.getAttribute(
+				JavaConstants.JAVAX_PORTLET_RESPONSE);
 
 		LiferayPortletResponse liferayPortletResponse =
 			PortalUtil.getLiferayPortletResponse(portletResponse);
@@ -243,12 +248,8 @@ public class AssetLinksTag extends IncludeTag {
 					assetLinkEntry.getClassPK());
 
 			if (!assetRenderer.hasViewPermission(
-					themeDisplay.getPermissionChecker())) {
-
-				continue;
-			}
-
-			if (!(assetLinkEntry.isVisible() ||
+					themeDisplay.getPermissionChecker()) ||
+				!(assetLinkEntry.isVisible() ||
 				  (assetRenderer.getStatus() ==
 					  WorkflowConstants.STATUS_SCHEDULED))) {
 
@@ -292,13 +293,13 @@ public class AssetLinksTag extends IncludeTag {
 		else {
 			viewAssetURL = PortletURLBuilder.create(
 				PortletProviderUtil.getPortletURL(
-					request, assetRenderer.getClassName(),
+					getRequest(), assetRenderer.getClassName(),
 					PortletProvider.Action.VIEW)
 			).setRedirect(
 				themeDisplay.getURLCurrent()
 			).setWindowState(
 				WindowState.MAXIMIZED
-			).build();
+			).buildPortletURL();
 		}
 
 		viewAssetURL.setParameter(

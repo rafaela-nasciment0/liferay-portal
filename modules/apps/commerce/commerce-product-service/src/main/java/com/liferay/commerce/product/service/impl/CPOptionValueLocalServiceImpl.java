@@ -112,6 +112,32 @@ public class CPOptionValueLocalServiceImpl
 		return cpOptionValue;
 	}
 
+	@Override
+	public CPOptionValue addOrUpdateCPOptionValue(
+			String externalReferenceCode, long cpOptionId,
+			Map<Locale, String> nameMap, double priority, String key,
+			ServiceContext serviceContext)
+		throws PortalException {
+
+		if (Validator.isBlank(externalReferenceCode)) {
+			externalReferenceCode = null;
+		}
+		else {
+			CPOptionValue cpOptionValue = cpOptionValuePersistence.fetchByC_ERC(
+				serviceContext.getCompanyId(), externalReferenceCode);
+
+			if (cpOptionValue != null) {
+				return cpOptionValueLocalService.updateCPOptionValue(
+					cpOptionValue.getCPOptionValueId(), nameMap, priority, key,
+					serviceContext);
+			}
+		}
+
+		return cpOptionValueLocalService.addCPOptionValue(
+			externalReferenceCode, cpOptionId, nameMap, priority, key,
+			serviceContext);
+	}
+
 	@Indexable(type = IndexableType.DELETE)
 	@Override
 	@SystemEvent(type = SystemEventConstants.TYPE_DELETE)
@@ -285,39 +311,13 @@ public class CPOptionValueLocalServiceImpl
 		return cpOptionValue;
 	}
 
-	@Override
-	public CPOptionValue upsertCPOptionValue(
-			String externalReferenceCode, long cpOptionId,
-			Map<Locale, String> nameMap, double priority, String key,
-			ServiceContext serviceContext)
-		throws PortalException {
-
-		if (Validator.isBlank(externalReferenceCode)) {
-			externalReferenceCode = null;
-		}
-		else {
-			CPOptionValue cpOptionValue = cpOptionValuePersistence.fetchByC_ERC(
-				serviceContext.getCompanyId(), externalReferenceCode);
-
-			if (cpOptionValue != null) {
-				return cpOptionValueLocalService.updateCPOptionValue(
-					cpOptionValue.getCPOptionValueId(), nameMap, priority, key,
-					serviceContext);
-			}
-		}
-
-		return cpOptionValueLocalService.addCPOptionValue(
-			externalReferenceCode, cpOptionId, nameMap, priority, key,
-			serviceContext);
-	}
-
 	protected SearchContext buildSearchContext(
 		long companyId, long cpOptionId, String keywords, int start, int end,
 		Sort[] sorts) {
 
 		SearchContext searchContext = new SearchContext();
 
-		Map<String, Serializable> attributes =
+		searchContext.setAttributes(
 			HashMapBuilder.<String, Serializable>put(
 				_FIELD_KEY, keywords
 			).put(
@@ -333,9 +333,7 @@ public class CPOptionValueLocalServiceImpl
 				LinkedHashMapBuilder.<String, Object>put(
 					"keywords", keywords
 				).build()
-			).build();
-
-		searchContext.setAttributes(attributes);
+			).build());
 
 		searchContext.setCompanyId(companyId);
 		searchContext.setEnd(end);

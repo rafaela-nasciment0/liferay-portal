@@ -35,6 +35,7 @@ import com.liferay.portal.json.JSONFactoryImpl;
 import com.liferay.portal.kernel.language.Language;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.language.constants.LanguageConstants;
+import com.liferay.portal.kernel.service.GroupLocalService;
 import com.liferay.portal.kernel.template.TemplateResource;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.HashMapBuilder;
@@ -57,15 +58,20 @@ import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 
+import org.powermock.api.mockito.PowerMockito;
+import org.powermock.modules.junit4.PowerMockRunner;
+
 /**
  * @author Marcellus Tavares
  */
-public class DDMFormFieldTemplateContextFactoryTest {
+@RunWith(PowerMockRunner.class)
+public class DDMFormFieldTemplateContextFactoryTest extends PowerMockito {
 
 	@ClassRule
 	@Rule
@@ -222,6 +228,9 @@ public class DDMFormFieldTemplateContextFactoryTest {
 				"This is a tip.", _LOCALE));
 
 		ddmFormField.setProperty("displayStyle", "singleline");
+		ddmFormField.setRequiredErrorMessage(
+			DDMFormValuesTestUtil.createLocalizedValue(
+				"Custom required error message.", _LOCALE));
 
 		ddmForm.addDDMFormField(ddmFormField);
 
@@ -281,6 +290,9 @@ public class DDMFormFieldTemplateContextFactoryTest {
 		Assert.assertEquals(
 			true, MapUtil.getBoolean(fieldTemplateContext, "required"));
 		Assert.assertEquals(
+			"Custom required error message.",
+			MapUtil.getString(fieldTemplateContext, "requiredErrorMessage"));
+		Assert.assertEquals(
 			"This is a tip.", MapUtil.getString(fieldTemplateContext, "tip"));
 		Assert.assertEquals(
 			true, MapUtil.getBoolean(fieldTemplateContext, "valid"));
@@ -323,7 +335,8 @@ public class DDMFormFieldTemplateContextFactoryTest {
 				ddmForm.getDDMFormFieldsMap(true), ddmFormFieldsPropertyChanges,
 				ddmFormFieldValues, ddmFormRenderingContext,
 				_ddmStructureLayoutLocalService, _ddmStructureLocalService,
-				new JSONFactoryImpl(), true, new DDMFormLayout());
+				_groupLocalService, new JSONFactoryImpl(), true,
+				new DDMFormLayout());
 
 		DDMFormFieldTypeServicesTracker ddmFormFieldTypeServicesTracker =
 			mockDDMFormFieldTypeServicesTracker(
@@ -450,6 +463,9 @@ public class DDMFormFieldTemplateContextFactoryTest {
 
 	@Mock
 	private DDMStructureLocalService _ddmStructureLocalService;
+
+	@Mock
+	private GroupLocalService _groupLocalService;
 
 	private HttpServletRequest _httpServletRequest;
 

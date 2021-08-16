@@ -107,7 +107,6 @@ import com.liferay.portal.util.ShutdownUtil;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 
 import javax.portlet.ActionRequest;
@@ -309,11 +308,8 @@ public class EditServerMVCActionCommand extends BaseMVCActionCommand {
 					Layout layout = _layoutLocalService.getLayout(
 						layoutRevision.getPlid());
 
-					if (!layout.isTypePortlet()) {
-						return;
-					}
-
-					if (_containsPortlet(
+					if (!layout.isTypePortlet() ||
+						_containsPortlet(
 							layout, portletPreferences.getPortletId())) {
 
 						return;
@@ -368,8 +364,7 @@ public class EditServerMVCActionCommand extends BaseMVCActionCommand {
 					if ((pref.getOwnerId() !=
 							PortletKeys.PREFS_OWNER_ID_DEFAULT) ||
 						(pref.getOwnerType() !=
-							PortletKeys.PREFS_OWNER_TYPE_LAYOUT) ||
-						Objects.equals("145", pref.getPortletId())) {
+							PortletKeys.PREFS_OWNER_TYPE_LAYOUT)) {
 
 						return;
 					}
@@ -377,7 +372,7 @@ public class EditServerMVCActionCommand extends BaseMVCActionCommand {
 					Layout layout = _layoutLocalService.getLayout(
 						pref.getPlid());
 
-					if (layout.isTypeControlPanel()) {
+					if (layout.isTypeContent() || layout.isTypeControlPanel()) {
 						return;
 					}
 

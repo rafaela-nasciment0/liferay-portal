@@ -174,6 +174,10 @@ public class LayoutRevisionLocalServiceUtil {
 		return getService().dslQuery(dslQuery);
 	}
 
+	public static int dslQueryCount(DSLQuery dslQuery) {
+		return getService().dslQueryCount(dslQuery);
+	}
+
 	public static DynamicQuery dynamicQuery() {
 		return getService().dynamicQuery();
 	}
@@ -261,6 +265,13 @@ public class LayoutRevisionLocalServiceUtil {
 		long layoutSetBranchId, long plid) {
 
 		return getService().fetchLatestLayoutRevision(layoutSetBranchId, plid);
+	}
+
+	public static LayoutRevision fetchLatestLayoutRevision(
+		long layoutSetBranchId, long layoutBranchId, long plid) {
+
+		return getService().fetchLatestLayoutRevision(
+			layoutSetBranchId, layoutBranchId, plid);
 	}
 
 	public static LayoutRevision fetchLayoutRevision(long layoutRevisionId) {

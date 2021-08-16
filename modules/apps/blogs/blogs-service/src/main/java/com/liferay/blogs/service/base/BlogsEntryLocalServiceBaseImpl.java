@@ -160,6 +160,13 @@ public abstract class BlogsEntryLocalServiceBaseImpl
 	}
 
 	@Override
+	public int dslQueryCount(DSLQuery dslQuery) {
+		Long count = dslQuery(dslQuery);
+
+		return count.intValue();
+	}
+
+	@Override
 	public DynamicQuery dynamicQuery() {
 		Class<?> clazz = getClass();
 
@@ -263,6 +270,50 @@ public abstract class BlogsEntryLocalServiceBaseImpl
 		String uuid, long groupId) {
 
 		return blogsEntryPersistence.fetchByUUID_G(uuid, groupId);
+	}
+
+	/**
+	 * Returns the blogs entry with the matching external reference code and group.
+	 *
+	 * @param groupId the primary key of the group
+	 * @param externalReferenceCode the blogs entry's external reference code
+	 * @return the matching blogs entry, or <code>null</code> if a matching blogs entry could not be found
+	 */
+	@Override
+	public BlogsEntry fetchBlogsEntryByExternalReferenceCode(
+		long groupId, String externalReferenceCode) {
+
+		return blogsEntryPersistence.fetchByG_ERC(
+			groupId, externalReferenceCode);
+	}
+
+	/**
+	 * @deprecated As of Cavanaugh (7.4.x), replaced by {@link #fetchBlogsEntryByExternalReferenceCode(long, String)}
+	 */
+	@Deprecated
+	@Override
+	public BlogsEntry fetchBlogsEntryByReferenceCode(
+		long groupId, String externalReferenceCode) {
+
+		return fetchBlogsEntryByExternalReferenceCode(
+			groupId, externalReferenceCode);
+	}
+
+	/**
+	 * Returns the blogs entry with the matching external reference code and group.
+	 *
+	 * @param groupId the primary key of the group
+	 * @param externalReferenceCode the blogs entry's external reference code
+	 * @return the matching blogs entry
+	 * @throws PortalException if a matching blogs entry could not be found
+	 */
+	@Override
+	public BlogsEntry getBlogsEntryByExternalReferenceCode(
+			long groupId, String externalReferenceCode)
+		throws PortalException {
+
+		return blogsEntryPersistence.findByG_ERC(
+			groupId, externalReferenceCode);
 	}
 
 	/**

@@ -188,23 +188,23 @@ public class AdminPortlet extends BaseKBPortlet {
 		throws Exception {
 
 		try {
-			ThemeDisplay themeDisplay =
-				(ThemeDisplay)actionRequest.getAttribute(WebKeys.THEME_DISPLAY);
-
 			UploadPortletRequest uploadPortletRequest =
 				_portal.getUploadPortletRequest(actionRequest);
 
 			checkExceededSizeLimit(actionRequest);
-
-			long parentKBFolderId = ParamUtil.getLong(
-				uploadPortletRequest, "parentKBFolderId",
-				KBFolderConstants.DEFAULT_PARENT_FOLDER_ID);
 
 			String fileName = uploadPortletRequest.getFileName("file");
 
 			if (Validator.isNull(fileName)) {
 				throw new KBArticleImportException("File name is null");
 			}
+
+			ThemeDisplay themeDisplay =
+				(ThemeDisplay)actionRequest.getAttribute(WebKeys.THEME_DISPLAY);
+
+			long parentKBFolderId = ParamUtil.getLong(
+				uploadPortletRequest, "parentKBFolderId",
+				KBFolderConstants.DEFAULT_PARENT_FOLDER_ID);
 
 			boolean prioritizeByNumericalPrefix = ParamUtil.getBoolean(
 				uploadPortletRequest, "prioritizeByNumericalPrefix");
@@ -358,7 +358,7 @@ public class AdminPortlet extends BaseKBPortlet {
 					KBWebKeys.THEME_DISPLAY);
 
 			kbFolderService.addKBFolder(
-				themeDisplay.getScopeGroupId(), parentResourceClassNameId,
+				null, themeDisplay.getScopeGroupId(), parentResourceClassNameId,
 				parentResourcePrimKey, name, description, serviceContext);
 		}
 		else if (cmd.equals(Constants.UPDATE)) {

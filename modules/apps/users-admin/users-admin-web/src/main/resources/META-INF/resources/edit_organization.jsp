@@ -31,22 +31,20 @@ PortletURL portletURL = PortletURLBuilder.createRenderURL(
 	liferayPortletResponse
 ).setMVCRenderCommandName(
 	"/users_admin/edit_organization"
-).build();
+).buildPortletURL();
 
 if (Validator.isNotNull(redirect)) {
 	portletURL.setParameter("redirect", redirect);
 }
 
 if (Validator.isNull(backURL)) {
-	PortletURL viewOrganizationsURL = PortletURLBuilder.createRenderURL(
+	backURL = PortletURLBuilder.createRenderURL(
 		liferayPortletResponse
 	).setParameter(
 		"toolbarItem", "view-all-organizations"
 	).setParameter(
 		"usersListView", UserConstants.LIST_VIEW_FLAT_ORGANIZATIONS
-	).build();
-
-	backURL = viewOrganizationsURL.toString();
+	).buildString();
 }
 
 portletURL.setParameter("backURL", backURL);

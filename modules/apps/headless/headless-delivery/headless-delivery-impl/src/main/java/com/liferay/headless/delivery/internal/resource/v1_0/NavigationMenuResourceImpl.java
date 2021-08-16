@@ -17,10 +17,11 @@ package com.liferay.headless.delivery.internal.resource.v1_0;
 import com.liferay.headless.common.spi.service.context.ServiceContextRequestUtil;
 import com.liferay.headless.delivery.dto.v1_0.NavigationMenu;
 import com.liferay.headless.delivery.dto.v1_0.NavigationMenuItem;
-import com.liferay.headless.delivery.internal.dto.v1_0.util.CreatorUtil;
+import com.liferay.headless.delivery.dto.v1_0.util.CreatorUtil;
 import com.liferay.headless.delivery.resource.v1_0.NavigationMenuResource;
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.model.LayoutFriendlyURL;
+import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.service.LayoutFriendlyURLLocalService;
 import com.liferay.portal.kernel.service.LayoutLocalService;
 import com.liferay.portal.kernel.service.ServiceContext;
@@ -35,6 +36,7 @@ import com.liferay.portal.vulcan.pagination.Page;
 import com.liferay.portal.vulcan.pagination.Pagination;
 import com.liferay.portal.vulcan.util.JaxRsLinkUtil;
 import com.liferay.portal.vulcan.util.LocalizedMapUtil;
+import com.liferay.site.navigation.constants.SiteNavigationActionKeys;
 import com.liferay.site.navigation.constants.SiteNavigationConstants;
 import com.liferay.site.navigation.model.SiteNavigationMenu;
 import com.liferay.site.navigation.model.SiteNavigationMenuItem;
@@ -89,8 +91,9 @@ public class NavigationMenuResourceImpl extends BaseNavigationMenuResourceImpl {
 			Collections.singletonMap(
 				"create",
 				addAction(
-					"ADD_SITE_NAVIGATION_MENU", "postSiteNavigationMenu",
-					"com.liferay.site.navigation", siteId)),
+					SiteNavigationActionKeys.ADD_SITE_NAVIGATION_MENU,
+					"postSiteNavigationMenu",
+					SiteNavigationConstants.RESOURCE_NAME, siteId)),
 			transform(
 				_siteNavigationMenuService.getSiteNavigationMenus(
 					siteId, pagination.getStartPosition(),
@@ -150,6 +153,24 @@ public class NavigationMenuResourceImpl extends BaseNavigationMenuResourceImpl {
 		return _toNavigationMenu(
 			_siteNavigationMenuService.updateSiteNavigationMenu(
 				navigationMenuId, navigationMenu.getName(), serviceContext));
+	}
+
+	@Override
+	protected Long getPermissionCheckerGroupId(Object id) throws Exception {
+		SiteNavigationMenu siteNavigationMenu =
+			_siteNavigationMenuService.fetchSiteNavigationMenu((Long)id);
+
+		return siteNavigationMenu.getGroupId();
+	}
+
+	@Override
+	protected String getPermissionCheckerPortletName(Object id) {
+		return SiteNavigationConstants.RESOURCE_NAME;
+	}
+
+	@Override
+	protected String getPermissionCheckerResourceName(Object id) {
+		return SiteNavigationMenu.class.getName();
 	}
 
 	private void _createNavigationMenuItem(
@@ -422,12 +443,13 @@ public class NavigationMenuResourceImpl extends BaseNavigationMenuResourceImpl {
 					() -> HashMapBuilder.put(
 						"delete",
 						addAction(
-							"DELETE", siteNavigationMenu,
+							ActionKeys.DELETE, siteNavigationMenu,
 							"deleteNavigationMenu")
 					).put(
 						"replace",
 						addAction(
-							"UPDATE", siteNavigationMenu, "putNavigationMenu")
+							ActionKeys.UPDATE, siteNavigationMenu,
+							"putNavigationMenu")
 					).build());
 				setNavigationType(
 					() -> {

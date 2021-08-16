@@ -28,7 +28,6 @@ import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.test.log.LogCapture;
 import com.liferay.portal.test.log.LoggerTestUtil;
 
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -50,46 +49,6 @@ public class MessageBoardMessageResourceTest
 		serviceContext.setScopeGroupId(testGroup.getGroupId());
 	}
 
-	@Override
-	@Test
-	public void testPutSiteMessageBoardMessageByExternalReferenceCode()
-		throws Exception {
-
-		// Update
-
-		super.testPutSiteMessageBoardMessageByExternalReferenceCode();
-
-		// Add
-
-		MessageBoardMessage randomMessageBoardMessage =
-			randomMessageBoardMessage();
-
-		randomMessageBoardMessage.setParentMessageBoardMessageId(
-			_mbThread.getRootMessageId());
-
-		MessageBoardMessage putMessageBoardMessage =
-			messageBoardMessageResource.
-				putSiteMessageBoardMessageByExternalReferenceCode(
-					randomMessageBoardMessage.getExternalReferenceCode(),
-					testGroup.getGroupId(), randomMessageBoardMessage);
-
-		assertEquals(randomMessageBoardMessage, putMessageBoardMessage);
-		assertValid(putMessageBoardMessage);
-
-		MessageBoardMessage getMessageBoardMessage =
-			messageBoardMessageResource.
-				getSiteMessageBoardMessageByExternalReferenceCode(
-					putMessageBoardMessage.getExternalReferenceCode(),
-					testGroup.getGroupId());
-
-		assertEquals(randomMessageBoardMessage, getMessageBoardMessage);
-		assertValid(getMessageBoardMessage);
-
-		Assert.assertEquals(
-			randomMessageBoardMessage.getExternalReferenceCode(),
-			getMessageBoardMessage.getExternalReferenceCode());
-	}
-
 	@Test
 	public void testPutSiteMessageBoardMessageWithoutParentMessageId()
 		throws Exception {
@@ -108,8 +67,9 @@ public class MessageBoardMessageResourceTest
 				400,
 				messageBoardMessageResource.
 					putSiteMessageBoardMessageByExternalReferenceCodeHttpResponse(
+						testGroup.getGroupId(),
 						randomMessageBoardMessage.getExternalReferenceCode(),
-						testGroup.getGroupId(), randomMessageBoardMessage));
+						randomMessageBoardMessage));
 		}
 	}
 
@@ -211,6 +171,14 @@ public class MessageBoardMessageResourceTest
 
 	@Override
 	protected MessageBoardMessage
+			testGetSiteMessageBoardMessagePermissionsPage_addMessageBoardMessage()
+		throws Exception {
+
+		return _addMessageBoardMessage();
+	}
+
+	@Override
+	protected MessageBoardMessage
 			testGetSiteMessageBoardMessagesPage_addMessageBoardMessage(
 				Long siteId, MessageBoardMessage messageBoardMessage)
 		throws Exception {
@@ -250,6 +218,14 @@ public class MessageBoardMessageResourceTest
 
 	@Override
 	protected MessageBoardMessage
+			testPutMessageBoardMessagePermission_addMessageBoardMessage()
+		throws Exception {
+
+		return _addMessageBoardMessage();
+	}
+
+	@Override
+	protected MessageBoardMessage
 			testPutMessageBoardMessageSubscribe_addMessageBoardMessage()
 		throws Exception {
 
@@ -267,6 +243,29 @@ public class MessageBoardMessageResourceTest
 	@Override
 	protected MessageBoardMessage
 			testPutSiteMessageBoardMessageByExternalReferenceCode_addMessageBoardMessage()
+		throws Exception {
+
+		return _addMessageBoardMessage();
+	}
+
+	@Override
+	protected MessageBoardMessage
+			testPutSiteMessageBoardMessageByExternalReferenceCode_createMessageBoardMessage()
+		throws Exception {
+
+		MessageBoardMessage messageBoardMessage =
+			super.
+				testPutSiteMessageBoardMessageByExternalReferenceCode_createMessageBoardMessage();
+
+		messageBoardMessage.setParentMessageBoardMessageId(
+			_mbThread.getRootMessageId());
+
+		return messageBoardMessage;
+	}
+
+	@Override
+	protected MessageBoardMessage
+			testPutSiteMessageBoardMessagePermission_addMessageBoardMessage()
 		throws Exception {
 
 		return _addMessageBoardMessage();

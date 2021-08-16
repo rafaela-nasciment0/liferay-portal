@@ -14,6 +14,8 @@
 
 package com.liferay.source.formatter;
 
+import com.liferay.portal.tools.ToolsUtil;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -28,6 +30,8 @@ public class SourceFormatterArgs {
 	public static final boolean AUTO_FIX = true;
 
 	public static final String BASE_DIR_NAME = "./";
+
+	public static final int COMMIT_COUNT = 0;
 
 	public static final boolean FAIL_ON_AUTO_FIX = false;
 
@@ -44,6 +48,8 @@ public class SourceFormatterArgs {
 	public static final boolean INCLUDE_GENERATED_FILES = false;
 
 	public static final boolean INCLUDE_SUBREPOSITORIES = false;
+
+	public static final int MAX_DIR_LEVEL = ToolsUtil.PORTAL_MAX_DIR_LEVEL;
 
 	public static final int MAX_LINE_LENGTH = 80;
 
@@ -89,6 +95,10 @@ public class SourceFormatterArgs {
 		return _checkNames;
 	}
 
+	public int getCommitCount() {
+		return _commitCount;
+	}
+
 	public List<String> getFileExtensions() {
 		return _fileExtensions;
 	}
@@ -99,6 +109,10 @@ public class SourceFormatterArgs {
 
 	public String getGitWorkingBranchName() {
 		return _gitWorkingBranchName;
+	}
+
+	public int getMaxDirLevel() {
+		return _maxDirLevel;
 	}
 
 	public int getMaxLineLength() {
@@ -119,6 +133,10 @@ public class SourceFormatterArgs {
 
 	public List<String> getSkipCheckNames() {
 		return _skipCheckNames;
+	}
+
+	public List<String> getSourceFormatterProperties() {
+		return _sourceFormatterProperties;
 	}
 
 	public boolean isAutoFix() {
@@ -197,6 +215,10 @@ public class SourceFormatterArgs {
 		_checkNames = checkNames;
 	}
 
+	public void setCommitCount(int commitCount) {
+		_commitCount = commitCount;
+	}
+
 	public void setFailOnAutoFix(boolean failOnAutoFix) {
 		_failOnAutoFix = failOnAutoFix;
 	}
@@ -246,6 +268,10 @@ public class SourceFormatterArgs {
 		_includeSubrepositories = includeSubrepositories;
 	}
 
+	public void setMaxDirLevel(int maxDirLevel) {
+		_maxDirLevel = maxDirLevel;
+	}
+
 	public void setMaxLineLength(int maxLineLength) {
 		_maxLineLength = maxLineLength;
 	}
@@ -278,6 +304,12 @@ public class SourceFormatterArgs {
 		_skipCheckNames = skipCheckNames;
 	}
 
+	public void setSourceFormatterProperties(
+		List<String> sourceFormatterProperties) {
+
+		_sourceFormatterProperties = sourceFormatterProperties;
+	}
+
 	public void setValidateCommitMessages(boolean validateCommitMessages) {
 		_validateCommitMessages = validateCommitMessages;
 	}
@@ -286,6 +318,7 @@ public class SourceFormatterArgs {
 	private String _baseDirName = BASE_DIR_NAME;
 	private List<String> _checkCategoryNames = new ArrayList<>();
 	private List<String> _checkNames = new ArrayList<>();
+	private int _commitCount = COMMIT_COUNT;
 	private boolean _failOnAutoFix = FAIL_ON_AUTO_FIX;
 	private boolean _failOnHasWarning = FAIL_ON_HAS_WARNING;
 	private List<String> _fileExtensions = new ArrayList<>();
@@ -296,6 +329,7 @@ public class SourceFormatterArgs {
 	private String _gitWorkingBranchName = GIT_WORKING_BRANCH_NAME;
 	private boolean _includeGeneratedFiles = INCLUDE_GENERATED_FILES;
 	private boolean _includeSubrepositories = INCLUDE_SUBREPOSITORIES;
+	private int _maxDirLevel = MAX_DIR_LEVEL;
 	private int _maxLineLength = MAX_LINE_LENGTH;
 	private String _outputFileName = OUTPUT_FILE_NAME;
 	private boolean _printErrors = PRINT_ERRORS;
@@ -305,6 +339,7 @@ public class SourceFormatterArgs {
 	private boolean _showDocumentation = SHOW_DOCUMENTATION;
 	private boolean _showStatusUpdates = SHOW_STATUS_UPDATES;
 	private List<String> _skipCheckNames = new ArrayList<>();
+	private List<String> _sourceFormatterProperties = new ArrayList<>();
 	private boolean _validateCommitMessages = VALIDATE_COMMIT_MESSAGES;
 
 }

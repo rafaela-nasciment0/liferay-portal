@@ -2,11 +2,13 @@
 <head>
 <title>DDMField</title>
 </head>
+
 <body>
-<table cellpadding="1" cellspacing="1" border="1">
+<table border="1" cellpadding="1" cellspacing="1">
 <thead>
 <tr><td rowspan="1" colspan="3">DDMField</td></tr>
 </thead>
+
 <tbody>
 <tr>
 	<td>BOOLEAN</td>
@@ -51,11 +53,6 @@
 <tr>
 	<td>DDM_INPUT</td>
 	<td>//div[contains(@data-fieldname,'${key_fieldDefaultValue}')]//input</td>
-	<td></td>
-</tr>
-<tr>
-	<td>FIELD_DUPLICATE</td>
-	<td>//label[contains(.,'${key_fieldName}')]/..//button[@*='Duplicate']</td>
 	<td></td>
 </tr>
 <tr>
@@ -110,7 +107,7 @@
 </tr>
 <tr>
 	<td>WEB_CONTENT</td>
-	<td>//div[@data-fieldname='${key_fieldName}']//label[contains(.,'${key_fieldFieldLabel}')]</td>
+	<td>//div[@data-field-name='${key_fieldName}']//label[contains(.,'${key_fieldFieldLabel}')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -120,7 +117,12 @@
 </tr>
 <tr>
 	<td>REMOVE_REPEATED_FIELD</td>
-	<td>//button[@class= 'ddm-form-field-repeatable-delete-button p-0 btn btn-sm btn-primary']</td>
+	<td>//div[contains(@data-field-name,'${key_fieldName}')]/..//button[@*='Remove']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>REMOVE_SPECIFIC_REPEATED_FIELD</td>
+	<td>//div[@class='ddm-field' and contains(.,'${key_fieldValue}')]//button[@class= 'ddm-form-field-repeatable-delete-button p-0 btn btn-sm btn-primary']</td>
 	<td></td>
 </tr>
 </tbody>

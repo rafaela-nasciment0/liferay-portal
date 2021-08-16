@@ -16,7 +16,7 @@ definition {
 
 		NavItem.gotoStructures();
 
-		WebContentStructures.addCP(structureName = "Structure Name");
+		WebContentStructures.addCP(structureName = "WC Structure Title");
 
 		DataEngine.addField(
 			fieldFieldLabel = "Color",
@@ -43,9 +43,9 @@ definition {
 			fieldFieldLabel = "Color Test",
 			fieldName = "Color");
 
-		WebContentStructures.saveCP(structureName = "Structure Name Test");
+		WebContentStructures.saveCP();
 
-		WebContentNavigator.gotoEditStructure(structureName = "Structure Name Test");
+		WebContentNavigator.gotoEditStructure(structureName = "WC Structure Title");
 
 		DataEngine.viewField(
 			fieldFieldLabel = "Color Test",
@@ -63,61 +63,25 @@ definition {
 
 		WebContentStructures.saveCP();
 
-		WebContentNavigator.gotoEditStructure(structureName = "Structure Name");
+		WebContentNavigator.gotoEditStructure(structureName = "WC Structure Title");
 
 		DataEngine.delete(fieldFieldLabel = "Color");
 
 		WebContentStructures.saveCP();
 
-		WebContentNavigator.gotoEditStructure(structureName = "Structure Name");
+		WebContentNavigator.gotoEditStructure(structureName = "WC Structure Title");
 
 		AssertElementNotPresent(
 			key_fieldFieldLabel = "Color",
 			locator1 = "DDMEditStructure#FORM_FIELD_CONTAINER_LABEL");
 	}
 
-	@description = "This test ensures that a user can duplicate the Color field on builder."
-	@priority = "4"
-	test DuplicateColorFieldOnBuilder {
-		property portal.acceptance = "false";
-
-		WebContentStructures.saveCP();
-
-		WebContentNavigator.gotoEditStructure(structureName = "Structure Name");
-
-		DataEngine.duplicate(fieldFieldLabel = "Color");
-
-		WebContentStructures.saveCP();
-
-		WebContentNavigator.gotoEditStructure(structureName = "Structure Name");
-
-		DataEngine.viewField(
-			fieldFieldLabel = "Color",
-			fieldName = "Color");
-
-		DataEngine.viewField(
-			fieldFieldLabel = "Copy of Color",
-			fieldName = "Color");
-	}
-
 	@description = "This test validates the input of valid and invalid characters on Field Reference."
 	@priority = "4"
 	test EditColorFieldNameWithValidAndInvalidCharacters {
-		property portal.acceptance = "false";
-
-		DataEngine.editFieldReference(
-			assertFieldReference = "Color_Test",
-			fieldFieldLabel = "Color",
-			fieldReference = "Color_Test");
-
 		WebContentStructures.saveCP();
 
-		WebContentNavigator.gotoEditStructure(structureName = "Structure Name");
-
-		DataEngine.viewFieldReference(
-			fieldFieldLabel = "Color",
-			fieldName = "Color",
-			fieldReference = "Color_Test");
+		WebContentNavigator.gotoEditStructure(structureName = "WC Structure Title");
 
 		DataEngine.editFieldReference(
 			assertFieldReference = "ColorTest1",
@@ -126,39 +90,12 @@ definition {
 
 		WebContentStructures.saveCP();
 
-		WebContentNavigator.gotoEditStructure(structureName = "Structure Name");
+		WebContentNavigator.gotoEditStructure(structureName = "WC Structure Title");
 
-		DataEngine.viewFieldReference(
+		DataEngine.editFieldReference(
+			assertFieldReference = "Color_Test",
 			fieldFieldLabel = "Color",
-			fieldName = "Color",
-			fieldReference = "ColorTest1");
-	}
-
-	@description = "This test ensures that a user can add a Color field on a form using drag and drop, edit it's label and help text."
-	@priority = "5"
-	test EditLabelAndHelpTextOfColorField {
-		property portal.acceptance = "false";
-
-		WebContentStructures.saveCP();
-
-		WebContentNavigator.gotoEditStructure(structureName = "Structure Name");
-
-		DataEngine.editFieldLabel(
-			fieldFieldLabel = "Color",
-			fieldFieldLabelEdit = "Edited Color");
-
-		DataEngine.editFieldTip(
-			fieldFieldLabel = "Edited Color",
-			fieldHelp = "Help");
-
-		WebContentStructures.saveCP();
-
-		WebContentNavigator.gotoEditStructure(structureName = "Structure Name");
-
-		DataEngine.viewField(
-			fieldFieldLabel = "Edited Color",
-			fieldHelp = "Help",
-			fieldName = "Color");
+			fieldReference = "Color_Test");
 	}
 
 	@description = "This test ensures that a user can set Color field as required."
@@ -172,7 +109,7 @@ definition {
 
 		NavItem.click(navItem = "Web Content");
 
-		WebContentNavigator.gotoAddWithStructureCP(structureName = "Structure Name");
+		WebContentNavigator.gotoAddWithStructureCP(structureName = "WC Structure Title");
 
 		PortletEntry.inputTitle(title = "Web Content Title");
 
@@ -195,7 +132,7 @@ definition {
 
 		WebContentStructures.saveCP();
 
-		WebContentNavigator.gotoEditStructure(structureName = "Structure Name");
+		WebContentNavigator.gotoEditStructure(structureName = "WC Structure Title");
 
 		DataEngine.viewFieldSearchable(
 			fieldFieldLabel = "Color",
@@ -207,7 +144,7 @@ definition {
 
 		WebContentStructures.saveCP();
 
-		WebContentNavigator.gotoEditStructure(structureName = "Structure Name");
+		WebContentNavigator.gotoEditStructure(structureName = "WC Structure Title");
 
 		DataEngine.viewFieldSearchable(
 			fieldFieldLabel = "Color",

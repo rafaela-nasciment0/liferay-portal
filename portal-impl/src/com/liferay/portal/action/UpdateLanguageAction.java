@@ -177,7 +177,15 @@ public class UpdateLanguageAction implements Action {
 		if (themeDisplay.isI18n()) {
 			String i18nPath = themeDisplay.getI18nPath();
 
-			if (layoutURL.startsWith(i18nPath)) {
+			Locale currentLocale = themeDisplay.getLocale();
+
+			String currentLocalePath =
+				StringPool.SLASH + currentLocale.toLanguageTag();
+
+			if (layoutURL.startsWith(currentLocalePath)) {
+				layoutURL = layoutURL.substring(currentLocalePath.length());
+			}
+			else if (layoutURL.startsWith(i18nPath)) {
 				layoutURL = layoutURL.substring(i18nPath.length());
 			}
 		}
@@ -256,11 +264,8 @@ public class UpdateLanguageAction implements Action {
 		Locale layoutURLLocale = LocaleUtil.fromLanguageId(
 			layoutURLLanguageId, true, false);
 
-		if (layoutURLLocale != null) {
-			return true;
-		}
-
-		if (PortalUtil.isGroupFriendlyURL(
+		if ((layoutURLLocale != null) ||
+			PortalUtil.isGroupFriendlyURL(
 				layoutURL, group.getFriendlyURL(),
 				layout.getFriendlyURL(locale))) {
 

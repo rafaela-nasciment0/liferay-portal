@@ -44,7 +44,6 @@ import com.liferay.portal.kernel.security.permission.PermissionCheckerFactoryUti
 import com.liferay.portal.kernel.security.permission.PermissionThreadLocal;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
-import com.liferay.portal.kernel.test.rule.DataGuard;
 import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
 import com.liferay.portal.kernel.test.util.CompanyTestUtil;
 import com.liferay.portal.kernel.test.util.GroupTestUtil;
@@ -68,6 +67,7 @@ import org.frutilla.FrutillaRule;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
@@ -78,7 +78,6 @@ import org.springframework.mock.web.MockHttpServletRequest;
 /**
  * @author Luca Pellizzon
  */
-@DataGuard(scope = DataGuard.Scope.METHOD)
 @RunWith(Arquillian.class)
 public class CommercePaymentEngineTest {
 
@@ -89,12 +88,15 @@ public class CommercePaymentEngineTest {
 			new LiferayIntegrationTestRule(),
 			PermissionCheckerMethodTestRule.INSTANCE);
 
-	@Before
-	public void setUp() throws Exception {
+	@BeforeClass
+	public static void setUpClass() throws Exception {
 		_company = CompanyTestUtil.addCompany();
 
 		_user = UserTestUtil.addUser(_company);
+	}
 
+	@Before
+	public void setUp() throws Exception {
 		PermissionThreadLocal.setPermissionChecker(
 			PermissionCheckerFactoryUtil.create(_user));
 
@@ -118,8 +120,6 @@ public class CommercePaymentEngineTest {
 				RandomTestUtil.randomLocaleStringMap(),
 				RandomTestUtil.randomLocaleStringMap(), null,
 				TestCommercePaymentMethod.KEY, 99, true);
-
-		_commerceOrders = new ArrayList<>();
 
 		_httpServletRequest = new MockHttpServletRequest("GET", "");
 
@@ -307,6 +307,9 @@ public class CommercePaymentEngineTest {
 	@Rule
 	public FrutillaRule frutillaRule = new FrutillaRule();
 
+	private static Company _company;
+	private static User _user;
+
 	@DeleteAfterTestRun
 	private CommerceChannel _commerceChannel;
 
@@ -319,7 +322,7 @@ public class CommercePaymentEngineTest {
 	@Inject
 	private CommerceOrderLocalService _commerceOrderLocalService;
 
-	private List<CommerceOrder> _commerceOrders;
+	private final List<CommerceOrder> _commerceOrders = new ArrayList<>();
 
 	@Inject
 	private CommercePaymentEngine _commercePaymentEngine;
@@ -334,12 +337,8 @@ public class CommercePaymentEngineTest {
 	@Inject
 	private CommercePriceListLocalService _commercePriceListLocalService;
 
-	@DeleteAfterTestRun
-	private Company _company;
-
 	private Group _group;
 	private HttpServletRequest _httpServletRequest;
 	private ServiceContext _serviceContext;
-	private User _user;
 
 }

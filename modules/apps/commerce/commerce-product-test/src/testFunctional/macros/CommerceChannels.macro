@@ -22,4 +22,63 @@ definition {
 		Click(locator1 = "Icon#CLOSE");
 	}
 
+	macro assertMercanetConfigurationEnvironment {
+		CommerceEntry.clickTableEntryEditButton(
+			entryName = "${paymentMethod}",
+			table = "Payment Methods");
+
+		SelectFrame.selectFrameNoLoading(locator1 = "CommerceEntry#IFRAME_SIDE_PANEL");
+
+		Click(
+			locator1 = "CommerceEntry#PAYMENT_METHODS_SIDE_PANEL_NAV_ITEMS",
+			navItem = "Configuration");
+
+		Select(
+			key_fieldLabel = "Environment",
+			locator1 = "Select#GENERIC_SELECT_FIELD",
+			value1 = "${key_value}");
+
+		Button.clickSave();
+
+		Alert.viewSuccessMessage();
+
+		AssertElementPresent(
+			key_fieldLabel = "Environment",
+			key_value = "${key_value}",
+			locator1 = "CommerceEntry#SELECT_ASSERT_SELECTED_VALUE");
+
+		Click(locator1 = "Icon#CLOSE");
+	}
+
+	macro configurationPaypal {
+		CommerceEntry.clickTableEntryEditButton(
+			entryName = "PayPal",
+			table = "Payment Methods");
+
+		SelectFrame.selectFrameNoLoading(locator1 = "CommerceEntry#IFRAME_SIDE_PANEL");
+
+		Click(
+			locator1 = "CommerceEntry#PAYMENT_METHODS_SIDE_PANEL_NAV_ITEMS",
+			navItem = "Configuration");
+
+		Type(
+			key_text = "Client ID",
+			locator1 = "TextInput#ANY",
+			value1 = "PayPal Client ID");
+
+		Type(
+			key_text = "Client Secret",
+			locator1 = "TextInput#ANY",
+			value1 = "PayPal Client Secret");
+
+		Select(
+			key_fieldLabel = "Mode",
+			locator1 = "Select#GENERIC_SELECT_FIELD",
+			value1 = "${mode}");
+
+		Button.clickSave();
+
+		Click(locator1 = "Icon#CLOSE");
+	}
+
 }

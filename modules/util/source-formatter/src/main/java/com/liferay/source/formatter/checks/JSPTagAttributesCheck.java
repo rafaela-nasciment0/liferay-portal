@@ -94,7 +94,13 @@ public class JSPTagAttributesCheck extends BaseTagAttributesCheck {
 	}
 
 	@Override
-	protected Tag formatTagAttributeType(Tag tag) throws Exception {
+	protected Tag formatTagAttributeType(String absolutePath, Tag tag)
+		throws Exception {
+
+		if (absolutePath.endsWith(".jspx")) {
+			return tag;
+		}
+
 		Map<String, String> setMethodsMap = _getSetMethodsMap(tag.getName());
 
 		Map<String, String> attributesMap = tag.getAttributesMap();
@@ -387,14 +393,14 @@ public class JSPTagAttributesCheck extends BaseTagAttributesCheck {
 
 		List<String> tldFileNames = TaglibUtil.getTLDFileNames(
 			getBaseDirName(), _allFileNames, getSourceFormatterExcludes(),
-			isPortalSource());
+			isPortalSource(), getMaxDirLevel());
 
 		if (tldFileNames.isEmpty()) {
 			return _tagSetMethodsMap.get(tagName);
 		}
 
 		String utilTaglibSrcDirName = TaglibUtil.getUtilTaglibSrcDirName(
-			getBaseDirName());
+			getBaseDirName(), getMaxDirLevel());
 
 		outerLoop:
 		for (String tldFileName : tldFileNames) {

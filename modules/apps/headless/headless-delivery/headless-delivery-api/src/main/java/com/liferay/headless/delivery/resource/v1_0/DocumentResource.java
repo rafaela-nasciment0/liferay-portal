@@ -68,6 +68,17 @@ public interface DocumentResource {
 			String callbackURL, Object object)
 		throws Exception;
 
+	public Page<com.liferay.portal.vulcan.permission.Permission>
+			getAssetLibraryDocumentPermissionsPage(
+				Long assetLibraryId, String roleNames)
+		throws Exception;
+
+	public Page<com.liferay.portal.vulcan.permission.Permission>
+			putAssetLibraryDocumentPermission(
+				Long assetLibraryId,
+				com.liferay.portal.vulcan.permission.Permission[] permissions)
+		throws Exception;
+
 	public Page<Document> getDocumentFolderDocumentsPage(
 			Long documentFolderId, Boolean flatten, String search,
 			com.liferay.portal.vulcan.aggregation.Aggregation aggregation,
@@ -110,6 +121,16 @@ public interface DocumentResource {
 	public Rating putDocumentMyRating(Long documentId, Rating rating)
 		throws Exception;
 
+	public Page<com.liferay.portal.vulcan.permission.Permission>
+			getDocumentPermissionsPage(Long documentId, String roleNames)
+		throws Exception;
+
+	public Page<com.liferay.portal.vulcan.permission.Permission>
+			putDocumentPermission(
+				Long documentId,
+				com.liferay.portal.vulcan.permission.Permission[] permissions)
+		throws Exception;
+
 	public String getDocumentRenderedContentByDisplayPageDisplayPageKey(
 			Long documentId, String displayPageKey)
 		throws Exception;
@@ -126,6 +147,29 @@ public interface DocumentResource {
 	public Response postSiteDocumentBatch(
 			Long siteId, MultipartBody multipartBody, String callbackURL,
 			Object object)
+		throws Exception;
+
+	public void deleteSiteDocumentByExternalReferenceCode(
+			Long siteId, String externalReferenceCode)
+		throws Exception;
+
+	public Document getSiteDocumentByExternalReferenceCode(
+			Long siteId, String externalReferenceCode)
+		throws Exception;
+
+	public Document putSiteDocumentByExternalReferenceCode(
+			Long siteId, String externalReferenceCode,
+			MultipartBody multipartBody)
+		throws Exception;
+
+	public Page<com.liferay.portal.vulcan.permission.Permission>
+			getSiteDocumentPermissionsPage(Long siteId, String roleNames)
+		throws Exception;
+
+	public Page<com.liferay.portal.vulcan.permission.Permission>
+			putSiteDocumentPermission(
+				Long siteId,
+				com.liferay.portal.vulcan.permission.Permission[] permissions)
 		throws Exception;
 
 	public default void setContextAcceptLanguage(

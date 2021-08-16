@@ -69,9 +69,9 @@ public class CPAttachmentFileEntryCreator {
 
 		ServiceContext serviceContext = new ServiceContext();
 
+		serviceContext.setCompanyId(user.getCompanyId());
 		serviceContext.setScopeGroupId(scopeGroupId);
 		serviceContext.setUserId(userId);
-		serviceContext.setCompanyId(user.getCompanyId());
 
 		Map<Locale, String> titleMap = HashMapBuilder.put(
 			serviceContext.getLocale(), fileName
@@ -171,8 +171,8 @@ public class CPAttachmentFileEntryCreator {
 			_friendlyURLNormalizer.normalize(fileName),
 			serviceContext.getUserId(), fileEntry.getGroupId(),
 			_portal.getClassNameId(classedModel.getModelClass()), classPK,
-			fileEntry.getFileEntryId(), displayDateMonth, displayDateDay,
-			displayDateYear, displayDateHour, displayDateMinute,
+			fileEntry.getFileEntryId(), false, null, displayDateMonth,
+			displayDateDay, displayDateYear, displayDateHour, displayDateMinute,
 			expirationDateMonth, expirationDateDay, expirationDateYear,
 			expirationDateHour, expirationDateMinute, true, titleMap, null,
 			priority, type, serviceContext);

@@ -69,7 +69,7 @@ public class ViewAccountEntryAddressesManagementToolbarDisplayContext
 					).setActionName(
 						"/account_admin/delete_account_entry_addresses"
 					).setRedirect(
-						currentURLObj.toString()
+						currentURLObj
 					).buildString());
 
 				dropdownItem.setIcon("times-circle");
@@ -85,8 +85,8 @@ public class ViewAccountEntryAddressesManagementToolbarDisplayContext
 	public String getClearResultsURL() {
 		return PortletURLBuilder.create(
 			getPortletURL()
-		).setParameter(
-			"keywords", StringPool.BLANK
+		).setKeywords(
+			StringPool.BLANK
 		).buildString();
 	}
 

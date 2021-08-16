@@ -647,33 +647,27 @@ public class CPTestUtil {
 
 		SearchContext searchContext = new SearchContext();
 
-		Map<String, Serializable> attributes =
+		searchContext.setAttributes(
 			HashMapBuilder.<String, Serializable>put(
 				Field.STATUS, status
 			).put(
 				"params",
-				LinkedHashMapBuilder.<String, Object>put(
-					"keywords",
-					() -> {
-						if (Validator.isNotNull(keywords)) {
-							return keywords;
-						}
-
-						return StringPool.STAR;
+				() -> {
+					if (Validator.isNotNull(keywords)) {
+						return LinkedHashMapBuilder.<String, Object>put(
+							"keywords", keywords
+						).build();
 					}
-				).build()
-			).build();
 
-		searchContext.setAttributes(attributes);
+					return null;
+				}
+			).build());
 
 		searchContext.setCompanyId(group.getCompanyId());
 		searchContext.setGroupIds(new long[] {group.getGroupId()});
 
 		if (Validator.isNotNull(keywords)) {
 			searchContext.setKeywords(keywords);
-		}
-		else {
-			searchContext.setKeywords(StringPool.STAR);
 		}
 
 		return searchContext;

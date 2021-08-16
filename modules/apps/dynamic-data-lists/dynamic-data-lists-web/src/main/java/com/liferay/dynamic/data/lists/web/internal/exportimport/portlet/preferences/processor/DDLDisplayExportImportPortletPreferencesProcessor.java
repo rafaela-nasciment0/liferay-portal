@@ -192,14 +192,14 @@ public class DDLDisplayExportImportPortletPreferencesProcessor
 	}
 
 	protected ActionableDynamicQuery getRecordActionableDynamicQuery(
-		final PortletDataContext portletDataContext,
-		final DDLRecordSet recordSet, final String portletId) {
+		PortletDataContext portletDataContext, DDLRecordSet recordSet,
+		String portletId) {
 
 		ActionableDynamicQuery recordActionableDynamicQuery =
 			_ddlRecordStagedModelRepository.getExportActionableDynamicQuery(
 				portletDataContext);
 
-		final ActionableDynamicQuery.AddCriteriaMethod addCriteriaMethod =
+		ActionableDynamicQuery.AddCriteriaMethod addCriteriaMethod =
 			recordActionableDynamicQuery.getAddCriteriaMethod();
 
 		recordActionableDynamicQuery.setAddCriteriaMethod(

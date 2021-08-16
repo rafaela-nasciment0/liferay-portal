@@ -20,8 +20,11 @@ import React, {useMemo} from 'react';
 import {COLUMN_SIZE_MODULE_PER_ROW_SIZES} from '../../../../../../app/config/constants/columnSizes';
 import {VIEWPORT_SIZES} from '../../../../../../app/config/constants/viewportSizes';
 import {config} from '../../../../../../app/config/index';
+import {
+	useDispatch,
+	useSelector,
+} from '../../../../../../app/contexts/StoreContext';
 import selectSegmentsExperienceId from '../../../../../../app/selectors/selectSegmentsExperienceId';
-import {useDispatch, useSelector} from '../../../../../../app/store/index';
 import updateItemConfig from '../../../../../../app/thunks/updateItemConfig';
 import updateRowColumns from '../../../../../../app/thunks/updateRowColumns';
 import {deepEqual} from '../../../../../../app/utils/checkDeepEqual';
@@ -46,6 +49,7 @@ const MODULES_PER_ROW_OPTIONS_WITH_CUSTOM = MODULES_PER_ROW_OPTIONS.map(
 );
 
 const VERTICAL_ALIGNMENT_OPTIONS = [
+	{label: Liferay.Language.get('default'), value: ''},
 	{label: Liferay.Language.get('top'), value: 'top'},
 	{label: Liferay.Language.get('middle'), value: 'middle'},
 	{label: Liferay.Language.get('bottom'), value: 'bottom'},
@@ -201,7 +205,7 @@ export const RowStylesPanel = ({item}) => {
 					handleChange={onCustomStylesValueSelect}
 					label={Liferay.Language.get('vertical-alignment')}
 					options={VERTICAL_ALIGNMENT_OPTIONS}
-					value={rowConfig.verticalAlignment}
+					value={rowConfig.verticalAlignment || ''}
 				/>
 			</div>
 

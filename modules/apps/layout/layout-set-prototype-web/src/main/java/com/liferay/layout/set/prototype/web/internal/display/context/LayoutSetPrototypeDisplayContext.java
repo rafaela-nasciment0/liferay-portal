@@ -227,8 +227,8 @@ public class LayoutSetPrototypeDisplayContext {
 	public String getSortingURL() {
 		return PortletURLBuilder.create(
 			getPortletURL()
-		).setParameter(
-			"keywords", _getKeywords()
+		).setKeywords(
+			_getKeywords()
 		).setParameter(
 			"orderByCol", getOrderByCol()
 		).setParameter(
@@ -251,7 +251,7 @@ public class LayoutSetPrototypeDisplayContext {
 			"changeDisplayStyle"
 		).setRedirect(
 			PortalUtil.getCurrentURL(_httpServletRequest)
-		).build();
+		).buildPortletURL();
 
 		return new ViewTypeItemList(portletURL, getDisplayStyle()) {
 			{
@@ -271,11 +271,7 @@ public class LayoutSetPrototypeDisplayContext {
 	}
 
 	public boolean isDisabledManagementBar() {
-		if (getTotal() > 0) {
-			return false;
-		}
-
-		if (!Objects.equals(getNavigation(), "all")) {
+		if ((getTotal() > 0) || !Objects.equals(getNavigation(), "all")) {
 			return false;
 		}
 

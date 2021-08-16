@@ -134,9 +134,19 @@ public class KaleoTaskInstanceTokenModelPreFilterContributor
 			return;
 		}
 
-		for (Long assetPrimaryKey : assetPrimaryKeys) {
-			booleanFilter.addTerm(Field.CLASS_PK, assetPrimaryKey);
-		}
+		TermsFilter assetPrimaryKeyTermsFilter = new TermsFilter(
+			Field.CLASS_PK);
+
+		assetPrimaryKeyTermsFilter.addValues(
+			Stream.of(
+				assetPrimaryKeys
+			).map(
+				String::valueOf
+			).toArray(
+				String[]::new
+			));
+
+		booleanFilter.add(assetPrimaryKeyTermsFilter, BooleanClauseOccur.MUST);
 	}
 
 	protected void appendAssetTitleTerm(
@@ -439,20 +449,11 @@ public class KaleoTaskInstanceTokenModelPreFilterContributor
 		KaleoTaskInstanceTokenQuery kaleoTaskInstanceTokenQuery) {
 
 		if (ArrayUtil.isNotEmpty(
-				kaleoTaskInstanceTokenQuery.getAssetPrimaryKeys())) {
+				kaleoTaskInstanceTokenQuery.getAssetPrimaryKeys()) ||
+			ArrayUtil.isNotEmpty(kaleoTaskInstanceTokenQuery.getAssetTypes()) ||
+			(kaleoTaskInstanceTokenQuery.getDueDateGT() != null) ||
+			(kaleoTaskInstanceTokenQuery.getDueDateLT() != null)) {
 
-			return true;
-		}
-
-		if (ArrayUtil.isNotEmpty(kaleoTaskInstanceTokenQuery.getAssetTypes())) {
-			return true;
-		}
-
-		if (kaleoTaskInstanceTokenQuery.getDueDateGT() != null) {
-			return true;
-		}
-
-		if (kaleoTaskInstanceTokenQuery.getDueDateLT() != null) {
 			return true;
 		}
 

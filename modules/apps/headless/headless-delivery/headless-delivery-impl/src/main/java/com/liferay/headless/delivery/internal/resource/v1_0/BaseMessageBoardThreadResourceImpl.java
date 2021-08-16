@@ -19,20 +19,28 @@ import com.liferay.headless.delivery.dto.v1_0.Rating;
 import com.liferay.headless.delivery.resource.v1_0.MessageBoardThreadResource;
 import com.liferay.petra.function.UnsafeFunction;
 import com.liferay.portal.kernel.model.GroupedModel;
+import com.liferay.portal.kernel.model.ResourceAction;
 import com.liferay.portal.kernel.search.Sort;
 import com.liferay.portal.kernel.search.filter.Filter;
+import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermission;
 import com.liferay.portal.kernel.service.GroupLocalService;
 import com.liferay.portal.kernel.service.ResourceActionLocalService;
 import com.liferay.portal.kernel.service.ResourcePermissionLocalService;
 import com.liferay.portal.kernel.service.RoleLocalService;
+import com.liferay.portal.kernel.util.GetterUtil;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.LocaleUtil;
+import com.liferay.portal.kernel.util.StringUtil;
+import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.odata.entity.EntityModel;
 import com.liferay.portal.vulcan.accept.language.AcceptLanguage;
 import com.liferay.portal.vulcan.batch.engine.VulcanBatchEngineTaskItemDelegate;
 import com.liferay.portal.vulcan.batch.engine.resource.VulcanBatchEngineImportTaskResource;
 import com.liferay.portal.vulcan.pagination.Page;
 import com.liferay.portal.vulcan.pagination.Pagination;
+import com.liferay.portal.vulcan.permission.ModelPermissionsUtil;
+import com.liferay.portal.vulcan.permission.PermissionUtil;
 import com.liferay.portal.vulcan.resource.EntityModelResource;
 import com.liferay.portal.vulcan.util.ActionUtil;
 import com.liferay.portal.vulcan.util.TransformUtil;
@@ -113,10 +121,9 @@ public abstract class BaseMessageBoardThreadResourceImpl
 			getMessageBoardSectionMessageBoardThreadsPage(
 				@NotNull @Parameter(hidden = true)
 				@PathParam("messageBoardSectionId")
-					Long messageBoardSectionId,
+				Long messageBoardSectionId,
 				@Parameter(hidden = true) @QueryParam("search") String search,
-				@Context
-					com.liferay.portal.vulcan.aggregation.Aggregation
+				@Context com.liferay.portal.vulcan.aggregation.Aggregation
 					aggregation,
 				@Context Filter filter, @Context Pagination pagination,
 				@Context Sort[] sorts)
@@ -149,7 +156,7 @@ public abstract class BaseMessageBoardThreadResourceImpl
 	public MessageBoardThread postMessageBoardSectionMessageBoardThread(
 			@NotNull @Parameter(hidden = true)
 			@PathParam("messageBoardSectionId")
-				Long messageBoardSectionId,
+			Long messageBoardSectionId,
 			MessageBoardThread messageBoardThread)
 		throws Exception {
 
@@ -178,9 +185,9 @@ public abstract class BaseMessageBoardThreadResourceImpl
 	public Response postMessageBoardSectionMessageBoardThreadBatch(
 			@NotNull @Parameter(hidden = true)
 			@PathParam("messageBoardSectionId")
-				Long messageBoardSectionId,
-			@Parameter(hidden = true) @QueryParam("callbackURL")
-				String callbackURL,
+			Long messageBoardSectionId,
+			@Parameter(hidden = true) @QueryParam("callbackURL") String
+				callbackURL,
 			Object object)
 		throws Exception {
 
@@ -221,12 +228,12 @@ public abstract class BaseMessageBoardThreadResourceImpl
 	@Produces({"application/json", "application/xml"})
 	@Tags(value = {@Tag(name = "MessageBoardThread")})
 	public Page<MessageBoardThread> getMessageBoardThreadsRankedPage(
-			@Parameter(hidden = true) @QueryParam("dateCreated")
-				java.util.Date dateCreated,
-			@Parameter(hidden = true) @QueryParam("dateModified")
-				java.util.Date dateModified,
-			@Parameter(hidden = true) @QueryParam("messageBoardSectionId")
-				Long messageBoardSectionId,
+			@Parameter(hidden = true) @QueryParam("dateCreated") java.util.Date
+				dateCreated,
+			@Parameter(hidden = true) @QueryParam("dateModified") java.util.Date
+				dateModified,
+			@Parameter(hidden = true) @QueryParam("messageBoardSectionId") Long
+				messageBoardSectionId,
 			@Context Pagination pagination, @Context Sort[] sorts)
 		throws Exception {
 
@@ -254,7 +261,7 @@ public abstract class BaseMessageBoardThreadResourceImpl
 	public void deleteMessageBoardThread(
 			@NotNull @Parameter(hidden = true)
 			@PathParam("messageBoardThreadId")
-				Long messageBoardThreadId)
+			Long messageBoardThreadId)
 		throws Exception {
 	}
 
@@ -273,8 +280,8 @@ public abstract class BaseMessageBoardThreadResourceImpl
 	@Produces("application/json")
 	@Tags(value = {@Tag(name = "MessageBoardThread")})
 	public Response deleteMessageBoardThreadBatch(
-			@Parameter(hidden = true) @QueryParam("callbackURL")
-				String callbackURL,
+			@Parameter(hidden = true) @QueryParam("callbackURL") String
+				callbackURL,
 			Object object)
 		throws Exception {
 
@@ -313,7 +320,7 @@ public abstract class BaseMessageBoardThreadResourceImpl
 	public MessageBoardThread getMessageBoardThread(
 			@NotNull @Parameter(hidden = true)
 			@PathParam("messageBoardThreadId")
-				Long messageBoardThreadId)
+			Long messageBoardThreadId)
 		throws Exception {
 
 		return new MessageBoardThread();
@@ -341,7 +348,7 @@ public abstract class BaseMessageBoardThreadResourceImpl
 	public MessageBoardThread patchMessageBoardThread(
 			@NotNull @Parameter(hidden = true)
 			@PathParam("messageBoardThreadId")
-				Long messageBoardThreadId,
+			Long messageBoardThreadId,
 			MessageBoardThread messageBoardThread)
 		throws Exception {
 
@@ -427,6 +434,11 @@ public abstract class BaseMessageBoardThreadResourceImpl
 				messageBoardThread.getSiteId());
 		}
 
+		if (messageBoardThread.getStatus() != null) {
+			existingMessageBoardThread.setStatus(
+				messageBoardThread.getStatus());
+		}
+
 		if (messageBoardThread.getSubscribed() != null) {
 			existingMessageBoardThread.setSubscribed(
 				messageBoardThread.getSubscribed());
@@ -480,7 +492,7 @@ public abstract class BaseMessageBoardThreadResourceImpl
 	public MessageBoardThread putMessageBoardThread(
 			@NotNull @Parameter(hidden = true)
 			@PathParam("messageBoardThreadId")
-				Long messageBoardThreadId,
+			Long messageBoardThreadId,
 			MessageBoardThread messageBoardThread)
 		throws Exception {
 
@@ -502,8 +514,8 @@ public abstract class BaseMessageBoardThreadResourceImpl
 	@PUT
 	@Tags(value = {@Tag(name = "MessageBoardThread")})
 	public Response putMessageBoardThreadBatch(
-			@Parameter(hidden = true) @QueryParam("callbackURL")
-				String callbackURL,
+			@Parameter(hidden = true) @QueryParam("callbackURL") String
+				callbackURL,
 			Object object)
 		throws Exception {
 
@@ -544,7 +556,7 @@ public abstract class BaseMessageBoardThreadResourceImpl
 	public void deleteMessageBoardThreadMyRating(
 			@NotNull @Parameter(hidden = true)
 			@PathParam("messageBoardThreadId")
-				Long messageBoardThreadId)
+			Long messageBoardThreadId)
 		throws Exception {
 	}
 
@@ -567,7 +579,7 @@ public abstract class BaseMessageBoardThreadResourceImpl
 	public Rating getMessageBoardThreadMyRating(
 			@NotNull @Parameter(hidden = true)
 			@PathParam("messageBoardThreadId")
-				Long messageBoardThreadId)
+			Long messageBoardThreadId)
 		throws Exception {
 
 		return new Rating();
@@ -593,7 +605,7 @@ public abstract class BaseMessageBoardThreadResourceImpl
 	public Rating postMessageBoardThreadMyRating(
 			@NotNull @Parameter(hidden = true)
 			@PathParam("messageBoardThreadId")
-				Long messageBoardThreadId,
+			Long messageBoardThreadId,
 			Rating rating)
 		throws Exception {
 
@@ -622,11 +634,116 @@ public abstract class BaseMessageBoardThreadResourceImpl
 	public Rating putMessageBoardThreadMyRating(
 			@NotNull @Parameter(hidden = true)
 			@PathParam("messageBoardThreadId")
-				Long messageBoardThreadId,
+			Long messageBoardThreadId,
 			Rating rating)
 		throws Exception {
 
 		return new Rating();
+	}
+
+	/**
+	 * Invoke this method with the command line:
+	 *
+	 * curl -X 'GET' 'http://localhost:8080/o/headless-delivery/v1.0/message-board-threads/{messageBoardThreadId}/permissions'  -u 'test@liferay.com:test'
+	 */
+	@GET
+	@Override
+	@Parameters(
+		value = {
+			@Parameter(in = ParameterIn.PATH, name = "messageBoardThreadId"),
+			@Parameter(in = ParameterIn.QUERY, name = "roleNames")
+		}
+	)
+	@Path("/message-board-threads/{messageBoardThreadId}/permissions")
+	@Produces({"application/json", "application/xml"})
+	@Tags(value = {@Tag(name = "MessageBoardThread")})
+	public Page<com.liferay.portal.vulcan.permission.Permission>
+			getMessageBoardThreadPermissionsPage(
+				@NotNull @Parameter(hidden = true)
+				@PathParam("messageBoardThreadId")
+				Long messageBoardThreadId,
+				@Parameter(hidden = true) @QueryParam("roleNames") String
+					roleNames)
+		throws Exception {
+
+		String resourceName = getPermissionCheckerResourceName(
+			messageBoardThreadId);
+		Long resourceId = getPermissionCheckerResourceId(messageBoardThreadId);
+
+		PermissionUtil.checkPermission(
+			ActionKeys.PERMISSIONS, groupLocalService, resourceName, resourceId,
+			getPermissionCheckerGroupId(messageBoardThreadId));
+
+		return toPermissionPage(
+			HashMapBuilder.put(
+				"get",
+				addAction(
+					ActionKeys.PERMISSIONS,
+					"getMessageBoardThreadPermissionsPage", resourceName,
+					resourceId)
+			).put(
+				"replace",
+				addAction(
+					ActionKeys.PERMISSIONS, "putMessageBoardThreadPermission",
+					resourceName, resourceId)
+			).build(),
+			resourceId, resourceName, roleNames);
+	}
+
+	/**
+	 * Invoke this method with the command line:
+	 *
+	 * curl -X 'PUT' 'http://localhost:8080/o/headless-delivery/v1.0/message-board-threads/{messageBoardThreadId}/permissions'  -u 'test@liferay.com:test'
+	 */
+	@Override
+	@Parameters(
+		value = {
+			@Parameter(in = ParameterIn.PATH, name = "messageBoardThreadId")
+		}
+	)
+	@Path("/message-board-threads/{messageBoardThreadId}/permissions")
+	@Produces({"application/json", "application/xml"})
+	@PUT
+	@Tags(value = {@Tag(name = "MessageBoardThread")})
+	public Page<com.liferay.portal.vulcan.permission.Permission>
+			putMessageBoardThreadPermission(
+				@NotNull @Parameter(hidden = true)
+				@PathParam("messageBoardThreadId")
+				Long messageBoardThreadId,
+				com.liferay.portal.vulcan.permission.Permission[] permissions)
+		throws Exception {
+
+		String resourceName = getPermissionCheckerResourceName(
+			messageBoardThreadId);
+		Long resourceId = getPermissionCheckerResourceId(messageBoardThreadId);
+
+		PermissionUtil.checkPermission(
+			ActionKeys.PERMISSIONS, groupLocalService, resourceName, resourceId,
+			getPermissionCheckerGroupId(messageBoardThreadId));
+
+		resourcePermissionLocalService.updateResourcePermissions(
+			contextCompany.getCompanyId(),
+			getPermissionCheckerGroupId(messageBoardThreadId), resourceName,
+			String.valueOf(resourceId),
+			ModelPermissionsUtil.toModelPermissions(
+				contextCompany.getCompanyId(), permissions, resourceId,
+				resourceName, resourceActionLocalService,
+				resourcePermissionLocalService, roleLocalService));
+
+		return toPermissionPage(
+			HashMapBuilder.put(
+				"get",
+				addAction(
+					ActionKeys.PERMISSIONS,
+					"getMessageBoardThreadPermissionsPage", resourceName,
+					resourceId)
+			).put(
+				"replace",
+				addAction(
+					ActionKeys.PERMISSIONS, "putMessageBoardThreadPermission",
+					resourceName, resourceId)
+			).build(),
+			resourceId, resourceName, null);
 	}
 
 	/**
@@ -647,7 +764,7 @@ public abstract class BaseMessageBoardThreadResourceImpl
 	public void putMessageBoardThreadSubscribe(
 			@NotNull @Parameter(hidden = true)
 			@PathParam("messageBoardThreadId")
-				Long messageBoardThreadId)
+			Long messageBoardThreadId)
 		throws Exception {
 	}
 
@@ -669,7 +786,7 @@ public abstract class BaseMessageBoardThreadResourceImpl
 	public void putMessageBoardThreadUnsubscribe(
 			@NotNull @Parameter(hidden = true)
 			@PathParam("messageBoardThreadId")
-				Long messageBoardThreadId)
+			Long messageBoardThreadId)
 		throws Exception {
 	}
 
@@ -701,8 +818,8 @@ public abstract class BaseMessageBoardThreadResourceImpl
 			@NotNull @Parameter(hidden = true) @PathParam("siteId") Long siteId,
 			@Parameter(hidden = true) @QueryParam("flatten") Boolean flatten,
 			@Parameter(hidden = true) @QueryParam("search") String search,
-			@Context
-				com.liferay.portal.vulcan.aggregation.Aggregation aggregation,
+			@Context com.liferay.portal.vulcan.aggregation.Aggregation
+				aggregation,
 			@Context Filter filter, @Context Pagination pagination,
 			@Context Sort[] sorts)
 		throws Exception {
@@ -750,8 +867,8 @@ public abstract class BaseMessageBoardThreadResourceImpl
 	@Tags(value = {@Tag(name = "MessageBoardThread")})
 	public Response postSiteMessageBoardThreadBatch(
 			@NotNull @Parameter(hidden = true) @PathParam("siteId") Long siteId,
-			@Parameter(hidden = true) @QueryParam("callbackURL")
-				String callbackURL,
+			@Parameter(hidden = true) @QueryParam("callbackURL") String
+				callbackURL,
 			Object object)
 		throws Exception {
 
@@ -798,6 +915,100 @@ public abstract class BaseMessageBoardThreadResourceImpl
 		return new MessageBoardThread();
 	}
 
+	/**
+	 * Invoke this method with the command line:
+	 *
+	 * curl -X 'GET' 'http://localhost:8080/o/headless-delivery/v1.0/sites/{siteId}/message-board-threads/permissions'  -u 'test@liferay.com:test'
+	 */
+	@GET
+	@Override
+	@Parameters(
+		value = {
+			@Parameter(in = ParameterIn.PATH, name = "siteId"),
+			@Parameter(in = ParameterIn.QUERY, name = "roleNames")
+		}
+	)
+	@Path("/sites/{siteId}/message-board-threads/permissions")
+	@Produces({"application/json", "application/xml"})
+	@Tags(value = {@Tag(name = "MessageBoardThread")})
+	public Page<com.liferay.portal.vulcan.permission.Permission>
+			getSiteMessageBoardThreadPermissionsPage(
+				@NotNull @Parameter(hidden = true) @PathParam("siteId") Long
+					siteId,
+				@Parameter(hidden = true) @QueryParam("roleNames") String
+					roleNames)
+		throws Exception {
+
+		String portletName = getPermissionCheckerPortletName(siteId);
+
+		PermissionUtil.checkPermission(
+			ActionKeys.PERMISSIONS, groupLocalService, portletName, siteId,
+			siteId);
+
+		return toPermissionPage(
+			HashMapBuilder.put(
+				"get",
+				addAction(
+					ActionKeys.PERMISSIONS,
+					"getSiteMessageBoardThreadPermissionsPage", portletName,
+					siteId)
+			).put(
+				"replace",
+				addAction(
+					ActionKeys.PERMISSIONS,
+					"putSiteMessageBoardThreadPermission", portletName, siteId)
+			).build(),
+			siteId, portletName, roleNames);
+	}
+
+	/**
+	 * Invoke this method with the command line:
+	 *
+	 * curl -X 'PUT' 'http://localhost:8080/o/headless-delivery/v1.0/sites/{siteId}/message-board-threads/permissions'  -u 'test@liferay.com:test'
+	 */
+	@Override
+	@Parameters(value = {@Parameter(in = ParameterIn.PATH, name = "siteId")})
+	@Path("/sites/{siteId}/message-board-threads/permissions")
+	@Produces({"application/json", "application/xml"})
+	@PUT
+	@Tags(value = {@Tag(name = "MessageBoardThread")})
+	public Page<com.liferay.portal.vulcan.permission.Permission>
+			putSiteMessageBoardThreadPermission(
+				@NotNull @Parameter(hidden = true) @PathParam("siteId") Long
+					siteId,
+				com.liferay.portal.vulcan.permission.Permission[] permissions)
+		throws Exception {
+
+		String portletName = getPermissionCheckerPortletName(siteId);
+
+		PermissionUtil.checkPermission(
+			ActionKeys.PERMISSIONS, groupLocalService, portletName, siteId,
+			siteId);
+
+		resourcePermissionLocalService.updateResourcePermissions(
+			contextCompany.getCompanyId(), siteId, portletName,
+			String.valueOf(siteId),
+			ModelPermissionsUtil.toModelPermissions(
+				contextCompany.getCompanyId(), permissions, siteId, portletName,
+				resourceActionLocalService, resourcePermissionLocalService,
+				roleLocalService));
+
+		return toPermissionPage(
+			HashMapBuilder.put(
+				"get",
+				addAction(
+					ActionKeys.PERMISSIONS,
+					"getSiteMessageBoardThreadPermissionsPage", portletName,
+					siteId)
+			).put(
+				"replace",
+				addAction(
+					ActionKeys.PERMISSIONS,
+					"putSiteMessageBoardThreadPermission", portletName, siteId)
+			).build(),
+			siteId, portletName, null);
+	}
+
 	@Override
 	@SuppressWarnings("PMD.UnusedLocalVariable")
 	public void create(
@@ -807,7 +1018,7 @@ public abstract class BaseMessageBoardThreadResourceImpl
 
 		for (MessageBoardThread messageBoardThread : messageBoardThreads) {
 			postSiteMessageBoardThread(
-				Long.valueOf((String)parameters.get("siteId")),
+				Long.parseLong((String)parameters.get("siteId")),
 				messageBoardThread);
 		}
 	}
@@ -845,8 +1056,9 @@ public abstract class BaseMessageBoardThreadResourceImpl
 		throws Exception {
 
 		return getSiteMessageBoardThreadsPage(
-			(Long)parameters.get("siteId"), (Boolean)parameters.get("flatten"),
-			search, null, filter, pagination, sorts);
+			Long.parseLong((String)parameters.get("siteId")),
+			Boolean.parseBoolean((String)parameters.get("flatten")), search,
+			null, filter, pagination, sorts);
 	}
 
 	@Override
@@ -881,9 +1093,71 @@ public abstract class BaseMessageBoardThreadResourceImpl
 			putMessageBoardThread(
 				messageBoardThread.getId() != null ?
 					messageBoardThread.getId() :
-						(Long)parameters.get("messageBoardThreadId"),
+						Long.parseLong(
+							(String)parameters.get("messageBoardThreadId")),
 				messageBoardThread);
 		}
+	}
+
+	protected String getPermissionCheckerActionsResourceName(Object id)
+		throws Exception {
+
+		return getPermissionCheckerResourceName(id);
+	}
+
+	protected Long getPermissionCheckerGroupId(Object id) throws Exception {
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	protected String getPermissionCheckerPortletName(Object id)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	protected Long getPermissionCheckerResourceId(Object id) throws Exception {
+		return GetterUtil.getLong(id);
+	}
+
+	protected String getPermissionCheckerResourceName(Object id)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	protected Page<com.liferay.portal.vulcan.permission.Permission>
+			toPermissionPage(
+				Map<String, Map<String, String>> actions, long id,
+				String resourceName, String roleNames)
+		throws Exception {
+
+		List<ResourceAction> resourceActions =
+			resourceActionLocalService.getResourceActions(resourceName);
+
+		if (Validator.isNotNull(roleNames)) {
+			return Page.of(
+				actions,
+				transform(
+					PermissionUtil.getRoles(
+						contextCompany, roleLocalService,
+						StringUtil.split(roleNames)),
+					role -> PermissionUtil.toPermission(
+						contextCompany.getCompanyId(), id, resourceActions,
+						resourceName, resourcePermissionLocalService, role)));
+		}
+
+		return Page.of(
+			actions,
+			transform(
+				PermissionUtil.getResourcePermissions(
+					contextCompany.getCompanyId(), id, resourceName,
+					resourcePermissionLocalService),
+				resourcePermission -> PermissionUtil.toPermission(
+					resourceActions, resourcePermission,
+					roleLocalService.getRole(resourcePermission.getRoleId()))));
 	}
 
 	public void setContextAcceptLanguage(AcceptLanguage contextAcceptLanguage) {

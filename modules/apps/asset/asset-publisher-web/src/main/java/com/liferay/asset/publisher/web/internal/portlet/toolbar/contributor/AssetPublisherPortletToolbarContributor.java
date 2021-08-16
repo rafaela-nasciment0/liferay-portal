@@ -135,21 +135,19 @@ public class AssetPublisherPortletToolbarContributor
 		String title = LanguageUtil.get(
 			resourceBundle, "add-content-select-scope-and-type");
 
-		Map<String, Object> data = HashMapBuilder.<String, Object>put(
-			"id",
-			() -> {
-				PortletDisplay portletDisplay =
-					themeDisplay.getPortletDisplay();
+		urlMenuItem.setData(
+			HashMapBuilder.<String, Object>put(
+				"id",
+				() -> {
+					PortletDisplay portletDisplay =
+						themeDisplay.getPortletDisplay();
 
-				return HtmlUtil.escape(portletDisplay.getNamespace()) +
-					"editAsset";
-			}
-		).put(
-			"title", title
-		).build();
-
-		urlMenuItem.setData(data);
-
+					return HtmlUtil.escape(portletDisplay.getNamespace()) +
+						"editAsset";
+				}
+			).put(
+				"title", title
+			).build());
 		urlMenuItem.setLabel(title);
 
 		urlMenuItem.setURL(
@@ -217,9 +215,9 @@ public class AssetPublisherPortletToolbarContributor
 
 		PortletURL portletURL = PortletURLBuilder.create(
 			assetPublisherAddItemHolder.getPortletURL()
-		).setParameter(
-			"portletResource", AssetPublisherPortletKeys.ASSET_PUBLISHER
-		).build();
+		).setPortletResource(
+			AssetPublisherPortletKeys.ASSET_PUBLISHER
+		).buildPortletURL();
 
 		boolean addDisplayPageParameter =
 			_assetPublisherWebHelper.isDefaultAssetPublisher(
@@ -268,16 +266,10 @@ public class AssetPublisherPortletToolbarContributor
 		String portletName = portletDisplay.getPortletName();
 
 		if (portletName.equals(
-				AssetPublisherPortletKeys.HIGHEST_RATED_ASSETS)) {
+				AssetPublisherPortletKeys.HIGHEST_RATED_ASSETS) ||
+			portletName.equals(AssetPublisherPortletKeys.MOST_VIEWED_ASSETS) ||
+			portletName.equals(AssetPublisherPortletKeys.RELATED_ASSETS)) {
 
-			return false;
-		}
-
-		if (portletName.equals(AssetPublisherPortletKeys.MOST_VIEWED_ASSETS)) {
-			return false;
-		}
-
-		if (portletName.equals(AssetPublisherPortletKeys.RELATED_ASSETS)) {
 			return false;
 		}
 

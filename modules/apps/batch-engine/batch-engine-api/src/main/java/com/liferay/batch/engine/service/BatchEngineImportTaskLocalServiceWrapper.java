@@ -153,6 +153,13 @@ public class BatchEngineImportTaskLocalServiceWrapper
 	}
 
 	@Override
+	public int dslQueryCount(
+		com.liferay.petra.sql.dsl.query.DSLQuery dslQuery) {
+
+		return _batchEngineImportTaskLocalService.dslQueryCount(dslQuery);
+	}
+
+	@Override
 	public com.liferay.portal.kernel.dao.orm.DynamicQuery dynamicQuery() {
 		return _batchEngineImportTaskLocalService.dynamicQuery();
 	}
@@ -330,6 +337,26 @@ public class BatchEngineImportTaskLocalServiceWrapper
 
 	@Override
 	public java.util.List<com.liferay.batch.engine.model.BatchEngineImportTask>
+		getBatchEngineImportTasks(long companyId, int start, int end) {
+
+		return _batchEngineImportTaskLocalService.getBatchEngineImportTasks(
+			companyId, start, end);
+	}
+
+	@Override
+	public java.util.List<com.liferay.batch.engine.model.BatchEngineImportTask>
+		getBatchEngineImportTasks(
+			long companyId, int start, int end,
+			com.liferay.portal.kernel.util.OrderByComparator
+				<com.liferay.batch.engine.model.BatchEngineImportTask>
+					orderByComparator) {
+
+		return _batchEngineImportTaskLocalService.getBatchEngineImportTasks(
+			companyId, start, end, orderByComparator);
+	}
+
+	@Override
+	public java.util.List<com.liferay.batch.engine.model.BatchEngineImportTask>
 		getBatchEngineImportTasks(String executeStatus) {
 
 		return _batchEngineImportTaskLocalService.getBatchEngineImportTasks(
@@ -345,6 +372,12 @@ public class BatchEngineImportTaskLocalServiceWrapper
 	public int getBatchEngineImportTasksCount() {
 		return _batchEngineImportTaskLocalService.
 			getBatchEngineImportTasksCount();
+	}
+
+	@Override
+	public int getBatchEngineImportTasksCount(long companyId) {
+		return _batchEngineImportTaskLocalService.
+			getBatchEngineImportTasksCount(companyId);
 	}
 
 	@Override

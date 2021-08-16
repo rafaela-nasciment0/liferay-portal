@@ -20,7 +20,6 @@ import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
-import com.liferay.portal.tools.ToolsUtil;
 import com.liferay.source.formatter.util.FileUtil;
 
 import java.io.File;
@@ -80,9 +79,12 @@ public class CopyrightCheck extends BaseFileCheck {
 		}
 		else if (!content.startsWith(copyright) &&
 				 !content.startsWith("<%--\n" + copyright) &&
+				 !content.startsWith(_XML_DECLARATION + "<!--\n" + copyright) &&
 				 ((customCopyright == null) ||
 				  (!content.startsWith(customCopyright) &&
-				   !content.startsWith("<%--\n" + customCopyright)))) {
+				   !content.startsWith("<%--\n" + customCopyright) &&
+				   !content.startsWith(
+					   _XML_DECLARATION + "<!--\n" + customCopyright)))) {
 
 			addMessage(fileName, "File must start with copyright");
 		}
@@ -137,8 +139,7 @@ public class CopyrightCheck extends BaseFileCheck {
 		String copyRightFileName = getAttributeValue(
 			_COPYRIGHT_FILE_NAME_KEY, "copyright.txt", absolutePath);
 
-		_copyright = getContent(
-			copyRightFileName, ToolsUtil.PORTAL_MAX_DIR_LEVEL);
+		_copyright = getContent(copyRightFileName, getMaxDirLevel());
 
 		if (Validator.isNotNull(_copyright)) {
 			return _copyright;
@@ -185,6 +186,9 @@ public class CopyrightCheck extends BaseFileCheck {
 	}
 
 	private static final String _COPYRIGHT_FILE_NAME_KEY = "copyrightFileName";
+
+	private static final String _XML_DECLARATION =
+		"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
 
 	private static final Log _log = LogFactoryUtil.getLog(CopyrightCheck.class);
 

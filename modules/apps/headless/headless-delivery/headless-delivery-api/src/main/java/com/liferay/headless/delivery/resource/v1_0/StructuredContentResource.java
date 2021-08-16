@@ -66,6 +66,17 @@ public interface StructuredContentResource {
 			Long assetLibraryId, String callbackURL, Object object)
 		throws Exception;
 
+	public Page<com.liferay.portal.vulcan.permission.Permission>
+			getAssetLibraryStructuredContentPermissionsPage(
+				Long assetLibraryId, String roleNames)
+		throws Exception;
+
+	public Page<com.liferay.portal.vulcan.permission.Permission>
+			putAssetLibraryStructuredContentPermission(
+				Long assetLibraryId,
+				com.liferay.portal.vulcan.permission.Permission[] permissions)
+		throws Exception;
+
 	public Page<StructuredContent> getContentStructureStructuredContentsPage(
 			Long contentStructureId, String search,
 			com.liferay.portal.vulcan.aggregation.Aggregation aggregation,
@@ -86,6 +97,19 @@ public interface StructuredContentResource {
 			Long siteId, String callbackURL, Object object)
 		throws Exception;
 
+	public void deleteSiteStructuredContentByExternalReferenceCode(
+			Long siteId, String externalReferenceCode)
+		throws Exception;
+
+	public StructuredContent getSiteStructuredContentByExternalReferenceCode(
+			Long siteId, String externalReferenceCode)
+		throws Exception;
+
+	public StructuredContent putSiteStructuredContentByExternalReferenceCode(
+			Long siteId, String externalReferenceCode,
+			StructuredContent structuredContent)
+		throws Exception;
+
 	public StructuredContent getSiteStructuredContentByKey(
 			Long siteId, String key)
 		throws Exception;
@@ -99,9 +123,10 @@ public interface StructuredContentResource {
 				Long siteId, String roleNames)
 		throws Exception;
 
-	public void putSiteStructuredContentPermission(
-			Long siteId,
-			com.liferay.portal.vulcan.permission.Permission[] permissions)
+	public Page<com.liferay.portal.vulcan.permission.Permission>
+			putSiteStructuredContentPermission(
+				Long siteId,
+				com.liferay.portal.vulcan.permission.Permission[] permissions)
 		throws Exception;
 
 	public Page<StructuredContent>
@@ -159,9 +184,10 @@ public interface StructuredContentResource {
 				Long structuredContentId, String roleNames)
 		throws Exception;
 
-	public void putStructuredContentPermission(
-			Long structuredContentId,
-			com.liferay.portal.vulcan.permission.Permission[] permissions)
+	public Page<com.liferay.portal.vulcan.permission.Permission>
+			putStructuredContentPermission(
+				Long structuredContentId,
+				com.liferay.portal.vulcan.permission.Permission[] permissions)
 		throws Exception;
 
 	public String

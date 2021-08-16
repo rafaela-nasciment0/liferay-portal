@@ -2,15 +2,27 @@
 <head>
 <title>Treeview</title>
 </head>
+
 <body>
-<table cellpadding="1" cellspacing="1" border="1">
+<table border="1" cellpadding="1" cellspacing="1">
 <thead>
 <tr><td rowspan="1" colspan="3">Treeview</td></tr>
 </thead>
+
 <tbody>
+<tr>
+	<td>NODE_COLLAPSE_BUTTON</td>
+	<td>//div[contains(@class,'treeview-node-list')]//button[contains(@class,'treeview-node-list')]</td>
+	<td></td>
+</tr>
 <tr>
 	<td>NODE_COLLAPSED</td>
 	<td>//div[contains(@class,'treeview-node-main') and @aria-expanded='false']/div[@class='treeview-node-toggler'] | //span[contains(@class,'glyphicon-plus')] | //div[contains(@class,'treeview-node-list')]/button[contains(@class,'treeview-node-list') and @aria-expanded='false']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>NODE_ITEM</td>
+	<td>//div[contains(@class,'card-horizontal')]//div[contains(@class,'card-body')][contains(.,'${key_nodeName}')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -46,6 +58,11 @@
 <tr>
 	<td>PAGE_STRUCTURE_TREE_NODE_ACTIVE</td>
 	<td>//div[contains(@class,'page-structure__tree-node') and contains(.,'${key_nodeName}')][contains(@class,'active')]/div[@role='button']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>PAGE_STRUCTURE_TREE_NODE_NAME</td>
+	<td>//div[contains(@class,'page-structure__tree-node') and contains(.,'${key_nodeName}')]//div[contains(@class,'node__name')]</td>
 	<td></td>
 </tr>
 <tr>

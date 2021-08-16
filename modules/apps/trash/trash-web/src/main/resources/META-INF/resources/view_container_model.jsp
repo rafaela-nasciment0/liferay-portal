@@ -67,8 +67,8 @@ TrashContainerModelDisplayContext trashContainerModelDisplayContext = new TrashC
 			PortletURL containerURL = PortletURLBuilder.create(
 				trashContainerModelDisplayContext.getContainerURL()
 			).setParameter(
-				"containerModelId", String.valueOf(curContainerModelId)
-			).build();
+				"containerModelId", curContainerModelId
+			).buildPortletURL();
 
 			TrashHandler curContainerTrashHandler = TrashHandlerRegistryUtil.getTrashHandler(curContainerModel.getModelClassName());
 			%>
@@ -120,10 +120,3 @@ TrashContainerModelDisplayContext trashContainerModelDisplayContext = new TrashC
 		/>
 	</liferay-ui:search-container>
 </aui:form>
-
-<aui:script>
-	Liferay.Util.selectEntityHandler(
-		'#<portlet:namespace />selectContainerFm',
-		'<%= HtmlUtil.escapeJS(trashContainerModelDisplayContext.getEventName()) %>'
-	);
-</aui:script>

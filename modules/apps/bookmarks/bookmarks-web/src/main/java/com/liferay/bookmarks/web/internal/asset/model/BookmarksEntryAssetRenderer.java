@@ -147,12 +147,12 @@ public class BookmarksEntryAssetRenderer
 		).setMVCRenderCommandName(
 			"/bookmarks/edit_entry"
 		).setParameter(
-			"folderId", _entry.getFolderId()
-		).setParameter(
 			"entryId", _entry.getEntryId()
 		).setParameter(
-			"showFolderSelector", Boolean.TRUE.toString()
-		).build();
+			"folderId", _entry.getFolderId()
+		).setParameter(
+			"showFolderSelector", true
+		).buildPortletURL();
 	}
 
 	@Override

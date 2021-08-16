@@ -21,8 +21,6 @@ import com.liferay.data.engine.content.type.DataDefinitionContentType;
 import com.liferay.data.engine.field.type.util.LocalizedValueUtil;
 import com.liferay.data.engine.model.DEDataDefinitionFieldLink;
 import com.liferay.data.engine.model.DEDataListView;
-import com.liferay.data.engine.nativeobject.DataEngineNativeObject;
-import com.liferay.data.engine.nativeobject.DataEngineNativeObjectField;
 import com.liferay.data.engine.nativeobject.tracker.DataEngineNativeObjectTracker;
 import com.liferay.data.engine.rest.dto.v2_0.DataDefinition;
 import com.liferay.data.engine.rest.dto.v2_0.DataDefinitionField;
@@ -82,8 +80,8 @@ import com.liferay.dynamic.data.mapping.util.comparator.StructureNameComparator;
 import com.liferay.dynamic.data.mapping.validator.DDMFormValidationException;
 import com.liferay.dynamic.data.mapping.validator.DDMFormValidator;
 import com.liferay.frontend.js.loader.modules.extender.npm.NPMResolver;
-import com.liferay.petra.sql.dsl.Column;
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.kernel.change.tracking.CTAware;
 import com.liferay.portal.kernel.editor.configuration.EditorConfiguration;
 import com.liferay.portal.kernel.editor.configuration.EditorConfigurationFactoryUtil;
 import com.liferay.portal.kernel.json.JSONArray;
@@ -107,7 +105,6 @@ import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.AggregateResourceBundle;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
-import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.LocaleThreadLocal;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.MapUtil;
@@ -115,14 +112,12 @@ import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.ResourceBundleUtil;
-import com.liferay.portal.kernel.util.SetUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.odata.entity.EntityModel;
 import com.liferay.portal.vulcan.pagination.Page;
 import com.liferay.portal.vulcan.pagination.Pagination;
-import com.liferay.portal.vulcan.permission.ModelPermissionsUtil;
 import com.liferay.portal.vulcan.permission.Permission;
 import com.liferay.portal.vulcan.permission.PermissionUtil;
 import com.liferay.portal.vulcan.resource.EntityModelResource;
@@ -140,7 +135,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.Set;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.validation.ValidationException;
@@ -158,6 +152,7 @@ import org.osgi.service.component.annotations.ServiceScope;
 	properties = "OSGI-INF/liferay/rest/v2_0/data-definition.properties",
 	scope = ServiceScope.PROTOTYPE, service = DataDefinitionResource.class
 )
+@CTAware
 public class DataDefinitionResourceImpl
 	extends BaseDataDefinitionResourceImpl implements EntityModelResource {
 
@@ -170,7 +165,29 @@ public class DataDefinitionResourceImpl
 		List<DDMStructureLink> ddmStructureLinks =
 			_ddmStructureLinkLocalService.getStructureLinks(dataDefinitionId);
 
-		if (ddmStructureLinks.size() > 1) {
+		DDMStructure ddmStructure = _ddmStructureLocalService.getDDMStructure(
+			dataDefinitionId);
+
+		DataDefinitionContentType dataDefinitionContentType =
+			_dataDefinitionContentTypeTracker.getDataDefinitionContentType(
+				ddmStructure.getClassNameId());
+
+		List<DEDataDefinitionFieldLink> deDataDefinitionFieldLinks =
+			_deDataDefinitionFieldLinkLocalService.
+				getDEDataDefinitionFieldLinks(dataDefinitionId);
+
+		Stream<DEDataDefinitionFieldLink> stream =
+			deDataDefinitionFieldLinks.stream();
+
+		if ((ddmStructureLinks.size() > 1) ||
+			(!dataDefinitionContentType.
+				allowReferencedDataDefinitionDeletion() &&
+			 (stream.filter(
+				 deDataDefinitionFieldLink -> StringUtil.equals(
+					deDataDefinitionFieldLink.getClassName(),
+					DDMStructure.class.getName())
+			 ).count() > 0))) {
+
 			throw new RequiredStructureException.
 				MustNotDeleteStructureReferencedByStructureLinks(
 					dataDefinitionId);
@@ -200,8 +217,7 @@ public class DataDefinitionResourceImpl
 			_portal.getClassNameId(DDMStructure.class), dataDefinitionId);
 
 		for (DEDataDefinitionFieldLink deDataDefinitionFieldLink :
-				_deDataDefinitionFieldLinkLocalService.
-					getDEDataDefinitionFieldLinks(dataDefinitionId)) {
+				deDataDefinitionFieldLinks) {
 
 			_deDataDefinitionFieldLinkLocalService.
 				deleteDEDataDefinitionFieldLink(deDataDefinitionFieldLink);
@@ -380,7 +396,7 @@ public class DataDefinitionResourceImpl
 			Collections.emptyMap(),
 			booleanQuery -> {
 			},
-			null, DDMStructure.class, keywords, pagination,
+			null, DDMStructure.class.getName(), keywords, pagination,
 			queryConfig -> queryConfig.setSelectedFieldNames(
 				Field.CLASS_NAME_ID, Field.ENTRY_CLASS_PK),
 			searchContext -> {
@@ -456,10 +472,6 @@ public class DataDefinitionResourceImpl
 				StorageType.DEFAULT.getValue()),
 			new ServiceContext());
 
-		_addDataDefinitionFieldLinks(
-			ddmStructure.getStructureId(), ddmForm.getDDMFormFields(),
-			ddmStructure.getGroupId());
-
 		DataLayout dataLayout = dataDefinition.getDefaultDataLayout();
 
 		if (dataLayout != null) {
@@ -472,10 +484,21 @@ public class DataDefinitionResourceImpl
 			DataLayoutResource dataLayoutResource = _getDataLayoutResource(
 				false);
 
-			dataDefinition.setDefaultDataLayout(
-				dataLayoutResource.postDataDefinitionDataLayout(
-					ddmStructure.getStructureId(), dataLayout));
+			try {
+				dataDefinition.setDefaultDataLayout(
+					dataLayoutResource.postDataDefinitionDataLayout(
+						ddmStructure.getStructureId(), dataLayout));
+			}
+			catch (Exception exception) {
+				_ddmStructureLocalService.deleteStructure(ddmStructure);
+
+				throw exception;
+			}
 		}
+
+		_addDataDefinitionFieldLinks(
+			ddmStructure.getStructureId(), ddmForm.getDDMFormFields(),
+			ddmStructure.getGroupId());
 
 		dataDefinition = DataDefinitionUtil.toDataDefinition(
 			_dataDefinitionContentTypeTracker, _ddmFormFieldTypeServicesTracker,
@@ -652,27 +675,6 @@ public class DataDefinitionResourceImpl
 	}
 
 	@Override
-	public void putDataDefinitionPermission(
-			Long dataDefinitionId, Permission[] permissions)
-		throws Exception {
-
-		_dataDefinitionModelResourcePermission.check(
-			PermissionThreadLocal.getPermissionChecker(), dataDefinitionId,
-			ActionKeys.PERMISSIONS);
-
-		String resourceName = getPermissionCheckerResourceName(
-			dataDefinitionId);
-
-		resourcePermissionLocalService.updateResourcePermissions(
-			contextCompany.getCompanyId(), 0, resourceName,
-			String.valueOf(dataDefinitionId),
-			ModelPermissionsUtil.toModelPermissions(
-				contextCompany.getCompanyId(), permissions, dataDefinitionId,
-				resourceName, resourceActionLocalService,
-				resourcePermissionLocalService, roleLocalService));
-	}
-
-	@Override
 	protected Long getPermissionCheckerGroupId(Object id) throws Exception {
 		DDMStructure ddmStructure = _ddmStructureLocalService.getDDMStructure(
 			(long)id);
@@ -712,47 +714,6 @@ public class DataDefinitionResourceImpl
 					dataDefinitionId, ddmFormField.getNestedDDMFormFields(),
 					groupId);
 			}
-		}
-	}
-
-	private void _checkRemovedDataEngineNativeObjectFields(
-		DataDefinition dataDefinition) {
-
-		DataEngineNativeObject dataEngineNativeObject =
-			_dataEngineNativeObjectTracker.getDataEngineNativeObject(
-				dataDefinition.getDataDefinitionKey());
-
-		if ((dataEngineNativeObject == null) ||
-			ListUtil.isEmpty(
-				dataEngineNativeObject.getDataEngineNativeObjectFields())) {
-
-			return;
-		}
-
-		List<DataEngineNativeObjectField> dataEngineNativeObjectFields =
-			dataEngineNativeObject.getDataEngineNativeObjectFields();
-
-		Stream<DataEngineNativeObjectField> stream =
-			dataEngineNativeObjectFields.stream();
-
-		Set<String> removedDataEngineNativeObjectFieldNames = stream.map(
-			this::_getDataEngineNativeObjectFieldName
-		).filter(
-			dataEngineNativeObjectFieldName -> !Stream.of(
-				dataDefinition.getDataDefinitionFields()
-			).anyMatch(
-				dataDefinitionField -> StringUtil.equals(
-					dataDefinitionField.getName(),
-					dataEngineNativeObjectFieldName)
-			)
-		).collect(
-			Collectors.toSet()
-		);
-
-		if (SetUtil.isNotEmpty(removedDataEngineNativeObjectFieldNames)) {
-			throw new DataDefinitionValidationException.
-				MustNotRemoveNativeField(
-					removedDataEngineNativeObjectFieldNames);
 		}
 	}
 
@@ -828,14 +789,6 @@ public class DataDefinitionResourceImpl
 		}
 
 		return null;
-	}
-
-	private String _getDataEngineNativeObjectFieldName(
-		DataEngineNativeObjectField dataEngineNativeObjectField) {
-
-		Column<?, ?> column = dataEngineNativeObjectField.getColumn();
-
-		return column.getName();
 	}
 
 	private DataLayoutResource _getDataLayoutResource(boolean checkPermission) {
@@ -1567,13 +1520,6 @@ public class DataDefinitionResourceImpl
 		}
 		catch (Exception exception) {
 			throw new DataDefinitionValidationException(exception);
-		}
-
-		if (StringUtil.equals(
-				dataDefinitionContentType.getContentType(), "native-object") &&
-			Validator.isNotNull(dataDefinition.getId())) {
-
-			_checkRemovedDataEngineNativeObjectFields(dataDefinition);
 		}
 	}
 

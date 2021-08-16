@@ -111,11 +111,9 @@ Map<Long, List<CommerceOrderValidatorResult>> commerceOrderValidatorResultMap = 
 								</div>
 
 								<%
-								List<KeyValuePair> keyValuePairs = orderSummaryCheckoutStepDisplayContext.getKeyValuePairs(commerceOrderItem.getCPDefinitionId(), commerceOrderItem.getJson(), locale);
-
 								StringJoiner stringJoiner = new StringJoiner(StringPool.COMMA);
 
-								for (KeyValuePair keyValuePair : keyValuePairs) {
+								for (KeyValuePair keyValuePair : orderSummaryCheckoutStepDisplayContext.getKeyValuePairs(commerceOrderItem.getCPDefinitionId(), commerceOrderItem.getJson(), locale)) {
 									stringJoiner.add(keyValuePair.getValue());
 								}
 								%>
@@ -131,7 +129,7 @@ Map<Long, List<CommerceOrderValidatorResult>> commerceOrderValidatorResultMap = 
 									%>
 
 										<div class="alert-danger commerce-alert-danger">
-											<liferay-ui:message key="<%= commerceOrderValidatorResult.getLocalizedMessage() %>" />
+											<liferay-ui:message key="<%= HtmlUtil.escape(commerceOrderValidatorResult.getLocalizedMessage()) %>" />
 										</div>
 
 									<%

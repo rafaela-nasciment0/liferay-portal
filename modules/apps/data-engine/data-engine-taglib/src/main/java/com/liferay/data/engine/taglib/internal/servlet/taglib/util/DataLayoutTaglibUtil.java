@@ -26,7 +26,6 @@ import com.liferay.data.engine.rest.dto.v2_0.util.DataDefinitionDDMFormUtil;
 import com.liferay.data.engine.rest.resource.v2_0.DataDefinitionResource;
 import com.liferay.data.engine.rest.resource.v2_0.DataLayoutResource;
 import com.liferay.data.engine.rest.resource.v2_0.DataRecordResource;
-import com.liferay.data.engine.taglib.internal.configuration.FFDataEngineFormContextConfigurationActivator;
 import com.liferay.data.engine.taglib.servlet.taglib.definition.DataLayoutBuilderDefinition;
 import com.liferay.dynamic.data.mapping.form.builder.context.DDMFormBuilderContextFactory;
 import com.liferay.dynamic.data.mapping.form.field.type.DDMFormFieldType;
@@ -88,8 +87,10 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -130,8 +131,11 @@ public class DataLayoutTaglibUtil {
 
 		return JSONUtil.put(
 			"allowInvalidAvailableLocalesForProperty",
-			dataDefinitionContentType.
-				allowInvalidAvailableLocalesForProperty());
+			dataDefinitionContentType.allowInvalidAvailableLocalesForProperty()
+		).put(
+			"allowReferencedDataDefinitionDeletion",
+			dataDefinitionContentType.allowReferencedDataDefinitionDeletion()
+		);
 	}
 
 	public static DataDefinition getDataDefinition(
@@ -232,15 +236,12 @@ public class DataLayoutTaglibUtil {
 	}
 
 	public static JSONArray getFieldTypesJSONArray(
-			HttpServletRequest httpServletRequest, Set<String> scopes)
+			HttpServletRequest httpServletRequest, Set<String> scopes,
+			boolean searchableFieldsDisabled)
 		throws Exception {
 
 		return _dataLayoutTaglibUtil._getFieldTypesJSONArray(
-			httpServletRequest, scopes);
-	}
-
-	public static boolean isUsingNewFormProvider() {
-		return _dataLayoutTaglibUtil._isUsingNewFormProvider();
+			httpServletRequest, scopes, searchableFieldsDisabled);
 	}
 
 	public static String renderDataLayout(
@@ -512,7 +513,8 @@ public class DataLayoutTaglibUtil {
 	}
 
 	private JSONArray _getFieldTypesJSONArray(
-			HttpServletRequest httpServletRequest, Set<String> scopes)
+			HttpServletRequest httpServletRequest, Set<String> scopes,
+			boolean searchableFieldsDisabled)
 		throws Exception {
 
 		JSONArray fieldTypesJSONArray = _jsonFactory.createJSONArray();
@@ -548,6 +550,11 @@ public class DataLayoutTaglibUtil {
 
 				if (anyMatch) {
 					fieldTypesJSONArray.put(jsonObject);
+
+					if (searchableFieldsDisabled) {
+						_setFieldIndexTypeNone(
+							jsonObject.getJSONObject("settingsContext"));
+					}
 				}
 			}
 
@@ -581,11 +588,6 @@ public class DataLayoutTaglibUtil {
 		return Validator.isNotNull(ddmFormFieldType.getModuleName());
 	}
 
-	private boolean _isUsingNewFormProvider() {
-		return _ffDataEngineFormContextConfigurationActivator.
-			isUsingNewFormProvider();
-	}
-
 	private String _resolveFieldTypeModule(String name) {
 		return _resolveModuleName(
 			_ddmFormFieldTypeServicesTracker.getDDMFormFieldType(name));
@@ -616,6 +618,42 @@ public class DataLayoutTaglibUtil {
 		}
 
 		return _npmResolver.resolveModuleName(ddmFormFieldType.getModuleName());
+	}
+
+	private void _setFieldIndexTypeNone(JSONObject jsonObject) {
+		_stream(
+			"rows",
+			rowJSONObject -> _stream(
+				"fields", null, _stream(rowJSONObject.getJSONArray("columns"))),
+			_stream(jsonObject.getJSONArray("pages"))
+		).filter(
+			fieldJSONObject -> Objects.equals(
+				fieldJSONObject.getString("fieldName"), "indexType")
+		).findFirst(
+		).ifPresent(
+			fieldJSONObject -> fieldJSONObject.put("value", "none")
+		);
+	}
+
+	private Stream<JSONObject> _stream(JSONArray jsonArray) {
+		return StreamSupport.stream(jsonArray.spliterator(), true);
+	}
+
+	private Stream<JSONObject> _stream(
+		String key, Function<JSONObject, Stream<JSONObject>> function,
+		Stream<JSONObject> stream) {
+
+		return stream.flatMap(
+			jsonObject -> {
+				Stream<JSONObject> nestedStream = _stream(
+					jsonObject.getJSONArray(key));
+
+				if (function == null) {
+					return nestedStream;
+				}
+
+				return nestedStream.flatMap(function);
+			});
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(
@@ -661,10 +699,6 @@ public class DataLayoutTaglibUtil {
 	@Reference
 	private DDMStructureLocalService _ddmStructureLocalService;
 
-	@Reference
-	private FFDataEngineFormContextConfigurationActivator
-		_ffDataEngineFormContextConfigurationActivator;
-
 	@Reference(target = "(ddm.form.deserializer.type=json)")
 	private DDMFormDeserializer _jsonDDMFormDeserializer;
 
@@ -707,6 +741,8 @@ public class DataLayoutTaglibUtil {
 				ddmForm = _getDDMForm();
 			}
 
+			Locale defaultLocale = ddmForm.getDefaultLocale();
+
 			Map<String, Object> ddmFormTemplateContext =
 				_ddmFormTemplateContextFactory.create(
 					ddmForm, _getDDMFormLayout(),
@@ -714,13 +750,14 @@ public class DataLayoutTaglibUtil {
 						{
 							setHttpServletRequest(_httpServletRequest);
 							setHttpServletResponse(_httpServletResponse);
-							setLocale(_httpServletRequest.getLocale());
+							setLocale(defaultLocale);
 							setPortletNamespace(StringPool.BLANK);
 						}
 					});
 
 			_populateDDMFormFieldSettingsContext(
-				ddmForm.getDDMFormFieldsMap(true), ddmFormTemplateContext);
+				ddmForm.getDDMFormFieldsMap(true), ddmFormTemplateContext,
+				defaultLocale);
 
 			ddmFormTemplateContext.put("rules", _getDataRulesJSONArray());
 
@@ -729,7 +766,7 @@ public class DataLayoutTaglibUtil {
 		}
 
 		private Map<String, Object> _createDDMFormFieldSettingContext(
-				DDMFormField ddmFormField)
+				DDMFormField ddmFormField, Locale defaultLocale)
 			throws Exception {
 
 			DDMFormFieldType ddmFormFieldType =
@@ -751,7 +788,7 @@ public class DataLayoutTaglibUtil {
 								ddmFormField, ddmForm));
 						setHttpServletRequest(_httpServletRequest);
 						setHttpServletResponse(_httpServletResponse);
-						setLocale(_httpServletRequest.getLocale());
+						setLocale(defaultLocale);
 						setPortletNamespace(StringPool.BLANK);
 					}
 				});
@@ -1031,7 +1068,8 @@ public class DataLayoutTaglibUtil {
 
 		private void _populateDDMFormFieldSettingsContext(
 				Map<String, DDMFormField> ddmFormFieldsMap,
-				Map<String, Object> ddmFormTemplateContext)
+				Map<String, Object> ddmFormTemplateContext,
+				Locale defaultLocale)
 			throws Exception {
 
 			UnsafeConsumer<Map<String, Object>, Exception> unsafeConsumer =
@@ -1045,7 +1083,8 @@ public class DataLayoutTaglibUtil {
 
 					field.put(
 						"settingsContext",
-						_createDDMFormFieldSettingContext(ddmFormField));
+						_createDDMFormFieldSettingContext(
+							ddmFormField, defaultLocale));
 				};
 
 			List<Map<String, Object>> pages =

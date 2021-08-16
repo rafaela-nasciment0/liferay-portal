@@ -1,5 +1,73 @@
 # Poshi Runner Change Log
 
+## 1.0.309
+
+### PQL
+
+* [POSHI-177](https://issues.liferay.com/browse/POSHI-177) - Fix null values for PQL when it is not set anywhere
+
+### WebDriver
+
+* [POSHI-179](https://issues.liferay.com/browse/POSHI-179) - WebElement.clear() doesn't work on React input boxes in Chrome 86
+
+## 1.0.307
+
+### Other
+
+* [LRCI-2320](https://issues.liferay.com/browse/LRCI-2320) - SF Failures in test.cloud-10-0-10-111.lax.liferay.com.properties, test.case.method.names.properties and sql.profile-dxp.properties
+
+### Utils
+
+* [POSHI-171](https://issues.liferay.com/browse/POSHI-171) - Allow JSONCurlUtil to pass along URLs as parameters in the curl
+* [POSHI-172](https://issues.liferay.com/browse/POSHI-172) - Add JSONCurlUtil method that removes quotes from the json-path query result
+* [POSHI-173](https://issues.liferay.com/browse/POSHI-173) - Provide easy and clean delimited String lists usage in Poshi
+
+## 1.0.306
+
+### PQL
+
+* [LRCI-2310](https://issues.liferay.com/browse/LRCI-2310) - Add ability to create PQL to match by class name & case name
+
+### Utils
+
+* [POSHI-169](https://issues.liferay.com/browse/POSHI-169) - As a test engineer, it should be possible to process/parse a Har file returned from BrowerMob
+
+## 1.0.304
+
+### Core
+
+* [POSHI-164](https://issues.liferay.com/browse/POSHI-164) - Repurpose 'ignore' annotation to include test stub information to be reflected in Poshi CSV report
+
+### Logger
+
+* [POSHI-161](https://issues.liferay.com/browse/POSHI-161) - Update Poshi log's alloyui cdn url
+
+### Utils
+
+* [POSHI-165](https://issues.liferay.com/browse/POSHI-165) - Simplify json-path result in Poshi test usage
+
+### WebDriver
+
+* [POSHI-163](https://issues.liferay.com/browse/POSHI-163) - Fix issues when running Safari locally
+
+## 1.0.299
+
+### Other
+
+* [LRCI-2114](https://issues.liferay.com/browse/LRCI-2114) - Investigate why there are so many missing results
+
+### Runner
+
+* [POSHI-158](https://issues.liferay.com/browse/POSHI-158) - Create a printout of total pause duration that a test uses
+
+### Validation
+
+* [POSHI-153](https://issues.liferay.com/browse/POSHI-153) - Add validation rule to disallow duplicate test file names
+
+### WebDriver
+
+* [POSHI-154](https://issues.liferay.com/browse/POSHI-154) - Add RemoteDriver for all browsers
+
 ## 1.0.296
 
 ### Other

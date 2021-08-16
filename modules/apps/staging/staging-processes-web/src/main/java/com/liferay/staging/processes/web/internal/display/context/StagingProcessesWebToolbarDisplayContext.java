@@ -250,9 +250,9 @@ public class StagingProcessesWebToolbarDisplayContext {
 	private PortletURL _getNavigationURL(String navigation) {
 		return PortletURLBuilder.create(
 			_getStagingRenderURL()
-		).setParameter(
-			"navigation", navigation
-		).build();
+		).setNavigation(
+			navigation
+		).buildPortletURL();
 	}
 
 	private List<DropdownItem> _getOrderByDropDownItems() {
@@ -282,31 +282,30 @@ public class StagingProcessesWebToolbarDisplayContext {
 			_getStagingRenderURL()
 		).setParameter(
 			"orderByCol", orderByColumnName
-		).build();
+		).buildPortletURL();
 	}
 
 	private PortletURL _getStagingRenderURL() {
 		return PortletURLBuilder.createRenderURL(
 			_liferayPortletResponse
-		).setParameter(
-			"navigation",
+		).setNavigation(
 			ParamUtil.getString(_httpServletRequest, "navigation", "all")
 		).setParameter(
-			"groupId", ParamUtil.getLong(_httpServletRequest, "groupId")
-		).setParameter(
-			"privateLayout",
-			ParamUtil.getBoolean(_httpServletRequest, "privateLayout")
-		).setParameter(
 			"displayStyle", getDisplayStyle()
+		).setParameter(
+			"groupId", ParamUtil.getLong(_httpServletRequest, "groupId")
 		).setParameter(
 			"orderByCol", ParamUtil.getString(_httpServletRequest, "orderByCol")
 		).setParameter(
 			"orderByType",
 			ParamUtil.getString(_httpServletRequest, "orderByType", "asc")
 		).setParameter(
+			"privateLayout",
+			ParamUtil.getBoolean(_httpServletRequest, "privateLayout")
+		).setParameter(
 			"searchContainerId",
 			ParamUtil.getString(_httpServletRequest, "searchContainerId")
-		).build();
+		).buildPortletURL();
 	}
 
 	private final HttpServletRequest _httpServletRequest;

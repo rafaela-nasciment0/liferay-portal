@@ -77,13 +77,11 @@ String target = ParamUtil.getString(request, "target", groupItemSelectorCriterio
 			String childGroupsHREF = null;
 
 			if (!childGroups.isEmpty()) {
-				PortletURL childGroupsURL = PortletURLBuilder.create(
+				childGroupsHREF = PortletURLBuilder.create(
 					siteItemSelectorViewDisplayContext.getPortletURL()
 				).setParameter(
-					"groupId", String.valueOf(group.getGroupId())
-				).build();
-
-				childGroupsHREF = childGroupsURL.toString();
+					"groupId", group.getGroupId()
+				).buildString();
 			}
 			%>
 
@@ -256,10 +254,3 @@ String target = ParamUtil.getString(request, "target", groupItemSelectorCriterio
 		/>
 	</liferay-ui:search-container>
 </aui:form>
-
-<aui:script use="aui-base">
-	Liferay.Util.selectEntityHandler(
-		'#<portlet:namespace />selectGroupFm',
-		'<%= HtmlUtil.escapeJS(siteItemSelectorViewDisplayContext.getItemSelectedEventName()) %>'
-	);
-</aui:script>

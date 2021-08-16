@@ -27,17 +27,17 @@ PortletURL permissionsAllURL = PortletURLBuilder.createRenderURL(
 	liferayPortletResponse
 ).setMVCPath(
 	"/edit_role_permissions.jsp"
+).setCMD(
+	Constants.VIEW
+).setBackURL(
+	backURL
+).setTabs1(
+	"define-permissions"
+).setTabs2(
+	"roles"
 ).setParameter(
-	Constants.CMD, Constants.VIEW
-).setParameter(
-	"tabs1", "define-permissions"
-).setParameter(
-	"tabs2", "roles"
-).setParameter(
-	"backURL", backURL
-).setParameter(
-	"roleId", String.valueOf(role.getRoleId())
-).build();
+	"roleId", role.getRoleId()
+).buildPortletURL();
 
 List<String> headerNames = new ArrayList<String>();
 
@@ -128,8 +128,8 @@ for (int i = 0; i < results.size(); i++) {
 	String curPortletName = permissionDisplay.getPortletName();
 	String curPortletLabel = permissionDisplay.getPortletLabel();
 	String curModelLabel = permissionDisplay.getModelLabel();
+
 	String actionId = permissionDisplay.getActionId();
-	String actionLabel = permissionDisplay.getActionLabel();
 
 	ResultRow row = new ResultRow(new Object[] {permission, role}, actionId, i);
 
@@ -177,19 +177,19 @@ for (int i = 0; i < results.size(); i++) {
 		liferayPortletResponse
 	).setMVCPath(
 		"/edit_role_permissions.jsp"
+	).setCMD(
+		Constants.EDIT
 	).setRedirect(
-		permissionsAllURL.toString()
+		permissionsAllURL
+	).setPortletResource(
+		curPortletName
+	).setTabs1(
+		"define-permissions"
+	).setTabs2(
+		"roles"
 	).setParameter(
-		Constants.CMD, Constants.EDIT
-	).setParameter(
-		"tabs1", "define-permissions"
-	).setParameter(
-		"tabs2", "roles"
-	).setParameter(
-		"roleId", String.valueOf(role.getRoleId())
-	).setParameter(
-		"portletResource", curPortletName
-	).build();
+		"roleId", role.getRoleId()
+	).buildPortletURL();
 
 	StringBundler sb = new StringBundler(17);
 
@@ -212,7 +212,7 @@ for (int i = 0; i < results.size(); i++) {
 	}
 
 	sb.append("</a>: <strong>");
-	sb.append(actionLabel);
+	sb.append(permissionDisplay.getActionLabel());
 	sb.append("</strong>");
 
 	row.addText(sb.toString());

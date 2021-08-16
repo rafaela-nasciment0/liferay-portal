@@ -29,6 +29,8 @@ import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.BaseModel;
 import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
+import com.liferay.portal.kernel.service.ServiceContext;
+import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
 import com.liferay.portal.kernel.service.persistence.BasePersistence;
 import com.liferay.portal.kernel.service.persistence.impl.BasePersistenceImpl;
 import com.liferay.portal.kernel.util.HashMapDictionary;
@@ -98,8 +100,8 @@ public class SamlSpMessagePersistenceImpl
 	private FinderPath _finderPathWithPaginationFindAll;
 	private FinderPath _finderPathWithoutPaginationFindAll;
 	private FinderPath _finderPathCountAll;
-	private FinderPath _finderPathWithPaginationFindByExpirationDate;
-	private FinderPath _finderPathWithPaginationCountByExpirationDate;
+	private FinderPath _finderPathWithPaginationFindByLtExpirationDate;
+	private FinderPath _finderPathWithPaginationCountByLtExpirationDate;
 
 	/**
 	 * Returns all the saml sp messages where expirationDate &lt; &#63;.
@@ -108,8 +110,8 @@ public class SamlSpMessagePersistenceImpl
 	 * @return the matching saml sp messages
 	 */
 	@Override
-	public List<SamlSpMessage> findByExpirationDate(Date expirationDate) {
-		return findByExpirationDate(
+	public List<SamlSpMessage> findByLtExpirationDate(Date expirationDate) {
+		return findByLtExpirationDate(
 			expirationDate, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
 	}
 
@@ -126,10 +128,10 @@ public class SamlSpMessagePersistenceImpl
 	 * @return the range of matching saml sp messages
 	 */
 	@Override
-	public List<SamlSpMessage> findByExpirationDate(
+	public List<SamlSpMessage> findByLtExpirationDate(
 		Date expirationDate, int start, int end) {
 
-		return findByExpirationDate(expirationDate, start, end, null);
+		return findByLtExpirationDate(expirationDate, start, end, null);
 	}
 
 	/**
@@ -146,11 +148,11 @@ public class SamlSpMessagePersistenceImpl
 	 * @return the ordered range of matching saml sp messages
 	 */
 	@Override
-	public List<SamlSpMessage> findByExpirationDate(
+	public List<SamlSpMessage> findByLtExpirationDate(
 		Date expirationDate, int start, int end,
 		OrderByComparator<SamlSpMessage> orderByComparator) {
 
-		return findByExpirationDate(
+		return findByLtExpirationDate(
 			expirationDate, start, end, orderByComparator, true);
 	}
 
@@ -169,7 +171,7 @@ public class SamlSpMessagePersistenceImpl
 	 * @return the ordered range of matching saml sp messages
 	 */
 	@Override
-	public List<SamlSpMessage> findByExpirationDate(
+	public List<SamlSpMessage> findByLtExpirationDate(
 		Date expirationDate, int start, int end,
 		OrderByComparator<SamlSpMessage> orderByComparator,
 		boolean useFinderCache) {
@@ -177,7 +179,7 @@ public class SamlSpMessagePersistenceImpl
 		FinderPath finderPath = null;
 		Object[] finderArgs = null;
 
-		finderPath = _finderPathWithPaginationFindByExpirationDate;
+		finderPath = _finderPathWithPaginationFindByLtExpirationDate;
 		finderArgs = new Object[] {
 			_getTime(expirationDate), start, end, orderByComparator
 		};
@@ -218,12 +220,12 @@ public class SamlSpMessagePersistenceImpl
 			boolean bindExpirationDate = false;
 
 			if (expirationDate == null) {
-				sb.append(_FINDER_COLUMN_EXPIRATIONDATE_EXPIRATIONDATE_1);
+				sb.append(_FINDER_COLUMN_LTEXPIRATIONDATE_EXPIRATIONDATE_1);
 			}
 			else {
 				bindExpirationDate = true;
 
-				sb.append(_FINDER_COLUMN_EXPIRATIONDATE_EXPIRATIONDATE_2);
+				sb.append(_FINDER_COLUMN_LTEXPIRATIONDATE_EXPIRATIONDATE_2);
 			}
 
 			if (orderByComparator != null) {
@@ -278,12 +280,12 @@ public class SamlSpMessagePersistenceImpl
 	 * @throws NoSuchSpMessageException if a matching saml sp message could not be found
 	 */
 	@Override
-	public SamlSpMessage findByExpirationDate_First(
+	public SamlSpMessage findByLtExpirationDate_First(
 			Date expirationDate,
 			OrderByComparator<SamlSpMessage> orderByComparator)
 		throws NoSuchSpMessageException {
 
-		SamlSpMessage samlSpMessage = fetchByExpirationDate_First(
+		SamlSpMessage samlSpMessage = fetchByLtExpirationDate_First(
 			expirationDate, orderByComparator);
 
 		if (samlSpMessage != null) {
@@ -310,11 +312,11 @@ public class SamlSpMessagePersistenceImpl
 	 * @return the first matching saml sp message, or <code>null</code> if a matching saml sp message could not be found
 	 */
 	@Override
-	public SamlSpMessage fetchByExpirationDate_First(
+	public SamlSpMessage fetchByLtExpirationDate_First(
 		Date expirationDate,
 		OrderByComparator<SamlSpMessage> orderByComparator) {
 
-		List<SamlSpMessage> list = findByExpirationDate(
+		List<SamlSpMessage> list = findByLtExpirationDate(
 			expirationDate, 0, 1, orderByComparator);
 
 		if (!list.isEmpty()) {
@@ -333,12 +335,12 @@ public class SamlSpMessagePersistenceImpl
 	 * @throws NoSuchSpMessageException if a matching saml sp message could not be found
 	 */
 	@Override
-	public SamlSpMessage findByExpirationDate_Last(
+	public SamlSpMessage findByLtExpirationDate_Last(
 			Date expirationDate,
 			OrderByComparator<SamlSpMessage> orderByComparator)
 		throws NoSuchSpMessageException {
 
-		SamlSpMessage samlSpMessage = fetchByExpirationDate_Last(
+		SamlSpMessage samlSpMessage = fetchByLtExpirationDate_Last(
 			expirationDate, orderByComparator);
 
 		if (samlSpMessage != null) {
@@ -365,17 +367,17 @@ public class SamlSpMessagePersistenceImpl
 	 * @return the last matching saml sp message, or <code>null</code> if a matching saml sp message could not be found
 	 */
 	@Override
-	public SamlSpMessage fetchByExpirationDate_Last(
+	public SamlSpMessage fetchByLtExpirationDate_Last(
 		Date expirationDate,
 		OrderByComparator<SamlSpMessage> orderByComparator) {
 
-		int count = countByExpirationDate(expirationDate);
+		int count = countByLtExpirationDate(expirationDate);
 
 		if (count == 0) {
 			return null;
 		}
 
-		List<SamlSpMessage> list = findByExpirationDate(
+		List<SamlSpMessage> list = findByLtExpirationDate(
 			expirationDate, count - 1, count, orderByComparator);
 
 		if (!list.isEmpty()) {
@@ -395,7 +397,7 @@ public class SamlSpMessagePersistenceImpl
 	 * @throws NoSuchSpMessageException if a saml sp message with the primary key could not be found
 	 */
 	@Override
-	public SamlSpMessage[] findByExpirationDate_PrevAndNext(
+	public SamlSpMessage[] findByLtExpirationDate_PrevAndNext(
 			long samlSpMessageId, Date expirationDate,
 			OrderByComparator<SamlSpMessage> orderByComparator)
 		throws NoSuchSpMessageException {
@@ -409,13 +411,13 @@ public class SamlSpMessagePersistenceImpl
 
 			SamlSpMessage[] array = new SamlSpMessageImpl[3];
 
-			array[0] = getByExpirationDate_PrevAndNext(
+			array[0] = getByLtExpirationDate_PrevAndNext(
 				session, samlSpMessage, expirationDate, orderByComparator,
 				true);
 
 			array[1] = samlSpMessage;
 
-			array[2] = getByExpirationDate_PrevAndNext(
+			array[2] = getByLtExpirationDate_PrevAndNext(
 				session, samlSpMessage, expirationDate, orderByComparator,
 				false);
 
@@ -429,7 +431,7 @@ public class SamlSpMessagePersistenceImpl
 		}
 	}
 
-	protected SamlSpMessage getByExpirationDate_PrevAndNext(
+	protected SamlSpMessage getByLtExpirationDate_PrevAndNext(
 		Session session, SamlSpMessage samlSpMessage, Date expirationDate,
 		OrderByComparator<SamlSpMessage> orderByComparator, boolean previous) {
 
@@ -449,12 +451,12 @@ public class SamlSpMessagePersistenceImpl
 		boolean bindExpirationDate = false;
 
 		if (expirationDate == null) {
-			sb.append(_FINDER_COLUMN_EXPIRATIONDATE_EXPIRATIONDATE_1);
+			sb.append(_FINDER_COLUMN_LTEXPIRATIONDATE_EXPIRATIONDATE_1);
 		}
 		else {
 			bindExpirationDate = true;
 
-			sb.append(_FINDER_COLUMN_EXPIRATIONDATE_EXPIRATIONDATE_2);
+			sb.append(_FINDER_COLUMN_LTEXPIRATIONDATE_EXPIRATIONDATE_2);
 		}
 
 		if (orderByComparator != null) {
@@ -555,9 +557,9 @@ public class SamlSpMessagePersistenceImpl
 	 * @param expirationDate the expiration date
 	 */
 	@Override
-	public void removeByExpirationDate(Date expirationDate) {
+	public void removeByLtExpirationDate(Date expirationDate) {
 		for (SamlSpMessage samlSpMessage :
-				findByExpirationDate(
+				findByLtExpirationDate(
 					expirationDate, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
 					null)) {
 
@@ -572,8 +574,9 @@ public class SamlSpMessagePersistenceImpl
 	 * @return the number of matching saml sp messages
 	 */
 	@Override
-	public int countByExpirationDate(Date expirationDate) {
-		FinderPath finderPath = _finderPathWithPaginationCountByExpirationDate;
+	public int countByLtExpirationDate(Date expirationDate) {
+		FinderPath finderPath =
+			_finderPathWithPaginationCountByLtExpirationDate;
 
 		Object[] finderArgs = new Object[] {_getTime(expirationDate)};
 
@@ -587,12 +590,12 @@ public class SamlSpMessagePersistenceImpl
 			boolean bindExpirationDate = false;
 
 			if (expirationDate == null) {
-				sb.append(_FINDER_COLUMN_EXPIRATIONDATE_EXPIRATIONDATE_1);
+				sb.append(_FINDER_COLUMN_LTEXPIRATIONDATE_EXPIRATIONDATE_1);
 			}
 			else {
 				bindExpirationDate = true;
 
-				sb.append(_FINDER_COLUMN_EXPIRATIONDATE_EXPIRATIONDATE_2);
+				sb.append(_FINDER_COLUMN_LTEXPIRATIONDATE_EXPIRATIONDATE_2);
 			}
 
 			String sql = sb.toString();
@@ -625,11 +628,13 @@ public class SamlSpMessagePersistenceImpl
 		return count.intValue();
 	}
 
-	private static final String _FINDER_COLUMN_EXPIRATIONDATE_EXPIRATIONDATE_1 =
-		"samlSpMessage.expirationDate IS NULL";
+	private static final String
+		_FINDER_COLUMN_LTEXPIRATIONDATE_EXPIRATIONDATE_1 =
+			"samlSpMessage.expirationDate IS NULL";
 
-	private static final String _FINDER_COLUMN_EXPIRATIONDATE_EXPIRATIONDATE_2 =
-		"samlSpMessage.expirationDate < ?";
+	private static final String
+		_FINDER_COLUMN_LTEXPIRATIONDATE_EXPIRATIONDATE_2 =
+			"samlSpMessage.expirationDate < ?";
 
 	private FinderPath _finderPathFetchBySIEI_SIRK;
 	private FinderPath _finderPathCountBySIEI_SIRK;
@@ -1166,6 +1171,20 @@ public class SamlSpMessagePersistenceImpl
 		SamlSpMessageModelImpl samlSpMessageModelImpl =
 			(SamlSpMessageModelImpl)samlSpMessage;
 
+		if (isNew && (samlSpMessage.getCreateDate() == null)) {
+			ServiceContext serviceContext =
+				ServiceContextThreadLocal.getServiceContext();
+
+			Date date = new Date();
+
+			if (serviceContext == null) {
+				samlSpMessage.setCreateDate(date);
+			}
+			else {
+				samlSpMessage.setCreateDate(serviceContext.getCreateDate(date));
+			}
+		}
+
 		Session session = null;
 
 		try {
@@ -1472,16 +1491,16 @@ public class SamlSpMessagePersistenceImpl
 			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countAll",
 			new String[0], new String[0], false);
 
-		_finderPathWithPaginationFindByExpirationDate = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByExpirationDate",
+		_finderPathWithPaginationFindByLtExpirationDate = new FinderPath(
+			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByLtExpirationDate",
 			new String[] {
 				Date.class.getName(), Integer.class.getName(),
 				Integer.class.getName(), OrderByComparator.class.getName()
 			},
 			new String[] {"expirationDate"}, true);
 
-		_finderPathWithPaginationCountByExpirationDate = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "countByExpirationDate",
+		_finderPathWithPaginationCountByLtExpirationDate = new FinderPath(
+			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "countByLtExpirationDate",
 			new String[] {Date.class.getName()},
 			new String[] {"expirationDate"}, false);
 
@@ -1635,7 +1654,7 @@ public class SamlSpMessagePersistenceImpl
 			return SamlSpMessageTable.INSTANCE.getTableName();
 		}
 
-		private Object[] _getValue(
+		private static Object[] _getValue(
 			SamlSpMessageModelImpl samlSpMessageModelImpl, String[] columnNames,
 			boolean original) {
 
@@ -1658,8 +1677,8 @@ public class SamlSpMessagePersistenceImpl
 			return arguments;
 		}
 
-		private static Map<FinderPath, Long> _finderPathColumnBitmasksCache =
-			new ConcurrentHashMap<>();
+		private static final Map<FinderPath, Long>
+			_finderPathColumnBitmasksCache = new ConcurrentHashMap<>();
 
 	}
 

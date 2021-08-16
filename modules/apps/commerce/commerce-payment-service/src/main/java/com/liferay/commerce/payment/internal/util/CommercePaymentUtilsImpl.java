@@ -16,6 +16,7 @@ package com.liferay.commerce.payment.internal.util;
 
 import com.liferay.commerce.constants.CommercePaymentConstants;
 import com.liferay.commerce.model.CommerceOrder;
+import com.liferay.commerce.model.CommerceOrderItem;
 import com.liferay.commerce.payment.method.CommercePaymentMethod;
 import com.liferay.commerce.payment.method.CommercePaymentMethodRegistry;
 import com.liferay.commerce.payment.model.CommercePaymentMethodGroupRel;
@@ -54,10 +55,23 @@ import org.osgi.service.component.annotations.Reference;
 )
 public class CommercePaymentUtilsImpl implements CommercePaymentUtils {
 
+	/**
+	 * @deprecated As of Cavanaugh (7.4.x), replaced by  {@link CommercePaymentUtils#emptyResult(long, String)}
+	 */
+	@Deprecated
 	@Override
 	public CommercePaymentResult emptyResult(long commerceOrderId) {
 		return new CommercePaymentResult(
 			null, commerceOrderId, -1, false, null, null,
+			Collections.emptyList(), false);
+	}
+
+	@Override
+	public CommercePaymentResult emptyResult(
+		long commerceOrderId, String transactionId) {
+
+		return new CommercePaymentResult(
+			transactionId, commerceOrderId, -1, false, null, null,
 			Collections.emptyList(), false);
 	}
 
@@ -140,6 +154,19 @@ public class CommercePaymentUtilsImpl implements CommercePaymentUtils {
 		return commercePaymentRequestProvider;
 	}
 
+	@Override
+	public boolean isDeliveryOnlySubscription(CommerceOrder commerceOrder) {
+		for (CommerceOrderItem commerceOrderItem :
+				commerceOrder.getCommerceOrderItems()) {
+
+			if (Validator.isNotNull(commerceOrderItem.getSubscriptionType())) {
+				return false;
+			}
+		}
+
+		return true;
+	}
+
 	private StringBundler _getBaseUrl(
 			HttpServletRequest httpServletRequest, CommerceOrder commerceOrder,
 			String redirect, CommercePaymentMethod commercePaymentMethod,
@@ -202,6 +229,15 @@ public class CommercePaymentUtilsImpl implements CommercePaymentUtils {
 		StringBundler sb = _getBaseUrl(
 			httpServletRequest, commerceOrder, redirect, commercePaymentMethod,
 			0);
+
+		if (commerceOrder.isSubscriptionOrder() &&
+			!isDeliveryOnlySubscription(commerceOrder)) {
+
+			sb.append("&orderType=subscription");
+		}
+		else {
+			sb.append("&orderType=normal");
+		}
 
 		return sb.toString();
 	}

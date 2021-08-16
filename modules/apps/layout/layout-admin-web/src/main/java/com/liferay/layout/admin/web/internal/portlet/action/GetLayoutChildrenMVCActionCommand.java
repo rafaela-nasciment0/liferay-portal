@@ -15,9 +15,10 @@
 package com.liferay.layout.admin.web.internal.portlet.action;
 
 import com.liferay.layout.admin.constants.LayoutAdminPortletKeys;
-import com.liferay.layout.admin.web.internal.configuration.LayoutConverterConfiguration;
+import com.liferay.layout.admin.web.internal.configuration.FFLayoutTranslationConfiguration;
 import com.liferay.layout.admin.web.internal.display.context.LayoutsAdminDisplayContext;
 import com.liferay.layout.admin.web.internal.display.context.MillerColumnsDisplayContext;
+import com.liferay.layout.admin.web.internal.servlet.taglib.util.LayoutActionDropdownItemsProvider;
 import com.liferay.layout.util.LayoutCopyHelper;
 import com.liferay.layout.util.template.LayoutConverterRegistry;
 import com.liferay.portal.configuration.metatype.bnd.util.ConfigurableUtil;
@@ -31,6 +32,9 @@ import com.liferay.portal.kernel.service.LayoutLocalService;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.staging.StagingGroupHelper;
+import com.liferay.translation.exporter.TranslationInfoItemFieldValuesExporterTracker;
+import com.liferay.translation.security.permission.TranslationPermission;
+import com.liferay.translation.url.provider.TranslationURLProvider;
 
 import java.util.Map;
 
@@ -46,7 +50,7 @@ import org.osgi.service.component.annotations.Reference;
  * @author Eudaldo Alonso
  */
 @Component(
-	configurationPid = "com.liferay.layout.admin.web.internal.configuration.LayoutConverterConfiguration",
+	configurationPid = "com.liferay.layout.admin.web.internal.configuration.FFLayoutTranslationConfiguration",
 	immediate = true,
 	property = {
 		"javax.portlet.name=" + LayoutAdminPortletKeys.GROUP_PAGES,
@@ -59,8 +63,8 @@ public class GetLayoutChildrenMVCActionCommand extends BaseMVCActionCommand {
 	@Activate
 	@Modified
 	protected void activate(Map<String, Object> properties) {
-		_layoutConverterConfiguration = ConfigurableUtil.createConfigurable(
-			LayoutConverterConfiguration.class, properties);
+		_ffLayoutTranslationConfiguration = ConfigurableUtil.createConfigurable(
+			FFLayoutTranslationConfiguration.class, properties);
 	}
 
 	@Override
@@ -74,17 +78,22 @@ public class GetLayoutChildrenMVCActionCommand extends BaseMVCActionCommand {
 
 		LayoutsAdminDisplayContext layoutsAdminDisplayContext =
 			new LayoutsAdminDisplayContext(
-				_layoutConverterConfiguration, _layoutConverterRegistry,
-				_layoutCopyHelper,
+				_layoutConverterRegistry, _layoutCopyHelper,
 				_portal.getLiferayPortletRequest(actionRequest),
 				_portal.getLiferayPortletResponse(actionResponse),
 				_stagingGroupHelper);
 
 		MillerColumnsDisplayContext millerColumnsDisplayContext =
 			new MillerColumnsDisplayContext(
+				new LayoutActionDropdownItemsProvider(
+					_ffLayoutTranslationConfiguration,
+					_portal.getHttpServletRequest(actionRequest),
+					layoutsAdminDisplayContext, _translationPermission,
+					_translationURLProvider),
 				layoutsAdminDisplayContext,
 				_portal.getLiferayPortletRequest(actionRequest),
-				_portal.getLiferayPortletResponse(actionResponse));
+				_portal.getLiferayPortletResponse(actionResponse),
+				_translationInfoItemFieldValuesExporterTracker);
 
 		JSONArray jsonArray = millerColumnsDisplayContext.getLayoutsJSONArray(
 			layout.getLayoutId(), layout.isPrivateLayout());
@@ -93,7 +102,8 @@ public class GetLayoutChildrenMVCActionCommand extends BaseMVCActionCommand {
 			actionRequest, actionResponse, JSONUtil.put("children", jsonArray));
 	}
 
-	private volatile LayoutConverterConfiguration _layoutConverterConfiguration;
+	private volatile FFLayoutTranslationConfiguration
+		_ffLayoutTranslationConfiguration;
 
 	@Reference
 	private LayoutConverterRegistry _layoutConverterRegistry;
@@ -109,5 +119,15 @@ public class GetLayoutChildrenMVCActionCommand extends BaseMVCActionCommand {
 
 	@Reference
 	private StagingGroupHelper _stagingGroupHelper;
+
+	@Reference
+	private TranslationInfoItemFieldValuesExporterTracker
+		_translationInfoItemFieldValuesExporterTracker;
+
+	@Reference
+	private TranslationPermission _translationPermission;
+
+	@Reference
+	private TranslationURLProvider _translationURLProvider;
 
 }

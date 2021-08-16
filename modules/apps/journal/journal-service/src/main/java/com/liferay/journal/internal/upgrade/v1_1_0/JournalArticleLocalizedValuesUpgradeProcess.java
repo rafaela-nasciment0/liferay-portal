@@ -20,6 +20,7 @@ import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.dao.jdbc.AutoBatchPreparedStatementUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.upgrade.BaseUpgradeCallable;
 import com.liferay.portal.kernel.upgrade.UpgradeException;
 import com.liferay.portal.kernel.upgrade.UpgradeProcess;
 import com.liferay.portal.kernel.util.GetterUtil;
@@ -42,7 +43,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -119,30 +119,31 @@ public class JournalArticleLocalizedValuesUpgradeProcess
 		sb.append("description, languageId) values(?, ?, ?, ?, ?, ?)");
 
 		try (LoggingTimer loggingTimer = new LoggingTimer();
-			PreparedStatement ps = connection.prepareStatement(
+			PreparedStatement preparedStatement = connection.prepareStatement(
 				"select id_, companyId, title, description, " +
 					"defaultLanguageId from JournalArticle");
-			ResultSet rs = ps.executeQuery()) {
+			ResultSet resultSet = preparedStatement.executeQuery()) {
 
-			List<UpdateJournalArticleLocalizedFieldsCallable>
-				updateJournalArticleLocalizedFieldsCallables =
+			List<UpdateJournalArticleLocalizedFieldsUpgradeCallable>
+				updateJournalArticleLocalizedFieldsUpgradeCallables =
 					new ArrayList<>();
 
-			while (rs.next()) {
-				UpdateJournalArticleLocalizedFieldsCallable
-					updateJournalArticleLocalizedFieldsCallable =
-						new UpdateJournalArticleLocalizedFieldsCallable(
-							rs.getLong(1), rs.getLong(2), rs.getString(3),
-							rs.getString(4), rs.getString(5), sb.toString());
+			while (resultSet.next()) {
+				UpdateJournalArticleLocalizedFieldsUpgradeCallable
+					updateJournalArticleLocalizedFieldsUpgradeCallable =
+						new UpdateJournalArticleLocalizedFieldsUpgradeCallable(
+							resultSet.getLong(1), resultSet.getLong(2),
+							resultSet.getString(3), resultSet.getString(4),
+							resultSet.getString(5), sb.toString());
 
-				updateJournalArticleLocalizedFieldsCallables.add(
-					updateJournalArticleLocalizedFieldsCallable);
+				updateJournalArticleLocalizedFieldsUpgradeCallables.add(
+					updateJournalArticleLocalizedFieldsUpgradeCallable);
 			}
 
 			ExecutorService executorService = Executors.newWorkStealingPool();
 
 			List<Future<Boolean>> futures = executorService.invokeAll(
-				updateJournalArticleLocalizedFieldsCallables);
+				updateJournalArticleLocalizedFieldsUpgradeCallables);
 
 			executorService.shutdown();
 
@@ -212,21 +213,21 @@ public class JournalArticleLocalizedValuesUpgradeProcess
 		throws Exception {
 
 		try (LoggingTimer loggingTimer = new LoggingTimer();
-			PreparedStatement ps = connection.prepareStatement(
+			PreparedStatement preparedStatement = connection.prepareStatement(
 				StringBundler.concat(
 					"select id_, groupId, ", columnName,
 					" from JournalArticle where defaultLanguageId is null or ",
 					"defaultLanguageId = ''"));
-			ResultSet rs = ps.executeQuery()) {
+			ResultSet resultSet = preparedStatement.executeQuery()) {
 
-			List<UpdateDefaultLanguageCallable> updateDefaultLanguageCallables =
-				new ArrayList<>();
+			List<UpdateDefaultLanguageUpgradeCallable>
+				updateDefaultLanguageCallables = new ArrayList<>();
 
-			while (rs.next()) {
-				String columnValue = rs.getString(3);
+			while (resultSet.next()) {
+				String columnValue = resultSet.getString(3);
 
 				if (Validator.isXml(columnValue) || strictUpdate) {
-					long groupId = rs.getLong(2);
+					long groupId = resultSet.getLong(2);
 
 					Locale defaultSiteLocale = _defaultSiteLocales.get(groupId);
 
@@ -237,10 +238,11 @@ public class JournalArticleLocalizedValuesUpgradeProcess
 						_defaultSiteLocales.put(groupId, defaultSiteLocale);
 					}
 
-					UpdateDefaultLanguageCallable
+					UpdateDefaultLanguageUpgradeCallable
 						updateDefaultLanguageCallable =
-							new UpdateDefaultLanguageCallable(
-								rs.getLong(1), columnValue, defaultSiteLocale);
+							new UpdateDefaultLanguageUpgradeCallable(
+								resultSet.getLong(1), columnValue,
+								defaultSiteLocale);
 
 					updateDefaultLanguageCallables.add(
 						updateDefaultLanguageCallable);
@@ -276,9 +278,10 @@ public class JournalArticleLocalizedValuesUpgradeProcess
 	private final CounterLocalService _counterLocalService;
 	private final Map<Long, Locale> _defaultSiteLocales = new HashMap<>();
 
-	private class UpdateDefaultLanguageCallable implements Callable<Boolean> {
+	private class UpdateDefaultLanguageUpgradeCallable
+		extends BaseUpgradeCallable<Boolean> {
 
-		public UpdateDefaultLanguageCallable(
+		public UpdateDefaultLanguageUpgradeCallable(
 			long id, String xml, Locale defaultSiteLocale) {
 
 			_id = id;
@@ -290,7 +293,7 @@ public class JournalArticleLocalizedValuesUpgradeProcess
 		}
 
 		@Override
-		public Boolean call() throws Exception {
+		protected Boolean doCall() throws Exception {
 			try {
 				StringBundler sb = new StringBundler(4);
 
@@ -318,10 +321,10 @@ public class JournalArticleLocalizedValuesUpgradeProcess
 
 	}
 
-	private class UpdateJournalArticleLocalizedFieldsCallable
-		implements Callable<Boolean> {
+	private class UpdateJournalArticleLocalizedFieldsUpgradeCallable
+		extends BaseUpgradeCallable<Boolean> {
 
-		public UpdateJournalArticleLocalizedFieldsCallable(
+		public UpdateJournalArticleLocalizedFieldsUpgradeCallable(
 				long id, long companyId, String title, String description,
 				String defaultLanguageId, String sql)
 			throws Exception {
@@ -335,7 +338,7 @@ public class JournalArticleLocalizedValuesUpgradeProcess
 		}
 
 		@Override
-		public Boolean call() throws Exception {
+		protected Boolean doCall() throws Exception {
 			Map<Locale, String> titleMap = _getLocalizationMap(
 				_title, _defaultLanguageId);
 			Map<Locale, String> descriptionMap = _getLocalizationMap(
@@ -346,7 +349,7 @@ public class JournalArticleLocalizedValuesUpgradeProcess
 			locales.addAll(titleMap.keySet());
 			locales.addAll(descriptionMap.keySet());
 
-			try (PreparedStatement ps =
+			try (PreparedStatement preparedStatement =
 					AutoBatchPreparedStatementUtil.concurrentAutoBatch(
 						connection, _sql)) {
 
@@ -374,18 +377,20 @@ public class JournalArticleLocalizedValuesUpgradeProcess
 						localizedDescription = safeLocalizedDescription;
 					}
 
-					ps.setLong(1, _counterLocalService.increment());
-					ps.setLong(2, _companyId);
-					ps.setLong(3, _id);
-					ps.setString(4, localizedTitle);
-					ps.setString(5, localizedDescription);
-					ps.setString(6, LocaleUtil.toLanguageId(locale));
+					preparedStatement.setLong(
+						1, _counterLocalService.increment());
+					preparedStatement.setLong(2, _companyId);
+					preparedStatement.setLong(3, _id);
+					preparedStatement.setString(4, localizedTitle);
+					preparedStatement.setString(5, localizedDescription);
+					preparedStatement.setString(
+						6, LocaleUtil.toLanguageId(locale));
 
-					ps.addBatch();
+					preparedStatement.addBatch();
 				}
 
 				try {
-					ps.executeBatch();
+					preparedStatement.executeBatch();
 				}
 				catch (Exception exception) {
 					_log.error(

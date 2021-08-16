@@ -1,8 +1,6 @@
 @component-name = "portal-wcm"
 definition {
 
-	property osgi.module.configuration.file.names = "com.liferay.layout.content.page.editor.web.internal.configuration.FFLayoutContentPageEditorConfiguration.config:com.liferay.fragment.renderer.menu.display.internal.configuration.FFFragmentRendererMenuDisplayConfiguration.config";
-	property osgi.module.configurations = "dropdownFragmentEnabled=&quot;true&quot;:enabled=&quot;true&quot;";
 	property portal.release = "true";
 	property portal.upstream = "true";
 	property testray.main.component.name = "Fragments";
@@ -149,7 +147,7 @@ definition {
 		task ("Assert the drop zone is shown in dropdown panel when click the toggle button") {
 			PageEditor.clickConfigurableField(fragmentName = "Dropdown");
 
-			Click(locator1 = "Fragment#DROPDOWN_FRAGMENT_TOGGLE");
+			Click.javaScriptClick(locator1 = "Fragment#DROPDOWN_FRAGMENT_TOGGLE");
 
 			AssertAttributeValue(
 				attribute1 = "aria-expanded",
@@ -162,7 +160,7 @@ definition {
 				key_position = "1",
 				locator1 = "Fragment#PAGE_EDITOR_NO_FRAGMENTS_MESSAGE");
 
-			Click(locator1 = "Fragment#DROPDOWN_FRAGMENT_TOGGLE");
+			Click.javaScriptClick(locator1 = "Fragment#DROPDOWN_FRAGMENT_TOGGLE");
 
 			AssertAttributeValue(
 				attribute1 = "aria-expanded",
@@ -224,7 +222,7 @@ definition {
 				locator1 = "Fragment#PAGE_EDITOR_NO_FRAGMENTS_MESSAGE");
 
 			MouseOver(
-				key_sidebarButton = "Selection",
+				key_sidebarButton = "Browser",
 				locator1 = "PageEditor#FRAGMENT_SIDEBAR_TITLE");
 
 			AssertAttributeValue(
@@ -358,7 +356,7 @@ definition {
 		task ("Assert the panel type of Dropdown fragment") {
 			PageEditor.clickConfigurableField(fragmentName = "Dropdown");
 
-			Click(locator1 = "Fragment#DROPDOWN_FRAGMENT_TOGGLE");
+			Click.javaScriptClick(locator1 = "Fragment#DROPDOWN_FRAGMENT_TOGGLE");
 
 			AssertVisible(
 				key_panelWidth = "240px",
@@ -379,7 +377,7 @@ definition {
 		}
 
 		task ("Assert the panel type of Dropdown fragment") {
-			Click(locator1 = "Fragment#DROPDOWN_FRAGMENT_TOGGLE");
+			Click.javaScriptClick(locator1 = "Fragment#DROPDOWN_FRAGMENT_TOGGLE");
 
 			var moduleContainerWidth = selenium.getAttribute("//div[contains(@class,'col-4')][2]//div[contains(@class,'col__border')]@width");
 
@@ -395,7 +393,7 @@ definition {
 		}
 
 		task ("Assert the panel type of Dropdown fragment") {
-			Click(locator1 = "Fragment#DROPDOWN_FRAGMENT_TOGGLE");
+			Click.javaScriptClick(locator1 = "Fragment#DROPDOWN_FRAGMENT_TOGGLE");
 
 			var pageEditorWidth = selenium.getAttribute("//div[contains(@class,'layout-viewport')]/div[contains(@id,'page-editor')]@width");
 

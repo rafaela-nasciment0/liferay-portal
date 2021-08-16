@@ -50,8 +50,6 @@ import com.liferay.trash.TrashHelper;
 
 import java.util.List;
 
-import javax.portlet.PortletURL;
-
 import javax.servlet.http.HttpServletRequest;
 
 /**
@@ -211,9 +209,9 @@ public class JournalFolderActionDropdownItems {
 			redirect = PortletURLBuilder.createRenderURL(
 				_liferayPortletResponse
 			).setParameter(
-				"groupId", _folder.getGroupId()
-			).setParameter(
 				"folderId", _folder.getParentFolderId()
+			).setParameter(
+				"groupId", _folder.getGroupId()
 			).buildString();
 		}
 
@@ -234,9 +232,9 @@ public class JournalFolderActionDropdownItems {
 		).setRedirect(
 			redirect
 		).setParameter(
-			"groupId", _folder.getGroupId()
-		).setParameter(
 			"folderId", _folder.getFolderId()
+		).setParameter(
+			"groupId", _folder.getGroupId()
 		).buildString();
 
 		return dropdownItem -> {
@@ -325,23 +323,26 @@ public class JournalFolderActionDropdownItems {
 	private UnsafeConsumer<DropdownItem, Exception>
 		_getPublishToLiveFolderActionUnsafeConsumer() {
 
-		PortletURL publishFolderURL = PortletURLBuilder.createActionURL(
-			_liferayPortletResponse
-		).setActionName(
-			"/journal/publish_folder"
-		).setParameter(
-			"backURL", _getRedirect()
-		).build();
-
-		if (_folder != null) {
-			publishFolderURL.setParameter(
-				"folderId", String.valueOf(_folder.getFolderId()));
-		}
-
 		return dropdownItem -> {
 			dropdownItem.putData("action", "publishFolderToLive");
 			dropdownItem.putData(
-				"publishFolderURL", publishFolderURL.toString());
+				"publishFolderURL",
+				PortletURLBuilder.createActionURL(
+					_liferayPortletResponse
+				).setActionName(
+					"/journal/publish_folder"
+				).setBackURL(
+					_getRedirect()
+				).setParameter(
+					"folderId",
+					() -> {
+						if (_folder != null) {
+							return _folder.getFolderId();
+						}
+
+						return null;
+					}
+				).buildString());
 			dropdownItem.setLabel(
 				LanguageUtil.get(_httpServletRequest, "publish-to-live"));
 		};

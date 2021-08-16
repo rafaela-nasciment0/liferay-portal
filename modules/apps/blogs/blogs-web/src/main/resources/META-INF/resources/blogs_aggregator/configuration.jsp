@@ -113,11 +113,11 @@ if (organizationId > 0) {
 								<%
 								PortletURL selectOrganizationURL = PortletURLBuilder.create(
 									PortletProviderUtil.getPortletURL(request, Organization.class.getName(), PortletProvider.Action.BROWSE)
-								).setParameter(
-									"tabs1", "organizations"
+								).setTabs1(
+									"organizations"
 								).setWindowState(
 									LiferayWindowState.POP_UP
-								).build();
+								).buildPortletURL();
 								%>
 
 								url: '<%= selectOrganizationURL.toString() %>',

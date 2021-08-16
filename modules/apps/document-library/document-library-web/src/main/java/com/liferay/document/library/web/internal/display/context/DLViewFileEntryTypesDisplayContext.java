@@ -155,9 +155,9 @@ public class DLViewFileEntryTypesDisplayContext {
 	protected PortletURL getPortletURL() {
 		return PortletURLBuilder.createRenderURL(
 			renderResponse
-		).setParameter(
-			"navigation", "file_entry_types"
-		).build();
+		).setNavigation(
+			"file_entry_types"
+		).buildPortletURL();
 	}
 
 	protected final RenderResponse renderResponse;

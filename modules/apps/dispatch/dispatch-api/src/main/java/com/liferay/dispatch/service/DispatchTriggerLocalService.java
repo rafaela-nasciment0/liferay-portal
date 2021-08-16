@@ -144,6 +144,9 @@ public interface DispatchTriggerLocalService
 	public <T> T dslQuery(DSLQuery dslQuery);
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public int dslQueryCount(DSLQuery dslQuery);
+
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public DynamicQuery dynamicQuery();
 
 	/**
@@ -214,6 +217,9 @@ public interface DispatchTriggerLocalService
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public DispatchTrigger fetchDispatchTrigger(long companyId, String name);
+
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public Date fetchNextFireDate(long dispatchTriggerId);
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public Date fetchPreviousFireDate(long dispatchTriggerId);

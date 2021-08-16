@@ -97,7 +97,7 @@ public class CommerceInventoryWarehouseItemSelectorViewDisplayContext
 			super.getPortletURL()
 		).setParameter(
 			"countryId", getCountryId()
-		).build();
+		).buildPortletURL();
 	}
 
 	@Override
@@ -215,15 +215,14 @@ public class CommerceInventoryWarehouseItemSelectorViewDisplayContext
 			active = true;
 		}
 
-		PortletURL portletURL = PortletURLBuilder.create(
-			PortletURLUtil.clone(
-				getPortletURL(), cpRequestHelper.getRenderResponse())
-		).setParameter(
-			"countryId", countryId
-		).build();
-
 		return new ManagementBarFilterItem(
-			active, String.valueOf(countryId), label, portletURL.toString());
+			active, String.valueOf(countryId), label,
+			PortletURLBuilder.create(
+				PortletURLUtil.clone(
+					getPortletURL(), cpRequestHelper.getRenderResponse())
+			).setParameter(
+				"countryId", countryId
+			).buildString());
 	}
 
 	private final CommerceCountryManager _commerceCountryManager;

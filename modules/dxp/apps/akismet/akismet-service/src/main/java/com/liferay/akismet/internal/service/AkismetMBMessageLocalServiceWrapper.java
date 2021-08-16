@@ -23,6 +23,7 @@ import com.liferay.message.boards.constants.MBMessageConstants;
 import com.liferay.message.boards.model.MBMessage;
 import com.liferay.message.boards.service.MBMessageLocalService;
 import com.liferay.message.boards.service.MBMessageLocalServiceWrapper;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.configuration.metatype.bnd.util.ConfigurableUtil;
 import com.liferay.portal.kernel.exception.PortalException;
@@ -30,7 +31,6 @@ import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.ServiceWrapper;
 import com.liferay.portal.kernel.servlet.HttpHeaders;
 import com.liferay.portal.kernel.util.ObjectValuePair;
-import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
@@ -165,11 +165,8 @@ public class AkismetMBMessageLocalServiceWrapper
 	private boolean _isCheckSpamEnabled(
 		long userId, long groupId, ServiceContext serviceContext) {
 
-		if (!_akismetServiceConfiguration.messageBoardsEnabled()) {
-			return false;
-		}
-
-		if (!_akismetClient.hasRequiredInfo(
+		if (!_akismetServiceConfiguration.messageBoardsEnabled() ||
+			!_akismetClient.hasRequiredInfo(
 				serviceContext.getRemoteAddr(), serviceContext.getHeaders())) {
 
 			return false;

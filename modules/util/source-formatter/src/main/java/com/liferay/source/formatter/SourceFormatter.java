@@ -99,9 +99,7 @@ public class SourceFormatter {
 				ExcludeSyntax.GLOB, "**/node_modules_cache/**"),
 			new ExcludeSyntaxPattern(
 				ExcludeSyntax.REGEX,
-				"^((?!/frontend-js-node-shims/src/).)*/node_modules/.*"),
-			new ExcludeSyntaxPattern(
-				ExcludeSyntax.REGEX, ".*/([^/.]+\\.){2,}properties")
+				"^((?!/frontend-js-node-shims/src/).)*/node_modules/.*")
 		};
 
 	public static void main(String[] args) throws Exception {
@@ -110,10 +108,10 @@ public class SourceFormatter {
 		try {
 			SourceFormatterArgs sourceFormatterArgs = new SourceFormatterArgs();
 
-			boolean autoFix = ArgumentsUtil.getBoolean(
-				arguments, "source.auto.fix", SourceFormatterArgs.AUTO_FIX);
-
-			sourceFormatterArgs.setAutoFix(autoFix);
+			sourceFormatterArgs.setAutoFix(
+				ArgumentsUtil.getBoolean(
+					arguments, "source.auto.fix",
+					SourceFormatterArgs.AUTO_FIX));
 
 			String baseDirName = ArgumentsUtil.getString(
 				arguments, "source.base.dir",
@@ -121,77 +119,73 @@ public class SourceFormatter {
 
 			sourceFormatterArgs.setBaseDirName(baseDirName);
 
-			List<String> checkCategoryNames = ListUtil.fromString(
+			sourceFormatterArgs.setCheckCategoryNames(
+				ListUtil.fromString(
+					ArgumentsUtil.getString(
+						arguments, "source.check.category.names", null),
+					StringPool.COMMA));
+			sourceFormatterArgs.setCheckNames(
+				ListUtil.fromString(
+					ArgumentsUtil.getString(
+						arguments, "source.check.names", null),
+					StringPool.COMMA));
+			sourceFormatterArgs.setFailOnAutoFix(
+				ArgumentsUtil.getBoolean(
+					arguments, "source.fail.on.auto.fix",
+					SourceFormatterArgs.FAIL_ON_AUTO_FIX));
+			sourceFormatterArgs.setFailOnHasWarning(
+				ArgumentsUtil.getBoolean(
+					arguments, "source.fail.on.has.warning",
+					SourceFormatterArgs.FAIL_ON_HAS_WARNING));
+			sourceFormatterArgs.setFormatCurrentBranch(
+				ArgumentsUtil.getBoolean(
+					arguments, "format.current.branch",
+					SourceFormatterArgs.FORMAT_CURRENT_BRANCH));
+			sourceFormatterArgs.setFormatLatestAuthor(
+				ArgumentsUtil.getBoolean(
+					arguments, "format.latest.author",
+					SourceFormatterArgs.FORMAT_LATEST_AUTHOR));
+			sourceFormatterArgs.setFormatLocalChanges(
+				ArgumentsUtil.getBoolean(
+					arguments, "format.local.changes",
+					SourceFormatterArgs.FORMAT_LOCAL_CHANGES));
+			sourceFormatterArgs.setGitWorkingBranchName(
 				ArgumentsUtil.getString(
-					arguments, "source.check.category.names", null),
-				StringPool.COMMA);
+					arguments, "git.working.branch.name",
+					SourceFormatterArgs.GIT_WORKING_BRANCH_NAME));
 
-			sourceFormatterArgs.setCheckCategoryNames(checkCategoryNames);
+			int commitCount = ArgumentsUtil.getInteger(
+				arguments, "commit.count", SourceFormatterArgs.COMMIT_COUNT);
 
-			List<String> checkNames = ListUtil.fromString(
-				ArgumentsUtil.getString(arguments, "source.check.names", null),
-				StringPool.COMMA);
+			sourceFormatterArgs.setCommitCount(commitCount);
 
-			sourceFormatterArgs.setCheckNames(checkNames);
-
-			boolean failOnAutoFix = ArgumentsUtil.getBoolean(
-				arguments, "source.fail.on.auto.fix",
-				SourceFormatterArgs.FAIL_ON_AUTO_FIX);
-
-			sourceFormatterArgs.setFailOnAutoFix(failOnAutoFix);
-
-			boolean failOnHasWarning = ArgumentsUtil.getBoolean(
-				arguments, "source.fail.on.has.warning",
-				SourceFormatterArgs.FAIL_ON_HAS_WARNING);
-
-			sourceFormatterArgs.setFailOnHasWarning(failOnHasWarning);
-
-			boolean formatCurrentBranch = ArgumentsUtil.getBoolean(
-				arguments, "format.current.branch",
-				SourceFormatterArgs.FORMAT_CURRENT_BRANCH);
-
-			sourceFormatterArgs.setFormatCurrentBranch(formatCurrentBranch);
-
-			boolean formatLatestAuthor = ArgumentsUtil.getBoolean(
-				arguments, "format.latest.author",
-				SourceFormatterArgs.FORMAT_LATEST_AUTHOR);
-
-			sourceFormatterArgs.setFormatLatestAuthor(formatLatestAuthor);
-
-			boolean formatLocalChanges = ArgumentsUtil.getBoolean(
-				arguments, "format.local.changes",
-				SourceFormatterArgs.FORMAT_LOCAL_CHANGES);
-
-			sourceFormatterArgs.setFormatLocalChanges(formatLocalChanges);
-
-			String gitWorkingBranchName = ArgumentsUtil.getString(
-				arguments, "git.working.branch.name",
-				SourceFormatterArgs.GIT_WORKING_BRANCH_NAME);
-
-			sourceFormatterArgs.setGitWorkingBranchName(gitWorkingBranchName);
-
-			if (formatCurrentBranch) {
+			if (commitCount > 0) {
 				sourceFormatterArgs.addRecentChangesFileNames(
-					GitUtil.getCurrentBranchFileNames(
-						baseDirName, gitWorkingBranchName, false),
+					GitUtil.getModifiedFileNames(baseDirName, commitCount),
 					baseDirName);
 			}
-			else if (formatLatestAuthor) {
+			else if (sourceFormatterArgs.isFormatCurrentBranch()) {
+				sourceFormatterArgs.addRecentChangesFileNames(
+					GitUtil.getCurrentBranchFileNames(
+						baseDirName,
+						sourceFormatterArgs.getGitWorkingBranchName(), false),
+					baseDirName);
+			}
+			else if (sourceFormatterArgs.isFormatLatestAuthor()) {
 				sourceFormatterArgs.addRecentChangesFileNames(
 					GitUtil.getLatestAuthorFileNames(baseDirName, false),
 					baseDirName);
 			}
-			else if (formatLocalChanges) {
+			else if (sourceFormatterArgs.isFormatLocalChanges()) {
 				sourceFormatterArgs.addRecentChangesFileNames(
 					GitUtil.getLocalChangesFileNames(baseDirName, false),
 					baseDirName);
 			}
 
-			String fileNamesString = ArgumentsUtil.getString(
-				arguments, "source.files", StringPool.BLANK);
-
 			String[] fileNames = StringUtil.split(
-				fileNamesString, StringPool.COMMA);
+				ArgumentsUtil.getString(
+					arguments, "source.files", StringPool.BLANK),
+				StringPool.COMMA);
 
 			if (ArrayUtil.isNotEmpty(fileNames)) {
 				sourceFormatterArgs.setFileNames(Arrays.asList(fileNames));
@@ -207,20 +201,18 @@ public class SourceFormatter {
 					Arrays.asList(fileExtensions));
 			}
 
-			boolean includeGeneratedFiles = ArgumentsUtil.getBoolean(
-				arguments, "include.generated.files",
-				SourceFormatterArgs.INCLUDE_GENERATED_FILES);
-
-			sourceFormatterArgs.setIncludeGeneratedFiles(includeGeneratedFiles);
+			sourceFormatterArgs.setIncludeGeneratedFiles(
+				ArgumentsUtil.getBoolean(
+					arguments, "include.generated.files",
+					SourceFormatterArgs.INCLUDE_GENERATED_FILES));
 
 			boolean includeSubrepositories = ArgumentsUtil.getBoolean(
 				arguments, "include.subrepositories",
 				SourceFormatterArgs.INCLUDE_SUBREPOSITORIES);
 
-			Set<String> recentChangesFileNames =
-				sourceFormatterArgs.getRecentChangesFileNames();
+			for (String recentChangesFileName :
+					sourceFormatterArgs.getRecentChangesFileNames()) {
 
-			for (String recentChangesFileName : recentChangesFileNames) {
 				if (recentChangesFileName.endsWith("ci-merge")) {
 					includeSubrepositories = true;
 
@@ -231,65 +223,63 @@ public class SourceFormatter {
 			sourceFormatterArgs.setIncludeSubrepositories(
 				includeSubrepositories);
 
-			int maxLineLength = ArgumentsUtil.getInteger(
-				arguments, "max.line.length",
-				SourceFormatterArgs.MAX_LINE_LENGTH);
-
-			sourceFormatterArgs.setMaxLineLength(maxLineLength);
-
-			String outputFileName = ArgumentsUtil.getString(
-				arguments, "output.file.name",
-				SourceFormatterArgs.OUTPUT_FILE_NAME);
-
-			sourceFormatterArgs.setOutputFileName(outputFileName);
-
-			boolean printErrors = ArgumentsUtil.getBoolean(
-				arguments, "source.print.errors",
-				SourceFormatterArgs.PRINT_ERRORS);
-
-			sourceFormatterArgs.setPrintErrors(printErrors);
-
-			int processorThreadCount = ArgumentsUtil.getInteger(
-				arguments, "processor.thread.count",
-				SourceFormatterArgs.PROCESSOR_THREAD_COUNT);
-
-			sourceFormatterArgs.setProcessorThreadCount(processorThreadCount);
-
-			boolean showDebugInformation = ArgumentsUtil.getBoolean(
-				arguments, "show.debug.information",
-				SourceFormatterArgs.SHOW_DEBUG_INFORMATION);
-
-			sourceFormatterArgs.setShowDebugInformation(showDebugInformation);
-
-			boolean showDocumentation = ArgumentsUtil.getBoolean(
-				arguments, "show.documentation",
-				SourceFormatterArgs.SHOW_DOCUMENTATION);
-
-			sourceFormatterArgs.setShowDocumentation(showDocumentation);
-
-			boolean showStatusUpdates = ArgumentsUtil.getBoolean(
-				arguments, "show.status.updates",
-				SourceFormatterArgs.SHOW_STATUS_UPDATES);
-
-			sourceFormatterArgs.setShowStatusUpdates(showStatusUpdates);
-
-			String skipCheckNamesString = ArgumentsUtil.getString(
-				arguments, "skip.check.names", null);
+			sourceFormatterArgs.setMaxLineLength(
+				ArgumentsUtil.getInteger(
+					arguments, "max.line.length",
+					SourceFormatterArgs.MAX_LINE_LENGTH));
+			sourceFormatterArgs.setMaxDirLevel(
+				Math.max(
+					ToolsUtil.PORTAL_MAX_DIR_LEVEL,
+					StringUtil.count(baseDirName, CharPool.SLASH) + 1));
+			sourceFormatterArgs.setOutputFileName(
+				ArgumentsUtil.getString(
+					arguments, "output.file.name",
+					SourceFormatterArgs.OUTPUT_FILE_NAME));
+			sourceFormatterArgs.setPrintErrors(
+				ArgumentsUtil.getBoolean(
+					arguments, "source.print.errors",
+					SourceFormatterArgs.PRINT_ERRORS));
+			sourceFormatterArgs.setProcessorThreadCount(
+				ArgumentsUtil.getInteger(
+					arguments, "processor.thread.count",
+					SourceFormatterArgs.PROCESSOR_THREAD_COUNT));
+			sourceFormatterArgs.setShowDebugInformation(
+				ArgumentsUtil.getBoolean(
+					arguments, "show.debug.information",
+					SourceFormatterArgs.SHOW_DEBUG_INFORMATION));
+			sourceFormatterArgs.setShowDocumentation(
+				ArgumentsUtil.getBoolean(
+					arguments, "show.documentation",
+					SourceFormatterArgs.SHOW_DOCUMENTATION));
+			sourceFormatterArgs.setShowStatusUpdates(
+				ArgumentsUtil.getBoolean(
+					arguments, "show.status.updates",
+					SourceFormatterArgs.SHOW_STATUS_UPDATES));
 
 			String[] skipCheckNames = StringUtil.split(
-				skipCheckNamesString, StringPool.COMMA);
+				ArgumentsUtil.getString(
+					arguments, "skip.check.names", StringPool.BLANK),
+				StringPool.COMMA);
 
 			if (ArrayUtil.isNotEmpty(skipCheckNames)) {
 				sourceFormatterArgs.setSkipCheckNames(
 					Arrays.asList(skipCheckNames));
 			}
 
-			boolean validateCommitMessages = ArgumentsUtil.getBoolean(
-				arguments, "validate.commit.messages",
-				SourceFormatterArgs.VALIDATE_COMMIT_MESSAGES);
+			String[] sourceFormatterProperties = StringUtil.split(
+				ArgumentsUtil.getString(
+					arguments, "source.formatter.properties", StringPool.BLANK),
+				"\\n");
+
+			if (ArrayUtil.isNotEmpty(sourceFormatterProperties)) {
+				sourceFormatterArgs.setSourceFormatterProperties(
+					Arrays.asList(sourceFormatterProperties));
+			}
 
 			sourceFormatterArgs.setValidateCommitMessages(
-				validateCommitMessages);
+				ArgumentsUtil.getBoolean(
+					arguments, "validate.commit.messages",
+					SourceFormatterArgs.VALIDATE_COMMIT_MESSAGES));
 
 			SourceFormatter sourceFormatter = new SourceFormatter(
 				sourceFormatterArgs);
@@ -433,12 +423,28 @@ public class SourceFormatter {
 			throw executionException1;
 		}
 
-		if (!_sourceFormatterMessages.isEmpty()) {
+		if (!_sourceFormatterMessages.isEmpty() ||
+			!_sourceMismatchExceptions.isEmpty()) {
+
 			String outputFileName = _sourceFormatterArgs.getOutputFileName();
 
 			if (outputFileName != null) {
-				File file = new File(
-					_sourceFormatterArgs.getBaseDirName() + outputFileName);
+				File file = null;
+
+				int pos = outputFileName.lastIndexOf(File.separator);
+
+				if (pos != -1) {
+					File directory = new File(outputFileName.substring(0, pos));
+
+					if (directory.exists()) {
+						file = new File(outputFileName);
+					}
+				}
+
+				if (file == null) {
+					file = new File(
+						_sourceFormatterArgs.getBaseDirName() + outputFileName);
+				}
 
 				FileUtil.write(file, _getOutputFileContent());
 			}
@@ -488,6 +494,19 @@ public class SourceFormatter {
 	}
 
 	private Set<String> _addDependentFileName(
+		Set<String> dependentFileNames, String fileName) {
+
+		File file = new File(_sourceFormatterArgs.getBaseDirName() + fileName);
+
+		if (file.exists()) {
+			dependentFileNames.add(
+				_sourceFormatterArgs.getBaseDirName() + fileName);
+		}
+
+		return dependentFileNames;
+	}
+
+	private Set<String> _addDependentFileName(
 		Set<String> dependentFileNames, String fileName,
 		String dependentFileName) {
 
@@ -515,7 +534,7 @@ public class SourceFormatter {
 		}
 	}
 
-	private void _addDependentFileNames() {
+	private void _addDependentFileNames() throws Exception {
 		Set<String> recentChangesFileNames =
 			_sourceFormatterArgs.getRecentChangesFileNames();
 
@@ -530,16 +549,10 @@ public class SourceFormatter {
 
 		for (String recentChangesFileName : recentChangesFileNames) {
 			if (!buildPropertiesAdded &&
-				recentChangesFileName.contains("/modules/")) {
+				recentChangesFileName.endsWith(".lfrbuild-portal")) {
 
-				File file = new File(
-					_sourceFormatterArgs.getBaseDirName() + "build.properties");
-
-				if (file.exists()) {
-					dependentFileNames.add(
-						_sourceFormatterArgs.getBaseDirName() +
-							"build.properties");
-				}
+				dependentFileNames = _addDependentFileName(
+					dependentFileNames, "build.properties");
 
 				buildPropertiesAdded = true;
 			}
@@ -604,6 +617,41 @@ public class SourceFormatter {
 			}
 		}
 
+		if (_sourceFormatterArgs.isFormatCurrentBranch()) {
+			if (!buildPropertiesAdded) {
+				List<String> fileNames = GitUtil.getCurrentBranchFileNames(
+					_sourceFormatterArgs.getBaseDirName(),
+					_sourceFormatterArgs.getGitWorkingBranchName(), true);
+
+				for (String fileName : fileNames) {
+					if (!buildPropertiesAdded &&
+						fileName.endsWith(".lfrbuild-portal")) {
+
+						dependentFileNames = _addDependentFileName(
+							dependentFileNames, "build.properties");
+
+						break;
+					}
+				}
+			}
+
+			List<String> deletedFileNames =
+				GitUtil.getCurrentBranchDeletedFileNames(
+					_sourceFormatterArgs.getBaseDirName(),
+					_sourceFormatterArgs.getGitWorkingBranchName());
+
+			if (!deletedFileNames.isEmpty()) {
+				dependentFileNames.addAll(
+					SourceFormatterUtil.filterFileNames(
+						_allFileNames, new String[0],
+						new String[] {
+							"**/source-formatter.properties",
+							"**/source-formatter-suppressions.xml"
+						},
+						_sourceFormatterExcludes, false));
+			}
+		}
+
 		_sourceFormatterArgs.addRecentChangesFileNames(
 			dependentFileNames, null);
 	}
@@ -611,7 +659,7 @@ public class SourceFormatter {
 	private boolean _containsDir(String dirName) {
 		File directory = SourceFormatterUtil.getFile(
 			_sourceFormatterArgs.getBaseDirName(), dirName,
-			ToolsUtil.PORTAL_MAX_DIR_LEVEL);
+			_sourceFormatterArgs.getMaxDirLevel());
 
 		if (directory != null) {
 			return true;
@@ -744,11 +792,7 @@ public class SourceFormatter {
 			modifiedFilesJSONArray.put(sourceMismatchException.getFileName());
 		}
 
-		jsonObject.put(
-			"modifiedFileNames", modifiedFilesJSONArray
-		).put(
-			"violationsCount", _sourceFormatterMessages.size()
-		);
+		jsonObject.put("modifiedFileNames", modifiedFilesJSONArray);
 
 		JSONArray checksJSONArray = new JSONArrayImpl();
 
@@ -760,6 +804,8 @@ public class SourceFormatter {
 			new TreeSet<>(new SourceFormatterMessageCheckNameComparator());
 
 		sortedSourceFormatterMessages.addAll(_sourceFormatterMessages);
+
+		int violationsCount = 0;
 
 		for (SourceFormatterMessage sourceFormatterMessage :
 				sortedSourceFormatterMessages) {
@@ -805,14 +851,20 @@ public class SourceFormatter {
 				"message", sourceFormatterMessage.getMessage()
 			);
 
+			violationsCount++;
+
 			violationsJSONArray.put(violationJSONObject);
 		}
 
-		checkJSONObject.put("violations", violationsJSONArray);
+		if (checkJSONObject != null) {
+			checkJSONObject.put("violations", violationsJSONArray);
 
-		checksJSONArray.put(checkJSONObject);
+			checksJSONArray.put(checkJSONObject);
 
-		jsonObject.put("checks", checksJSONArray);
+			jsonObject.put("checks", checksJSONArray);
+		}
+
+		jsonObject.put("violationsCount", violationsCount);
 
 		return JSONUtil.toString(jsonObject);
 	}
@@ -877,7 +929,7 @@ public class SourceFormatter {
 
 		String fileName = "gradle.properties";
 
-		for (int i = 0; i < ToolsUtil.PORTAL_MAX_DIR_LEVEL; i++) {
+		for (int i = 0; i < _sourceFormatterArgs.getMaxDirLevel(); i++) {
 			File file = new File(
 				_sourceFormatterArgs.getBaseDirName() + fileName);
 
@@ -931,7 +983,8 @@ public class SourceFormatter {
 
 		if (_portalSource) {
 			File portalDir = SourceFormatterUtil.getPortalDir(
-				_sourceFormatterArgs.getBaseDirName());
+				_sourceFormatterArgs.getBaseDirName(),
+				_sourceFormatterArgs.getMaxLineLength());
 
 			_excludeWorkingDirCheckoutPrivateApps(portalDir);
 		}
@@ -942,7 +995,7 @@ public class SourceFormatter {
 
 		String parentDirName = _sourceFormatterArgs.getBaseDirName();
 
-		for (int i = 0; i < ToolsUtil.PORTAL_MAX_DIR_LEVEL; i++) {
+		for (int i = 0; i < _sourceFormatterArgs.getMaxDirLevel(); i++) {
 			_readProperties(new File(parentDirName + _PROPERTIES_FILE_NAME));
 
 			parentDirName += "../";
@@ -968,6 +1021,14 @@ public class SourceFormatter {
 			_readProperties(new File(modulePropertiesFileName));
 		}
 
+		for (Properties properties : _propertiesMap.values()) {
+			if (GetterUtil.getBoolean(properties.get("liferay.source"))) {
+				_portalSource = true;
+
+				break;
+			}
+		}
+
 		if (!_portalSource && _containsDir("modules/private/apps")) {
 
 			// Grab and read properties from portal branch
@@ -977,6 +1038,15 @@ public class SourceFormatter {
 
 			_readProperties(
 				propertiesContent,
+				SourceUtil.getAbsolutePath(
+					_sourceFormatterArgs.getBaseDirName()));
+		}
+
+		for (String sourceFormatterProperty :
+				_sourceFormatterArgs.getSourceFormatterProperties()) {
+
+			_readProperties(
+				sourceFormatterProperty,
 				SourceUtil.getAbsolutePath(
 					_sourceFormatterArgs.getBaseDirName()));
 		}
@@ -992,7 +1062,7 @@ public class SourceFormatter {
 
 		List<File> suppressionsFiles = SourceFormatterUtil.getSuppressionsFiles(
 			_sourceFormatterArgs.getBaseDirName(), _allFileNames,
-			_sourceFormatterExcludes);
+			_sourceFormatterExcludes, _sourceFormatterArgs.getMaxDirLevel());
 
 		_sourceFormatterSuppressions = SuppressionsLoader.loadSuppressions(
 			_sourceFormatterArgs.getBaseDirName(), suppressionsFiles,
@@ -1072,24 +1142,30 @@ public class SourceFormatter {
 
 		String value = properties.getProperty("source.formatter.excludes");
 
-		if (value == null) {
-			_propertiesMap.put(propertiesFileLocation, properties);
+		if (value != null) {
+			if (FileUtil.exists(propertiesFileLocation + "portal-impl")) {
+				_sourceFormatterExcludes.addDefaultExcludeSyntaxPatterns(
+					_getExcludeSyntaxPatterns(value));
+			}
+			else {
+				_sourceFormatterExcludes.addExcludeSyntaxPatterns(
+					propertiesFileLocation, _getExcludeSyntaxPatterns(value));
+			}
 
-			return;
+			properties.remove("source.formatter.excludes");
 		}
 
-		if (FileUtil.exists(propertiesFileLocation + "portal-impl")) {
-			_sourceFormatterExcludes.addDefaultExcludeSyntaxPatterns(
-				_getExcludeSyntaxPatterns(value));
+		Properties existingProperties = _propertiesMap.get(
+			propertiesFileLocation);
+
+		if (existingProperties == null) {
+			_propertiesMap.put(propertiesFileLocation, properties);
 		}
 		else {
-			_sourceFormatterExcludes.addExcludeSyntaxPatterns(
-				propertiesFileLocation, _getExcludeSyntaxPatterns(value));
+			existingProperties.putAll(properties);
+
+			_propertiesMap.put(propertiesFileLocation, existingProperties);
 		}
-
-		properties.remove("source.formatter.excludes");
-
-		_propertiesMap.put(propertiesFileLocation, properties);
 	}
 
 	private void _readProperties(String content, String propertiesFileLocation)

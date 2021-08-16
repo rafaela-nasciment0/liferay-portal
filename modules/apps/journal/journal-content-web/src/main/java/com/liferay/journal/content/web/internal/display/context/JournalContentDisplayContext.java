@@ -109,17 +109,16 @@ public class JournalContentDisplayContext {
 				ddmTemplateModelResourcePermission)
 		throws PortalException {
 
+		ThemeDisplay themeDisplay = (ThemeDisplay)portletRequest.getAttribute(
+			WebKeys.THEME_DISPLAY);
+
+		PortletDisplay portletDisplay = themeDisplay.getPortletDisplay();
+
 		JournalContentDisplayContext journalContentDisplayContext =
 			(JournalContentDisplayContext)portletRequest.getAttribute(
-				JournalContentWebKeys.JOURNAL_CONTENT_DISPLAY_CONTEXT);
+				getRequestAttributeName(portletDisplay.getId()));
 
 		if (journalContentDisplayContext == null) {
-			ThemeDisplay themeDisplay =
-				(ThemeDisplay)portletRequest.getAttribute(
-					WebKeys.THEME_DISPLAY);
-
-			PortletDisplay portletDisplay = themeDisplay.getPortletDisplay();
-
 			JournalContentPortletInstanceConfiguration
 				journalContentPortletInstanceConfiguration =
 					portletDisplay.getPortletInstanceConfiguration(
@@ -131,22 +130,16 @@ public class JournalContentDisplayContext {
 				ddmStructureClassNameId, ddmTemplateModelResourcePermission);
 
 			portletRequest.setAttribute(
-				JournalContentWebKeys.JOURNAL_CONTENT_DISPLAY_CONTEXT,
+				getRequestAttributeName(portletDisplay.getId()),
 				journalContentDisplayContext);
 		}
 
 		return journalContentDisplayContext;
 	}
 
-	public void clearCache() throws PortalException {
-		if (Validator.isNotNull(getArticleId())) {
-			JournalContent journalContent =
-				(JournalContent)_portletRequest.getAttribute(
-					JournalWebKeys.JOURNAL_CONTENT);
-
-			journalContent.clearCache(
-				getArticleGroupId(), getArticleId(), getDDMTemplateKey());
-		}
+	public static String getRequestAttributeName(String portletName) {
+		return JournalContentWebKeys.JOURNAL_CONTENT_DISPLAY_CONTEXT +
+			StringPool.POUND + portletName;
 	}
 
 	public JournalArticle getArticle() throws PortalException {
@@ -625,10 +618,6 @@ public class JournalContentDisplayContext {
 			}
 		}
 
-		_portletRequest.setAttribute(WebKeys.JOURNAL_ARTICLE, getArticle());
-		_portletRequest.setAttribute(
-			WebKeys.JOURNAL_ARTICLE_DISPLAY, getArticleDisplay());
-
 		return _contentMetadataAssetAddonEntries;
 	}
 
@@ -678,10 +667,6 @@ public class JournalContentDisplayContext {
 			}
 		}
 
-		_portletRequest.setAttribute(WebKeys.JOURNAL_ARTICLE, getArticle());
-		_portletRequest.setAttribute(
-			WebKeys.JOURNAL_ARTICLE_DISPLAY, getArticleDisplay());
-
 		return _userToolAssetAddonEntries;
 	}
 
@@ -699,8 +684,7 @@ public class JournalContentDisplayContext {
 				latestArticleAssetRenderer.getURLEdit(
 					PortalUtil.getLiferayPortletRequest(_portletRequest), null,
 					LiferayWindowState.NORMAL, _themeDisplay.getURLCurrent())
-			).setParameter(
-				"portletResource",
+			).setPortletResource(
 				() -> {
 					PortletDisplay portletDisplay =
 						_themeDisplay.getPortletDisplay();
@@ -751,8 +735,8 @@ public class JournalContentDisplayContext {
 					PortletRequest.RENDER_PHASE)
 			).setMVCPath(
 				"/view_article_history.jsp"
-			).setParameter(
-				"backURL", _themeDisplay.getURLCurrent()
+			).setBackURL(
+				_themeDisplay.getURLCurrent()
 			).setParameter(
 				"articleId", article.getArticleId()
 			).buildString();
@@ -890,19 +874,7 @@ public class JournalContentDisplayContext {
 
 		JournalArticleDisplay articleDisplay = getArticleDisplay();
 
-		if (articleDisplay == null) {
-			_showArticle = false;
-
-			return _showArticle;
-		}
-
-		if (!hasViewPermission()) {
-			_showArticle = false;
-
-			return _showArticle;
-		}
-
-		if (isExpired()) {
+		if ((articleDisplay == null) || !hasViewPermission() || isExpired()) {
 			_showArticle = false;
 
 			return _showArticle;

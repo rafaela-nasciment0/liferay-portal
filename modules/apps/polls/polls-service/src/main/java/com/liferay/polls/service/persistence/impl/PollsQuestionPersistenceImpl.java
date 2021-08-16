@@ -2579,24 +2579,24 @@ public class PollsQuestionPersistenceImpl
 		ServiceContext serviceContext =
 			ServiceContextThreadLocal.getServiceContext();
 
-		Date now = new Date();
+		Date date = new Date();
 
 		if (isNew && (pollsQuestion.getCreateDate() == null)) {
 			if (serviceContext == null) {
-				pollsQuestion.setCreateDate(now);
+				pollsQuestion.setCreateDate(date);
 			}
 			else {
-				pollsQuestion.setCreateDate(serviceContext.getCreateDate(now));
+				pollsQuestion.setCreateDate(serviceContext.getCreateDate(date));
 			}
 		}
 
 		if (!pollsQuestionModelImpl.hasSetModifiedDate()) {
 			if (serviceContext == null) {
-				pollsQuestion.setModifiedDate(now);
+				pollsQuestion.setModifiedDate(date);
 			}
 			else {
 				pollsQuestion.setModifiedDate(
-					serviceContext.getModifiedDate(now));
+					serviceContext.getModifiedDate(date));
 			}
 		}
 
@@ -3113,6 +3113,13 @@ public class PollsQuestionPersistenceImpl
 						pollsQuestionModelImpl.getColumnBitmask(columnName);
 				}
 
+				if (finderPath.isBaseModelResult() &&
+					(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION ==
+						finderPath.getCacheName())) {
+
+					finderPathColumnBitmask |= _ORDER_BY_COLUMNS_BITMASK;
+				}
+
 				_finderPathColumnBitmasksCache.put(
 					finderPath, finderPathColumnBitmask);
 			}
@@ -3134,7 +3141,7 @@ public class PollsQuestionPersistenceImpl
 			return PollsQuestionTable.INSTANCE.getTableName();
 		}
 
-		private Object[] _getValue(
+		private static Object[] _getValue(
 			PollsQuestionModelImpl pollsQuestionModelImpl, String[] columnNames,
 			boolean original) {
 
@@ -3157,8 +3164,19 @@ public class PollsQuestionPersistenceImpl
 			return arguments;
 		}
 
-		private static Map<FinderPath, Long> _finderPathColumnBitmasksCache =
-			new ConcurrentHashMap<>();
+		private static final Map<FinderPath, Long>
+			_finderPathColumnBitmasksCache = new ConcurrentHashMap<>();
+
+		private static final long _ORDER_BY_COLUMNS_BITMASK;
+
+		static {
+			long orderByColumnsBitmask = 0;
+
+			orderByColumnsBitmask |= PollsQuestionModelImpl.getColumnBitmask(
+				"createDate");
+
+			_ORDER_BY_COLUMNS_BITMASK = orderByColumnsBitmask;
+		}
 
 	}
 

@@ -48,12 +48,6 @@ public class JSONUtilTest {
 	@Before
 	public void setUp() throws Exception {
 		JSONInit.init();
-
-		JSONFactoryImpl jsonFactoryImpl = new JSONFactoryImpl();
-
-		JSONFactoryUtil jsonFactoryUtil = new JSONFactoryUtil();
-
-		jsonFactoryUtil.setJSONFactory(jsonFactoryImpl);
 	}
 
 	@Test
@@ -99,12 +93,12 @@ public class JSONUtilTest {
 	public void testCreateCollector() {
 		List<String> strings = Arrays.asList("foo", "bar", "baz");
 
-		Stream<String> stringStream = strings.stream();
+		Stream<String> stringsStream = strings.stream();
 
 		Assert.assertTrue(
 			JSONUtil.equals(
 				JSONUtil.concat(JSONUtil.putAll("FOO", "BAR", "BAZ")),
-				stringStream.map(
+				stringsStream.map(
 					String::toUpperCase
 				).collect(
 					JSONUtil.createCollector()
@@ -113,7 +107,22 @@ public class JSONUtilTest {
 
 	@Test
 	public void testGetValue() {
+
+		// Nested JSON array
+
 		JSONObject jsonObject = JSONUtil.put(
+			"alpha",
+			JSONUtil.put("beta", JSONUtil.put(JSONUtil.put("gamma", "delta"))));
+
+		Assert.assertEquals(
+			"delta",
+			JSONUtil.getValue(
+				jsonObject, "JSONObject/alpha", "JSONArray/beta",
+				"JSONObject/0", "Object/gamma"));
+
+		// Nested JSON object
+
+		jsonObject = JSONUtil.put(
 			"alpha", JSONUtil.put("beta", JSONUtil.put("gamma")));
 
 		Assert.assertEquals(

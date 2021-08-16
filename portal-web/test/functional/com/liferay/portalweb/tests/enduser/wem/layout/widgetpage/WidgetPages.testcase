@@ -376,6 +376,28 @@ definition {
 		Blogs.viewControlsPG();
 	}
 
+	@description = "This is a use case for LPS-123143."
+	@priority = "3"
+	test ViewLanguageNameOfLanguageButtonInWidgetConfigurationPage {
+		ProductMenu.gotoPortlet(
+			category = "Site Builder",
+			portlet = "Pages");
+
+		SitePages.addPublicPage(
+			pageName = "Test Page Name",
+			sitePageType = "Widget Page");
+
+		ProductMenu.gotoPortlet(
+			category = "Site Builder",
+			portlet = "Pages");
+
+		SitePages.gotoPageMenuItem(
+			menuItem = "Configure",
+			pageName = "Test Page Name");
+
+		PortletEntry.viewLocale(locale = "en-US");
+	}
+
 	@priority = "3"
 	test ViewNoInfoMessageWhenChangingSiteTemplateAsUser {
 		property custom.properties = "jsonws.web.service.paths.excludes=";
@@ -408,9 +430,7 @@ definition {
 			groupName = "Site Name",
 			userEmailAddress = "userea@liferay.com");
 
-		User.firstLoginPG(
-			password = "test",
-			userEmailAddress = "userea@liferay.com");
+		User.logoutAndLoginPG(userLoginEmailAddress = "userea@liferay.com");
 
 		Navigator.openSiteURL(siteName = "Site Name");
 
@@ -418,9 +438,7 @@ definition {
 			pageName = "Home",
 			siteName = "Site Name");
 
-		User.firstLoginPG(
-			password = "test",
-			userEmailAddress = "test@liferay.com");
+		User.logoutAndLoginPG(userLoginEmailAddress = "test@liferay.com");
 
 		Navigator.gotoSitePage(
 			pageName = "Home",
@@ -432,9 +450,7 @@ definition {
 
 		PageEditor.clickPublish();
 
-		User.firstLoginPG(
-			password = "test",
-			userEmailAddress = "userea@liferay.com");
+		User.logoutAndLoginPG(userLoginEmailAddress = "userea@liferay.com");
 
 		Navigator.gotoSitePage(
 			pageName = "Home",
@@ -442,9 +458,7 @@ definition {
 
 		SiteTemplates.viewNoInfoMessage();
 
-		User.firstLoginPG(
-			password = "test",
-			userEmailAddress = "test@liferay.com");
+		User.logoutAndLoginPG(userLoginEmailAddress = "test@liferay.com");
 	}
 
 }

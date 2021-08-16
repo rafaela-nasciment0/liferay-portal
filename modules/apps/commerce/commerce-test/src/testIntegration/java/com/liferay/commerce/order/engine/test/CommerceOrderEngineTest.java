@@ -60,7 +60,6 @@ import com.liferay.portal.kernel.security.permission.PermissionCheckerFactoryUti
 import com.liferay.portal.kernel.security.permission.PermissionThreadLocal;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
-import com.liferay.portal.kernel.test.rule.DataGuard;
 import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
 import com.liferay.portal.kernel.test.rule.Sync;
 import com.liferay.portal.kernel.test.util.CompanyTestUtil;
@@ -83,6 +82,7 @@ import org.frutilla.FrutillaRule;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
@@ -91,7 +91,6 @@ import org.junit.runner.RunWith;
 /**
  * @author Alec Sloan
  */
-@DataGuard(scope = DataGuard.Scope.METHOD)
 @RunWith(Arquillian.class)
 @Sync
 public class CommerceOrderEngineTest {
@@ -102,12 +101,15 @@ public class CommerceOrderEngineTest {
 		new LiferayIntegrationTestRule(),
 		PermissionCheckerMethodTestRule.INSTANCE);
 
-	@Before
-	public void setUp() throws Exception {
+	@BeforeClass
+	public static void setUpClass() throws Exception {
 		_company = CompanyTestUtil.addCompany();
 
 		_user = UserTestUtil.addUser(_company);
+	}
 
+	@Before
+	public void setUp() throws Exception {
 		_group = GroupTestUtil.addGroup(
 			_company.getCompanyId(), _user.getUserId(), 0);
 
@@ -159,7 +161,7 @@ public class CommerceOrderEngineTest {
 	@Test
 	public void testAutomaticallyTransitionOrderToCompleted() throws Exception {
 		frutillaRule.scenario(
-			"Use the Order Engine to checkout an Order, transition it to" +
+			"Use the Order Engine to checkout an Order, transition it to " +
 				"processing then create a shipment with all of the order " +
 					"items and mark that shipment as delivered"
 		).given(
@@ -235,7 +237,7 @@ public class CommerceOrderEngineTest {
 		throws Exception {
 
 		frutillaRule.scenario(
-			"Use the Order Engine to checkout an Order, transition it to" +
+			"Use the Order Engine to checkout an Order, transition it to " +
 				"processing then create a shipment with one but not all of " +
 					"the order items"
 		).given(
@@ -375,8 +377,8 @@ public class CommerceOrderEngineTest {
 		).when(
 			"We checkout the order and cancel it"
 		).then(
-			"The order status should be cancelled and the order should not be" +
-				"able to be transitioned to anything else."
+			"The order status should be cancelled and the order should not " +
+				"be able to be transitioned to anything else."
 		);
 
 		try {
@@ -780,7 +782,7 @@ public class CommerceOrderEngineTest {
 	@Test
 	public void testGetNextOrderStatusesWhileOrderNotOpen() throws Exception {
 		frutillaRule.scenario(
-			"When an order is not open, next order statuses should contain" +
+			"When an order is not open, next order statuses should contain " +
 				"CommerceOrderStatuses that contain a -1 priority"
 		).given(
 			"An Open Order"
@@ -829,7 +831,7 @@ public class CommerceOrderEngineTest {
 	@Test
 	public void testGetNextOrderStatusesWhileOrderOpen() throws Exception {
 		frutillaRule.scenario(
-			"When an order is open, next order statuses should never contain" +
+			"When an order is open, next order statuses should never contain " +
 				"CommerceOrderStatuses that contain a -1 priority"
 		).given(
 			"An Open Order"
@@ -900,6 +902,9 @@ public class CommerceOrderEngineTest {
 	@Rule
 	public FrutillaRule frutillaRule = new FrutillaRule();
 
+	private static Company _company;
+	private static User _user;
+
 	private CommerceAccount _commerceAccount;
 
 	@Inject
@@ -941,13 +946,7 @@ public class CommerceOrderEngineTest {
 	@Inject
 	private CommerceShipmentLocalService _commerceShipmentLocalService;
 
-	@DeleteAfterTestRun
-	private Company _company;
-
 	private Group _group;
 	private ServiceContext _serviceContext;
-
-	@DeleteAfterTestRun
-	private User _user;
 
 }

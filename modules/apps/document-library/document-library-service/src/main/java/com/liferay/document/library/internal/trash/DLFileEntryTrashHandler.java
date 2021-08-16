@@ -73,7 +73,7 @@ import org.osgi.service.component.annotations.Reference;
 	property = "model.class.name=com.liferay.document.library.kernel.model.DLFileEntry",
 	service = TrashHandler.class
 )
-public class DLFileEntryTrashHandler extends DLBaseTrashHandler {
+public class DLFileEntryTrashHandler extends BaseDLTrashHandler {
 
 	@Override
 	public void checkRestorableEntry(
@@ -134,6 +134,13 @@ public class DLFileEntryTrashHandler extends DLBaseTrashHandler {
 		long parentFolderId = dlFileEntry.getFolderId();
 
 		if (parentFolderId <= 0) {
+			return null;
+		}
+
+		DLFolder parentFolder = _dlFolderLocalService.fetchDLFolder(
+			parentFolderId);
+
+		if (parentFolder == null) {
 			return null;
 		}
 

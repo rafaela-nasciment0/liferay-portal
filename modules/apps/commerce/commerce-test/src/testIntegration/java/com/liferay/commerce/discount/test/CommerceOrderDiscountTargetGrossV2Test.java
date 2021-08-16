@@ -51,7 +51,6 @@ import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.service.UserLocalService;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
-import com.liferay.portal.kernel.test.rule.DataGuard;
 import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
 import com.liferay.portal.kernel.test.util.CompanyTestUtil;
 import com.liferay.portal.kernel.test.util.GroupTestUtil;
@@ -75,6 +74,7 @@ import org.frutilla.FrutillaRule;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
@@ -83,7 +83,6 @@ import org.junit.runner.RunWith;
 /**
  * @author Luca Pellizzon
  */
-@DataGuard(scope = DataGuard.Scope.METHOD)
 @RunWith(Arquillian.class)
 public class CommerceOrderDiscountTargetGrossV2Test {
 
@@ -93,12 +92,15 @@ public class CommerceOrderDiscountTargetGrossV2Test {
 		new LiferayIntegrationTestRule(),
 		PermissionCheckerMethodTestRule.INSTANCE);
 
-	@Before
-	public void setUp() throws Exception {
+	@BeforeClass
+	public static void setUpClass() throws Exception {
 		_company = CompanyTestUtil.addCompany();
 
 		_user = UserTestUtil.addUser(_company);
+	}
 
+	@Before
+	public void setUp() throws Exception {
 		_group = GroupTestUtil.addGroup(
 			_company.getCompanyId(), _user.getUserId(), 0);
 
@@ -108,8 +110,6 @@ public class CommerceOrderDiscountTargetGrossV2Test {
 
 		_commerceCurrency = CommerceCurrencyTestUtil.addCommerceCurrency(
 			_group.getCompanyId());
-
-		_commerceOrders = new ArrayList<>();
 
 		_commerceChannel = CommerceTestUtil.addCommerceChannel(
 			_group.getGroupId(), _commerceCurrency.getCode());
@@ -597,6 +597,9 @@ public class CommerceOrderDiscountTargetGrossV2Test {
 	@Rule
 	public FrutillaRule frutillaRule = new FrutillaRule();
 
+	private static Company _company;
+	private static User _user;
+
 	private CommerceAccount _commerceAccount;
 
 	@Inject
@@ -622,7 +625,7 @@ public class CommerceOrderDiscountTargetGrossV2Test {
 	@Inject
 	private CommerceOrderPriceCalculation _commerceOrderPriceCalculation;
 
-	private List<CommerceOrder> _commerceOrders;
+	private final List<CommerceOrder> _commerceOrders = new ArrayList<>();
 
 	@Inject
 	private CommercePriceListLocalService _commercePriceListLocalService;
@@ -630,14 +633,10 @@ public class CommerceOrderDiscountTargetGrossV2Test {
 	@DeleteAfterTestRun
 	private CommerceTaxMethod _commerceTaxMethod;
 
-	@DeleteAfterTestRun
-	private Company _company;
-
 	@Inject
 	private CPDefinitionLocalService _cpDefinitionLocalService;
 
 	private Group _group;
-	private User _user;
 
 	@Inject
 	private UserLocalService _userLocalService;

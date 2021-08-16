@@ -31,6 +31,7 @@ import com.liferay.portal.kernel.security.permission.ResourceActionsUtil;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.trash.TrashHandler;
 import com.liferay.portal.kernel.trash.TrashHandlerRegistryUtil;
+import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
@@ -116,10 +117,10 @@ public class TrashManagementToolbarDisplayContext
 	public String getClearResultsURL() {
 		return PortletURLBuilder.create(
 			getPortletURL()
-		).setParameter(
-			"navigation", StringPool.BLANK
-		).setParameter(
-			"keywords", StringPool.BLANK
+		).setKeywords(
+			StringPool.BLANK
+		).setNavigation(
+			StringPool.BLANK
 		).buildString();
 	}
 
@@ -140,8 +141,8 @@ public class TrashManagementToolbarDisplayContext
 					PortletURLBuilder.create(
 						PortletURLUtil.clone(
 							currentURLObj, liferayPortletResponse)
-					).setParameter(
-						"navigation", (String)null
+					).setNavigation(
+						(String)null
 					).buildString());
 
 				labelItem.setCloseable(true);
@@ -218,7 +219,13 @@ public class TrashManagementToolbarDisplayContext
 
 	@Override
 	protected String[] getOrderByKeys() {
-		return new String[] {"removed-date"};
+		String[] orderColumns = {"removed-date"};
+
+		if (_trashDisplayContext.isSearch()) {
+			orderColumns = ArrayUtil.append(orderColumns, "relevance");
+		}
+
+		return orderColumns;
 	}
 
 	private boolean _isDeletable(TrashEntry trashEntry) throws PortalException {

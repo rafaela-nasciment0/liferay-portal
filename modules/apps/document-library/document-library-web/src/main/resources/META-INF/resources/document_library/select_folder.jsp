@@ -77,20 +77,21 @@ DLVisualizationHelper dlVisualizationHelper = new DLVisualizationHelper(dlReques
 		</aui:button-row>
 
 		<liferay-ui:search-container
+			cssClass="pb-6"
 			iteratorURL='<%=
 				PortletURLBuilder.createRenderURL(
 					renderResponse
 				).setMVCRenderCommandName(
 					"/document_library/select_folder"
 				).setParameter(
-					"folderId", String.valueOf(folderId)
+					"folderId", folderId
 				).setParameter(
-					"ignoreRootFolder", Boolean.TRUE.toString()
+					"ignoreRootFolder", true
 				).setParameter(
-					"selectedFolderId", String.valueOf(selectedFolderId)
+					"selectedFolderId", selectedFolderId
 				).setParameter(
-					"showMountFolder", String.valueOf(dlVisualizationHelper.isMountFolderVisible())
-				).build()
+					"showMountFolder", dlVisualizationHelper.isMountFolderVisible()
+				).buildPortletURL()
 			%>'
 			total="<%= DLAppServiceUtil.getFoldersCount(repositoryId, folderId, dlVisualizationHelper.isMountFolderVisible()) %>"
 		>

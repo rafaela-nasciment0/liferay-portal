@@ -40,12 +40,12 @@ import com.liferay.dynamic.data.mapping.model.LocalizedValue;
 				"setOptions('predefinedValue', getValue('options'))",
 				"setRequired('ddmDataProviderInstanceId', contains(getValue('dataSourceType'), \"data-provider\"))",
 				"setRequired('ddmDataProviderInstanceOutput', contains(getValue('dataSourceType'), \"data-provider\"))",
-				"setRequired('options', contains(getValue('dataSourceType'), \"manual\"))",
+				"setRequired('options', contains(getValue('dataSourceType'), \"manual\") OR isEmpty(getValue('dataSourceType')))",
 				"setVisible('ddmDataProviderInstanceId', contains(getValue('dataSourceType'), \"data-provider\"))",
 				"setVisible('ddmDataProviderInstanceOutput', contains(getValue('dataSourceType'), \"data-provider\"))",
-				"setVisible('options', contains(getValue('dataSourceType'), \"manual\"))",
+				"setVisible('options', contains(getValue('dataSourceType'), \"manual\") OR isEmpty(getValue('dataSourceType')))",
 				"setVisible('predefinedValue', contains(getValue('dataSourceType'), \"manual\"))",
-				"setVisible('validation', false)"
+				"setVisible('requiredErrorMessage', getValue('required'))"
 			},
 			condition = "TRUE"
 		),
@@ -69,7 +69,8 @@ import com.liferay.dynamic.data.mapping.model.LocalizedValue;
 						@DDMFormLayoutColumn(
 							size = 12,
 							value = {
-								"label", "tip", "required", "dataSourceType",
+								"label", "tip", "required",
+								"requiredErrorMessage", "dataSourceType",
 								"options", "ddmDataProviderInstanceId",
 								"ddmDataProviderInstanceOutput"
 							}
@@ -87,7 +88,7 @@ import com.liferay.dynamic.data.mapping.model.LocalizedValue;
 							size = 12,
 							value = {
 								"name", "fieldReference", "predefinedValue",
-								"visibilityExpression", "validation",
+								"objectFieldName", "visibilityExpression",
 								"fieldNamespace", "indexType",
 								"labelAtStructureLevel", "localizable",
 								"nativeField", "readOnly", "dataType", "type",
@@ -114,7 +115,8 @@ public interface SelectDDMFormFieldTypeSettings
 		label = "%create-list",
 		optionLabels = {"%manually", "%from-data-provider", "%from-autofill"},
 		optionValues = {"manual", "data-provider", "from-autofill"},
-		predefinedValue = "[\"manual\"]", type = "select"
+		predefinedValue = "[\"manual\"]", properties = "showEmptyOption=false",
+		type = "select"
 	)
 	public String dataSourceType();
 

@@ -583,6 +583,10 @@ public class PropsValues {
 		GetterUtil.getBoolean(
 			PropsUtil.get(PropsKeys.COMPANY_SECURITY_STRANGERS_WITH_MX));
 
+	public static final boolean COMPANY_SECURITY_UPDATE_PASSWORD_REQUIRED =
+		GetterUtil.getBoolean(
+			PropsUtil.get(PropsKeys.COMPANY_SECURITY_UPDATE_PASSWORD_REQUIRED));
+
 	public static String[] COMPANY_SETTINGS_FORM_AUTHENTICATION =
 		PropsUtil.getArray(PropsKeys.COMPANY_SETTINGS_FORM_AUTHENTICATION);
 
@@ -1351,8 +1355,7 @@ public class PropsValues {
 
 	public static final boolean LAYOUT_AJAX_RENDER_ENABLE =
 		GetterUtil.getBoolean(
-			PropsUtil.get(PropsKeys.LAYOUT_AJAX_RENDER_ENABLE)) &&
-		!GetterUtil.getBoolean(PropsUtil.get(PropsKeys.SESSION_DISABLED));
+			PropsUtil.get(PropsKeys.LAYOUT_AJAX_RENDER_ENABLE));
 
 	public static final String LAYOUT_CLONE_IMPL = PropsUtil.get(
 		PropsKeys.LAYOUT_CLONE_IMPL);
@@ -1531,6 +1534,16 @@ public class PropsValues {
 			PropsUtil.get(
 				PropsKeys.LAYOUT_USER_PUBLIC_LAYOUTS_POWER_USER_REQUIRED));
 
+	public static final boolean LEARN_RESOURCES_CDN_ENABLED =
+		GetterUtil.getBoolean(
+			PropsUtil.get(PropsKeys.LEARN_RESOURCES_CDN_ENABLED));
+
+	public static final boolean LEARN_RESOURCES_ENABLED = GetterUtil.getBoolean(
+		PropsUtil.get(PropsKeys.LEARN_RESOURCES_ENABLED));
+
+	public static final long LEARN_RESOURCES_REFRESH_TIME = GetterUtil.getLong(
+		PropsUtil.get(PropsKeys.LEARN_RESOURCES_REFRESH_TIME));
+
 	public static final String LIFERAY_HOME = PropsUtil.get(
 		PropsKeys.LIFERAY_HOME);
 
@@ -1542,6 +1555,9 @@ public class PropsValues {
 
 	public static final String LIFERAY_LIB_PORTAL_DIR = PropsUtil.get(
 		PropsKeys.LIFERAY_LIB_PORTAL_DIR);
+
+	public static final String LIFERAY_SHIELDED_CONTAINER_LIB_PORTAL_DIR =
+		PropsUtil.get(PropsKeys.LIFERAY_SHIELDED_CONTAINER_LIB_PORTAL_DIR);
 
 	public static String LIFERAY_WEB_PORTAL_CONTEXT_TEMPDIR;
 
@@ -2465,12 +2481,24 @@ public class PropsValues {
 	public static final int RECENT_GROUPS_MAX_ELEMENTS = GetterUtil.getInteger(
 		PropsUtil.get(PropsKeys.RECENT_GROUPS_MAX_ELEMENTS));
 
+	/**
+	 * @deprecated As of Cavanaugh (7.4.x)
+	 */
+	@Deprecated
 	public static final String[] REDIRECT_URL_DOMAINS_ALLOWED =
 		PropsUtil.getArray(PropsKeys.REDIRECT_URL_DOMAINS_ALLOWED);
 
+	/**
+	 * @deprecated As of Cavanaugh (7.4.x)
+	 */
+	@Deprecated
 	public static final String[] REDIRECT_URL_IPS_ALLOWED = PropsUtil.getArray(
 		PropsKeys.REDIRECT_URL_IPS_ALLOWED);
 
+	/**
+	 * @deprecated As of Cavanaugh (7.4.x)
+	 */
+	@Deprecated
 	public static final String REDIRECT_URL_SECURITY_MODE = PropsUtil.get(
 		PropsKeys.REDIRECT_URL_SECURITY_MODE);
 
@@ -2578,6 +2606,10 @@ public class PropsValues {
 		GetterUtil.getInteger(
 			PropsUtil.get(PropsKeys.SEARCH_CONTAINER_PAGE_ITERATOR_MAX_PAGES));
 
+	public static final int SEARCH_CONTAINER_PAGE_MAX_DELTA =
+		GetterUtil.getInteger(
+			PropsUtil.get(PropsKeys.SEARCH_CONTAINER_PAGE_MAX_DELTA), 200);
+
 	/**
 	 * @deprecated As of Judson (7.1.x), with no direct replacement
 	 */
@@ -2627,6 +2659,10 @@ public class PropsValues {
 				PropsKeys.SESSION_COOKIE_USE_FULL_HOSTNAME,
 				new Filter(ServerDetector.getServerId())));
 
+	/**
+	 * @deprecated As of Cavanaugh (7.4.x), with no direct replacement
+	 */
+	@Deprecated
 	public static final boolean SESSION_DISABLED = GetterUtil.getBoolean(
 		PropsUtil.get(PropsKeys.SESSION_DISABLED));
 
@@ -2874,6 +2910,10 @@ public class PropsValues {
 	public static String[] STRIP_MIME_TYPES = PropsUtil.getArray(
 		PropsKeys.STRIP_MIME_TYPES);
 
+	public static final boolean TEMPLATE_ENGINE_SERVICE_LOCATOR_RESTRICT =
+		GetterUtil.getBoolean(
+			PropsUtil.get(PropsKeys.TEMPLATE_ENGINE_SERVICE_LOCATOR_RESTRICT));
+
 	public static boolean TERMS_OF_USE_REQUIRED = GetterUtil.getBoolean(
 		PropsUtil.get(PropsKeys.TERMS_OF_USE_REQUIRED));
 
@@ -2973,6 +3013,9 @@ public class PropsValues {
 	public static final boolean UPGRADE_DATABASE_TRANSACTIONS_DISABLED =
 		GetterUtil.getBoolean(
 			PropsUtil.get(PropsKeys.UPGRADE_DATABASE_TRANSACTIONS_DISABLED));
+
+	public static final boolean UPGRADE_REPORT_ENABLED = GetterUtil.getBoolean(
+		PropsUtil.get(PropsKeys.UPGRADE_REPORT_ENABLED));
 
 	public static boolean USER_GROUPS_NAME_ALLOW_NUMERIC =
 		GetterUtil.getBoolean(

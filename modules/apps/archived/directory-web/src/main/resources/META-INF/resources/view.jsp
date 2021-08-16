@@ -21,9 +21,9 @@ PortletURL portletURL = PortletURLBuilder.createRenderURL(
 	renderResponse
 ).setMVCRenderCommandName(
 	"/directory/view"
-).setParameter(
-	"tabs1", tabs1
-).build();
+).setTabs1(
+	tabs1
+).buildPortletURL();
 
 pageContext.setAttribute("portletURL", portletURL);
 

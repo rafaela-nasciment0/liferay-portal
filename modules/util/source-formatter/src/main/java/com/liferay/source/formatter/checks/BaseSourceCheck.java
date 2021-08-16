@@ -28,8 +28,12 @@ import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.tools.ToolsUtil;
 import com.liferay.source.formatter.BNDSettings;
+import com.liferay.source.formatter.JSPSourceProcessor;
+import com.liferay.source.formatter.JavaSourceProcessor;
 import com.liferay.source.formatter.SourceFormatterExcludes;
 import com.liferay.source.formatter.SourceFormatterMessage;
+import com.liferay.source.formatter.SourceProcessor;
+import com.liferay.source.formatter.checks.util.JSPSourceUtil;
 import com.liferay.source.formatter.checks.util.SourceUtil;
 import com.liferay.source.formatter.util.CheckType;
 import com.liferay.source.formatter.util.FileUtil;
@@ -80,6 +84,34 @@ public abstract class BaseSourceCheck implements SourceCheck {
 	}
 
 	@Override
+	public boolean isJavaSource(String content, int pos) {
+		if (_sourceProcessor instanceof JavaSourceProcessor) {
+			return true;
+		}
+
+		if (_sourceProcessor instanceof JSPSourceProcessor) {
+			return JSPSourceUtil.isJavaSource(content, pos);
+		}
+
+		return false;
+	}
+
+	@Override
+	public boolean isJavaSource(
+		String content, int pos, boolean checkInsideTags) {
+
+		if (_sourceProcessor instanceof JavaSourceProcessor) {
+			return true;
+		}
+
+		if (_sourceProcessor instanceof JSPSourceProcessor) {
+			return JSPSourceUtil.isJavaSource(content, pos, checkInsideTags);
+		}
+
+		return false;
+	}
+
+	@Override
 	public boolean isLiferaySourceCheck() {
 		return false;
 	}
@@ -114,6 +146,11 @@ public abstract class BaseSourceCheck implements SourceCheck {
 	}
 
 	@Override
+	public void setMaxDirLevel(int maxDirLevel) {
+		_maxDirLevel = maxDirLevel;
+	}
+
+	@Override
 	public void setMaxLineLength(int maxLineLength) {
 		_maxLineLength = maxLineLength;
 	}
@@ -141,6 +178,11 @@ public abstract class BaseSourceCheck implements SourceCheck {
 		SourceFormatterExcludes sourceFormatterExcludes) {
 
 		_sourceFormatterExcludes = sourceFormatterExcludes;
+	}
+
+	@Override
+	public void setSourceProcessor(SourceProcessor sourceProcessor) {
+		_sourceProcessor = sourceProcessor;
 	}
 
 	@Override
@@ -380,6 +422,10 @@ public abstract class BaseSourceCheck implements SourceCheck {
 		return SourceUtil.getLineStartPos(content, lineNumber);
 	}
 
+	protected int getMaxDirLevel() {
+		return _maxDirLevel;
+	}
+
 	protected int getMaxLineLength() {
 		return _maxLineLength;
 	}
@@ -392,8 +438,7 @@ public abstract class BaseSourceCheck implements SourceCheck {
 				_MODULES_PROPERTIES_FILE_NAME, absolutePath);
 		}
 
-		return getContent(
-			_MODULES_PROPERTIES_FILE_NAME, ToolsUtil.PORTAL_MAX_DIR_LEVEL);
+		return getContent(_MODULES_PROPERTIES_FILE_NAME, _maxDirLevel);
 	}
 
 	protected List<String> getPluginsInsideModulesDirectoryNames() {
@@ -417,7 +462,7 @@ public abstract class BaseSourceCheck implements SourceCheck {
 			return getGitContent(fileName, portalBranchName);
 		}
 
-		String content = getContent(fileName, ToolsUtil.PORTAL_MAX_DIR_LEVEL);
+		String content = getContent(fileName, _maxDirLevel);
 
 		if (Validator.isNotNull(content)) {
 			return content;
@@ -483,7 +528,7 @@ public abstract class BaseSourceCheck implements SourceCheck {
 
 	protected File getPortalDir() {
 		File portalImplDir = SourceFormatterUtil.getFile(
-			getBaseDirName(), "portal-impl", ToolsUtil.PORTAL_MAX_DIR_LEVEL);
+			getBaseDirName(), "portal-impl", _maxDirLevel);
 
 		if (portalImplDir == null) {
 			return null;
@@ -496,7 +541,7 @@ public abstract class BaseSourceCheck implements SourceCheck {
 			String fileName, String absolutePath)
 		throws IOException {
 
-		File file = getFile(fileName, ToolsUtil.PORTAL_MAX_DIR_LEVEL);
+		File file = getFile(fileName, _maxDirLevel);
 
 		if (file != null) {
 			return new FileInputStream(file);
@@ -541,6 +586,10 @@ public abstract class BaseSourceCheck implements SourceCheck {
 
 	protected SourceFormatterExcludes getSourceFormatterExcludes() {
 		return _sourceFormatterExcludes;
+	}
+
+	protected SourceProcessor getSourceProcessor() {
+		return _sourceProcessor;
 	}
 
 	protected String getVariableTypeName(
@@ -780,6 +829,7 @@ public abstract class BaseSourceCheck implements SourceCheck {
 	private final Map<String, List<String>> _excludesValuesMap =
 		new ConcurrentHashMap<>();
 	private List<String> _fileExtensions;
+	private int _maxDirLevel;
 	private int _maxLineLength;
 	private List<String> _pluginsInsideModulesDirectoryNames;
 	private Document _portalCustomSQLDocument;
@@ -789,6 +839,7 @@ public abstract class BaseSourceCheck implements SourceCheck {
 	private SourceFormatterExcludes _sourceFormatterExcludes;
 	private final Map<String, Set<SourceFormatterMessage>>
 		_sourceFormatterMessagesMap = new ConcurrentHashMap<>();
+	private SourceProcessor _sourceProcessor;
 	private boolean _subrepository;
 
 }

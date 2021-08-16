@@ -101,8 +101,8 @@ public class ProductMenuBodyTopDynamicInclude extends BaseDynamicInclude {
 
 			String productMenuState = SessionClicks.get(
 				httpServletRequest,
-				"com.liferay.product.navigation.product.menu.web_" +
-					"productMenuState",
+				"com.liferay.product.navigation.product.menu." +
+					"web_productMenuState",
 				"closed");
 
 			if (Objects.equals(productMenuState, "open")) {
@@ -112,7 +112,7 @@ public class ProductMenuBodyTopDynamicInclude extends BaseDynamicInclude {
 			jspWriter.write(productMenuState);
 
 			jspWriter.write(
-				" d-print-none lfr-product-menu-panel sidenav-fixed " +
+				" cadmin d-print-none lfr-product-menu-panel sidenav-fixed " +
 					"sidenav-menu-slider\" id=\"");
 
 			String portletNamespace = _portal.getPortletNamespace(
@@ -227,7 +227,7 @@ public class ProductMenuBodyTopDynamicInclude extends BaseDynamicInclude {
 	private static final Log _log = LogFactoryUtil.getLog(
 		ProductMenuBodyTopDynamicInclude.class);
 
-	private BundleContext _bundleContext;
+	private volatile BundleContext _bundleContext;
 
 	@Reference
 	private ConfigurationProvider _configurationProvider;

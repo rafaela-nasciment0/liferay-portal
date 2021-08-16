@@ -4522,23 +4522,23 @@ public class DDLRecordPersistenceImpl
 		ServiceContext serviceContext =
 			ServiceContextThreadLocal.getServiceContext();
 
-		Date now = new Date();
+		Date date = new Date();
 
 		if (isNew && (ddlRecord.getCreateDate() == null)) {
 			if (serviceContext == null) {
-				ddlRecord.setCreateDate(now);
+				ddlRecord.setCreateDate(date);
 			}
 			else {
-				ddlRecord.setCreateDate(serviceContext.getCreateDate(now));
+				ddlRecord.setCreateDate(serviceContext.getCreateDate(date));
 			}
 		}
 
 		if (!ddlRecordModelImpl.hasSetModifiedDate()) {
 			if (serviceContext == null) {
-				ddlRecord.setModifiedDate(now);
+				ddlRecord.setModifiedDate(date);
 			}
 			else {
-				ddlRecord.setModifiedDate(serviceContext.getModifiedDate(now));
+				ddlRecord.setModifiedDate(serviceContext.getModifiedDate(date));
 			}
 		}
 
@@ -4961,7 +4961,8 @@ public class DDLRecordPersistenceImpl
 	public Set<String> getCTColumnNames(
 		CTColumnResolutionType ctColumnResolutionType) {
 
-		return _ctColumnNamesMap.get(ctColumnResolutionType);
+		return _ctColumnNamesMap.getOrDefault(
+			ctColumnResolutionType, Collections.emptySet());
 	}
 
 	@Override
@@ -4995,7 +4996,6 @@ public class DDLRecordPersistenceImpl
 	static {
 		Set<String> ctControlColumnNames = new HashSet<String>();
 		Set<String> ctIgnoreColumnNames = new HashSet<String>();
-		Set<String> ctMergeColumnNames = new HashSet<String>();
 		Set<String> ctStrictColumnNames = new HashSet<String>();
 
 		ctControlColumnNames.add("mvccVersion");
@@ -5022,7 +5022,6 @@ public class DDLRecordPersistenceImpl
 			CTColumnResolutionType.CONTROL, ctControlColumnNames);
 		_ctColumnNamesMap.put(
 			CTColumnResolutionType.IGNORE, ctIgnoreColumnNames);
-		_ctColumnNamesMap.put(CTColumnResolutionType.MERGE, ctMergeColumnNames);
 		_ctColumnNamesMap.put(
 			CTColumnResolutionType.PK, Collections.singleton("recordId"));
 		_ctColumnNamesMap.put(
@@ -5332,7 +5331,7 @@ public class DDLRecordPersistenceImpl
 			return DDLRecordTable.INSTANCE.getTableName();
 		}
 
-		private Object[] _getValue(
+		private static Object[] _getValue(
 			DDLRecordModelImpl ddlRecordModelImpl, String[] columnNames,
 			boolean original) {
 
@@ -5354,8 +5353,8 @@ public class DDLRecordPersistenceImpl
 			return arguments;
 		}
 
-		private static Map<FinderPath, Long> _finderPathColumnBitmasksCache =
-			new ConcurrentHashMap<>();
+		private static final Map<FinderPath, Long>
+			_finderPathColumnBitmasksCache = new ConcurrentHashMap<>();
 
 	}
 

@@ -11620,8 +11620,8 @@ public class MBMessagePersistenceImpl
 	private static final String _FINDER_COLUMN_T_S_STATUS_2 =
 		"mbMessage.status = ?";
 
-	private FinderPath _finderPathWithPaginationFindByT_notS;
-	private FinderPath _finderPathWithPaginationCountByT_notS;
+	private FinderPath _finderPathWithPaginationFindByT_NotS;
+	private FinderPath _finderPathWithPaginationCountByT_NotS;
 
 	/**
 	 * Returns all the message-boards messages where threadId = &#63; and status &ne; &#63;.
@@ -11631,8 +11631,8 @@ public class MBMessagePersistenceImpl
 	 * @return the matching message-boards messages
 	 */
 	@Override
-	public List<MBMessage> findByT_notS(long threadId, int status) {
-		return findByT_notS(
+	public List<MBMessage> findByT_NotS(long threadId, int status) {
+		return findByT_NotS(
 			threadId, status, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
 	}
 
@@ -11650,10 +11650,10 @@ public class MBMessagePersistenceImpl
 	 * @return the range of matching message-boards messages
 	 */
 	@Override
-	public List<MBMessage> findByT_notS(
+	public List<MBMessage> findByT_NotS(
 		long threadId, int status, int start, int end) {
 
-		return findByT_notS(threadId, status, start, end, null);
+		return findByT_NotS(threadId, status, start, end, null);
 	}
 
 	/**
@@ -11671,11 +11671,11 @@ public class MBMessagePersistenceImpl
 	 * @return the ordered range of matching message-boards messages
 	 */
 	@Override
-	public List<MBMessage> findByT_notS(
+	public List<MBMessage> findByT_NotS(
 		long threadId, int status, int start, int end,
 		OrderByComparator<MBMessage> orderByComparator) {
 
-		return findByT_notS(
+		return findByT_NotS(
 			threadId, status, start, end, orderByComparator, true);
 	}
 
@@ -11695,7 +11695,7 @@ public class MBMessagePersistenceImpl
 	 * @return the ordered range of matching message-boards messages
 	 */
 	@Override
-	public List<MBMessage> findByT_notS(
+	public List<MBMessage> findByT_NotS(
 		long threadId, int status, int start, int end,
 		OrderByComparator<MBMessage> orderByComparator,
 		boolean useFinderCache) {
@@ -11706,7 +11706,7 @@ public class MBMessagePersistenceImpl
 		FinderPath finderPath = null;
 		Object[] finderArgs = null;
 
-		finderPath = _finderPathWithPaginationFindByT_notS;
+		finderPath = _finderPathWithPaginationFindByT_NotS;
 		finderArgs = new Object[] {
 			threadId, status, start, end, orderByComparator
 		};
@@ -11800,12 +11800,12 @@ public class MBMessagePersistenceImpl
 	 * @throws NoSuchMessageException if a matching message-boards message could not be found
 	 */
 	@Override
-	public MBMessage findByT_notS_First(
+	public MBMessage findByT_NotS_First(
 			long threadId, int status,
 			OrderByComparator<MBMessage> orderByComparator)
 		throws NoSuchMessageException {
 
-		MBMessage mbMessage = fetchByT_notS_First(
+		MBMessage mbMessage = fetchByT_NotS_First(
 			threadId, status, orderByComparator);
 
 		if (mbMessage != null) {
@@ -11836,11 +11836,11 @@ public class MBMessagePersistenceImpl
 	 * @return the first matching message-boards message, or <code>null</code> if a matching message-boards message could not be found
 	 */
 	@Override
-	public MBMessage fetchByT_notS_First(
+	public MBMessage fetchByT_NotS_First(
 		long threadId, int status,
 		OrderByComparator<MBMessage> orderByComparator) {
 
-		List<MBMessage> list = findByT_notS(
+		List<MBMessage> list = findByT_NotS(
 			threadId, status, 0, 1, orderByComparator);
 
 		if (!list.isEmpty()) {
@@ -11860,12 +11860,12 @@ public class MBMessagePersistenceImpl
 	 * @throws NoSuchMessageException if a matching message-boards message could not be found
 	 */
 	@Override
-	public MBMessage findByT_notS_Last(
+	public MBMessage findByT_NotS_Last(
 			long threadId, int status,
 			OrderByComparator<MBMessage> orderByComparator)
 		throws NoSuchMessageException {
 
-		MBMessage mbMessage = fetchByT_notS_Last(
+		MBMessage mbMessage = fetchByT_NotS_Last(
 			threadId, status, orderByComparator);
 
 		if (mbMessage != null) {
@@ -11896,17 +11896,17 @@ public class MBMessagePersistenceImpl
 	 * @return the last matching message-boards message, or <code>null</code> if a matching message-boards message could not be found
 	 */
 	@Override
-	public MBMessage fetchByT_notS_Last(
+	public MBMessage fetchByT_NotS_Last(
 		long threadId, int status,
 		OrderByComparator<MBMessage> orderByComparator) {
 
-		int count = countByT_notS(threadId, status);
+		int count = countByT_NotS(threadId, status);
 
 		if (count == 0) {
 			return null;
 		}
 
-		List<MBMessage> list = findByT_notS(
+		List<MBMessage> list = findByT_NotS(
 			threadId, status, count - 1, count, orderByComparator);
 
 		if (!list.isEmpty()) {
@@ -11927,7 +11927,7 @@ public class MBMessagePersistenceImpl
 	 * @throws NoSuchMessageException if a message-boards message with the primary key could not be found
 	 */
 	@Override
-	public MBMessage[] findByT_notS_PrevAndNext(
+	public MBMessage[] findByT_NotS_PrevAndNext(
 			long messageId, long threadId, int status,
 			OrderByComparator<MBMessage> orderByComparator)
 		throws NoSuchMessageException {
@@ -11941,12 +11941,12 @@ public class MBMessagePersistenceImpl
 
 			MBMessage[] array = new MBMessageImpl[3];
 
-			array[0] = getByT_notS_PrevAndNext(
+			array[0] = getByT_NotS_PrevAndNext(
 				session, mbMessage, threadId, status, orderByComparator, true);
 
 			array[1] = mbMessage;
 
-			array[2] = getByT_notS_PrevAndNext(
+			array[2] = getByT_NotS_PrevAndNext(
 				session, mbMessage, threadId, status, orderByComparator, false);
 
 			return array;
@@ -11959,7 +11959,7 @@ public class MBMessagePersistenceImpl
 		}
 	}
 
-	protected MBMessage getByT_notS_PrevAndNext(
+	protected MBMessage getByT_NotS_PrevAndNext(
 		Session session, MBMessage mbMessage, long threadId, int status,
 		OrderByComparator<MBMessage> orderByComparator, boolean previous) {
 
@@ -12078,9 +12078,9 @@ public class MBMessagePersistenceImpl
 	 * @param status the status
 	 */
 	@Override
-	public void removeByT_notS(long threadId, int status) {
+	public void removeByT_NotS(long threadId, int status) {
 		for (MBMessage mbMessage :
-				findByT_notS(
+				findByT_NotS(
 					threadId, status, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
 					null)) {
 
@@ -12096,7 +12096,7 @@ public class MBMessagePersistenceImpl
 	 * @return the number of matching message-boards messages
 	 */
 	@Override
-	public int countByT_notS(long threadId, int status) {
+	public int countByT_NotS(long threadId, int status) {
 		boolean productionMode = ctPersistenceHelper.isProductionMode(
 			MBMessage.class);
 
@@ -12106,7 +12106,7 @@ public class MBMessagePersistenceImpl
 		Long count = null;
 
 		if (productionMode) {
-			finderPath = _finderPathWithPaginationCountByT_notS;
+			finderPath = _finderPathWithPaginationCountByT_NotS;
 
 			finderArgs = new Object[] {threadId, status};
 
@@ -21684,23 +21684,23 @@ public class MBMessagePersistenceImpl
 		ServiceContext serviceContext =
 			ServiceContextThreadLocal.getServiceContext();
 
-		Date now = new Date();
+		Date date = new Date();
 
 		if (isNew && (mbMessage.getCreateDate() == null)) {
 			if (serviceContext == null) {
-				mbMessage.setCreateDate(now);
+				mbMessage.setCreateDate(date);
 			}
 			else {
-				mbMessage.setCreateDate(serviceContext.getCreateDate(now));
+				mbMessage.setCreateDate(serviceContext.getCreateDate(date));
 			}
 		}
 
 		if (!mbMessageModelImpl.hasSetModifiedDate()) {
 			if (serviceContext == null) {
-				mbMessage.setModifiedDate(now);
+				mbMessage.setModifiedDate(date);
 			}
 			else {
-				mbMessage.setModifiedDate(serviceContext.getModifiedDate(now));
+				mbMessage.setModifiedDate(serviceContext.getModifiedDate(date));
 			}
 		}
 
@@ -22148,7 +22148,8 @@ public class MBMessagePersistenceImpl
 	public Set<String> getCTColumnNames(
 		CTColumnResolutionType ctColumnResolutionType) {
 
-		return _ctColumnNamesMap.get(ctColumnResolutionType);
+		return _ctColumnNamesMap.getOrDefault(
+			ctColumnResolutionType, Collections.emptySet());
 	}
 
 	@Override
@@ -22182,7 +22183,6 @@ public class MBMessagePersistenceImpl
 	static {
 		Set<String> ctControlColumnNames = new HashSet<String>();
 		Set<String> ctIgnoreColumnNames = new HashSet<String>();
-		Set<String> ctMergeColumnNames = new HashSet<String>();
 		Set<String> ctStrictColumnNames = new HashSet<String>();
 
 		ctControlColumnNames.add("mvccVersion");
@@ -22220,7 +22220,6 @@ public class MBMessagePersistenceImpl
 			CTColumnResolutionType.CONTROL, ctControlColumnNames);
 		_ctColumnNamesMap.put(
 			CTColumnResolutionType.IGNORE, ctIgnoreColumnNames);
-		_ctColumnNamesMap.put(CTColumnResolutionType.MERGE, ctMergeColumnNames);
 		_ctColumnNamesMap.put(
 			CTColumnResolutionType.PK, Collections.singleton("messageId"));
 		_ctColumnNamesMap.put(
@@ -22594,8 +22593,8 @@ public class MBMessagePersistenceImpl
 			new String[] {Long.class.getName(), Integer.class.getName()},
 			new String[] {"threadId", "status"}, false);
 
-		_finderPathWithPaginationFindByT_notS = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByT_notS",
+		_finderPathWithPaginationFindByT_NotS = new FinderPath(
+			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByT_NotS",
 			new String[] {
 				Long.class.getName(), Integer.class.getName(),
 				Integer.class.getName(), Integer.class.getName(),
@@ -22603,8 +22602,8 @@ public class MBMessagePersistenceImpl
 			},
 			new String[] {"threadId", "status"}, true);
 
-		_finderPathWithPaginationCountByT_notS = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "countByT_notS",
+		_finderPathWithPaginationCountByT_NotS = new FinderPath(
+			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "countByT_NotS",
 			new String[] {Long.class.getName(), Integer.class.getName()},
 			new String[] {"threadId", "status"}, false);
 
@@ -23030,6 +23029,13 @@ public class MBMessagePersistenceImpl
 						mbMessageModelImpl.getColumnBitmask(columnName);
 				}
 
+				if (finderPath.isBaseModelResult() &&
+					(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION ==
+						finderPath.getCacheName())) {
+
+					finderPathColumnBitmask |= _ORDER_BY_COLUMNS_BITMASK;
+				}
+
 				_finderPathColumnBitmasksCache.put(
 					finderPath, finderPathColumnBitmask);
 			}
@@ -23051,7 +23057,7 @@ public class MBMessagePersistenceImpl
 			return MBMessageTable.INSTANCE.getTableName();
 		}
 
-		private Object[] _getValue(
+		private static Object[] _getValue(
 			MBMessageModelImpl mbMessageModelImpl, String[] columnNames,
 			boolean original) {
 
@@ -23073,8 +23079,19 @@ public class MBMessagePersistenceImpl
 			return arguments;
 		}
 
-		private static Map<FinderPath, Long> _finderPathColumnBitmasksCache =
-			new ConcurrentHashMap<>();
+		private static final Map<FinderPath, Long>
+			_finderPathColumnBitmasksCache = new ConcurrentHashMap<>();
+
+		private static final long _ORDER_BY_COLUMNS_BITMASK;
+
+		static {
+			long orderByColumnsBitmask = 0;
+
+			orderByColumnsBitmask |= MBMessageModelImpl.getColumnBitmask(
+				"createDate");
+
+			_ORDER_BY_COLUMNS_BITMASK = orderByColumnsBitmask;
+		}
 
 	}
 

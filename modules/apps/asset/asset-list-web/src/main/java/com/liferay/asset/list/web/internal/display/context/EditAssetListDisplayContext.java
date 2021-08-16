@@ -131,12 +131,12 @@ public class EditAssetListDisplayContext {
 	}
 
 	public String encodeName(
-		long ddmStructureId, String fieldName, Locale locale) {
+		long ddmStructureId, String fieldReference, Locale locale) {
 
 		DDMIndexer ddmIndexer = (DDMIndexer)_httpServletRequest.getAttribute(
 			AssetListWebKeys.DDM_INDEXER);
 
-		return ddmIndexer.encodeName(ddmStructureId, fieldName, locale);
+		return ddmIndexer.encodeName(ddmStructureId, fieldReference, locale);
 	}
 
 	public AssetListEntry getAssetListEntry() {
@@ -622,8 +622,8 @@ public class EditAssetListDisplayContext {
 			_itemSelector.getItemSelectorURL(
 				RequestBackedPortletURLFactoryUtil.create(_httpServletRequest),
 				getSelectGroupEventName(), itemSelectorCriterion)
-		).setParameter(
-			"portletResource", AssetListPortletKeys.ASSET_LIST
+		).setPortletResource(
+			AssetListPortletKeys.ASSET_LIST
 		).buildString();
 	}
 
@@ -751,7 +751,7 @@ public class EditAssetListDisplayContext {
 			"assetListEntryId", getAssetListEntryId()
 		).setParameter(
 			"segmentsEntryId", getSegmentsEntryId()
-		).build();
+		).buildPortletURL();
 	}
 
 	public String getRedirectURL() {
@@ -968,19 +968,19 @@ public class EditAssetListDisplayContext {
 
 				for (long classNameId : classNameIds) {
 					if (classNameId == 0) {
-						continue;
+						return true;
 					}
 
 					AssetRendererFactory<?> assetRendererFactory =
 						AssetRendererFactoryRegistryUtil.
 							getAssetRendererFactoryByClassNameId(classNameId);
 
-					if (!assetRendererFactory.isSelectable()) {
-						return false;
+					if (assetRendererFactory.isSelectable()) {
+						return true;
 					}
 				}
 
-				return true;
+				return false;
 			});
 
 		return ListUtil.toList(
@@ -1156,8 +1156,6 @@ public class EditAssetListDisplayContext {
 			new AssetEntryItemSelectorReturnType());
 		assetEntryItemSelectorCriterion.setGroupId(
 			_themeDisplay.getScopeGroupId());
-		assetEntryItemSelectorCriterion.setSelectedGroupIds(
-			new long[] {_themeDisplay.getScopeGroupId()});
 		assetEntryItemSelectorCriterion.setShowNonindexable(true);
 		assetEntryItemSelectorCriterion.setShowScheduled(true);
 		assetEntryItemSelectorCriterion.setSubtypeSelectionId(

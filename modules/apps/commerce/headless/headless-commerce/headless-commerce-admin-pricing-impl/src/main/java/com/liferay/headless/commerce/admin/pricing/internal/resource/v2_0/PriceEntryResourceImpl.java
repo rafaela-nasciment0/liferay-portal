@@ -177,7 +177,7 @@ public class PriceEntryResourceImpl extends BasePriceEntryResourceImpl {
 
 		return SearchUtil.search(
 			null, booleanQuery -> booleanQuery.getPreBooleanFilter(), filter,
-			CommercePriceEntry.class, search, pagination,
+			CommercePriceEntry.class.getName(), search, pagination,
 			queryConfig -> queryConfig.setSelectedFieldNames(
 				Field.ENTRY_CLASS_PK),
 			new UnsafeConsumer() {
@@ -296,7 +296,7 @@ public class PriceEntryResourceImpl extends BasePriceEntryResourceImpl {
 			priceEntry.getExpirationDate(), serviceContext.getTimeZone());
 
 		CommercePriceEntry commercePriceEntry =
-			_commercePriceEntryService.upsertCommercePriceEntry(
+			_commercePriceEntryService.addOrUpdateCommercePriceEntry(
 				priceEntry.getExternalReferenceCode(),
 				GetterUtil.getLong(priceEntry.getPriceEntryId()), cProductId,
 				cpInstanceUuid, commercePriceList.getCommercePriceListId(),
@@ -413,7 +413,7 @@ public class PriceEntryResourceImpl extends BasePriceEntryResourceImpl {
 
 		if (tierPrices != null) {
 			for (TierPrice tierPrice : tierPrices) {
-				TierPriceUtil.upsertCommerceTierPriceEntry(
+				TierPriceUtil.addOrUpdateCommerceTierPriceEntry(
 					_commerceTierPriceEntryService, tierPrice,
 					commercePriceEntry, _serviceContextHelper);
 			}

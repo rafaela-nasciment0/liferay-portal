@@ -50,8 +50,6 @@ public class PollsVoteLocalServiceImpl extends PollsVoteLocalServiceBaseImpl {
 
 		// Choice
 
-		Date now = new Date();
-
 		PollsChoice choice = pollsChoicePersistence.findByPrimaryKey(choiceId);
 
 		if (choice.getQuestionId() != questionId) {
@@ -61,14 +59,16 @@ public class PollsVoteLocalServiceImpl extends PollsVoteLocalServiceBaseImpl {
 
 		// Question
 
+		Date date = new Date();
+
 		PollsQuestion question = pollsQuestionPersistence.findByPrimaryKey(
 			questionId);
 
-		if (question.isExpired(serviceContext, now)) {
+		if (question.isExpired(serviceContext, date)) {
 			throw new QuestionExpiredException();
 		}
 
-		question.setLastVoteDate(serviceContext.getCreateDate(now));
+		question.setLastVoteDate(serviceContext.getCreateDate(date));
 
 		pollsQuestionPersistence.update(question);
 
@@ -111,7 +111,7 @@ public class PollsVoteLocalServiceImpl extends PollsVoteLocalServiceBaseImpl {
 		vote.setUserName(userName);
 		vote.setQuestionId(questionId);
 		vote.setChoiceId(choiceId);
-		vote.setVoteDate(serviceContext.getCreateDate(now));
+		vote.setVoteDate(serviceContext.getCreateDate(date));
 
 		return pollsVotePersistence.update(vote);
 	}

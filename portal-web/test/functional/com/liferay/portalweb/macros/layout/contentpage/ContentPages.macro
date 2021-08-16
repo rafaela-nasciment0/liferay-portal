@@ -121,7 +121,7 @@ definition {
 
 		Button.clickAdd();
 
-		SelectFrame.selectFrameTop();
+		SelectFrameTop();
 
 		PageEditor.assertFragmentSidebarLoaded();
 	}
@@ -189,7 +189,7 @@ definition {
 			Click(locator1 = "Icon#BACK");
 		}
 
-		LexiconCard.clickCardTitle(card = "${collectionName}");
+		LexiconCard.clickCard(card = "${collectionName}");
 
 		if (isSet(masterLayoutName)) {
 			LexiconCard.clickCard(card = "${masterLayoutName}");

@@ -107,8 +107,8 @@ public class CalendarDisplayContext {
 	public String getClearResultsURL() throws PortletException {
 		return PortletURLBuilder.create(
 			PortletURLUtil.clone(getPortletURL(), _renderResponse)
-		).setParameter(
-			"keywords", StringPool.BLANK
+		).setKeywords(
+			StringPool.BLANK
 		).buildString();
 	}
 
@@ -173,6 +173,17 @@ public class CalendarDisplayContext {
 			for (Calendar groupCalendar : groupCalendars) {
 				if (groupCalendar.isDefaultCalendar() &&
 					CalendarPermission.contains(
+						_themeDisplay.getPermissionChecker(), groupCalendar,
+						CalendarActionKeys.VIEW_BOOKING_DETAILS)) {
+
+					defaultCalendar = groupCalendar;
+				}
+			}
+		}
+
+		if (defaultCalendar == null) {
+			for (Calendar groupCalendar : groupCalendars) {
+				if (CalendarPermission.contains(
 						_themeDisplay.getPermissionChecker(), groupCalendar,
 						CalendarActionKeys.VIEW_BOOKING_DETAILS)) {
 
@@ -349,26 +360,27 @@ public class CalendarDisplayContext {
 	}
 
 	public PortletURL getPortletURL() {
-		PortletURL portletURL = PortletURLBuilder.createRenderURL(
+		return PortletURLBuilder.createRenderURL(
 			_renderResponse
 		).setMVCPath(
 			"/view.jsp"
+		).setKeywords(
+			() -> {
+				String keywords = getKeywords();
+
+				if (Validator.isNotNull(keywords)) {
+					return keywords;
+				}
+
+				return null;
+			}
+		).setTabs1(
+			"resources"
 		).setParameter(
-			"tabs1", "resources"
-		).build();
-
-		String keywords = getKeywords();
-
-		if (Validator.isNotNull(keywords)) {
-			portletURL.setParameter("keywords", keywords);
-		}
-
-		portletURL.setParameter(
-			"active", ParamUtil.getString(_renderRequest, "active"));
-		portletURL.setParameter(
-			"scope", ParamUtil.getString(_renderRequest, "scope"));
-
-		return portletURL;
+			"active", ParamUtil.getString(_renderRequest, "active")
+		).setParameter(
+			"scope", ParamUtil.getString(_renderRequest, "scope")
+		).buildPortletURL();
 	}
 
 	public SearchContainer<?> getSearch() {
@@ -400,11 +412,7 @@ public class CalendarDisplayContext {
 	}
 
 	public boolean isDisabledManagementBar() {
-		if (hasResults()) {
-			return false;
-		}
-
-		if (isSearch()) {
+		if (hasResults() || isSearch()) {
 			return false;
 		}
 

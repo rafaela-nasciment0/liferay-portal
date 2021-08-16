@@ -14,6 +14,7 @@
 
 package com.liferay.portal.service.persistence.impl;
 
+import com.liferay.petra.lang.SafeCloseable;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.dao.orm.ArgumentsResolver;
 import com.liferay.portal.kernel.dao.orm.EntityCache;
@@ -31,6 +32,7 @@ import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.BaseModel;
 import com.liferay.portal.kernel.model.Company;
 import com.liferay.portal.kernel.model.CompanyTable;
+import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
 import com.liferay.portal.kernel.service.persistence.CompanyPersistence;
 import com.liferay.portal.kernel.service.persistence.impl.BasePersistenceImpl;
 import com.liferay.portal.kernel.util.OrderByComparator;
@@ -1281,10 +1283,28 @@ public class CompanyPersistenceImpl
 	@Override
 	public void cacheResult(List<Company> companies) {
 		for (Company company : companies) {
-			if (EntityCacheUtil.getResult(
-					CompanyImpl.class, company.getPrimaryKey()) == null) {
+			try (SafeCloseable safeCloseable =
+					CompanyThreadLocal.setWithSafeCloseable(
+						company.getPrimaryKey())) {
 
-				cacheResult(company);
+				Company cachedCompany = (Company)EntityCacheUtil.getResult(
+					CompanyImpl.class, company.getPrimaryKey());
+
+				if (cachedCompany == null) {
+					cacheResult(company);
+				}
+				else {
+					CompanyModelImpl companyModelImpl =
+						(CompanyModelImpl)company;
+					CompanyModelImpl cachedCompanyModelImpl =
+						(CompanyModelImpl)cachedCompany;
+
+					companyModelImpl.setCompanySecurityBag(
+						cachedCompanyModelImpl.getCompanySecurityBag());
+
+					companyModelImpl.setVirtualHostname(
+						cachedCompanyModelImpl.getVirtualHostname());
+				}
 			}
 		}
 	}
@@ -1925,7 +1945,7 @@ public class CompanyPersistenceImpl
 			return CompanyTable.INSTANCE.getTableName();
 		}
 
-		private Object[] _getValue(
+		private static Object[] _getValue(
 			CompanyModelImpl companyModelImpl, String[] columnNames,
 			boolean original) {
 
@@ -1946,8 +1966,8 @@ public class CompanyPersistenceImpl
 			return arguments;
 		}
 
-		private static Map<FinderPath, Long> _finderPathColumnBitmasksCache =
-			new ConcurrentHashMap<>();
+		private static final Map<FinderPath, Long>
+			_finderPathColumnBitmasksCache = new ConcurrentHashMap<>();
 
 	}
 

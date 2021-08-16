@@ -13,7 +13,7 @@
  */
 
 import {useEventListener} from '@liferay/frontend-js-react-web';
-import {useConfig} from 'dynamic-data-mapping-form-renderer';
+import {useConfig} from 'data-engine-js-components-web';
 import {useEffect} from 'react';
 
 const toggleFormBuilder = (managementToolbar) => {
@@ -78,6 +78,7 @@ export const ManagementToolbar = ({
 	onPreviewClick,
 	onPublishClick,
 	onSaveClick,
+	onSettingsClick,
 	onShareClick,
 	portletNamespace,
 	variant = 'builder',
@@ -148,6 +149,13 @@ export const ManagementToolbar = ({
 		onShareClick,
 		true,
 		document.querySelector('.lfr-ddm-share-url-button')
+	);
+
+	useEventListener(
+		'click',
+		onSettingsClick,
+		true,
+		document.querySelector('.lfr-ddm-settings-button')
 	);
 
 	return null;

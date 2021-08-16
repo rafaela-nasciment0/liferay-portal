@@ -29,11 +29,8 @@ export interface Config {
 
 	availableLanguages: {
 		[key: string]: {
-			default: boolean;
-			displayName: string;
 			languageIcon: string;
-			languageId: string;
-			w3cLanguageId: string;
+			languageLabel: string;
 		};
 	};
 
@@ -78,10 +75,6 @@ export interface Config {
 		}>;
 	}>;
 
-	containerItemFlexEnabled: boolean;
-
-	contentBrowsingEnabled: boolean;
-
 	defaultEditorConfigurations: Record<
 		'comment' | 'rich-text' | 'text',
 		{
@@ -98,15 +91,14 @@ export interface Config {
 	deleteFragmentEntryLinkCommentURL: string;
 	deleteItemURL: string;
 	deleteSegmentsExperienceURL: string;
-	discardDraftRedirectURL: string;
 	discardDraftURL: string;
 	draft: boolean;
-	dropdownFragmentEnabled: boolean;
 	duplicateItemURL: string;
 	duplicateSegmentsExperienceURL: string;
 	editFragmentEntryLinkCommentURL: string;
 	editFragmentEntryLinkURL: string;
 	editSegmentsEntryURL: string;
+	fragmentsHidingEnabled: boolean;
 	frontendTokens: {
 		[key: string]: {
 			cssVariable: string;
@@ -120,7 +112,10 @@ export interface Config {
 	getAvailableListRenderersURL: string;
 	getAvailableListItemRenderersURL: string;
 	getAvailableTemplatesURL: string;
+	getCollectionConfigurationURL: string;
 	getCollectionFieldURL: string;
+	getCollectionFiltersURL: string;
+	getCollectionItemCountURL: string;
 	getCollectionMappingFieldsURL: string;
 	getExperienceUsedPortletsURL: string;
 	getIframeContentCssURL: string;
@@ -129,11 +124,12 @@ export interface Config {
 	getInfoItemMappingFieldsURL: string;
 	getLayoutFriendlyURL: string;
 	getPageContentsURL: string;
+	getWidgetsURL: string;
 	imageSelectorURL: string;
+	infoItemPreviewSelectorURL: string;
 	infoItemSelectorURL: string;
 	layoutConversionWarningMessages: string[] | null;
 	layoutItemSelectorURL: String;
-	layoutMappingEnabled: boolean;
 	layoutType: LayoutTypes[keyof LayoutTypes];
 	lookAndFeelURL: string;
 	mappingFieldsURL: string;
@@ -158,6 +154,7 @@ export interface Config {
 	publishURL: string;
 	redirectURL: string;
 	renderFragmentEntryURL: string;
+	searchContainerPageMaxDelta: number;
 	selectedSegmentsEntryId: string;
 
 	sidebarPanels: {
@@ -196,5 +193,6 @@ export interface Config {
 	updateRowColumnsURL: string;
 	updateSegmentsExperiencePriorityURL: string;
 	updateSegmentsExperienceURL: string;
+	videoItemSelectorURL: string;
 	workflowEnabled: boolean;
 }

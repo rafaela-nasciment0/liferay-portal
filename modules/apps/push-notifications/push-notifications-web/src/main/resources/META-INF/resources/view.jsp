@@ -21,9 +21,9 @@ String tabs1 = ParamUtil.getString(request, "tabs1", "devices");
 
 PortletURL portletURL = PortletURLBuilder.createRenderURL(
 	renderResponse
-).setParameter(
-	"tabs1", tabs1
-).build();
+).setTabs1(
+	tabs1
+).buildPortletURL();
 %>
 
 <clay:navigation-bar

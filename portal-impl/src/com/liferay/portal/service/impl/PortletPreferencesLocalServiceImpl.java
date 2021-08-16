@@ -49,6 +49,7 @@ import com.liferay.portal.kernel.settings.SettingsLocatorHelperUtil;
 import com.liferay.portal.kernel.spring.aop.Property;
 import com.liferay.portal.kernel.spring.aop.Retry;
 import com.liferay.portal.kernel.transaction.Transactional;
+import com.liferay.portal.kernel.util.CopyLayoutThreadLocal;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.PortletKeys;
 import com.liferay.portal.kernel.util.Validator;
@@ -91,11 +92,35 @@ public class PortletPreferencesLocalServiceImpl
 		portletPreferences.setPortletId(portletId);
 
 		if (Validator.isNull(defaultPreferences)) {
-			if (portlet == null) {
-				defaultPreferences = PortletConstants.DEFAULT_PREFERENCES;
+			LayoutRevision layoutRevision =
+				layoutRevisionLocalService.fetchLayoutRevision(plid);
+
+			if (layoutRevision != null) {
+				PortletPreferences layoutPortletPreferences =
+					portletPreferencesPersistence.fetchByO_O_P_P(
+						ownerId, ownerType, layoutRevision.getPlid(),
+						portletId);
+
+				if (layoutPortletPreferences != null) {
+					javax.portlet.PortletPreferences jxPortletPreferences =
+						portletPreferenceValueLocalService.getPreferences(
+							layoutPortletPreferences);
+
+					if (jxPortletPreferences != null) {
+						defaultPreferences =
+							PortletPreferencesFactoryUtil.toXML(
+								jxPortletPreferences);
+					}
+				}
 			}
-			else {
-				defaultPreferences = portlet.getDefaultPreferences();
+
+			if (Validator.isNull(defaultPreferences)) {
+				if (portlet == null) {
+					defaultPreferences = PortletConstants.DEFAULT_PREFERENCES;
+				}
+				else {
+					defaultPreferences = portlet.getDefaultPreferences();
+				}
 			}
 		}
 
@@ -701,12 +726,9 @@ public class PortletPreferencesLocalServiceImpl
 	}
 
 	private boolean _exists(long plid, long companyId, String portletId) {
-		if (plid == PortletKeys.PREFS_PLID_SHARED) {
-			return true;
-		}
-
-		if (portletLocalService.fetchPortletById(companyId, portletId) !=
-				null) {
+		if ((plid == PortletKeys.PREFS_PLID_SHARED) ||
+			(portletLocalService.fetchPortletById(companyId, portletId) !=
+				null)) {
 
 			return true;
 		}
@@ -1012,6 +1034,27 @@ public class PortletPreferencesLocalServiceImpl
 	private PortletPreferences _updatePreferences(
 		long ownerId, int ownerType, long plid, String portletId,
 		Map<String, Preference> preferenceMap) {
+
+		if (CopyLayoutThreadLocal.isCopyLayout()) {
+			Layout layout = layoutPersistence.fetchByPrimaryKey(plid);
+
+			if ((layout != null) &&
+				LayoutStagingUtil.isBranchingLayout(layout)) {
+
+				LayoutStagingHandler layoutStagingHandler =
+					new LayoutStagingHandler(layout);
+
+				LayoutRevision layoutRevision =
+					layoutStagingHandler.getLayoutRevision();
+
+				if (layoutRevision != null) {
+					_updatePreferences(
+						ownerId, ownerType,
+						layoutRevision.getLayoutRevisionId(), portletId,
+						preferenceMap);
+				}
+			}
+		}
 
 		plid = _swapPlidForUpdatePreferences(plid);
 

@@ -260,6 +260,36 @@ public class AccountEntryLocalServiceImpl
 	}
 
 	@Override
+	public AccountEntry addOrUpdateAccountEntry(
+			String externalReferenceCode, long userId,
+			long parentAccountEntryId, String name, String description,
+			String[] domains, String emailAddress, byte[] logoBytes,
+			String taxIdNumber, String type, int status,
+			ServiceContext serviceContext)
+		throws PortalException {
+
+		User user = userLocalService.getUser(userId);
+
+		AccountEntry accountEntry = fetchAccountEntryByReferenceCode(
+			user.getCompanyId(), externalReferenceCode);
+
+		if (accountEntry != null) {
+			return updateAccountEntry(
+				accountEntry.getAccountEntryId(), parentAccountEntryId, name,
+				description, false, domains, emailAddress, logoBytes,
+				taxIdNumber, status, serviceContext);
+		}
+
+		accountEntry = addAccountEntry(
+			userId, parentAccountEntryId, name, description, domains,
+			emailAddress, logoBytes, taxIdNumber, type, status, serviceContext);
+
+		accountEntry.setExternalReferenceCode(externalReferenceCode);
+
+		return accountEntryPersistence.update(accountEntry);
+	}
+
+	@Override
 	public void deactivateAccountEntries(long[] accountEntryIds)
 		throws PortalException {
 
@@ -484,12 +514,11 @@ public class AccountEntryLocalServiceImpl
 			String[] types, Integer status)
 		throws PortalException {
 
-		return GetterUtil.getInteger(
-			(Long)dslQuery(
-				_getGroupByStep(
-					DSLQueryFactoryUtil.countDistinct(
-						AccountEntryTable.INSTANCE.accountEntryId),
-					userId, parentAccountEntryId, keywords, types, status)));
+		return accountEntryPersistence.dslQueryCount(
+			_getGroupByStep(
+				DSLQueryFactoryUtil.countDistinct(
+					AccountEntryTable.INSTANCE.accountEntryId),
+				userId, parentAccountEntryId, keywords, types, status));
 	}
 
 	@Override
@@ -723,30 +752,12 @@ public class AccountEntryLocalServiceImpl
 				}
 
 				if (Validator.isNotNull(keywords)) {
-					String[] terms = _customSQL.keywords(keywords, true);
-
-					Predicate keywordsPredicate = null;
-
-					for (String term : terms) {
-						Predicate termPredicate = DSLFunctionFactoryUtil.lower(
-							AccountEntryTable.INSTANCE.name
-						).like(
-							term
-						);
-
-						if (keywordsPredicate == null) {
-							keywordsPredicate = termPredicate;
-						}
-						else {
-							keywordsPredicate = keywordsPredicate.or(
-								termPredicate);
-						}
-					}
-
-					if (keywordsPredicate != null) {
-						predicate = predicate.and(
-							keywordsPredicate.withParentheses());
-					}
+					predicate = predicate.and(
+						Predicate.withParentheses(
+							_customSQL.getKeywordsPredicate(
+								DSLFunctionFactoryUtil.lower(
+									AccountEntryTable.INSTANCE.name),
+								_customSQL.keywords(keywords, true))));
 				}
 
 				if (types != null) {

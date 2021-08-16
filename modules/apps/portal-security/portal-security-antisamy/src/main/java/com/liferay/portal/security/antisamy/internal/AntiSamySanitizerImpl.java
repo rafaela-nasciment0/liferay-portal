@@ -46,8 +46,8 @@ public class AntiSamySanitizerImpl implements Sanitizer {
 	public AntiSamySanitizerImpl(
 		String[] blacklist, URL url, String[] whitelist) {
 
-		try (InputStream inputstream = url.openStream()) {
-			_policy = Policy.getInstance(inputstream);
+		try (InputStream inputStream = url.openStream()) {
+			_policy = Policy.getInstance(inputStream);
 		}
 		catch (Exception exception) {
 			throw new IllegalStateException(
@@ -80,8 +80,8 @@ public class AntiSamySanitizerImpl implements Sanitizer {
 	}
 
 	public void addPolicy(String className, URL url) {
-		try (InputStream inputstream = url.openStream()) {
-			Policy policy = Policy.getInstance(inputstream);
+		try (InputStream inputStream = url.openStream()) {
+			Policy policy = Policy.getInstance(inputStream);
 
 			_policies.put(className, policy);
 		}
@@ -107,17 +107,10 @@ public class AntiSamySanitizerImpl implements Sanitizer {
 				StringBundler.concat("Sanitizing ", className, "#", classPK));
 		}
 
-		if (Validator.isNull(content)) {
-			return content;
-		}
+		if (Validator.isNull(content) || Validator.isNull(contentType) ||
+			!contentType.equals(ContentTypes.TEXT_HTML) ||
+			isWhitelisted(className, classPK)) {
 
-		if (Validator.isNull(contentType) ||
-			!contentType.equals(ContentTypes.TEXT_HTML)) {
-
-			return content;
-		}
-
-		if (isWhitelisted(className, classPK)) {
 			return content;
 		}
 

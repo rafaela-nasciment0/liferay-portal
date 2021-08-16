@@ -22,17 +22,15 @@ AccountEntryDisplay accountEntryDisplay = (AccountEntryDisplay)request.getAttrib
 String backURL = ParamUtil.getString(request, "backURL");
 
 if (Validator.isNull(backURL)) {
-	PortletURL viewAccountUserURL = PortletURLBuilder.createRenderURL(
+	backURL = PortletURLBuilder.createRenderURL(
 		renderResponse
 	).setMVCRenderCommandName(
 		"/account_admin/edit_account_entry"
 	).setParameter(
-		"screenNavigationCategoryKey", AccountScreenNavigationEntryConstants.CATEGORY_KEY_USERS
+		"accountEntryId", accountEntryDisplay.getAccountEntryId()
 	).setParameter(
-		"accountEntryId", String.valueOf(accountEntryDisplay.getAccountEntryId())
-	).build();
-
-	backURL = viewAccountUserURL.toString();
+		"screenNavigationCategoryKey", AccountScreenNavigationEntryConstants.CATEGORY_KEY_USERS
+	).buildString();
 }
 
 portletDisplay.setShowBackIcon(true);
@@ -84,7 +82,20 @@ renderResponse.setTitle(LanguageUtil.format(request, "add-new-user-to-x", accoun
 						<liferay-ui:message key="<%= usne.screenNameValidator.getDescription(locale) %>" />
 					</liferay-ui:error>
 
-					<aui:input label="screen-name" name="screenName" required="<%= true %>" type="text" />
+					<aui:model-context model="<%= User.class %>" />
+
+					<aui:input name="screenName">
+
+						<%
+						ScreenNameValidator screenNameValidator = ScreenNameValidatorFactory.getInstance();
+						%>
+
+						<c:if test="<%= Validator.isNotNull(screenNameValidator.getAUIValidatorJS()) %>">
+							<aui:validator errorMessage="<%= screenNameValidator.getDescription(locale) %>" name="custom">
+								<%= screenNameValidator.getAUIValidatorJS() %>
+							</aui:validator>
+						</c:if>
+					</aui:input>
 
 					<liferay-ui:error exception="<%= UserEmailAddressException.MustNotBeDuplicate.class %>" focusField="emailAddress" message="the-email-address-you-requested-is-already-taken" />
 					<liferay-ui:error exception="<%= UserEmailAddressException.MustNotBeNull.class %>" focusField="emailAddress" message="please-enter-an-email-address" />
@@ -151,7 +162,7 @@ renderResponse.setTitle(LanguageUtil.format(request, "add-new-user-to-x", accoun
 			"validDomains", StringUtil.merge(accountEntryDisplay.getDomains(), StringPool.COMMA)
 		).setWindowState(
 			LiferayWindowState.POP_UP
-		).build();
+		).buildPortletURL();
 
 		context.put("viewValidDomainsURL", viewValidDomainsURL.toString());
 	}

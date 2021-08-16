@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-2021 Liferay, Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -15,6 +15,7 @@
 package com.liferay.mule.internal.metadata;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.NullNode;
 
 import com.liferay.mule.internal.connection.LiferayConnection;
 import com.liferay.mule.internal.oas.OASFormat;
@@ -25,10 +26,12 @@ import com.liferay.mule.internal.util.StringUtil;
 
 import java.io.IOException;
 
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.TimeoutException;
 
 import org.mule.metadata.api.builder.ArrayTypeBuilder;
@@ -50,6 +53,33 @@ import org.slf4j.LoggerFactory;
  */
 public class MetadataTypeBuilder {
 
+	public MetadataType buildBatchMetadataType(
+			MetadataContext metadataContext, String className)
+		throws ConnectionException, MetadataResolvingException {
+
+		JsonNode oasJsonNode = getOASJsonNode(metadataContext);
+
+		JsonNode schemaJsonNode = getSchemaJsonNodeByClassName(
+			jsonNodeReader.getDescendantJsonNode(
+				oasJsonNode, OASConstants.PATH_COMPONENTS_SCHEMAS),
+			className);
+
+		ObjectTypeBuilder objectTypeBuilder = getObjectTypeBuilder(
+			metadataContext, className);
+
+		resolveObjectMetadataType(
+			objectTypeBuilder, oasJsonNode,
+			schemaJsonNode.get(OASConstants.PROPERTIES),
+			fetchRequiredJsonNode(schemaJsonNode), className);
+
+		ArrayTypeBuilder arrayTypeBuilder = getArrayTypeBuilder(
+			metadataContext, className);
+
+		return arrayTypeBuilder.of(
+			objectTypeBuilder.build()
+		).build();
+	}
+
 	public MetadataType buildMetadataType(
 			MetadataContext metadataContext, String endpoint, String operation,
 			String endpointReferencePath)
@@ -67,7 +97,8 @@ public class MetadataTypeBuilder {
 		String schemaName = getSchemaName(
 			endpointReferenceJsonNode.textValue());
 
-		JsonNode schemaJsonNode = getSchemaJsonNode(oasJsonNode, schemaName);
+		JsonNode schemaJsonNode = getSchemaJsonNodeBySchemaName(
+			oasJsonNode, schemaName);
 
 		String schemaType = getSchemaType(schemaJsonNode);
 
@@ -239,6 +270,9 @@ public class MetadataTypeBuilder {
 		else if (oasFormat == OASFormat.INT64) {
 			baseTypeBuilder.numberType();
 		}
+		else if (oasFormat == OASFormat.OBJECT) {
+			baseTypeBuilder.objectType();
+		}
 		else if (oasFormat == OASFormat.STRING) {
 			baseTypeBuilder.stringType();
 		}
@@ -249,7 +283,30 @@ public class MetadataTypeBuilder {
 		return baseTypeBuilder.build();
 	}
 
-	private JsonNode getSchemaJsonNode(
+	private JsonNode getSchemaJsonNodeByClassName(
+		JsonNode schemasJsonNode, String className) {
+
+		Iterator<Map.Entry<String, JsonNode>> schemasIterator =
+			schemasJsonNode.fields();
+
+		while (schemasIterator.hasNext()) {
+			Map.Entry<String, JsonNode> schemaEntry = schemasIterator.next();
+
+			JsonNode schemaJsonNode = schemaEntry.getValue();
+
+			JsonNode classNameJsonNode = jsonNodeReader.fetchDescendantJsonNode(
+				schemaJsonNode,
+				OASConstants.PATH_PROPERTIES_X_CLASS_NAME_DEFAULT);
+
+			if (className.equals(classNameJsonNode.textValue())) {
+				return schemaJsonNode;
+			}
+		}
+
+		return NullNode.getInstance();
+	}
+
+	private JsonNode getSchemaJsonNodeBySchemaName(
 		JsonNode openAPISpecJsonNode, String schemaName) {
 
 		String path = StringUtil.replace(
@@ -288,7 +345,8 @@ public class MetadataTypeBuilder {
 
 		String schemaName = getSchemaName(referenceJsonNode.textValue());
 
-		JsonNode schemaJsonNode = getSchemaJsonNode(oasJsonNode, schemaName);
+		JsonNode schemaJsonNode = getSchemaJsonNodeBySchemaName(
+			oasJsonNode, schemaName);
 
 		resolveObjectMetadataType(
 			objectTypeBuilder, oasJsonNode,
@@ -320,7 +378,7 @@ public class MetadataTypeBuilder {
 
 	private void resolveNestedObjectMetadataType(
 		ObjectFieldTypeBuilder objectFieldTypeBuilder, JsonNode oasJsonNode,
-		JsonNode propertyJsonNode, String currentSchemaName) {
+		JsonNode propertyJsonNode) {
 
 		ObjectTypeBuilder nestedObjectTypeBuilder =
 			objectFieldTypeBuilder.value(
@@ -331,13 +389,7 @@ public class MetadataTypeBuilder {
 				propertyJsonNode
 			).asText());
 
-		if (currentSchemaName.equals(schemaName)) {
-			nestedObjectTypeBuilder.label(schemaName);
-
-			return;
-		}
-
-		JsonNode nestedObjectSchemaJsonNode = getSchemaJsonNode(
+		JsonNode nestedObjectSchemaJsonNode = getSchemaJsonNodeBySchemaName(
 			oasJsonNode, schemaName);
 
 		JsonNode nestedObjectPropertiesJsonNode =
@@ -355,7 +407,21 @@ public class MetadataTypeBuilder {
 	private void resolveObjectMetadataType(
 		ObjectTypeBuilder objectTypeBuilder, JsonNode oasJsonNode,
 		JsonNode propertiesJsonNode, JsonNode requiredJsonNode,
-		String currentSchemaName) {
+		String schemaName) {
+
+		if (unresolvedSchemaNames.contains(schemaName)) {
+			objectTypeBuilder.addField(
+			).key(
+				schemaName
+			).repeated(
+				true
+			).value(
+			).objectType();
+
+			return;
+		}
+
+		unresolvedSchemaNames.add(schemaName);
 
 		Iterator<Map.Entry<String, JsonNode>> propertiesIterator =
 			propertiesJsonNode.fields();
@@ -372,9 +438,10 @@ public class MetadataTypeBuilder {
 				objectFieldTypeBuilder, propertyEntry.getKey(),
 				requiredJsonNode);
 			setObjectFieldValue(
-				objectFieldTypeBuilder, propertyEntry, oasJsonNode,
-				currentSchemaName);
+				objectFieldTypeBuilder, propertyEntry, oasJsonNode);
 		}
+
+		unresolvedSchemaNames.remove(schemaName);
 	}
 
 	private void setObjectFieldKey(
@@ -401,8 +468,7 @@ public class MetadataTypeBuilder {
 
 	private void setObjectFieldValue(
 		ObjectFieldTypeBuilder objectFieldTypeBuilder,
-		Map.Entry<String, JsonNode> propertyEntry, JsonNode oasJsonNode,
-		String currentSchemaName) {
+		Map.Entry<String, JsonNode> propertyEntry, JsonNode oasJsonNode) {
 
 		JsonNode propertyJsonNode = propertyEntry.getValue();
 
@@ -410,8 +476,7 @@ public class MetadataTypeBuilder {
 
 		if (typeJsonNode == null) {
 			resolveNestedObjectMetadataType(
-				objectFieldTypeBuilder, oasJsonNode, propertyJsonNode,
-				currentSchemaName);
+				objectFieldTypeBuilder, oasJsonNode, propertyJsonNode);
 
 			return;
 		}
@@ -437,5 +502,6 @@ public class MetadataTypeBuilder {
 		MetadataTypeBuilder.class);
 
 	private final JsonNodeReader jsonNodeReader = new JsonNodeReader();
+	private final Set<String> unresolvedSchemaNames = new HashSet<>();
 
 }

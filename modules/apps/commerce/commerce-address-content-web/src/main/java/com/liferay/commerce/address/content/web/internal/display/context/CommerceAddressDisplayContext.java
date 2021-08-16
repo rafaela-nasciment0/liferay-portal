@@ -152,6 +152,8 @@ public class CommerceAddressDisplayContext {
 			_liferayPortletResponse
 		).setActionName(
 			"/commerce_address_content/edit_commerce_address"
+		).setCMD(
+			Constants.DELETE
 		).setRedirect(
 			() -> {
 				ThemeDisplay themeDisplay =
@@ -160,8 +162,6 @@ public class CommerceAddressDisplayContext {
 
 				return themeDisplay.getURLCurrent();
 			}
-		).setParameter(
-			Constants.CMD, Constants.DELETE
 		).setParameter(
 			"commerceAddressId", commerceAddressId
 		).buildString();
@@ -198,7 +198,7 @@ public class CommerceAddressDisplayContext {
 		).setMVCRenderCommandName(
 			"/commerce_address_content/edit_commerce_address"
 		).setRedirect(
-			String.valueOf(_liferayPortletResponse.createRenderURL())
+			(PortletURL)_liferayPortletResponse.createRenderURL()
 		).setParameter(
 			"commerceAddressId", commerceAddressId
 		).buildString();

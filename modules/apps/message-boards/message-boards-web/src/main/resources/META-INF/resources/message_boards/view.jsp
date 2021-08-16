@@ -43,7 +43,7 @@ PortletURL portletURL = PortletURLBuilder.createRenderURL(
 	renderResponse
 ).setMVCRenderCommandName(
 	mvcRenderCommandName
-).build();
+).buildPortletURL();
 
 int cur1 = ParamUtil.getInteger(request, "cur1");
 
@@ -529,9 +529,7 @@ request.setAttribute("view.jsp-viewCategory", Boolean.TRUE.toString());
 					if (groupThreadsUserId > 0) {
 						portletURL.setParameter("groupThreadsUserId", String.valueOf(groupThreadsUserId));
 					}
-					%>
 
-					<%
 					SearchContainer threadEntriesSearchContainer = new SearchContainer(renderRequest, null, null, "cur1", 0, mbListDisplayContext.getThreadEntriesDelta(), portletURL, null, "there-are-no-threads");
 
 					mbListDisplayContext.setThreadEntriesDelta(threadEntriesSearchContainer);
@@ -566,5 +564,5 @@ request.setAttribute("view.jsp-viewCategory", Boolean.TRUE.toString());
 </c:choose>
 
 <%!
-private static Log _log = LogFactoryUtil.getLog("com_liferay_message_boards_web.message_boards.view_jsp");
+private static final Log _log = LogFactoryUtil.getLog("com_liferay_message_boards_web.message_boards.view_jsp");
 %>

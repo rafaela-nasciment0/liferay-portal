@@ -152,7 +152,7 @@ public class DiscountResourceImpl extends BaseDiscountResourceImpl {
 
 		return SearchUtil.search(
 			null, booleanQuery -> booleanQuery.getPreBooleanFilter(), filter,
-			CommerceDiscount.class, search, pagination,
+			CommerceDiscount.class.getName(), search, pagination,
 			queryConfig -> queryConfig.setSelectedFieldNames(
 				Field.ENTRY_CLASS_PK),
 			new UnsafeConsumer() {
@@ -226,7 +226,7 @@ public class DiscountResourceImpl extends BaseDiscountResourceImpl {
 			discount.getExpirationDate(), serviceContext.getTimeZone());
 
 		CommerceDiscount commerceDiscount =
-			_commerceDiscountService.upsertCommerceDiscount(
+			_commerceDiscountService.addOrUpdateCommerceDiscount(
 				discount.getExternalReferenceCode(), contextUser.getUserId(),
 				GetterUtil.getLong(discount.getId()), discount.getTitle(),
 				discount.getTarget(),

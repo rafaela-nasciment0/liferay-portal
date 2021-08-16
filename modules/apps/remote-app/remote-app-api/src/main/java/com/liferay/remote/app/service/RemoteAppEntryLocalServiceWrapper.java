@@ -140,6 +140,13 @@ public class RemoteAppEntryLocalServiceWrapper
 	}
 
 	@Override
+	public int dslQueryCount(
+		com.liferay.petra.sql.dsl.query.DSLQuery dslQuery) {
+
+		return _remoteAppEntryLocalService.dslQueryCount(dslQuery);
+	}
+
+	@Override
 	public com.liferay.portal.kernel.dao.orm.DynamicQuery dynamicQuery() {
 		return _remoteAppEntryLocalService.dynamicQuery();
 	}
@@ -359,22 +366,20 @@ public class RemoteAppEntryLocalServiceWrapper
 	}
 
 	@Override
-	public java.util.List<com.liferay.remote.app.model.RemoteAppEntry>
-			searchRemoteAppEntries(
-				long companyId, String keywords, int start, int end,
-				com.liferay.portal.kernel.search.Sort sort)
+	public java.util.List<com.liferay.remote.app.model.RemoteAppEntry> search(
+			long companyId, String keywords, int start, int end,
+			com.liferay.portal.kernel.search.Sort sort)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
-		return _remoteAppEntryLocalService.searchRemoteAppEntries(
+		return _remoteAppEntryLocalService.search(
 			companyId, keywords, start, end, sort);
 	}
 
 	@Override
-	public int searchRemoteAppEntriesCount(long companyId, String keywords)
+	public int searchCount(long companyId, String keywords)
 		throws com.liferay.portal.kernel.exception.PortalException {
 
-		return _remoteAppEntryLocalService.searchRemoteAppEntriesCount(
-			companyId, keywords);
+		return _remoteAppEntryLocalService.searchCount(companyId, keywords);
 	}
 
 	@Override

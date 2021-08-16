@@ -92,11 +92,11 @@ public class SiteMembershipsDisplayContext {
 			_liferayPortletResponse
 		).setMVCPath(
 			"/view.jsp"
-		).setParameter(
-			"tabs1", getTabs1()
+		).setTabs1(
+			getTabs1()
 		).setParameter(
 			"groupId", getGroupId()
-		).build();
+		).buildPortletURL();
 	}
 
 	public String getRedirect() {

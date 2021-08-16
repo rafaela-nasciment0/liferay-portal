@@ -66,6 +66,7 @@ definition {
 
 	@priority = "5"
 	test DeleteRegular {
+		property portal.acceptance = "true";
 		property test.name.skip.portal.instance = "Calendar#DeleteEventRegular";
 
 		var siteName = TestCase.getSiteName(siteName = "${siteName}");
@@ -113,6 +114,7 @@ definition {
 
 	@priority = "5"
 	test DeleteRepeatingAllFollowing {
+		property portal.acceptance = "true";
 		property test.name.skip.portal.instance = "Calendar#DeleteEventRepeatingAllFollowing";
 
 		CalendarNavigator.gotoAddEvent();
@@ -752,7 +754,8 @@ definition {
 	@description = "This is a use case for LPS-75292."
 	@priority = "5"
 	test ViewCalendarEventDetailViaMailLink {
-		property portal.upstream = "quarantine";
+		property test.name.skip.portal.instance = "CalendarManageEvent#ViewCalendarEventDetailViaMailLink";
+		property test.smtp.server.enabled = "true";
 
 		JSONGroup.addGroup(groupName = "Site Name");
 
@@ -791,7 +794,7 @@ definition {
 			specificOptionSetValue = "userfn userln",
 			user = "userfn userln");
 
-		MockMock.openCalendatBodyLink(
+		MockMock.openCalendarBodyLink(
 			asset = '''Calendar: Event Notification for "Calendar Event Title"''',
 			content = "You have been invited to event",
 			subject = '''Calendar: Event Notification for "Calendar Event Title"''');

@@ -32,6 +32,7 @@ definition {
 
 	@description = "This test covers LPS-113731. It ensures that roles and permissions from a library are removed after membership is revoked."
 	@priority = "5"
+	@refactorneeded
 	test AccessALAfterRevokingMembership {
 		property custom.properties = "jsonws.web.service.paths.excludes=";
 
@@ -126,6 +127,7 @@ definition {
 
 	@description = "This ensures that the Asset Library Connected Site Members role does not appear in user roles even after it is automatically assigned to a connected site member. This test also covers permissions and makes sure the library asset can be updated by the role."
 	@priority = "5"
+	@refactorneeded
 	test AddSiteMemberWithPermissionsAfterConnectingSite {
 		JSONGroup.addGroup(groupName = "Site Name");
 
@@ -133,13 +135,9 @@ definition {
 			groupName = "Site Name",
 			layoutName = "Test Page Name");
 
-		DepotNavigator.openDepotAdmin();
-
-		DepotNavigator.gotoEdit(depotName = "Test Depot Name");
-
-		DepotNavigator.gotoSites(depotName = "Test Depot Name");
-
-		Depot.connectSite(siteList = "Site Name");
+		JSONDepot.connectSite(
+			depotName = "Test Depot Name",
+			groupName = "Site Name");
 
 		JSONUser.addUser(
 			userEmailAddress = "user1@liferay.com",
@@ -198,7 +196,7 @@ definition {
 			site = "false",
 			title = "WC WebContent Title");
 
-		Navigator.gotoSitePage(
+		Navigator.openSitePage(
 			pageName = "Test Page Name",
 			siteName = "Site Name");
 
@@ -208,7 +206,7 @@ definition {
 			depotName = "Test Depot Name",
 			webContentTitle = "WC WebContent Title");
 
-		Navigator.gotoSitePage(
+		Navigator.openSitePage(
 			pageName = "Test Page Name",
 			siteName = "Site Name");
 
@@ -218,7 +216,7 @@ definition {
 			permissionDefinitionKey = "CONTENT_PERMISSIONS_VIEW_CHECKBOX",
 			roleTitle = "Guest");
 
-		Navigator.gotoSitePage(
+		Navigator.openSitePage(
 			pageName = "Test Page Name",
 			siteName = "Site Name");
 
@@ -232,7 +230,7 @@ definition {
 			userLoginEmailAddress = "user1@liferay.com",
 			userLoginFullName = "userfn userln");
 
-		Navigator.gotoSitePage(
+		Navigator.openSitePage(
 			pageName = "Test Page Name",
 			siteName = "Site Name");
 
@@ -260,7 +258,7 @@ definition {
 			userLoginEmailAddress = "user1@liferay.com",
 			userLoginFullName = "userfn userln");
 
-		Navigator.gotoSitePage(
+		Navigator.openSitePage(
 			pageName = "Test Page Name",
 			siteName = "Site Name");
 
@@ -273,6 +271,7 @@ definition {
 
 	@description = "This ensures that the user can perform CRUD operations with an AL role that has all WC permissions."
 	@priority = "5"
+	@refactorneeded
 	test AssignALRoleWithAllWCPermissions {
 		property custom.properties = "jsonws.web.service.paths.excludes=";
 
@@ -383,6 +382,7 @@ definition {
 
 	@description = "This ensures that the user can edit documents with an AL role that has edit documents permissions."
 	@priority = "5"
+	@refactorneeded
 	test AssignALRoleWithDMEditPermissions {
 		property custom.properties = "jsonws.web.service.paths.excludes=";
 
@@ -485,6 +485,7 @@ definition {
 
 	@description = "This ensures that an asset library role can be deleted."
 	@priority = "5"
+	@refactorneeded
 	test DeleteALRole {
 		Role.openRolesAdmin();
 
@@ -515,6 +516,7 @@ definition {
 
 	@description = "This ensures that an asset library role can be edited."
 	@priority = "5"
+	@refactorneeded
 	test EditALRole {
 		Role.openRolesAdmin();
 
@@ -548,6 +550,7 @@ definition {
 
 	@description = "This ensures that an asset library role can be edited."
 	@priority = "5"
+	@refactorneeded
 	test ViewALAdminRole {
 		property custom.properties = "jsonws.web.service.paths.excludes=";
 
@@ -623,6 +626,7 @@ definition {
 
 	@description = "This ensures that the Asset Library Connected Site Members role does not appear in user roles even it is automatically assigned to an existing site member after connecting site."
 	@priority = "5"
+	@refactorneeded
 	test ViewExistingSiteMemberAfterConnectingSite {
 		JSONUser.addUser(
 			userEmailAddress = "user1@liferay.com",
@@ -655,13 +659,9 @@ definition {
 			siteName = "Site Name",
 			userScreenName = "usersn");
 
-		DepotNavigator.openDepotAdmin();
-
-		DepotNavigator.gotoEdit(depotName = "Test Depot Name");
-
-		DepotNavigator.gotoSites(depotName = "Test Depot Name");
-
-		Depot.connectSite(siteList = "Site Name");
+		JSONDepot.connectSite(
+			depotName = "Test Depot Name",
+			groupName = "Site Name");
 
 		ApplicationsMenu.gotoPortlet(
 			category = "Users",

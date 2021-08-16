@@ -169,6 +169,9 @@ public class RootProjectConfigurator implements Plugin<Project> {
 	}
 
 	public RootProjectConfigurator(Settings settings) {
+		_bundleCheckSumMD5 = GradleUtil.getProperty(
+			settings, WorkspacePlugin.PROPERTY_PREFIX + "bundle.checksum.md5",
+			null);
 		_defaultRepositoryEnabled = GradleUtil.getProperty(
 			settings,
 			WorkspacePlugin.PROPERTY_PREFIX + "default.repository.enabled",
@@ -331,15 +334,19 @@ public class RootProjectConfigurator implements Plugin<Project> {
 
 		dockerBuildImage.dependsOn(dockerfile);
 
-		dockerBuildImage.setDescription(
-			"Builds a child docker image from Liferay base image with all " +
-				"configs deployed.");
-		dockerBuildImage.setGroup(DOCKER_GROUP);
-
 		DirectoryProperty inputDirectoryProperty =
 			dockerBuildImage.getInputDir();
 
 		inputDirectoryProperty.set(workspaceExtension.getDockerDir());
+
+		Property<Boolean> pullProperty = dockerBuildImage.getPull();
+
+		pullProperty.set(true);
+
+		dockerBuildImage.setDescription(
+			"Builds a child docker image from Liferay base image with all " +
+				"configs deployed.");
+		dockerBuildImage.setGroup(DOCKER_GROUP);
 
 		DockerRemoveImage dockerRemoveImage = GradleUtil.addTask(
 			project, CLEAN_DOCKER_IMAGE_TASK_NAME, DockerRemoveImage.class);
@@ -764,11 +771,9 @@ public class RootProjectConfigurator implements Plugin<Project> {
 				(dir, name) -> {
 					File file = new File(dir, name);
 
-					if (!file.isDirectory()) {
-						return false;
-					}
+					if (!file.isDirectory() ||
+						commonConfigDirNames.contains(name)) {
 
-					if (commonConfigDirNames.contains(name)) {
 						return false;
 					}
 
@@ -1162,6 +1167,17 @@ public class RootProjectConfigurator implements Plugin<Project> {
 
 				@Override
 				public boolean isSatisfiedBy(Task task) {
+					if (!Objects.equals(
+							workspaceExtension.getBundleUrl(),
+							workspaceExtension.getDefaultBundleUrl())) {
+
+						if (Objects.nonNull(_bundleCheckSumMD5)) {
+							return true;
+						}
+
+						return false;
+					}
+
 					return Validator.isNotNull(verify.getChecksum());
 				}
 
@@ -1491,6 +1507,7 @@ public class RootProjectConfigurator implements Plugin<Project> {
 	private static final String _LIFERAY_IMAGE_SETUP_SCRIPT =
 		"100_liferay_image_setup.sh";
 
+	private String _bundleCheckSumMD5;
 	private boolean _defaultRepositoryEnabled;
 
 }

@@ -18,11 +18,12 @@ import React, {useState} from 'react';
 
 import useSetRef from '../../../core/hooks/useSetRef';
 import {getLayoutDataItemPropTypes} from '../../../prop-types/index';
+import {ResizeContextProvider} from '../../contexts/ResizeContext';
+import {useSelector} from '../../contexts/StoreContext';
 import selectCanUpdateItemConfiguration from '../../selectors/selectCanUpdateItemConfiguration';
-import {useSelector} from '../../store/index';
 import {getResponsiveColumnSize} from '../../utils/getResponsiveColumnSize';
 import {getResponsiveConfig} from '../../utils/getResponsiveConfig';
-import {ResizeContextProvider} from '../ResizeContext';
+import isItemEmpty from '../../utils/isItemEmpty';
 import Topper from '../Topper';
 import Row from './Row';
 
@@ -50,13 +51,20 @@ const RowWithControls = React.forwardRef(({children, item}, ref) => {
 	const [setRef, itemElement] = useSetRef(ref);
 	const {verticalAlignment} = rowResponsiveConfig;
 
-	const {height, maxWidth, minWidth, width} = item.config.styles;
+	const {
+		display,
+		height,
+		maxWidth,
+		minWidth,
+		width,
+	} = rowResponsiveConfig.styles;
 
 	return (
 		<Topper
 			item={item}
 			itemElement={itemElement}
 			style={{
+				display,
 				maxWidth,
 				minWidth,
 				width,
@@ -66,6 +74,7 @@ const RowWithControls = React.forwardRef(({children, item}, ref) => {
 				className={classNames({
 					'align-bottom': verticalAlignment === 'bottom',
 					'align-middle': verticalAlignment === 'middle',
+					'align-top': verticalAlignment === 'top',
 					empty:
 						isSomeRowEmpty(
 							item,
@@ -99,7 +108,11 @@ const RowWithControls = React.forwardRef(({children, item}, ref) => {
 function isSomeRowEmpty(item, layoutData, selectedViewportSize) {
 	const rows = groupItemsByRow(item, layoutData, selectedViewportSize);
 
-	return rows.some((row) => row.every((item) => item.children.length === 0));
+	return rows.some((row) =>
+		row.every((column) =>
+			isItemEmpty(column, layoutData, selectedViewportSize)
+		)
+	);
 }
 
 function groupItemsByRow(item, layoutData, selectedViewportSize) {

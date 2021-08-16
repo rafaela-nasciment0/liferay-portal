@@ -135,13 +135,13 @@ groupItemSelectorCriterion.setIncludeSitesThatIAdminister(true);
 
 PortletURL itemSelectorURL = PortletURLBuilder.create(
 	itemSelector.getItemSelectorURL(RequestBackedPortletURLFactoryUtil.create(renderRequest), eventName, groupItemSelectorCriterion)
+).setPortletResource(
+	assetPublisherDisplayContext.getPortletResource()
 ).setParameter(
-	"plid", String.valueOf(layout.getPlid())
+	"groupId", layout.getGroupId()
 ).setParameter(
-	"groupId", String.valueOf(layout.getGroupId())
-).setParameter(
-	"portletResource", assetPublisherDisplayContext.getPortletResource()
-).build();
+	"plid", layout.getPlid()
+).buildPortletURL();
 %>
 
 <aui:script sandbox="<%= true %>">

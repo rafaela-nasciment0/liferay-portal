@@ -13,7 +13,7 @@
  */
 
 import ClayDropDown from '@clayui/drop-down';
-import {ClayCheckbox} from '@clayui/form';
+import {ClayCheckbox, ClayInput} from '@clayui/form';
 import React, {forwardRef, useEffect, useMemo, useRef, useState} from 'react';
 
 import {FieldBase} from '../FieldBase/ReactFieldBase.es';
@@ -77,6 +77,13 @@ function removeValue({value, valueToBeRemoved}) {
 function toArray(value = '') {
 	let newValue = value;
 
+	if (newValue && typeof newValue === 'string') {
+		try {
+			newValue = JSON.parse(newValue);
+		}
+		catch (error) {}
+	}
+
 	if (!Array.isArray(newValue)) {
 		newValue = [newValue];
 	}
@@ -106,18 +113,25 @@ function normalizeValue({
  * needs to be prepared in case of
  * multiple selected values(when the value state is an array).
  */
-function assertOptionParameters({multiple, option, valueArray}) {
+function assertOptionParameters({
+	editingLanguageId,
+	multiple,
+	option,
+	valueArray,
+}) {
 	const included = valueArray.includes(option.value);
 
 	return {
 		...option,
 		active: !multiple && included,
 		checked: multiple && included,
+		label: option.label[editingLanguageId] ?? option.label,
 		type: multiple ? 'checkbox' : 'item',
 	};
 }
 
 function normalizeOptions({
+	editingLanguageId,
 	fixedOptions,
 	multiple,
 	options,
@@ -126,14 +140,24 @@ function normalizeOptions({
 }) {
 	const newOptions = [
 		...options.map((option, index) => ({
-			...assertOptionParameters({multiple, option, valueArray}),
+			...assertOptionParameters({
+				editingLanguageId,
+				multiple,
+				option,
+				valueArray,
+			}),
 			separator:
 				Array.isArray(fixedOptions) &&
 				fixedOptions.length > 0 &&
 				index === options.length - 1,
 		})),
 		...fixedOptions.map((option) =>
-			assertOptionParameters({multiple, option, valueArray})
+			assertOptionParameters({
+				editingLanguageId,
+				multiple,
+				option,
+				valueArray,
+			})
 		),
 	].filter(({value}) => value !== '');
 
@@ -191,6 +215,7 @@ const DropdownItem = ({
 		<ClayDropDown.Item
 			active={expand && currentValue === option.label}
 			data-testid={`dropdownItem-${index}`}
+			disabled={option.disabled}
 			label={option.label}
 			onClick={(event) => {
 				event.preventDefault();
@@ -270,7 +295,7 @@ const DropdownListWithSearch = ({
 				option.label.toLowerCase().includes(query.toLowerCase())
 		);
 
-		if (showEmptyOption) {
+		if (showEmptyOption && !multiple) {
 			const emptyOption = {
 				label: Liferay.Language.get('choose-an-option'),
 				value: null,
@@ -354,53 +379,6 @@ const Select = ({
 
 	const [currentValue, setCurrentValue] = useSyncValue(value, false);
 	const [expand, setExpand] = useState(false);
-
-	useEffect(() => {
-		const newValue = currentValue?.filter((item) => {
-			return options.some(({value}) => value === item);
-		});
-
-		if (currentValue?.length !== newValue?.length) {
-			setCurrentValue(newValue);
-
-			onDropdownItemClicked({event: {}, value: newValue});
-		}
-	}, [currentValue, onDropdownItemClicked, options, setCurrentValue]);
-
-	useEffect(() => {
-		const getDocumentHeight = () => {
-			const heights = [
-				document.body.clientHeight,
-				document.documentElement.clientHeight,
-				window.innerHeight,
-			];
-
-			return Math.max(...heights);
-		};
-
-		const onScroll = () => {
-			const {
-				height,
-				top,
-			} = triggerElementRef.current.getBoundingClientRect();
-
-			const scrollTop =
-				window.pageYOffset || document.documentElement.scrollTop;
-
-			const menuElementTop = height + scrollTop + top;
-
-			if (menuElementTop <= getDocumentHeight()) {
-				menuElementRef.current.style.setProperty(
-					'top',
-					`${menuElementTop}px`
-				);
-			}
-		};
-
-		document.addEventListener('scroll', onScroll, true);
-
-		return () => document.removeEventListener('scroll', onScroll, true);
-	}, []);
 
 	const handleFocus = (event, direction) => {
 		const target = event.target;
@@ -564,6 +542,7 @@ const Select = ({
 };
 
 const Main = ({
+	editingLanguageId,
 	fixedOptions = [],
 	label,
 	localizedValue = {},
@@ -585,12 +564,14 @@ const Main = ({
 	const normalizedOptions = useMemo(
 		() =>
 			normalizeOptions({
+				editingLanguageId,
 				fixedOptions,
 				multiple,
 				options,
 				showEmptyOption,
 				valueArray,
 			}),
+		// eslint-disable-next-line react-hooks/exhaustive-deps
 		[fixedOptions, multiple, options, showEmptyOption, valueArray]
 	);
 
@@ -615,7 +596,7 @@ const Main = ({
 		>
 			<Select
 				multiple={multiple}
-				name={name}
+				name={`${name}_field`}
 				onCloseButtonClicked={({event, value}) =>
 					onChange(event, value)
 				}
@@ -637,6 +618,7 @@ const Main = ({
 				value={value}
 				{...otherProps}
 			/>
+			<ClayInput name={name} type="hidden" value={value} />
 		</FieldBase>
 	);
 };

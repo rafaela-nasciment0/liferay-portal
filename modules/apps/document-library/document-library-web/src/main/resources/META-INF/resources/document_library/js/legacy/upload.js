@@ -495,7 +495,7 @@ AUI.add(
 
 				_createEntriesContainer(searchContainer, displayStyle) {
 					var containerClasses =
-						'display-style-descriptive tabular-list-group';
+						'list-group list-group-notification show-quick-actions-on-hover';
 
 					if (displayStyle === CSS_ICON) {
 						containerClasses = 'card-page card-page-equal-height';
@@ -532,7 +532,7 @@ AUI.add(
 					}
 					else {
 						var entriesContainerSelector =
-							'ul.tabular-list-group:last-of-type';
+							'ul.list-group:last-of-type';
 
 						if (displayStyle === CSS_ICON) {
 							entriesContainerSelector =
@@ -991,7 +991,7 @@ AUI.add(
 					try {
 						responseData = JSON.parse(responseData);
 					}
-					catch (e) {}
+					catch (error) {}
 
 					if (Lang.isObject(responseData)) {
 						error =
@@ -1229,7 +1229,7 @@ AUI.add(
 							instance._updateFileLink(
 								fileNode,
 								response.message,
-								displayStyleList
+								displayStyle
 							);
 
 							instance._updateFileHiddenInput(
@@ -1386,12 +1386,15 @@ AUI.add(
 					}
 				},
 
-				_updateFileLink(node, id, displayStyleList) {
+				_updateFileLink(node, id, displayStyle) {
 					var instance = this;
 
-					var selector = SELECTOR_ENTRY_LINK;
+					var selector = 'a';
 
-					if (displayStyleList) {
+					if (displayStyle === CSS_ICON) {
+						selector = SELECTOR_ENTRY_LINK;
+					}
+					else if (displayStyle === STR_LIST) {
 						selector =
 							SELECTOR_ENTRY_DISPLAY_STYLE +
 							STR_SPACE +

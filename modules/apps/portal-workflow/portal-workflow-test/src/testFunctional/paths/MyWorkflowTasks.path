@@ -2,11 +2,13 @@
 <head>
 <title>MyWorkflowTasks</title>
 </head>
+
 <body>
-<table cellpadding="1" cellspacing="1" border="1">
+<table border="1" cellpadding="1" cellspacing="1">
 <thead>
 <tr><td rowspan="1" colspan="3">MyWorkflowTasks</td></tr>
 </thead>
+
 <tbody>
 <tr>
 	<td>ASSIGNED_TO_ME_ACTIVE</td>
@@ -20,13 +22,18 @@
 </tr>
 <!--TABLE_GENERIC-->
 <tr>
+	<td>UNPUBLISH_ALERT_ERROR_MESSAGE_LINK</td>
+	<td>//a[text()='Configure assignments']</td>
+	<td></td>
+</tr>
+<tr>
 	<td>TABLE_GENERIC_ASSET_TITLE</td>
 	<td>//tr[contains(.,'${key_workflowAssetTitle}')]/td[1]//a</td>
 	<td></td>
 </tr>
 <tr>
 	<td>REVERSE_SORT_DIRECTION_BUTTON</td>
-	<td>//*[contains(@class, 'lexicon-icon lexicon-icon-order-arrow')]</td>
+	<td>//*[contains(@class, 'lexicon-icon lexicon-icon-order')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -140,6 +147,11 @@
 <tr>
 	<td>DIALOG_BOX_DUE_DATE</td>
 	<td>//input[contains(@id,'_dueDate')] | //label[contains(@for,'dateInput')]/following-sibling::input</td>
+	<td></td>
+</tr>
+<tr>
+	<td>DONE_BUTTON</td>
+	<td>//button[contains(@class,'btn btn-primary') and '${status}']</td>
 	<td></td>
 </tr>
 <tr>

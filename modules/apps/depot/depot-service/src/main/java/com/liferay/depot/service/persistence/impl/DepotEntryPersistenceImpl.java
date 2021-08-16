@@ -1896,23 +1896,24 @@ public class DepotEntryPersistenceImpl
 		ServiceContext serviceContext =
 			ServiceContextThreadLocal.getServiceContext();
 
-		Date now = new Date();
+		Date date = new Date();
 
 		if (isNew && (depotEntry.getCreateDate() == null)) {
 			if (serviceContext == null) {
-				depotEntry.setCreateDate(now);
+				depotEntry.setCreateDate(date);
 			}
 			else {
-				depotEntry.setCreateDate(serviceContext.getCreateDate(now));
+				depotEntry.setCreateDate(serviceContext.getCreateDate(date));
 			}
 		}
 
 		if (!depotEntryModelImpl.hasSetModifiedDate()) {
 			if (serviceContext == null) {
-				depotEntry.setModifiedDate(now);
+				depotEntry.setModifiedDate(date);
 			}
 			else {
-				depotEntry.setModifiedDate(serviceContext.getModifiedDate(now));
+				depotEntry.setModifiedDate(
+					serviceContext.getModifiedDate(date));
 			}
 		}
 
@@ -2418,7 +2419,7 @@ public class DepotEntryPersistenceImpl
 			return DepotEntryTable.INSTANCE.getTableName();
 		}
 
-		private Object[] _getValue(
+		private static Object[] _getValue(
 			DepotEntryModelImpl depotEntryModelImpl, String[] columnNames,
 			boolean original) {
 
@@ -2440,8 +2441,8 @@ public class DepotEntryPersistenceImpl
 			return arguments;
 		}
 
-		private static Map<FinderPath, Long> _finderPathColumnBitmasksCache =
-			new ConcurrentHashMap<>();
+		private static final Map<FinderPath, Long>
+			_finderPathColumnBitmasksCache = new ConcurrentHashMap<>();
 
 	}
 

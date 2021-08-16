@@ -14,6 +14,7 @@
 
 package com.liferay.commerce.product.model.impl;
 
+import com.liferay.commerce.account.constants.CommerceAccountConstants;
 import com.liferay.commerce.media.CommerceMediaResolverUtil;
 import com.liferay.commerce.product.exception.CPDefinitionMetaDescriptionException;
 import com.liferay.commerce.product.exception.CPDefinitionMetaKeywordsException;
@@ -134,9 +135,6 @@ public class CPDefinitionImpl extends CPDefinitionBaseImpl {
 		return null;
 	}
 
-	public CPDefinitionImpl() {
-	}
-
 	@Override
 	public Object clone() {
 		CPDefinitionImpl cpDefinitionImpl = (CPDefinitionImpl)super.clone();
@@ -225,10 +223,11 @@ public class CPDefinitionImpl extends CPDefinitionBaseImpl {
 			CPDefinitionLocalServiceUtil.getDefaultImage(getCPDefinitionId());
 
 		if (cpAttachmentFileEntry == null) {
-			return CommerceMediaResolverUtil.getDefaultUrl(getGroupId());
+			return CommerceMediaResolverUtil.getDefaultURL(getGroupId());
 		}
 
-		return CommerceMediaResolverUtil.getUrl(
+		return CommerceMediaResolverUtil.getURL(
+			CommerceAccountConstants.ACCOUNT_ID_GUEST,
 			cpAttachmentFileEntry.getCPAttachmentFileEntryId());
 	}
 
@@ -238,10 +237,11 @@ public class CPDefinitionImpl extends CPDefinitionBaseImpl {
 			CPDefinitionLocalServiceUtil.getDefaultImage(getCPDefinitionId());
 
 		if (cpAttachmentFileEntry == null) {
-			return CommerceMediaResolverUtil.getDefaultUrl(getGroupId());
+			return CommerceMediaResolverUtil.getDefaultURL(getGroupId());
 		}
 
-		return CommerceMediaResolverUtil.getThumbnailUrl(
+		return CommerceMediaResolverUtil.getThumbnailURL(
+			CommerceAccountConstants.ACCOUNT_ID_GUEST,
 			cpAttachmentFileEntry.getCPAttachmentFileEntryId());
 	}
 
@@ -385,10 +385,7 @@ public class CPDefinitionImpl extends CPDefinitionBaseImpl {
 			return StringPool.BLANK;
 		}
 
-		Map<String, String> languageIdToUrlTitleMap =
-			friendlyURLEntry.getLanguageIdToUrlTitleMap();
-
-		return languageIdToUrlTitleMap.get(languageId);
+		return friendlyURLEntry.getUrlTitle(languageId);
 	}
 
 	@Override

@@ -65,12 +65,12 @@ public class WeDeployAuthorizeStrutsAction implements StrutsAction {
 					httpServletRequest, WeDeployAuthPortletKeys.WEDEPLOY_AUTH,
 					themeDisplay.getPlid(), PortletRequest.RENDER_PHASE)
 			).setParameter(
+				"clientId", ParamUtil.getString(httpServletRequest, "client_id")
+			).setParameter(
 				"redirectURI",
 				ParamUtil.getString(httpServletRequest, "redirect_uri")
 			).setParameter(
-				"clientId", ParamUtil.getString(httpServletRequest, "client_id")
-			).setParameter(
-				"saveLastPath", Boolean.FALSE.toString()
+				"saveLastPath", false
 			).setPortletMode(
 				PortletMode.VIEW
 			).buildString());
@@ -91,7 +91,7 @@ public class WeDeployAuthorizeStrutsAction implements StrutsAction {
 			).setMVCRenderCommandName(
 				"/login/login"
 			).setParameter(
-				"saveLastPath", Boolean.FALSE.toString()
+				"saveLastPath", false
 			).setPortletMode(
 				PortletMode.VIEW
 			).setWindowState(

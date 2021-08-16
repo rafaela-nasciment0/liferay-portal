@@ -48,6 +48,10 @@ public class DDMFormRenderingContext {
 		return _containerId;
 	}
 
+	public long getDDMFormInstanceId() {
+		return _ddmFormInstanceId;
+	}
+
 	public DDMFormValues getDDMFormValues() {
 		return _ddmFormValues;
 	}
@@ -116,6 +120,10 @@ public class DDMFormRenderingContext {
 		return _showSubmitButton;
 	}
 
+	public boolean isSubmittable() {
+		return _submittable;
+	}
+
 	public boolean isViewMode() {
 		return MapUtil.getBoolean(_properties, "viewMode");
 	}
@@ -126,6 +134,10 @@ public class DDMFormRenderingContext {
 
 	public void setContainerId(String containerId) {
 		_containerId = containerId;
+	}
+
+	public void setDDMFormInstanceId(long ddmFormInstanceId) {
+		_ddmFormInstanceId = ddmFormInstanceId;
 	}
 
 	public void setDDMFormValues(DDMFormValues ddmFormValues) {
@@ -198,6 +210,10 @@ public class DDMFormRenderingContext {
 		_submitLabel = submitLabel;
 	}
 
+	public void setSubmittable(boolean submittable) {
+		_submittable = submittable;
+	}
+
 	public void setViewMode(boolean viewMode) {
 		_properties.put("viewMode", viewMode);
 	}
@@ -208,6 +224,7 @@ public class DDMFormRenderingContext {
 
 	private String _cancelLabel;
 	private String _containerId;
+	private long _ddmFormInstanceId;
 	private DDMFormValues _ddmFormValues;
 	private long _ddmStructureLayoutId;
 	private long _groupId;
@@ -222,5 +239,6 @@ public class DDMFormRenderingContext {
 	private boolean _showRequiredFieldsWarning = true;
 	private boolean _showSubmitButton = true;
 	private String _submitLabel;
+	private boolean _submittable = true;
 
 }

@@ -621,6 +621,14 @@ public abstract class BaseWorkflowDefinitionResourceTestCase {
 				continue;
 			}
 
+			if (Objects.equals("nodes", additionalAssertFieldName)) {
+				if (workflowDefinition.getNodes() == null) {
+					valid = false;
+				}
+
+				continue;
+			}
+
 			if (Objects.equals("title", additionalAssertFieldName)) {
 				if (workflowDefinition.getTitle() == null) {
 					valid = false;
@@ -631,6 +639,14 @@ public abstract class BaseWorkflowDefinitionResourceTestCase {
 
 			if (Objects.equals("title_i18n", additionalAssertFieldName)) {
 				if (workflowDefinition.getTitle_i18n() == null) {
+					valid = false;
+				}
+
+				continue;
+			}
+
+			if (Objects.equals("transitions", additionalAssertFieldName)) {
+				if (workflowDefinition.getTransitions() == null) {
 					valid = false;
 				}
 
@@ -679,7 +695,7 @@ public abstract class BaseWorkflowDefinitionResourceTestCase {
 		List<GraphQLField> graphQLFields = new ArrayList<>();
 
 		for (Field field :
-				ReflectionUtil.getDeclaredFields(
+				getDeclaredFields(
 					com.liferay.headless.admin.workflow.dto.v1_0.
 						WorkflowDefinition.class)) {
 
@@ -714,7 +730,7 @@ public abstract class BaseWorkflowDefinitionResourceTestCase {
 				}
 
 				List<GraphQLField> childrenGraphQLFields = getGraphQLFields(
-					ReflectionUtil.getDeclaredFields(clazz));
+					getDeclaredFields(clazz));
 
 				graphQLFields.add(
 					new GraphQLField(field.getName(), childrenGraphQLFields));
@@ -805,6 +821,17 @@ public abstract class BaseWorkflowDefinitionResourceTestCase {
 				continue;
 			}
 
+			if (Objects.equals("nodes", additionalAssertFieldName)) {
+				if (!Objects.deepEquals(
+						workflowDefinition1.getNodes(),
+						workflowDefinition2.getNodes())) {
+
+					return false;
+				}
+
+				continue;
+			}
+
 			if (Objects.equals("title", additionalAssertFieldName)) {
 				if (!Objects.deepEquals(
 						workflowDefinition1.getTitle(),
@@ -820,6 +847,17 @@ public abstract class BaseWorkflowDefinitionResourceTestCase {
 				if (!equals(
 						(Map)workflowDefinition1.getTitle_i18n(),
 						(Map)workflowDefinition2.getTitle_i18n())) {
+
+					return false;
+				}
+
+				continue;
+			}
+
+			if (Objects.equals("transitions", additionalAssertFieldName)) {
+				if (!Objects.deepEquals(
+						workflowDefinition1.getTransitions(),
+						workflowDefinition2.getTransitions())) {
 
 					return false;
 				}
@@ -870,6 +908,17 @@ public abstract class BaseWorkflowDefinitionResourceTestCase {
 		}
 
 		return false;
+	}
+
+	protected Field[] getDeclaredFields(Class clazz) throws Exception {
+		Stream<Field> stream = Stream.of(
+			ReflectionUtil.getDeclaredFields(clazz));
+
+		return stream.filter(
+			field -> !field.isSynthetic()
+		).toArray(
+			Field[]::new
+		);
 	}
 
 	protected java.util.Collection<EntityField> getEntityFields()
@@ -1020,6 +1069,11 @@ public abstract class BaseWorkflowDefinitionResourceTestCase {
 			return sb.toString();
 		}
 
+		if (entityFieldName.equals("nodes")) {
+			throw new IllegalArgumentException(
+				"Invalid entity field " + entityFieldName);
+		}
+
 		if (entityFieldName.equals("title")) {
 			sb.append("'");
 			sb.append(String.valueOf(workflowDefinition.getTitle()));
@@ -1029,6 +1083,11 @@ public abstract class BaseWorkflowDefinitionResourceTestCase {
 		}
 
 		if (entityFieldName.equals("title_i18n")) {
+			throw new IllegalArgumentException(
+				"Invalid entity field " + entityFieldName);
+		}
+
+		if (entityFieldName.equals("transitions")) {
 			throw new IllegalArgumentException(
 				"Invalid entity field " + entityFieldName);
 		}

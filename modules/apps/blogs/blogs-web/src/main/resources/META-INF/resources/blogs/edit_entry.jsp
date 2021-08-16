@@ -206,8 +206,6 @@ renderResponse.setTitle((entry != null) ? BlogsEntryUtil.getDisplayTitle(resourc
 
 					<%
 					Portlet portlet = PortletLocalServiceUtil.getPortletById(BlogsPortletKeys.BLOGS);
-
-					String friendlyURLPrefix = StringUtil.shorten("/-/" + portlet.getFriendlyURLMapping(), 40) + StringPool.SLASH;
 					%>
 
 					<div class="clearfix form-group">
@@ -234,7 +232,7 @@ renderResponse.setTitle((entry != null) ? BlogsEntryUtil.getDisplayTitle(resourc
 						</div>
 
 						<aui:field-wrapper cssClass="form-group" disabled="<%= automaticURL %>" helpMessage='<%= LanguageUtil.format(resourceBundle, "for-example-x", "<em>one-day-in-the-life-of-marion-cotillard</em>") %>' label="blog-entry-url" name="urlTitle">
-							<div class="form-text"><%= friendlyURLPrefix %></div>
+							<div class="form-text"><%= StringUtil.shorten("/-/" + portlet.getFriendlyURLMapping(), 40) + StringPool.SLASH %></div>
 
 							<aui:input cssClass="input-medium" disabled="<%= automaticURL %>" ignoreRequestValue="<%= true %>" label="" name="urlTitle" prefix="/" type="text" value="<%= urlTitle %>" />
 						</aui:field-wrapper>
@@ -270,6 +268,9 @@ renderResponse.setTitle((entry != null) ? BlogsEntryUtil.getDisplayTitle(resourc
 						</div>
 
 						<div class="lfr-blogs-small-image-selector">
+							<c:if test="<%= entry != null %>">
+								<aui:input name="smallImageURL" type="hidden" value="<%= entry.getSmallImageURL() %>" />
+							</c:if>
 
 							<%
 							String smallImageSelectedItemEventName = liferayPortletResponse.getNamespace() + "smallImageSelectedItem";
@@ -329,7 +330,7 @@ renderResponse.setTitle((entry != null) ? BlogsEntryUtil.getDisplayTitle(resourc
 				%>
 
 				<c:if test="<%= !scopeGroup.isCompany() %>">
-					<aui:fieldset collapsed="<%= true %>" collapsible="<%= true %>" label="display-page-template">
+					<aui:fieldset collapsed="<%= true %>" collapsible="<%= true %>" label="display-page">
 						<liferay-asset:select-asset-display-page
 							classNameId="<%= PortalUtil.getClassNameId(BlogsEntry.class) %>"
 							classPK="<%= (entry != null) ? entry.getEntryId() : 0 %>"
@@ -375,6 +376,12 @@ renderResponse.setTitle((entry != null) ? BlogsEntryUtil.getDisplayTitle(resourc
 					</div>
 				</c:if>
 
+				<c:if test="<%= (entry != null) && entry.isApproved() && WorkflowDefinitionLinkLocalServiceUtil.hasWorkflowDefinitionLink(entry.getCompanyId(), entry.getGroupId(), BlogsEntry.class.getName()) %>">
+					<div class="alert alert-info">
+						<liferay-ui:message arguments="<%= ResourceActionsUtil.getModelResource(locale, BlogsEntry.class.getName()) %>" key="this-x-is-approved.-publishing-these-changes-will-cause-it-to-be-unpublished-and-go-through-the-approval-process-again" translateArguments="<%= false %>" />
+					</div>
+				</c:if>
+
 				<div class="blog-article-button-row sheet-footer">
 
 					<%
@@ -391,17 +398,19 @@ renderResponse.setTitle((entry != null) ? BlogsEntryUtil.getDisplayTitle(resourc
 					}
 					%>
 
-					<c:if test="<%= (entry != null) && entry.isApproved() && WorkflowDefinitionLinkLocalServiceUtil.hasWorkflowDefinitionLink(entry.getCompanyId(), entry.getGroupId(), BlogsEntry.class.getName()) %>">
-						<div class="alert alert-info">
-							<liferay-ui:message arguments="<%= ResourceActionsUtil.getModelResource(locale, BlogsEntry.class.getName()) %>" key="this-x-is-approved.-publishing-these-changes-will-cause-it-to-be-unpublished-and-go-through-the-approval-process-again" translateArguments="<%= false %>" />
+					<div class="btn-group">
+						<div class="btn-group-item">
+							<aui:button disabled="<%= pending %>" name="publishButton" type="submit" value="<%= publishButtonLabel %>" />
 						</div>
-					</c:if>
 
-					<aui:button disabled="<%= pending %>" name="publishButton" type="submit" value="<%= publishButtonLabel %>" />
+						<div class="btn-group-item">
+							<aui:button name="saveButton" primary="<%= false %>" type="submit" value="<%= saveButtonLabel %>" />
+						</div>
 
-					<aui:button name="saveButton" primary="<%= false %>" type="submit" value="<%= saveButtonLabel %>" />
-
-					<aui:button href="<%= redirect %>" name="cancelButton" type="cancel" />
+						<div class="btn-group-item">
+							<aui:button href="<%= redirect %>" name="cancelButton" type="cancel" />
+						</div>
+					</div>
 				</div>
 			</aui:fieldset-group>
 		</div>
@@ -467,15 +476,15 @@ if (entry != null) {
 
 <%
 if (entry != null) {
-	PortletURL portletURL = PortletURLBuilder.createRenderURL(
-		renderResponse
-	).setMVCRenderCommandName(
-		"/blogs/view_entry"
-	).setParameter(
-		"entryId", String.valueOf(entry.getEntryId())
-	).build();
-
-	PortalUtil.addPortletBreadcrumbEntry(request, BlogsEntryUtil.getDisplayTitle(resourceBundle, entry), portletURL.toString());
+	PortalUtil.addPortletBreadcrumbEntry(
+		request, BlogsEntryUtil.getDisplayTitle(resourceBundle, entry),
+		PortletURLBuilder.createRenderURL(
+			renderResponse
+		).setMVCRenderCommandName(
+			"/blogs/view_entry"
+		).setParameter(
+			"entryId", entry.getEntryId()
+		).buildString());
 
 	PortalUtil.addPortletBreadcrumbEntry(request, LanguageUtil.get(request, "edit"), currentURL);
 }

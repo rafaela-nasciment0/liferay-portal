@@ -30,7 +30,7 @@ definition {
 
 			JSONUser.tearDownNonAdminUsers();
 
-			Role.removeStagingAdminRole();
+			JSONRole.deleteRole(roleTitle = "Staging Admin");
 
 			JSONGroup.deleteGroupByName(groupName = "Site Name");
 		}
@@ -38,9 +38,7 @@ definition {
 
 	@priority = "4"
 	test StagingDemoLocalLive1 {
-		Staging.openStagingAdmin(siteURLKey = "site-name");
-
-		Staging.activateStagingCP(siteName = "Site Name");
+		JSONStaging.enableLocalStaging(groupName = "Site Name");
 
 		JSONRole.addSiteRole(
 			roleKey = "Staging Admin",
@@ -106,6 +104,8 @@ definition {
 
 		Navigator.openStagingSiteURL(siteName = "Site Name");
 
+		DMDocument.enableActionsMenuOnPortlet();
+
 		DMDocument.addPG(
 			dmDocumentDescription = "DM Document Description",
 			dmDocumentFile = "Document_1.doc",
@@ -146,11 +146,10 @@ definition {
 
 	@priority = "4"
 	test StagingDemoLocalLive2 {
-		Staging.openStagingAdmin(siteURLKey = "site-name");
-
-		Staging.activateStagingCP(
-			pageVersioningEnabled = "true",
-			siteName = "Site Name");
+		JSONStaging.enableLocalStaging(
+			branchingPrivate = "true",
+			branchingPublic = "true",
+			groupName = "Site Name");
 
 		Staging.addStagingAdminRole();
 
@@ -217,11 +216,10 @@ definition {
 			groupName = "Site Name",
 			layoutName = "Wiki");
 
-		Staging.openStagingAdmin(siteURLKey = "site-name");
-
-		Staging.activateStagingCP(
-			pageVersioningEnabled = "true",
-			siteName = "Site Name");
+		JSONStaging.enableLocalStaging(
+			branchingPrivate = "true",
+			branchingPublic = "true",
+			groupName = "Site Name");
 
 		Staging.addStagingAdminRole();
 
@@ -405,11 +403,10 @@ definition {
 			groupName = "Site Name",
 			layoutName = "Wiki");
 
-		Staging.openStagingAdmin(siteURLKey = "site-name");
-
-		Staging.activateStagingCP(
-			pageVersioningEnabled = "true",
-			siteName = "Site Name");
+		JSONStaging.enableLocalStaging(
+			branchingPrivate = "true",
+			branchingPublic = "true",
+			groupName = "Site Name");
 
 		Staging.addStagingAdminRole();
 
@@ -483,9 +480,7 @@ definition {
 	@description = "This is a use case for LPS-82564."
 	@priority = "4"
 	test StagingLocalLiveWebContent {
-		Staging.openStagingAdmin(siteURLKey = "site-name");
-
-		Staging.activateStagingCP(siteName = "Site Name");
+		JSONStaging.enableLocalStaging(groupName = "Site Name");
 
 		WebContentNavigator.openWebContentAdmin(siteURLKey = "site-name-staging");
 
@@ -601,11 +596,10 @@ definition {
 
 	@priority = "4"
 	test StagingLocalLiveWorkflow {
-		Staging.openStagingAdmin(siteURLKey = "site-name");
-
-		Staging.activateStagingCP(
-			pageVersioningEnabled = "true",
-			siteName = "Site Name");
+		JSONStaging.enableLocalStaging(
+			branchingPrivate = "true",
+			branchingPublic = "true",
+			groupName = "Site Name");
 
 		Workflow.openWorkflowAdmin(siteURLKey = "site-name-staging");
 
@@ -866,11 +860,10 @@ definition {
 			layoutName = "Wiki",
 			widgetName = "Wiki");
 
-		Staging.openStagingAdmin(siteURLKey = "site-name");
-
-		Staging.activateStagingCP(
-			pageVersioningEnabled = "true",
-			siteName = "Site Name");
+		JSONStaging.enableLocalStaging(
+			branchingPrivate = "true",
+			branchingPublic = "true",
+			groupName = "Site Name");
 
 		Staging.addStagingAdminRole();
 
@@ -928,9 +921,7 @@ definition {
 	@description = "This is a use case for LPS-88004."
 	@priority = "3"
 	test UpdateAndDeleteWebContentCommentOnLiveSite {
-		Staging.openStagingAdmin(siteURLKey = "site-name");
-
-		Staging.activateStagingCP(siteName = "Site Name");
+		JSONStaging.enableLocalStaging(groupName = "Site Name");
 
 		WebContentNavigator.openWebContentAdmin(siteURLKey = "site-name-staging");
 

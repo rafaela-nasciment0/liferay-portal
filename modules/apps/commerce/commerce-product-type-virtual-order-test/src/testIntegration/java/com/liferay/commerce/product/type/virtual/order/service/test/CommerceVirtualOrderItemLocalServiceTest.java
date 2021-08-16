@@ -63,6 +63,7 @@ import org.frutilla.FrutillaRule;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
@@ -81,12 +82,15 @@ public class CommerceVirtualOrderItemLocalServiceTest {
 			new LiferayIntegrationTestRule(),
 			PermissionCheckerMethodTestRule.INSTANCE);
 
-	@Before
-	public void setUp() throws Exception {
+	@BeforeClass
+	public static void setUpClass() throws Exception {
 		_company = CompanyTestUtil.addCompany();
 
 		_user = UserTestUtil.addUser(_company);
+	}
 
+	@Before
+	public void setUp() throws Exception {
 		_group = GroupTestUtil.addGroup(
 			_company.getCompanyId(), _user.getUserId(), 0);
 
@@ -98,8 +102,6 @@ public class CommerceVirtualOrderItemLocalServiceTest {
 		_commerceCatalog = CommerceTestUtil.addCommerceCatalog(
 			_company.getCompanyId(), _company.getGroupId(), _user.getUserId(),
 			_commerceCurrency.getCode());
-
-		_commerceOrders = new ArrayList<>();
 	}
 
 	@After
@@ -309,6 +311,9 @@ public class CommerceVirtualOrderItemLocalServiceTest {
 		return _cpInstanceLocalService.updateCPInstance(cpInstance);
 	}
 
+	private static Company _company;
+	private static User _user;
+
 	private CommerceCatalog _commerceCatalog;
 	private CommerceChannel _commerceChannel;
 
@@ -318,7 +323,7 @@ public class CommerceVirtualOrderItemLocalServiceTest {
 	@Inject
 	private CommerceOrderLocalService _commerceOrderLocalService;
 
-	private List<CommerceOrder> _commerceOrders;
+	private final List<CommerceOrder> _commerceOrders = new ArrayList<>();
 
 	@Inject
 	private CommercePriceEntryLocalService _commercePriceEntryLocalService;
@@ -336,9 +341,6 @@ public class CommerceVirtualOrderItemLocalServiceTest {
 	private CommerceVirtualOrderItemLocalService
 		_commerceVirtualOrderItemLocalService;
 
-	@DeleteAfterTestRun
-	private Company _company;
-
 	@Inject
 	private CPDefinitionLocalService _cpDefinitionLocalService;
 
@@ -346,6 +348,5 @@ public class CommerceVirtualOrderItemLocalServiceTest {
 	private CPInstanceLocalService _cpInstanceLocalService;
 
 	private Group _group;
-	private User _user;
 
 }

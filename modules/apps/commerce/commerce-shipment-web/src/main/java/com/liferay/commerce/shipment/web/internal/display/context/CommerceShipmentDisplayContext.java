@@ -51,7 +51,6 @@ import com.liferay.portal.kernel.security.permission.resource.PortletResourcePer
 import com.liferay.portal.kernel.service.CountryService;
 import com.liferay.portal.kernel.service.RegionService;
 import com.liferay.portal.kernel.util.ArrayUtil;
-import com.liferay.portal.kernel.util.Constants;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.webserver.WebServerServletTokenUtil;
@@ -234,23 +233,6 @@ public class CommerceShipmentDisplayContext
 					CommerceShipmentConstants.getShipmentTransitionLabel(
 						shipmentStatus);
 
-				PortletURL portletURL = PortletURLBuilder.create(
-					PortalUtil.getControlPanelPortletURL(
-						httpServletRequest,
-						CommercePortletKeys.COMMERCE_SHIPMENT,
-						PortletRequest.ACTION_PHASE)
-				).setActionName(
-					"/commerce_shipment/edit_commerce_shipment"
-				).setRedirect(
-					PortalUtil.getCurrentURL(httpServletRequest)
-				).setParameter(
-					Constants.CMD, "transition"
-				).setParameter(
-					"commerceShipmentId", getCommerceShipmentId()
-				).setParameter(
-					"transitionName", shipmentStatus
-				).build();
-
 				String buttonClass = "btn-primary";
 
 				int availableStatusesLength = availableShipmentStatuses.length;
@@ -265,7 +247,24 @@ public class CommerceShipmentDisplayContext
 
 				headerActionModels.add(
 					new HeaderActionModel(
-						buttonClass, null, portletURL.toString(), null, label));
+						buttonClass, null,
+						PortletURLBuilder.create(
+							PortalUtil.getControlPanelPortletURL(
+								httpServletRequest,
+								CommercePortletKeys.COMMERCE_SHIPMENT,
+								PortletRequest.ACTION_PHASE)
+						).setActionName(
+							"/commerce_shipment/edit_commerce_shipment"
+						).setCMD(
+							"transition"
+						).setRedirect(
+							PortalUtil.getCurrentURL(httpServletRequest)
+						).setParameter(
+							"commerceShipmentId", getCommerceShipmentId()
+						).setParameter(
+							"transitionName", shipmentStatus
+						).buildString(),
+						null, label));
 			}
 		}
 
@@ -281,9 +280,9 @@ public class CommerceShipmentDisplayContext
 	public PortletURL getPortletURL() throws PortalException {
 		return PortletURLBuilder.create(
 			super.getPortletURL()
-		).setParameter(
-			"navigation", getNavigation()
-		).build();
+		).setNavigation(
+			getNavigation()
+		).buildPortletURL();
 	}
 
 	public List<Region> getRegions(long countryId) {
@@ -318,21 +317,21 @@ public class CommerceShipmentDisplayContext
 			(commerceShipment.getStatus() ==
 				CommerceShipmentConstants.SHIPMENT_STATUS_PROCESSING)) {
 
-			PortletURL portletURL = PortletURLBuilder.create(
-				getPortletURL()
-			).setMVCRenderCommandName(
-				"/commerce_shipment/add_commerce_shipment_items"
-			).setRedirect(
-				PortalUtil.getCurrentURL(httpServletRequest)
-			).setParameter(
-				"commerceShipmentId", commerceShipment.getCommerceShipmentId()
-			).setWindowState(
-				LiferayWindowState.POP_UP
-			).build();
-
 			creationMenu.addDropdownItem(
 				dropdownItem -> {
-					dropdownItem.setHref(portletURL.toString());
+					dropdownItem.setHref(
+						PortletURLBuilder.create(
+							getPortletURL()
+						).setMVCRenderCommandName(
+							"/commerce_shipment/add_commerce_shipment_items"
+						).setRedirect(
+							PortalUtil.getCurrentURL(httpServletRequest)
+						).setParameter(
+							"commerceShipmentId",
+							commerceShipment.getCommerceShipmentId()
+						).setWindowState(
+							LiferayWindowState.POP_UP
+						).buildString());
 					dropdownItem.setLabel(
 						LanguageUtil.get(
 							httpServletRequest,

@@ -40,14 +40,18 @@ import com.liferay.portal.kernel.dao.jdbc.CurrentConnectionUtil;
 import com.liferay.portal.kernel.dao.orm.WildcardMode;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
+import com.liferay.portal.kernel.model.GroupTable;
+import com.liferay.portal.kernel.model.UserGroupRoleTable;
 import com.liferay.portal.kernel.search.IndexWriterHelper;
 import com.liferay.portal.kernel.search.Indexer;
 import com.liferay.portal.kernel.search.IndexerRegistry;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.security.permission.InlineSQLHelper;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
+import com.liferay.portal.kernel.security.permission.PermissionThreadLocal;
 import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermission;
 import com.liferay.portal.kernel.security.permission.resource.PortletResourcePermission;
+import com.liferay.portal.kernel.service.ClassNameLocalService;
 import com.liferay.portal.kernel.service.change.tracking.CTService;
 import com.liferay.portal.kernel.transaction.TransactionCommitCallbackUtil;
 import com.liferay.portal.kernel.util.ArrayUtil;
@@ -271,9 +275,7 @@ public class CTCollectionServiceImpl extends CTCollectionServiceBaseImpl {
 			_getPredicate(companyId, statuses, keywords)
 		);
 
-		Long count = ctCollectionPersistence.dslQuery(dslQuery);
-
-		return count.intValue();
+		return ctCollectionPersistence.dslQueryCount(dslQuery);
 	}
 
 	@Override
@@ -442,43 +444,60 @@ public class CTCollectionServiceImpl extends CTCollectionServiceBaseImpl {
 					ArrayUtil.toArray(statuses)));
 		}
 
-		Predicate keywordsPredicate = null;
+		String[] keywordsArray = _customSQL.keywords(
+			keywords, true, WildcardMode.SURROUND);
 
-		for (String keyword :
-				_customSQL.keywords(keywords, true, WildcardMode.SURROUND)) {
+		predicate = predicate.and(
+			Predicate.withParentheses(
+				Predicate.or(
+					_customSQL.getKeywordsPredicate(
+						DSLFunctionFactoryUtil.lower(
+							CTCollectionTable.INSTANCE.name),
+						keywordsArray),
+					_customSQL.getKeywordsPredicate(
+						DSLFunctionFactoryUtil.lower(
+							CTCollectionTable.INSTANCE.description),
+						keywordsArray))));
 
-			if (keyword == null) {
-				continue;
-			}
+		Predicate permissionWherePredicate =
+			_inlineSQLHelper.getPermissionWherePredicate(
+				CTCollection.class, CTCollectionTable.INSTANCE.ctCollectionId);
 
-			Predicate keywordPredicate = DSLFunctionFactoryUtil.lower(
-				CTCollectionTable.INSTANCE.name
-			).like(
-				keyword
-			).or(
-				DSLFunctionFactoryUtil.lower(
-					CTCollectionTable.INSTANCE.description
-				).like(
-					keyword
-				)
-			);
-
-			if (keywordsPredicate == null) {
-				keywordsPredicate = keywordPredicate;
-			}
-			else {
-				keywordsPredicate = keywordsPredicate.or(keywordPredicate);
-			}
+		if (permissionWherePredicate == null) {
+			return predicate;
 		}
 
-		if (keywordsPredicate != null) {
-			predicate = predicate.and(keywordsPredicate.withParentheses());
-		}
+		PermissionChecker permissionChecker =
+			PermissionThreadLocal.getPermissionChecker();
 
 		return predicate.and(
-			_inlineSQLHelper.getPermissionWherePredicate(
-				CTCollection.class, CTCollectionTable.INSTANCE.ctCollectionId));
+			permissionWherePredicate.or(
+				CTCollectionTable.INSTANCE.ctCollectionId.in(
+					DSLQueryFactoryUtil.selectDistinct(
+						GroupTable.INSTANCE.classPK
+					).from(
+						GroupTable.INSTANCE
+					).innerJoinON(
+						UserGroupRoleTable.INSTANCE,
+						UserGroupRoleTable.INSTANCE.groupId.eq(
+							GroupTable.INSTANCE.groupId)
+					).where(
+						GroupTable.INSTANCE.companyId.eq(
+							permissionChecker.getCompanyId()
+						).and(
+							GroupTable.INSTANCE.classNameId.eq(
+								_classNameLocalService.getClassNameId(
+									CTCollection.class.getName()))
+						).and(
+							UserGroupRoleTable.INSTANCE.userId.eq(
+								permissionChecker.getUserId())
+						)
+					))
+			).withParentheses());
 	}
+
+	@Reference
+	private ClassNameLocalService _classNameLocalService;
 
 	@Reference
 	private CTAutoResolutionInfoPersistence _ctAutoResolutionInfoPersistence;

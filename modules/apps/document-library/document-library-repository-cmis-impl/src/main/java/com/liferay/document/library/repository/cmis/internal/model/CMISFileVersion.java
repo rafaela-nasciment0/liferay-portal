@@ -51,7 +51,7 @@ import org.apache.chemistry.opencmis.commons.exceptions.CmisObjectNotFoundExcept
 /**
  * @author Alexander Chow
  */
-public class CMISFileVersion extends CMISModel implements FileVersion {
+public class CMISFileVersion extends BaseCMISModel implements FileVersion {
 
 	public CMISFileVersion(
 		CMISRepository cmisRepository, FileEntry fileEntry, String uuid,
@@ -134,6 +134,11 @@ public class CMISFileVersion extends CMISModel implements FileVersion {
 
 	@Override
 	public ExpandoBridge getExpandoBridge() {
+		return null;
+	}
+
+	@Override
+	public Date getExpirationDate() {
 		return null;
 	}
 
@@ -262,6 +267,11 @@ public class CMISFileVersion extends CMISModel implements FileVersion {
 	@Override
 	public long getRepositoryId() {
 		return _cmisRepository.getRepositoryId();
+	}
+
+	@Override
+	public Date getReviewDate() {
+		return null;
 	}
 
 	@Override

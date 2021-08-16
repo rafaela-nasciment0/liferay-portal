@@ -34,7 +34,7 @@ PortletURL viewPageURL = PortletURLBuilder.createRenderURL(
 	"nodeName", node.getName()
 ).setParameter(
 	"title", wikiPage.getTitle()
-).build();
+).buildPortletURL();
 
 PortletURL editPageURL = PortletURLBuilder.createRenderURL(
 	renderResponse
@@ -43,10 +43,10 @@ PortletURL editPageURL = PortletURLBuilder.createRenderURL(
 ).setRedirect(
 	currentURL
 ).setParameter(
-	"nodeId", String.valueOf(node.getNodeId())
+	"nodeId", node.getNodeId()
 ).setParameter(
 	"title", wikiPage.getTitle()
-).build();
+).buildPortletURL();
 
 PortalUtil.addPortletBreadcrumbEntry(request, wikiPage.getTitle(), viewPageURL.toString());
 
@@ -123,16 +123,16 @@ PortalUtil.addPortletBreadcrumbEntry(request, LanguageUtil.get(request, "details
 		).setActionName(
 			"/wiki/export_page"
 		).setParameter(
-			"nodeId", String.valueOf(node.getNodeId())
+			"nodeId", node.getNodeId()
 		).setParameter(
 			"nodeName", node.getName()
 		).setParameter(
 			"title", wikiPage.getTitle()
 		).setParameter(
-			"version", String.valueOf(wikiPage.getVersion())
+			"version", wikiPage.getVersion()
 		).setWindowState(
 			LiferayWindowState.EXCLUSIVE
-		).build();
+		).buildPortletURL();
 		%>
 
 		<tr>
@@ -321,69 +321,57 @@ PortalUtil.addPortletBreadcrumbEntry(request, LanguageUtil.get(request, "details
 					</c:if>
 
 					<c:if test="<%= WikiPagePermission.contains(permissionChecker, wikiPage, ActionKeys.UPDATE) && WikiNodePermission.contains(permissionChecker, wikiPage.getNodeId(), ActionKeys.ADD_PAGE) %>">
-
-						<%
-						PortletURL copyPageURL = PortletURLBuilder.create(
-							PortletURLUtil.clone(viewPageURL, renderResponse)
-						).setMVCRenderCommandName(
-							"/wiki/edit_page"
-						).setParameter(
-							"nodeId", String.valueOf(wikiPage.getNodeId())
-						).setParameter(
-							"title", StringPool.BLANK
-						).setParameter(
-							"editTitle", "1"
-						).setParameter(
-							"templateNodeId", String.valueOf(wikiPage.getNodeId())
-						).setParameter(
-							"templateTitle", wikiPage.getTitle()
-						).build();
-						%>
-
 						<liferay-ui:icon
 							icon="paste"
 							label="<%= true %>"
 							markupView="lexicon"
 							message="copy"
-							url="<%= copyPageURL.toString() %>"
+							url='<%=
+								PortletURLBuilder.create(
+									PortletURLUtil.clone(viewPageURL, renderResponse)
+								).setMVCRenderCommandName(
+									"/wiki/edit_page"
+								).setParameter(
+									"editTitle", "1"
+								).setParameter(
+									"nodeId", wikiPage.getNodeId()
+								).setParameter(
+									"templateNodeId", wikiPage.getNodeId()
+								).setParameter(
+									"templateTitle", wikiPage.getTitle()
+								).setParameter(
+									"title", StringPool.BLANK
+								).buildString()
+							%>'
 						/>
 					</c:if>
 
 					<c:if test="<%= WikiPagePermission.contains(permissionChecker, wikiPage, ActionKeys.UPDATE) && WikiNodePermission.contains(permissionChecker, wikiPage.getNodeId(), ActionKeys.ADD_PAGE) %>">
-
-						<%
-						PortletURL movePageURL = PortletURLBuilder.create(
-							PortletURLUtil.clone(viewPageURL, renderResponse)
-						).setMVCRenderCommandName(
-							"/wiki/move_page"
-						).setRedirect(
-							viewPageURL.toString()
-						).build();
-						%>
-
 						<liferay-ui:icon
 							icon="move"
 							label="<%= true %>"
 							markupView="lexicon"
 							message="move"
-							url="<%= movePageURL.toString() %>"
+							url='<%=
+								PortletURLBuilder.create(
+									PortletURLUtil.clone(viewPageURL, renderResponse)
+								).setMVCRenderCommandName(
+									"/wiki/move_page"
+								).setRedirect(
+									viewPageURL
+								).buildString()
+							%>'
 						/>
 					</c:if>
 
 					<c:if test="<%= WikiPagePermission.contains(permissionChecker, wikiPage, ActionKeys.DELETE) %>">
 
 						<%
-						PortletURL frontPageURL = PortletURLBuilder.create(
-							PortletURLUtil.clone(viewPageURL, renderResponse)
-						).setParameter(
-							"title", wikiGroupServiceConfiguration.frontPageName()
-						).build();
-
 						PortletURL deletePageURL = PortletURLBuilder.create(
 							PortletURLUtil.clone(editPageURL, PortletRequest.ACTION_PHASE, renderResponse)
 						).setActionName(
 							"/wiki/edit_page"
-						).build();
+						).buildPortletURL();
 
 						if (trashHelper.isTrashEnabled(scopeGroupId)) {
 							deletePageURL.setParameter(Constants.CMD, Constants.MOVE_TO_TRASH);
@@ -392,7 +380,13 @@ PortalUtil.addPortletBreadcrumbEntry(request, LanguageUtil.get(request, "details
 							deletePageURL.setParameter(Constants.CMD, Constants.DELETE);
 						}
 
-						deletePageURL.setParameter("redirect", frontPageURL.toString());
+						deletePageURL.setParameter(
+							"redirect",
+							PortletURLBuilder.create(
+								PortletURLUtil.clone(viewPageURL, renderResponse)
+							).setParameter(
+								"title", wikiGroupServiceConfiguration.frontPageName()
+							).buildString());
 						%>
 
 						<liferay-ui:icon-delete

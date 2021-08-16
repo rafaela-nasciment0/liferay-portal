@@ -10,9 +10,10 @@
  */
 
 import ClayLayout from '@clayui/layout';
+import ClayPanel from '@clayui/panel';
 import React, {useMemo} from 'react';
 
-import Panel from '../../../shared/components/panel/Panel.es';
+import PanelHeaderWithOptions from '../../../shared/components/panel-header-with-options/PanelHeaderWithOptions.es';
 import PromisesResolver from '../../../shared/components/promises-resolver/PromisesResolver.es';
 import {useFetch} from '../../../shared/hooks/useFetch.es';
 import {useFilter} from '../../../shared/hooks/useFilter.es';
@@ -20,9 +21,9 @@ import TimeRangeFilter from '../../filter/TimeRangeFilter.es';
 import VelocityUnitFilter from '../../filter/VelocityUnitFilter.es';
 import {getTimeRangeParams} from '../../filter/util/timeRangeUtil.es';
 import {getVelocityUnits} from '../../filter/util/velocityUnitUtil.es';
-import {Body} from './CompletionVelocityCardBody.es';
+import Body from './CompletionVelocityCardBody.es';
 
-const CompletionVelocityCard = ({routeParams}) => {
+function CompletionVelocityCard({routeParams}) {
 	const {processId} = routeParams;
 	const filterKeys = ['timeRange', 'velocityUnit'];
 	const prefixKey = 'completion';
@@ -72,7 +73,7 @@ const CompletionVelocityCard = ({routeParams}) => {
 
 	return (
 		<PromisesResolver promises={promises}>
-			<Panel>
+			<ClayPanel className="mt-4">
 				<CompletionVelocityCard.Header
 					disableFilters={filtersError}
 					prefixKey={prefixKey}
@@ -84,25 +85,24 @@ const CompletionVelocityCard = ({routeParams}) => {
 					timeRange={timeRange}
 					velocityUnit={velocityUnit}
 				/>
-			</Panel>
+			</ClayPanel>
 		</PromisesResolver>
 	);
-};
+}
 
-const Header = ({disableFilters, prefixKey, timeRange}) => {
+function Header({disableFilters, prefixKey, timeRange}) {
 	return (
-		<Panel.HeaderWithOptions
+		<PanelHeaderWithOptions
+			className="pb-0 tabs-panel-header"
 			description={Liferay.Language.get(
 				'completion-velocity-description'
 			)}
-			elementClasses="dashboard-panel-header pb-0"
 			title={Liferay.Language.get('completion-velocity')}
 		>
 			<ClayLayout.ContentCol className="m-0 management-bar management-bar-light navbar">
-				<ul className="navbar-nav">
+				<div className="navbar-nav">
 					<TimeRangeFilter
 						disabled={disableFilters}
-						options={{position: 'right'}}
 						prefixKey={prefixKey}
 					/>
 
@@ -112,11 +112,11 @@ const Header = ({disableFilters, prefixKey, timeRange}) => {
 						prefixKey={prefixKey}
 						timeRange={timeRange}
 					/>
-				</ul>
+				</div>
 			</ClayLayout.ContentCol>
-		</Panel.HeaderWithOptions>
+		</PanelHeaderWithOptions>
 	);
-};
+}
 
 CompletionVelocityCard.Header = Header;
 CompletionVelocityCard.Body = Body;

@@ -81,8 +81,7 @@ public class DeleteThreadPortletConfigurationIcon
 				PortletRequest.ACTION_PHASE)
 		).setActionName(
 			"/message_boards/delete_thread"
-		).setParameter(
-			Constants.CMD,
+		).setCMD(
 			() -> {
 				ThemeDisplay themeDisplay =
 					(ThemeDisplay)portletRequest.getAttribute(
@@ -96,7 +95,7 @@ public class DeleteThreadPortletConfigurationIcon
 
 				return cmd;
 			}
-		).build();
+		).buildPortletURL();
 
 		try {
 			MBCategory category = ActionUtil.getCategory(portletRequest);
